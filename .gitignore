@@ -9,6 +9,8 @@ buildNumber.properties
 .mvn/timing.properties
 sqlnet.log
 
+/config/
+
 .metadata
 bin/
 tmp/
