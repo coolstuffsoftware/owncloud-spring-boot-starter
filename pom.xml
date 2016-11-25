@@ -1,0 +1,175 @@
+<project
+  xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>software.coolstuff</groupId>
+  <artifactId>installapex</artifactId>
+  <version>1.0.0-SNAPSHOT</version>
+
+  <name>springowncloud</name>
+  <description>Spring Owncloud Service and Authentication Provider</description>
+  <url>https://github.com/coolstuffsoftware/springOwncloud</url>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <java.version>1.8</java.version>
+    <maven.compiler.source>${java.version}</maven.compiler.source>
+    <maven.compiler.compilerVersion>${maven.compiler.source}</maven.compiler.compilerVersion>
+    <maven.compiler.target>${java.version}</maven.compiler.target>
+
+    <!-- Dependency Versions -->
+    <spring-boot.version>1.4.2.RELEASE</spring-boot.version>
+  </properties>
+
+  <scm>
+    <url>https://github.com/coolstuffsoftware/springOwncloud</url>
+    <connection>scm:git:git://github.com/coolstuffsoftware/springOwncloud.git</connection>
+    <developerConnection>scm:git:git@github.com:coolstuffsoftware/springOwncloud.git</developerConnection>
+  </scm>
+
+  <licenses>
+    <license>
+      <name>GNU General Public License (GPL)</name>
+      <url>http://www.gnu.org/licenses/gpl.txt</url>
+    </license>
+  </licenses>
+
+  <dependencyManagement>
+    <dependencies>
+      <!-- Spring Boot BOM -->
+      <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-dependencies</artifactId>
+        <version>${spring-boot.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <dependencies>
+    <!-- Lombok -->
+    <dependency>
+      <groupId>org.projectlombok</groupId>
+      <artifactId>lombok</artifactId>
+      <scope>provided</scope>
+    </dependency>
+
+    <!-- Spring Boot -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-security</artifactId>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <!-- Maven Plugins of Apache Group -->
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.6.0</version>
+        <configuration>
+          <source>${maven.compiler.source}</source>
+          <target>${maven.compiler.target}</target>
+          <encoding>${project.build.sourceEncoding}</encoding>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <artifactId>maven-jar-plugin</artifactId>
+        <version>3.0.2</version>
+        <configuration>
+          <archive>
+            <manifest>
+              <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+              <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+            </manifest>
+          </archive>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <artifactId>maven-source-plugin</artifactId>
+        <version>3.0.1</version>
+      </plugin>
+
+      <plugin>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <version>2.10.4</version>
+      </plugin>
+
+      <plugin>
+        <artifactId>maven-eclipse-plugin</artifactId>
+        <version>2.10</version>
+        <configuration>
+          <projectNameTemplate>[groupId].[artifactId]</projectNameTemplate>
+          <downloadSources>true</downloadSources>
+          <downloadJavadocs>true</downloadJavadocs>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <artifactId>maven-gpg-plugin</artifactId>
+        <version>1.6</version>
+        <executions>
+          <execution>
+            <id>sign-artifacts</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>sign</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- Atlassian Plugins -->
+      <plugin>
+        <groupId>external.atlassian.jgitflow</groupId>
+        <artifactId>jgitflow-maven-plugin</artifactId>
+        <version>1.0-m5.1</version>
+        <configuration>
+          <flowInitContext>
+            <versionTagPrefix>release-</versionTagPrefix>
+          </flowInitContext>
+          <scmCommentPrefix>[jgitflow plugin]</scmCommentPrefix>
+          <noDeploy>true</noDeploy>
+          <pushReleases>true</pushReleases>
+          <pushFeatures>true</pushFeatures>
+          <pushHotfixes>true</pushHotfixes>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+  <distributionManagement>
+    <snapshotRepository>
+      <id>coolstuff.software.snapshots</id>
+      <name>Coolstuff Software Snapshots</name>
+      <uniqueVersion>false</uniqueVersion>
+      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+    </snapshotRepository>
+    <downloadUrl>https://oss.sonatype.org/content/groups/public</downloadUrl>
+  </distributionManagement>
+
+  <profiles>
+    <profile>
+      <id>release-profile</id>
+
+      <activation>
+        <property>
+          <name>performRelease</name>
+        </property>
+      </activation>
+
+      <distributionManagement>
+        <repository>
+          <id>coolstuff.software.releases</id>
+          <name>Coolstuff Software Releases</name>
+          <url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url>
+        </repository>
+      </distributionManagement>
+    </profile>
+  </profiles>
+</project>
