@@ -6,8 +6,12 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 @Data
+@EqualsAndHashCode(of = "username")
+@ToString(exclude = "password")
 public class OwncloudUserDetails implements UserDetails {
 
   private static final long serialVersionUID = 7384295040126418671L;
