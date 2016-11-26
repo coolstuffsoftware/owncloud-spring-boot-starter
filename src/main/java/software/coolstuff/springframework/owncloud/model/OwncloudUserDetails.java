@@ -2,9 +2,12 @@ package software.coolstuff.springframework.owncloud.model;
 
 import java.util.Collection;
 
+import javax.validation.constraints.NotNull;
+
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
@@ -12,10 +15,12 @@ import lombok.ToString;
 @Data
 @EqualsAndHashCode(of = "username")
 @ToString(exclude = "password")
+@Builder
 public class OwncloudUserDetails implements UserDetails {
 
   private static final long serialVersionUID = 7384295040126418671L;
 
+  @NotNull
   private String username;
   private String password;
 

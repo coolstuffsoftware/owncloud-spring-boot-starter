@@ -1,0 +1,5 @@
+owncloud:
+  enable-authentication: true
+  url: https://owncloud.example.com
+  username: admin
+  password: s3cr3t
