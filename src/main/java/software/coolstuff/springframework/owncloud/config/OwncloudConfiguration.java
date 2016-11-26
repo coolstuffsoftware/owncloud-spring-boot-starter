@@ -9,21 +9,21 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.converter.xml.MappingJackson2XmlHttpMessageConverter;
 
 import software.coolstuff.springframework.owncloud.service.api.OwncloudService;
-import software.coolstuff.springframework.owncloud.service.impl.AbstractOwncloudServiceImpl;
 import software.coolstuff.springframework.owncloud.service.impl.OwncloudAuthenticationProvider;
+import software.coolstuff.springframework.owncloud.service.impl.OwncloudProperties;
 import software.coolstuff.springframework.owncloud.service.impl.OwncloudServiceImpl;
 import software.coolstuff.springframework.owncloud.service.impl.OwncloudUserDetailsService;
 
 @Configuration
 @ConditionalOnClass({ RestTemplateBuilder.class, MappingJackson2XmlHttpMessageConverter.class })
 @ConditionalOnProperty(prefix = "owncloud", name = "url")
-@EnableConfigurationProperties(AbstractOwncloudServiceImpl.Properties.class)
+@EnableConfigurationProperties(OwncloudProperties.class)
 public class OwncloudConfiguration {
 
   @Bean
   public OwncloudService owncloudService(
       RestTemplateBuilder builder,
-      AbstractOwncloudServiceImpl.Properties properties,
+      OwncloudProperties properties,
       MappingJackson2XmlHttpMessageConverter messageConverter) {
     return new OwncloudServiceImpl(builder, properties, messageConverter);
   }
@@ -32,7 +32,7 @@ public class OwncloudConfiguration {
   @ConditionalOnProperty(prefix = "owncloud", name = "enable-authentication", havingValue = "true")
   public OwncloudAuthenticationProvider owncloudAuthenticationProvider(
       RestTemplateBuilder builder,
-      AbstractOwncloudServiceImpl.Properties properties,
+      OwncloudProperties properties,
       MappingJackson2XmlHttpMessageConverter messageConverter) {
     return new OwncloudAuthenticationProvider(builder, properties, messageConverter);
   }
@@ -41,7 +41,7 @@ public class OwncloudConfiguration {
   @ConditionalOnProperty(prefix = "owncloud", name = "enable-authentication", havingValue = "true")
   public OwncloudUserDetailsService owncloudUserDetailsService(
       RestTemplateBuilder builder,
-      AbstractOwncloudServiceImpl.Properties properties,
+      OwncloudProperties properties,
       MappingJackson2XmlHttpMessageConverter messageConverter) {
     return new OwncloudUserDetailsService(builder, properties, messageConverter);
   }

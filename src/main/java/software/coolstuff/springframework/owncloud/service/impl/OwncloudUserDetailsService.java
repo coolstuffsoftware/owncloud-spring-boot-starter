@@ -9,7 +9,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 public class OwncloudUserDetailsService extends AbstractOwncloudServiceImpl implements UserDetailsService {
 
-  public OwncloudUserDetailsService(RestTemplateBuilder builder, Properties properties, MappingJackson2XmlHttpMessageConverter messageConverter) {
+  public OwncloudUserDetailsService(RestTemplateBuilder builder, OwncloudProperties properties, MappingJackson2XmlHttpMessageConverter messageConverter) {
     super(builder, properties, true, messageConverter);
   }
 

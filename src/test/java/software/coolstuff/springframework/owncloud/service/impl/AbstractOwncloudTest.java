@@ -36,7 +36,7 @@ public abstract class AbstractOwncloudTest {
   private ResourceLoader resourceLoader;
 
   @Autowired
-  private AbstractOwncloudServiceImpl.Properties properties;
+  private OwncloudProperties properties;
 
   protected abstract String getResourcePrefix();
 

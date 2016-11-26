@@ -1,7 +1,6 @@
 package software.coolstuff.springframework.owncloud.service.impl;
 
 import java.net.URI;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -9,7 +8,6 @@ import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
@@ -20,7 +18,6 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.client.RestTemplate;
 
-import lombok.Data;
 import lombok.EqualsAndHashCode;
 import software.coolstuff.springframework.owncloud.exception.OwncloudStatusException;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
@@ -29,24 +26,14 @@ public abstract class AbstractOwncloudServiceImpl {
 
   final static String DEFAULT_PATH = "/ocs/v1.php/cloud";
 
-  @Data
-  @ConfigurationProperties(prefix = "owncloud")
-  public static class Properties {
-    private URL url;
-    private boolean enableAuthentication = false;
-    private String username;
-    private String password;
-    private String rolePrefix = "ROLE_";
-  }
-
   private final RestTemplate restTemplate;
-  private final Properties properties;
+  private final OwncloudProperties properties;
 
-  protected AbstractOwncloudServiceImpl(RestTemplateBuilder builder, Properties properties, MappingJackson2XmlHttpMessageConverter messageConverter) {
+  protected AbstractOwncloudServiceImpl(RestTemplateBuilder builder, OwncloudProperties properties, MappingJackson2XmlHttpMessageConverter messageConverter) {
     this(builder, properties, true, messageConverter);
   }
 
-  protected AbstractOwncloudServiceImpl(RestTemplateBuilder builder, Properties properties, boolean addBasicAuthentication, MappingJackson2XmlHttpMessageConverter messageConverter) {
+  protected AbstractOwncloudServiceImpl(RestTemplateBuilder builder, OwncloudProperties properties, boolean addBasicAuthentication, MappingJackson2XmlHttpMessageConverter messageConverter) {
     this.properties = properties;
 
     if (properties.getUrl() == null) {

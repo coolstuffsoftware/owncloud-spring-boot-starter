@@ -24,7 +24,7 @@ public class OwncloudAuthenticationProvider extends AbstractOwncloudServiceImpl 
   @Getter
   private String rolePrefix = "ROLE_";
 
-  public OwncloudAuthenticationProvider(RestTemplateBuilder builder, Properties properties, MappingJackson2XmlHttpMessageConverter messageConverter) {
+  public OwncloudAuthenticationProvider(RestTemplateBuilder builder, OwncloudProperties properties, MappingJackson2XmlHttpMessageConverter messageConverter) {
     super(builder, properties, false, messageConverter);
   }
 
