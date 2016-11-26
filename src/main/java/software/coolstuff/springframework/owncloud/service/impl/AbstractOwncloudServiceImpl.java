@@ -127,6 +127,9 @@ public abstract class AbstractOwncloudServiceImpl {
         .enabled(userInformation.getData().isEnabled())
         .displayName(userInformation.getData().getDisplayname())
         .email(userInformation.getData().getEmail())
+        .accountNonExpired(true)
+        .accountNonLocked(true)
+        .credentialsNonExpired(true)
         .build();
 
     if (groups != null) {
