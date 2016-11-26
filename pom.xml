@@ -212,7 +212,7 @@
 
   <distributionManagement>
     <snapshotRepository>
-      <id>coolstuff.software.snapshots</id>
+      <id>snapshots.sonatype.org</id>
       <name>Coolstuff Software Snapshots</name>
       <uniqueVersion>false</uniqueVersion>
       <url>https://oss.sonatype.org/content/repositories/snapshots</url>
@@ -232,7 +232,7 @@
 
       <distributionManagement>
         <repository>
-          <id>coolstuff.software.releases</id>
+          <id>releases.sonatype.org</id>
           <name>Coolstuff Software Releases</name>
           <url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url>
         </repository>
