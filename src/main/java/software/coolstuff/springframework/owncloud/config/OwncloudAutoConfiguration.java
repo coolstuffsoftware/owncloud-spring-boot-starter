@@ -18,7 +18,7 @@ import software.coolstuff.springframework.owncloud.service.impl.OwncloudUserDeta
 @ConditionalOnClass({ RestTemplateBuilder.class, MappingJackson2XmlHttpMessageConverter.class })
 @ConditionalOnProperty(prefix = "owncloud", name = "url")
 @EnableConfigurationProperties(OwncloudProperties.class)
-public class OwncloudConfiguration {
+public class OwncloudAutoConfiguration {
 
   @Bean
   public OwncloudService owncloudService(
