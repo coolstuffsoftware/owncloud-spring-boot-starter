@@ -18,8 +18,12 @@ public class OwncloudUserDetailsService extends AbstractOwncloudServiceImpl impl
   public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
     Validate.notBlank(username);
 
-    OcsUserInformation ocsUserInformation = getForObject("/cloud/users/{user}", OcsUserInformation.class, username);
-    return loadPreloadedUserByUsername(username, ocsUserInformation);
+    if (isRestAvailable()) {
+      OcsUserInformation ocsUserInformation = getForObject("/cloud/users/{user}", OcsUserInformation.class, username);
+      return loadPreloadedUserByUsername(username, ocsUserInformation);
+    }
+
+    return loadUserByUsernameFromResourceService(username);
   }
 
   public OwncloudUserDetails loadPreloadedUserByUsername(String username, OcsUserInformation preloadedInformation) throws UsernameNotFoundException {
@@ -27,4 +31,16 @@ public class OwncloudUserDetailsService extends AbstractOwncloudServiceImpl impl
     return createUserDetails(username, preloadedInformation, ocsGroups);
   }
 
+  public OwncloudUserDetails loadUserByUsernameFromResourceService(String username) {
+    if (resourceService == null) {
+      throw new UsernameNotFoundException("resourceService is not available");
+    }
+
+    OwncloudUserDetails userDetails = resourceService.getUser(username);
+    if (userDetails == null) {
+      throw new UsernameNotFoundException(username);
+    }
+
+    return userDetails;
+  }
 }

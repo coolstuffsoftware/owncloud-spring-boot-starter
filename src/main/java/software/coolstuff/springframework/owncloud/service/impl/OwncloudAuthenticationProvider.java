@@ -5,6 +5,7 @@ import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -27,11 +28,20 @@ class OwncloudAuthenticationProvider extends AbstractOwncloudServiceImpl impleme
     String username = authentication.getName();
     String password = authentication.getCredentials().toString();
 
-    final HttpEntity<String> request = new HttpEntity<>(prepareHeaderWithBasicAuthorization(username, password));
-
-    OcsUserInformation ocsUserInformation = exchange("/cloud/users/{user}", HttpMethod.GET, request, OcsUserInformation.class, username);
-
-    OwncloudUserDetails owncloudUserDetails = userDetailsService.loadPreloadedUserByUsername(username, ocsUserInformation);
+    OwncloudUserDetails owncloudUserDetails = null;
+    if (isRestAvailable()) {
+      final HttpEntity<String> request = new HttpEntity<>(prepareHeaderWithBasicAuthorization(username, password));
+      OcsUserInformation ocsUserInformation = exchange("/cloud/users/{user}", HttpMethod.GET, request, OcsUserInformation.class, username);
+      owncloudUserDetails = userDetailsService.loadPreloadedUserByUsername(username, ocsUserInformation);
+    } else {
+      if (resourceService == null) {
+        throw new BadCredentialsException("resourceService is not available");
+      }
+      if (!resourceService.authenticate(username, password)) {
+        throw new BadCredentialsException("wrong password or user not found");
+      }
+      owncloudUserDetails = userDetailsService.loadUserByUsernameFromResourceService(username);
+    }
     owncloudUserDetails.setPassword(password);
 
     return new OwncloudAuthentication(owncloudUserDetails);

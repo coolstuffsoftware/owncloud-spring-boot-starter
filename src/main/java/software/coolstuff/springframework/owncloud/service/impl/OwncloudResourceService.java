@@ -1,5 +1,6 @@
 package software.coolstuff.springframework.owncloud.service.impl;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -15,8 +16,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.http.converter.xml.MappingJackson2XmlHttpMessageConverter;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.AuthorityUtils;
 
 import lombok.Data;
+import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
 
 class OwncloudResourceService implements InitializingBean {
 
@@ -62,6 +66,52 @@ class OwncloudResourceService implements InitializingBean {
 
   public static boolean isNoResource(String possibleResource) {
     return !isResourceInsteadOfUrl(possibleResource);
+  }
+
+  public boolean authenticate(String username, String password) {
+    for (OwncloudResourceData.User user : resourceData.getUsers()) {
+      if (StringUtils.equals(username, user.getUsername()) && StringUtils.equals(password, user.getPassword())) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  public OwncloudUserDetails getUser(String username) {
+    for (OwncloudResourceData.User user : resourceData.getUsers()) {
+      if (StringUtils.equals(username, user.getUsername())) {
+        return convertToOwncloudUserDetailsFrom(user);
+      }
+    }
+    return null;
+  }
+
+  private OwncloudUserDetails convertToOwncloudUserDetailsFrom(OwncloudResourceData.User user) {
+    List<GrantedAuthority> authorities = new ArrayList<>();
+    if (CollectionUtils.isNotEmpty(user.getGroups())) {
+      authorities.addAll(AuthorityUtils.createAuthorityList(user.getGroups().toArray(new String[] {})));
+    }
+    return OwncloudUserDetails.builder()
+        .username(user.getUsername())
+        .password(user.getPassword())
+        .enabled(user.isEnabled())
+        .displayName(user.getDisplayName())
+        .email(user.getEmail())
+        .authorities(authorities)
+        .accountNonExpired(true)
+        .accountNonLocked(true)
+        .credentialsNonExpired(true)
+        .build();
+  }
+
+  public List<OwncloudUserDetails> getAllUsers(String filter) {
+    List<OwncloudUserDetails> users = new ArrayList<>();
+    for (OwncloudResourceData.User user : resourceData.getUsers()) {
+      if (StringUtils.isBlank(filter) || StringUtils.contains(user.getDisplayName(), filter)) {
+        users.add(convertToOwncloudUserDetailsFrom(user));
+      }
+    }
+    return users;
   }
 
   @Data

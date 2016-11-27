@@ -58,7 +58,7 @@ abstract class AbstractOwncloudServiceImpl implements InitializingBean {
   private GrantedAuthoritiesMapper grantedAuthoritiesMapper;
 
   @Autowired(required = false)
-  private OwncloudResourceService resourceService;
+  protected OwncloudResourceService resourceService;
 
   protected AbstractOwncloudServiceImpl(RestTemplateBuilder builder) {
     this(builder, true);
@@ -108,6 +108,10 @@ abstract class AbstractOwncloudServiceImpl implements InitializingBean {
 
   final RestTemplate getRestTemplate() {
     return restTemplate;
+  }
+
+  protected final boolean isRestAvailable() {
+    return restTemplate != null;
   }
 
   protected boolean isAuthenticateWithAdministrator() {

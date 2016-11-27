@@ -46,6 +46,7 @@ public class OwncloudAutoConfiguration {
 
   @Bean
   @ConditionalOnExpression("#{'${owncloud.url}' matches 'file:.*' or '${owncloud.url}' matches 'classpath:.*'}")
+  @ConditionalOnMissingBean(OwncloudResourceService.class)
   public OwncloudResourceService owncloudResourceService() {
     return new OwncloudResourceService();
   }

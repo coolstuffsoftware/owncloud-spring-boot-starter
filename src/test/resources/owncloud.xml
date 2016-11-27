@@ -7,8 +7,8 @@
       <displayName>Mr. User 1</displayName>
       <email>user1@example.com</email>
       <groups>
-        <group>admin</group>
-        <group>Developers</group>
+        <group>Group1</group>
+        <group>Group2</group>
       </groups>
     </user>
     <user>
@@ -21,8 +21,7 @@
     </user>
   </users>
   <groups>
-    <group>admin</group>
-    <group>Developers</group>
-    <group>Reporters</group>
+    <group>Group1</group>
+    <group>Group2</group>
   </groups>
 </owncloud>
