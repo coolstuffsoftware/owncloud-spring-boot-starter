@@ -7,6 +7,7 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withUnauthorizedRequest;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -19,16 +20,22 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.RememberMeAuthenticationToken;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.client.MockRestServiceServer;
 
 import software.coolstuff.springframework.owncloud.model.OwncloudAuthentication;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
 
 @RestClientTest(OwncloudAuthenticationProvider.class)
-public class OwncloudAuthenticationProviderTest extends AbstractOwncloudTest {
+@ActiveProfiles("URL-TEST")
+public class OwncloudAuthenticationProviderRestTest extends AbstractOwncloudRestTest {
 
   @Autowired
   private AuthenticationProvider authenticationProvider;
+
+  @Autowired
+  private UserDetailsService userDetailsService;
 
   private MockRestServiceServer server;
 
@@ -62,14 +69,14 @@ public class OwncloudAuthenticationProviderTest extends AbstractOwncloudTest {
         .build();
 
     server
-        .expect(requestToWithPrefix("/users/" + credentials.getUsername()))
+        .expect(requestToWithPrefix("/cloud/users/" + credentials.getUsername()))
         .andExpect(method(GET))
         .andExpect(header("Authorization", credentials.getForBasicAuthorizationHeader()))
         .andRespond(withSuccess(getResponseContentOf(credentials.getUsername() + "_details"), MediaType.TEXT_XML));
-    server
-        .expect(requestToWithPrefix("/users/" + credentials.getUsername() + "/groups"))
+    MockRestServiceServer.createServer(((OwncloudUserDetailsService) userDetailsService).getRestTemplate())
+        .expect(requestToWithPrefix("/cloud/users/" + credentials.getUsername() + "/groups"))
         .andExpect(method(GET))
-        .andExpect(header("Authorization", credentials.getForBasicAuthorizationHeader()))
+        .andExpect(header("Authorization", getDefaultBasicAuthorizationHeader()))
         .andRespond(withSuccess(getResponseContentOf(credentials.getUsername() + "_groups"), MediaType.TEXT_XML));
 
     UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(credentials.getUsername(), credentials.getPassword());
@@ -94,14 +101,14 @@ public class OwncloudAuthenticationProviderTest extends AbstractOwncloudTest {
   }
 
   @Test(expected = BadCredentialsException.class)
-  public void testAuthenticate_NOK() {
+  public void testAuthenticate_NOK() throws MalformedURLException {
     Credentials credentials = Credentials.builder()
         .username("user1")
         .password("wrongPassword")
         .build();
 
     server
-        .expect(requestToWithPrefix("/users/user1"))
+        .expect(requestToWithPrefix("/cloud/users/user1"))
         .andExpect(method(GET))
         .andExpect(header("Authorization", credentials.getForBasicAuthorizationHeader()))
         .andRespond(withUnauthorizedRequest());

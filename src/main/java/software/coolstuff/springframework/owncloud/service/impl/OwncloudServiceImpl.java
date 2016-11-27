@@ -5,14 +5,14 @@ import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.http.converter.xml.MappingJackson2XmlHttpMessageConverter;
 
-import software.coolstuff.springframework.owncloud.service.api.OwncloudService;
+import software.coolstuff.springframework.owncloud.service.api.OwncloudUserModificationService;
+import software.coolstuff.springframework.owncloud.service.api.OwncloudUserQueryService;
 
-public class OwncloudServiceImpl extends AbstractOwncloudServiceImpl implements OwncloudService {
+class OwncloudServiceImpl extends AbstractOwncloudServiceImpl implements OwncloudUserQueryService, OwncloudUserModificationService {
 
-  public OwncloudServiceImpl(RestTemplateBuilder builder, OwncloudProperties properties, MappingJackson2XmlHttpMessageConverter messageConverter) {
-    super(builder, properties, messageConverter);
+  public OwncloudServiceImpl(RestTemplateBuilder builder) {
+    super(builder);
   }
 
   @Override

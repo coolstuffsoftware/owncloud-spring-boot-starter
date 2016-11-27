@@ -1,6 +1,8 @@
-package software.coolstuff.springframework.owncloud.config;
+package software.coolstuff.springframework.owncloud.service.impl;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -8,11 +10,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.converter.xml.MappingJackson2XmlHttpMessageConverter;
 
-import software.coolstuff.springframework.owncloud.service.api.OwncloudService;
-import software.coolstuff.springframework.owncloud.service.impl.OwncloudAuthenticationProvider;
-import software.coolstuff.springframework.owncloud.service.impl.OwncloudProperties;
-import software.coolstuff.springframework.owncloud.service.impl.OwncloudServiceImpl;
-import software.coolstuff.springframework.owncloud.service.impl.OwncloudUserDetailsService;
+import software.coolstuff.springframework.owncloud.service.api.OwncloudUserQueryService;
 
 @Configuration
 @ConditionalOnClass({ RestTemplateBuilder.class, MappingJackson2XmlHttpMessageConverter.class })
@@ -21,29 +19,35 @@ import software.coolstuff.springframework.owncloud.service.impl.OwncloudUserDeta
 public class OwncloudAutoConfiguration {
 
   @Bean
-  public OwncloudService owncloudService(
+  public OwncloudUserQueryService owncloudService(
       RestTemplateBuilder builder,
       OwncloudProperties properties,
       MappingJackson2XmlHttpMessageConverter messageConverter) {
-    return new OwncloudServiceImpl(builder, properties, messageConverter);
+    return new OwncloudServiceImpl(builder);
   }
 
   @Bean
-  @ConditionalOnProperty(prefix = "owncloud", name = "enable-authentication", havingValue = "true")
+  @ConditionalOnMissingBean(OwncloudAuthenticationProvider.class)
   public OwncloudAuthenticationProvider owncloudAuthenticationProvider(
       RestTemplateBuilder builder,
       OwncloudProperties properties,
       MappingJackson2XmlHttpMessageConverter messageConverter) {
-    return new OwncloudAuthenticationProvider(builder, properties, messageConverter);
+    return new OwncloudAuthenticationProvider(builder);
   }
 
   @Bean
-  @ConditionalOnProperty(prefix = "owncloud", name = "enable-authentication", havingValue = "true")
+  @ConditionalOnMissingBean(OwncloudUserDetailsService.class)
   public OwncloudUserDetailsService owncloudUserDetailsService(
       RestTemplateBuilder builder,
       OwncloudProperties properties,
       MappingJackson2XmlHttpMessageConverter messageConverter) {
-    return new OwncloudUserDetailsService(builder, properties, messageConverter);
+    return new OwncloudUserDetailsService(builder);
+  }
+
+  @Bean
+  @ConditionalOnExpression("#{'${owncloud.url}' matches 'file:.*' or '${owncloud.url}' matches 'classpath:.*'}")
+  public OwncloudResourceService owncloudResourceService() {
+    return new OwncloudResourceService();
   }
 
 }

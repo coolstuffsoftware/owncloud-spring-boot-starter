@@ -1,31 +1,24 @@
 package software.coolstuff.springframework.owncloud.service.impl;
 
-import java.util.Base64;
-
-import org.apache.commons.lang3.Validate;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.converter.xml.MappingJackson2XmlHttpMessageConverter;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 
-import lombok.Getter;
-import lombok.Setter;
 import software.coolstuff.springframework.owncloud.model.OwncloudAuthentication;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
 
-public class OwncloudAuthenticationProvider extends AbstractOwncloudServiceImpl implements AuthenticationProvider {
+class OwncloudAuthenticationProvider extends AbstractOwncloudServiceImpl implements AuthenticationProvider {
 
-  @Setter
-  @Getter
-  private String rolePrefix = "ROLE_";
+  @Autowired
+  private OwncloudUserDetailsService userDetailsService;
 
-  public OwncloudAuthenticationProvider(RestTemplateBuilder builder, OwncloudProperties properties, MappingJackson2XmlHttpMessageConverter messageConverter) {
-    super(builder, properties, false, messageConverter);
+  public OwncloudAuthenticationProvider(RestTemplateBuilder builder) {
+    super(builder, false);
   }
 
   @Override
@@ -34,18 +27,11 @@ public class OwncloudAuthenticationProvider extends AbstractOwncloudServiceImpl 
     String username = authentication.getName();
     String password = authentication.getCredentials().toString();
 
-    Validate.notBlank(username);
+    final HttpEntity<String> request = new HttpEntity<>(prepareHeaderWithBasicAuthorization(username, password));
 
-    String encodedCredentials = Base64.getEncoder().encodeToString((username + ":" + password).getBytes());
+    OcsUserInformation ocsUserInformation = exchange("/cloud/users/{user}", HttpMethod.GET, request, OcsUserInformation.class, username);
 
-    final HttpHeaders headers = new HttpHeaders();
-    headers.add("Authorization", "Basic " + encodedCredentials);
-    final HttpEntity<String> request = new HttpEntity<>(headers);
-
-    OcsUserInformation ocsUserInformation = exchange("/users/{user}", HttpMethod.GET, request, OcsUserInformation.class, username);
-    OcsGroups ocsUserGroups = exchange("/users/{user}/groups", HttpMethod.GET, request, OcsGroups.class, username);
-
-    OwncloudUserDetails owncloudUserDetails = createUserDetails(username, ocsUserInformation, ocsUserGroups);
+    OwncloudUserDetails owncloudUserDetails = userDetailsService.loadPreloadedUserByUsername(username, ocsUserInformation);
     owncloudUserDetails.setPassword(password);
 
     return new OwncloudAuthentication(owncloudUserDetails);

@@ -16,12 +16,14 @@ import org.springframework.http.MediaType;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.client.MockRestServiceServer;
 
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
 
 @RestClientTest(OwncloudUserDetailsService.class)
-public class OwncloudUserDetailsServiceTest extends AbstractOwncloudTest {
+@ActiveProfiles("URL-TEST")
+public class OwncloudUserDetailsServiceRestTest extends AbstractOwncloudRestTest {
 
   @Autowired
   private UserDetailsService userDetailsService;
@@ -46,12 +48,12 @@ public class OwncloudUserDetailsServiceTest extends AbstractOwncloudTest {
   @Test
   public void testUserDetails_OK() throws IOException {
     server
-        .expect(requestToWithPrefix("/users/user1"))
+        .expect(requestToWithPrefix("/cloud/users/user1"))
         .andExpect(method(GET))
         .andExpect(header("Authorization", getDefaultBasicAuthorizationHeader()))
         .andRespond(withSuccess(getResponseContentOf("user1_details"), MediaType.TEXT_XML));
     server
-        .expect(requestToWithPrefix("/users/user1/groups"))
+        .expect(requestToWithPrefix("/cloud/users/user1/groups"))
         .andExpect(method(GET))
         .andExpect(header("Authorization", getDefaultBasicAuthorizationHeader()))
         .andRespond(withSuccess(getResponseContentOf("user1_groups"), MediaType.TEXT_XML));
@@ -74,7 +76,7 @@ public class OwncloudUserDetailsServiceTest extends AbstractOwncloudTest {
   @Test(expected = UsernameNotFoundException.class)
   public void testUserDetials_NotFound() throws IOException {
     server
-        .expect(requestToWithPrefix("/users/unknown"))
+        .expect(requestToWithPrefix("/cloud/users/unknown"))
         .andExpect(method(GET))
         .andExpect(header("Authorization", getDefaultBasicAuthorizationHeader()))
         .andRespond(withSuccess(getResponseContentOf("unknown_user"), MediaType.TEXT_XML));

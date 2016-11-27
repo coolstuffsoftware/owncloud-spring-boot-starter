@@ -1,11 +1,7 @@
 package software.coolstuff.springframework.owncloud.service.impl;
 
-import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
-
 import java.io.IOException;
-import java.net.URI;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.Collection;
 import java.util.List;
 
@@ -21,11 +17,8 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.test.web.client.RequestMatcher;
-
-import lombok.Builder;
-import lombok.Data;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -35,8 +28,8 @@ public abstract class AbstractOwncloudTest {
   @Autowired
   private ResourceLoader resourceLoader;
 
-  @Autowired
-  private OwncloudProperties properties;
+  @Autowired(required = false)
+  private GrantedAuthoritiesMapper grantedAuthoritiesMapper;
 
   protected abstract String getResourcePrefix();
 
@@ -54,40 +47,16 @@ public abstract class AbstractOwncloudTest {
     return IOUtils.toString(resource.getInputStream());
   }
 
-  protected RequestMatcher requestToWithPrefix(String uri) {
-    String rootURI = properties.getUrl().toString();
-    if (StringUtils.isBlank(properties.getUrl().getPath()) || "/".equals(properties.getUrl().getPath())) {
-      rootURI = URI.create(properties.getUrl().toString() + AbstractOwncloudServiceImpl.DEFAULT_PATH).toString();
-    }
-
-    return requestTo(rootURI + uri);
-  }
-
   protected void checkAuthorities(Collection<? extends GrantedAuthority> actual, String... expected) {
     Assert.assertEquals(expected.length, actual.size());
     List<SimpleGrantedAuthority> authorities = new ArrayList<>();
     for (String authority : expected) {
-      if (StringUtils.isBlank(properties.getRolePrefix()) || StringUtils.startsWith(authority, properties.getRolePrefix())) {
-        authorities.add(new SimpleGrantedAuthority(authority));
-      } else {
-        authorities.add(new SimpleGrantedAuthority(properties.getRolePrefix() + authority));
-      }
+      authorities.add(new SimpleGrantedAuthority(authority));
     }
-    Assert.assertTrue(CollectionUtils.isEqualCollection(actual, authorities));
-  }
-
-  protected String getDefaultBasicAuthorizationHeader() {
-    return "Basic " + Base64.getEncoder().encodeToString((properties.getUsername() + ":" + properties.getPassword()).getBytes());
-  }
-
-  @Data
-  @Builder
-  public static class Credentials {
-    private final String username;
-    private final String password;
-
-    public String getForBasicAuthorizationHeader() {
-      return "Basic " + Base64.getEncoder().encodeToString((getUsername() + ":" + getPassword()).getBytes());
+    if (grantedAuthoritiesMapper != null) {
+      Assert.assertTrue(CollectionUtils.isEqualCollection(actual, grantedAuthoritiesMapper.mapAuthorities(authorities)));
+    } else {
+      Assert.assertTrue(CollectionUtils.isEqualCollection(actual, authorities));
     }
   }
 

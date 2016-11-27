@@ -1,0 +1,4 @@
+owncloud:
+  url: classpath:/owncloud.xml
+  username: admin
+  password: s3cr3t

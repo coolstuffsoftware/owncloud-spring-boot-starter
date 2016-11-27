@@ -1,68 +1,140 @@
 package software.coolstuff.springframework.owncloud.service.impl;
 
+import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Validate;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.xml.MappingJackson2XmlHttpMessageConverter;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.client.RestTemplate;
 
 import lombok.EqualsAndHashCode;
+import software.coolstuff.springframework.owncloud.exception.OwncloudInvalidAuthentication;
 import software.coolstuff.springframework.owncloud.exception.OwncloudStatusException;
+import software.coolstuff.springframework.owncloud.model.OwncloudAuthentication;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
 
-public abstract class AbstractOwncloudServiceImpl {
+abstract class AbstractOwncloudServiceImpl implements InitializingBean {
 
-  final static String DEFAULT_PATH = "/ocs/v1.php/cloud";
+  final static String DEFAULT_PATH = "/ocs/v1.php";
 
-  private final RestTemplate restTemplate;
-  private final OwncloudProperties properties;
+  private final RestTemplateBuilder restTemplateBuilder;
+  private final boolean addBasicAuthentication;
 
-  protected AbstractOwncloudServiceImpl(RestTemplateBuilder builder, OwncloudProperties properties, MappingJackson2XmlHttpMessageConverter messageConverter) {
-    this(builder, properties, true, messageConverter);
+  private RestTemplate restTemplate;
+
+  @Autowired
+  private OwncloudProperties properties;
+
+  @Autowired
+  private MappingJackson2XmlHttpMessageConverter messageConverter;
+
+  @Autowired
+  private ResourceLoader resourceLoader;
+
+  @Autowired(required = false)
+  private GrantedAuthoritiesMapper grantedAuthoritiesMapper;
+
+  @Autowired(required = false)
+  private OwncloudResourceService resourceService;
+
+  protected AbstractOwncloudServiceImpl(RestTemplateBuilder builder) {
+    this(builder, true);
   }
 
-  protected AbstractOwncloudServiceImpl(RestTemplateBuilder builder, OwncloudProperties properties, boolean addBasicAuthentication, MappingJackson2XmlHttpMessageConverter messageConverter) {
-    this.properties = properties;
+  protected AbstractOwncloudServiceImpl(RestTemplateBuilder builder, boolean addBasicAuthentication) {
+    this.restTemplateBuilder = builder;
+    this.addBasicAuthentication = addBasicAuthentication;
+  }
 
-    if (properties.getUrl() == null) {
-      throw new IllegalArgumentException("URL of the OwnCloud-Service must be configured");
+  @Override
+  public void afterPropertiesSet() throws Exception {
+    Validate.notBlank(properties.getUrl());
+
+    if (OwncloudResourceService.isNoResource(properties.getUrl())) {
+      configureRestTemplate();
+    } else {
+      Validate.notNull(resourceService);
+    }
+  }
+
+  private void configureRestTemplate() throws MalformedURLException {
+    URL url = new URL(properties.getUrl());
+
+    String rootURI = url.toString();
+    if (StringUtils.isBlank(url.getPath()) || "/".equals(url.getPath())) {
+      rootURI = URI.create(url.toString() + DEFAULT_PATH).toString();
     }
 
-    String rootURI = properties.getUrl().toString();
-    if (StringUtils.isBlank(properties.getUrl().getPath()) || "/".equals(properties.getUrl().getPath())) {
-      rootURI = URI.create(properties.getUrl().toString() + DEFAULT_PATH).toString();
-    }
-
-    if (addBasicAuthentication) {
-      restTemplate = builder
+    if (addBasicAuthentication && properties.isAuthenticateWithAdministrator()) {
+      restTemplate = restTemplateBuilder
           .basicAuthorization(properties.getUsername(), properties.getPassword())
           .messageConverters(messageConverter)
           .errorHandler(new DefaultOwncloudResponseErrorHandler())
           .rootUri(rootURI)
           .build();
     } else {
-      restTemplate = builder
+      restTemplate = restTemplateBuilder
           .messageConverters(messageConverter)
           .errorHandler(new DefaultOwncloudResponseErrorHandler())
           .rootUri(rootURI)
           .build();
     }
+
+    Validate.notNull(restTemplate);
   }
 
   final RestTemplate getRestTemplate() {
     return restTemplate;
+  }
+
+  protected boolean isAuthenticateWithAdministrator() {
+    return properties.isAuthenticateWithAdministrator();
+  }
+
+  protected HttpHeaders prepareHeaderWithBasicAuthorization(String username, String password) {
+    Validate.notBlank(username);
+
+    String encodedCredentials = Base64.getEncoder().encodeToString((username + ":" + password).getBytes());
+
+    HttpHeaders headers = new HttpHeaders();
+    headers.add("Authorization", "Basic " + encodedCredentials);
+    return headers;
+  }
+
+  protected HttpHeaders prepareHeadersWithBasicAuthorization() {
+    if (properties.isAuthenticateWithAdministrator()) {
+      return prepareHeaderWithBasicAuthorization(properties.getUsername(), properties.getPassword());
+    }
+
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    if (!(authentication instanceof OwncloudAuthentication)) {
+      throw new OwncloudInvalidAuthentication(authentication);
+    }
+
+    return prepareHeaderWithBasicAuthorization(authentication.getName(), (String) authentication.getCredentials());
   }
 
   protected <T extends AbstractOcs> T getForObject(
@@ -121,7 +193,10 @@ public abstract class AbstractOwncloudServiceImpl {
     }
   }
 
-  protected OwncloudUserDetails createUserDetails(String username, OcsUserInformation userInformation, OcsGroups groups) {
+  protected OwncloudUserDetails createUserDetails(
+      String username,
+      OcsUserInformation userInformation,
+      OcsGroups groups) {
     OwncloudUserDetails userDetails = OwncloudUserDetails.builder()
         .username(username)
         .enabled(userInformation.getData().isEnabled())
@@ -133,15 +208,16 @@ public abstract class AbstractOwncloudServiceImpl {
         .build();
 
     if (groups != null) {
-      List<SimpleGrantedAuthority> authorities = new ArrayList<>();
+      List<GrantedAuthority> authorities = new ArrayList<>();
       for (String group : groups.getData().getGroups()) {
-        if (StringUtils.isBlank(properties.getRolePrefix()) || StringUtils.startsWith(group, properties.getRolePrefix())) {
-          authorities.add(new SimpleGrantedAuthority(group));
-        } else {
-          authorities.add(new SimpleGrantedAuthority(properties.getRolePrefix() + group));
-        }
+        authorities.add(new SimpleGrantedAuthority(group));
       }
-      userDetails.setAuthorities(authorities);
+
+      if (grantedAuthoritiesMapper != null) {
+        userDetails.setAuthorities(grantedAuthoritiesMapper.mapAuthorities(authorities));
+      } else {
+        userDetails.setAuthorities(authorities);
+      }
     }
 
     return userDetails;

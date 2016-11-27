@@ -7,13 +7,12 @@ import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.client.DefaultResponseErrorHandler;
 
-import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-@NoArgsConstructor(access = AccessLevel.PACKAGE)
+@NoArgsConstructor
 @Slf4j
-public class DefaultOwncloudResponseErrorHandler extends DefaultResponseErrorHandler {
+class DefaultOwncloudResponseErrorHandler extends DefaultResponseErrorHandler {
 
   @Override
   public void handleError(ClientHttpResponse response) throws IOException {

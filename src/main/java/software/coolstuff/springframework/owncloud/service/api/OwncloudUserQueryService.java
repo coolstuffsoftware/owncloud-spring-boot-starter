@@ -2,7 +2,7 @@ package software.coolstuff.springframework.owncloud.service.api;
 
 import java.util.List;
 
-public interface OwncloudService {
+public interface OwncloudUserQueryService {
 
   List<String> getAllUsers(String filter);
 
