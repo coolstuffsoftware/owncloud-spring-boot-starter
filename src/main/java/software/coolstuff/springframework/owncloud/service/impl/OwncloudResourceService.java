@@ -93,7 +93,6 @@ class OwncloudResourceService implements InitializingBean {
     }
     return OwncloudUserDetails.builder()
         .username(user.getUsername())
-        .password(user.getPassword())
         .enabled(user.isEnabled())
         .displayName(user.getDisplayName())
         .email(user.getEmail())

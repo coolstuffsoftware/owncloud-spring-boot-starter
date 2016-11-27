@@ -15,7 +15,7 @@ import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
 
 @RestClientTest(OwncloudAuthenticationProvider.class)
 @ActiveProfiles("RESOURCE-TEST")
-public class OwncloudAuthenticationProviderResourceTest extends AbstractOwncloudRestTest {
+public class OwncloudAuthenticationProviderResourceTest extends AbstractOwncloudTest {
 
   @Autowired
   private AuthenticationProvider authenticationProvider;
