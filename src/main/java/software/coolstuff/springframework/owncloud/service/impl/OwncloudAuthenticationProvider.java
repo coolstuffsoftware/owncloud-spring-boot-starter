@@ -13,10 +13,13 @@ import org.springframework.security.core.AuthenticationException;
 import software.coolstuff.springframework.owncloud.model.OwncloudAuthentication;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
 
-class OwncloudAuthenticationProvider extends AbstractOwncloudServiceImpl implements AuthenticationProvider {
+public class OwncloudAuthenticationProvider extends AbstractOwncloudServiceImpl implements AuthenticationProvider {
 
   @Autowired
   private OwncloudUserDetailsService userDetailsService;
+
+  @Autowired(required = false)
+  private OwncloudResourceService resourceService;
 
   public OwncloudAuthenticationProvider(RestTemplateBuilder builder) {
     super(builder, false);

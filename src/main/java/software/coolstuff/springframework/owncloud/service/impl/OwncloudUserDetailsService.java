@@ -1,6 +1,7 @@
 package software.coolstuff.springframework.owncloud.service.impl;
 
 import org.apache.commons.lang3.Validate;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -9,6 +10,9 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
 
 public class OwncloudUserDetailsService extends AbstractOwncloudServiceImpl implements UserDetailsService {
+
+  @Autowired(required = false)
+  private OwncloudResourceService resourceService;
 
   public OwncloudUserDetailsService(RestTemplateBuilder builder) {
     super(builder);

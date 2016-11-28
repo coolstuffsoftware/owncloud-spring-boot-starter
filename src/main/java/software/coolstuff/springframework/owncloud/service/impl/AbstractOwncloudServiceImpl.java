@@ -15,7 +15,6 @@ import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.core.io.ResourceLoader;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -51,14 +50,11 @@ abstract class AbstractOwncloudServiceImpl implements InitializingBean {
   @Autowired
   private MappingJackson2XmlHttpMessageConverter messageConverter;
 
-  @Autowired
-  private ResourceLoader resourceLoader;
-
   @Autowired(required = false)
   private GrantedAuthoritiesMapper grantedAuthoritiesMapper;
 
   @Autowired(required = false)
-  protected OwncloudResourceService resourceService;
+  private OwncloudResourceService resourceService;
 
   protected AbstractOwncloudServiceImpl(RestTemplateBuilder builder) {
     this(builder, true);
@@ -71,9 +67,9 @@ abstract class AbstractOwncloudServiceImpl implements InitializingBean {
 
   @Override
   public void afterPropertiesSet() throws Exception {
-    Validate.notBlank(properties.getUrl());
+    Validate.notBlank(properties.getLocation());
 
-    if (OwncloudResourceService.isNoResource(properties.getUrl())) {
+    if (OwncloudResourceService.isNoResource(properties.getLocation())) {
       configureRestTemplate();
     } else {
       Validate.notNull(resourceService);
@@ -81,7 +77,7 @@ abstract class AbstractOwncloudServiceImpl implements InitializingBean {
   }
 
   private void configureRestTemplate() throws MalformedURLException {
-    URL url = new URL(properties.getUrl());
+    URL url = new URL(properties.getLocation());
 
     String rootURI = url.toString();
     if (StringUtils.isBlank(url.getPath()) || "/".equals(url.getPath())) {
@@ -112,6 +108,10 @@ abstract class AbstractOwncloudServiceImpl implements InitializingBean {
 
   protected final boolean isRestAvailable() {
     return restTemplate != null;
+  }
+
+  protected final boolean isRestNotAvailable() {
+    return !isRestAvailable();
   }
 
   protected boolean isAuthenticateWithAdministrator() {
@@ -145,7 +145,7 @@ abstract class AbstractOwncloudServiceImpl implements InitializingBean {
       String url,
       Class<T> clazz,
       Object... urlVariables) throws OwncloudStatusException {
-    return getForObject(url, clazz, this::checkForFailure, urlVariables);
+    return getForObject(url, clazz, this::checkFailure, urlVariables);
   }
 
   protected <T extends AbstractOcs> T getForObject(
@@ -164,7 +164,7 @@ abstract class AbstractOwncloudServiceImpl implements InitializingBean {
       HttpEntity<ENTITY> httpEntity,
       Class<T> clazz,
       Object... urlVariables) throws OwncloudStatusException {
-    return exchange(url, method, httpEntity, clazz, this::checkForFailure, urlVariables);
+    return exchange(url, method, httpEntity, clazz, this::checkFailure, urlVariables);
   }
 
   protected <T extends AbstractOcs, ENTITY> T exchange(
@@ -176,11 +176,11 @@ abstract class AbstractOwncloudServiceImpl implements InitializingBean {
       Object... urlVariables) throws OwncloudStatusException {
     ResponseEntity<T> response = restTemplate.exchange(url, method, httpEntity, clazz, urlVariables);
     T result = response.getBody();
-    checkForFailure(url, result.getMeta());
+    checkFailure(url, result.getMeta());
     return result;
   }
 
-  protected void checkForFailure(String uri, AbstractOcs.Meta metaInformation) throws OwncloudStatusException {
+  protected void checkFailure(String uri, AbstractOcs.Meta metaInformation) throws OwncloudStatusException {
     if ("ok".equals(metaInformation.getStatus())) {
       return;
     }

@@ -1,4 +1,4 @@
 owncloud:
-  url: https://owncloud.example.com
+  location: https://owncloud.example.com
   username: admin
   password: s3cr3t

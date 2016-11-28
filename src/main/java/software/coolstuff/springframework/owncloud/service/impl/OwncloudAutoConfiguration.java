@@ -10,42 +10,39 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.converter.xml.MappingJackson2XmlHttpMessageConverter;
 
+import software.coolstuff.springframework.owncloud.service.api.OwncloudUserModificationService;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudUserQueryService;
 
 @Configuration
 @ConditionalOnClass({ RestTemplateBuilder.class, MappingJackson2XmlHttpMessageConverter.class })
-@ConditionalOnProperty(prefix = "owncloud", name = "url")
+@ConditionalOnProperty(prefix = "owncloud", name = "location")
 @EnableConfigurationProperties(OwncloudProperties.class)
 public class OwncloudAutoConfiguration {
 
   @Bean
-  public OwncloudUserQueryService owncloudService(
-      RestTemplateBuilder builder,
-      OwncloudProperties properties,
-      MappingJackson2XmlHttpMessageConverter messageConverter) {
-    return new OwncloudServiceImpl(builder);
+  public OwncloudUserQueryService owncloudUserQueryService(RestTemplateBuilder builder) {
+    return new OwncloudUserQueryServiceImpl(builder);
+  }
+
+  @Bean
+  public OwncloudUserModificationService owncloudUserModificationService(RestTemplateBuilder builder) {
+    return new OwncloudUserModificationServiceImpl(builder);
   }
 
   @Bean
   @ConditionalOnMissingBean(OwncloudAuthenticationProvider.class)
-  public OwncloudAuthenticationProvider owncloudAuthenticationProvider(
-      RestTemplateBuilder builder,
-      OwncloudProperties properties,
-      MappingJackson2XmlHttpMessageConverter messageConverter) {
+  public OwncloudAuthenticationProvider owncloudAuthenticationProvider(RestTemplateBuilder builder) {
     return new OwncloudAuthenticationProvider(builder);
   }
 
   @Bean
   @ConditionalOnMissingBean(OwncloudUserDetailsService.class)
-  public OwncloudUserDetailsService owncloudUserDetailsService(
-      RestTemplateBuilder builder,
-      OwncloudProperties properties,
-      MappingJackson2XmlHttpMessageConverter messageConverter) {
+  public OwncloudUserDetailsService owncloudUserDetailsService(RestTemplateBuilder builder) {
     return new OwncloudUserDetailsService(builder);
   }
 
   @Bean
-  @ConditionalOnExpression("#{'${owncloud.url}' matches 'file:.*' or '${owncloud.url}' matches 'classpath:.*'}")
+  @ConditionalOnExpression("#{'${owncloud.location}' matches 'file:.*' or '${owncloud.location}' matches 'classpath:.*'}")
   @ConditionalOnMissingBean(OwncloudResourceService.class)
   public OwncloudResourceService owncloudResourceService() {
     return new OwncloudResourceService();

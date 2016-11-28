@@ -21,9 +21,9 @@ public abstract class AbstractOwncloudRestTest extends AbstractOwncloudTest {
 
   protected RequestMatcher requestToWithPrefix(String uri) throws MalformedURLException {
     String rootURI = null;
-    if (OwncloudResourceService.isNoResource(properties.getUrl())) {
-      URL url = new URL(properties.getUrl());
-      rootURI = properties.getUrl();
+    if (OwncloudResourceService.isNoResource(properties.getLocation())) {
+      URL url = new URL(properties.getLocation());
+      rootURI = properties.getLocation();
       if (StringUtils.isBlank(url.getPath()) || "/".equals(url.getPath())) {
         rootURI = URI.create(url.toString() + AbstractOwncloudServiceImpl.DEFAULT_PATH).toString();
       }
