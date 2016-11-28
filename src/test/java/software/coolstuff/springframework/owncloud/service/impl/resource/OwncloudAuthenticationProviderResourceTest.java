@@ -1,4 +1,4 @@
-package software.coolstuff.springframework.owncloud.service.impl;
+package software.coolstuff.springframework.owncloud.service.impl.resource;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -10,8 +10,10 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.test.context.ActiveProfiles;
 
+import software.coolstuff.springframework.owncloud.AbstractOwncloudTest;
 import software.coolstuff.springframework.owncloud.model.OwncloudAuthentication;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
+import software.coolstuff.springframework.owncloud.service.impl.OwncloudAuthenticationProvider;
 
 @RestClientTest(OwncloudAuthenticationProvider.class)
 @ActiveProfiles("RESOURCE-TEST")

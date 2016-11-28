@@ -1,4 +1,4 @@
-package software.coolstuff.springframework.owncloud.service.impl;
+package software.coolstuff.springframework.owncloud;
 
 import java.io.IOException;
 import java.util.ArrayList;

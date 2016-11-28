@@ -8,16 +8,32 @@ import java.net.URL;
 import java.util.Base64;
 
 import org.apache.commons.lang3.StringUtils;
+import org.junit.Before;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.test.web.client.RequestMatcher;
 
 import lombok.Builder;
 import lombok.Data;
+import software.coolstuff.springframework.owncloud.AbstractOwncloudTest;
 
 public abstract class AbstractOwncloudRestTest extends AbstractOwncloudTest {
 
   @Autowired
   private OwncloudProperties properties;
+
+  protected MockRestServiceServer server;
+
+  @Before
+  public void setUp() {
+    server = createServer(owncloudService());
+  }
+
+  protected MockRestServiceServer createServer(AbstractOwncloudServiceImpl owncloudService) {
+    return MockRestServiceServer.createServer(owncloudService.getRestTemplate());
+  }
+
+  protected abstract AbstractOwncloudServiceImpl owncloudService();
 
   protected RequestMatcher requestToWithPrefix(String uri) throws MalformedURLException {
     String rootURI = null;

@@ -1,4 +1,4 @@
-package software.coolstuff.springframework.owncloud.service.impl;
+package software.coolstuff.springframework.owncloud.service.impl.rest;
 
 import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.header;
@@ -8,36 +8,33 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 import java.io.IOException;
 
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.client.RestClientTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.web.client.MockRestServiceServer;
 
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
+import software.coolstuff.springframework.owncloud.service.impl.AbstractOwncloudRestTest;
+import software.coolstuff.springframework.owncloud.service.impl.OwncloudUserDetailsService;
 
 @RestClientTest(OwncloudUserDetailsService.class)
 @ActiveProfiles("URL-TEST")
 public class OwncloudUserDetailsServiceRestTest extends AbstractOwncloudRestTest {
 
   @Autowired
-  private UserDetailsService userDetailsService;
-
-  private MockRestServiceServer server;
+  private OwncloudUserDetailsService userDetailsService;
 
   @Override
   protected String getResourcePrefix() {
     return "/userDetails";
   }
 
-  @Before
-  public void setUp() {
-    server = MockRestServiceServer.createServer(((OwncloudUserDetailsService) userDetailsService).getRestTemplate());
+  @Override
+  protected OwncloudUserDetailsService owncloudService() {
+    return userDetailsService;
   }
 
   @Test

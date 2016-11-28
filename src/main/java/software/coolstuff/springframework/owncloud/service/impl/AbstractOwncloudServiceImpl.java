@@ -30,7 +30,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.client.RestTemplate;
 
 import lombok.EqualsAndHashCode;
-import software.coolstuff.springframework.owncloud.exception.OwncloudInvalidAuthentication;
+import software.coolstuff.springframework.owncloud.exception.OwncloudInvalidAuthenticationException;
 import software.coolstuff.springframework.owncloud.exception.OwncloudStatusException;
 import software.coolstuff.springframework.owncloud.model.OwncloudAuthentication;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
@@ -130,15 +130,26 @@ abstract class AbstractOwncloudServiceImpl implements InitializingBean {
 
   protected HttpHeaders prepareHeadersWithBasicAuthorization() {
     if (properties.isAuthenticateWithAdministrator()) {
+      if (addBasicAuthentication) {
+        return new HttpHeaders();
+      }
       return prepareHeaderWithBasicAuthorization(properties.getUsername(), properties.getPassword());
     }
 
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     if (!(authentication instanceof OwncloudAuthentication)) {
-      throw new OwncloudInvalidAuthentication(authentication);
+      throw new OwncloudInvalidAuthenticationException(authentication);
     }
 
     return prepareHeaderWithBasicAuthorization(authentication.getName(), (String) authentication.getCredentials());
+  }
+
+  protected HttpEntity<String> emptyEntity(String username, String password) {
+    return new HttpEntity<>(prepareHeaderWithBasicAuthorization(username, password));
+  }
+
+  protected HttpEntity<String> emptyEntity() {
+    return new HttpEntity<>(prepareHeadersWithBasicAuthorization());
   }
 
   protected <T extends AbstractOcs> T getForObject(
@@ -176,7 +187,7 @@ abstract class AbstractOwncloudServiceImpl implements InitializingBean {
       Object... urlVariables) throws OwncloudStatusException {
     ResponseEntity<T> response = restTemplate.exchange(url, method, httpEntity, clazz, urlVariables);
     T result = response.getBody();
-    checkFailure(url, result.getMeta());
+    statusChecker.checkForFailure(url, result.getMeta());
     return result;
   }
 

@@ -6,7 +6,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.access.AccessDeniedException;
 
+import software.coolstuff.springframework.owncloud.exception.OwncloudGroupNotFoundException;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudUserQueryService;
 
@@ -32,9 +35,9 @@ class OwncloudUserQueryServiceImpl extends AbstractOwncloudServiceImpl implement
 
     OcsUsers users = null;
     if (StringUtils.isBlank(filter)) {
-      users = getForObject("/cloud/users", OcsUsers.class);
+      users = exchange("/cloud/users", HttpMethod.GET, emptyEntity(), OcsUsers.class);
     } else {
-      users = getForObject("/cloud/users?search={filter}", OcsUsers.class, filter);
+      users = exchange("/cloud/users?search={filter}", HttpMethod.GET, emptyEntity(), OcsUsers.class, filter);
     }
     return users.getData().getUsers();
   }
@@ -52,9 +55,9 @@ class OwncloudUserQueryServiceImpl extends AbstractOwncloudServiceImpl implement
 
     OcsGroups groups = null;
     if (StringUtils.isBlank(filter)) {
-      groups = getForObject("/cloud/groups", OcsGroups.class);
+      groups = exchange("/cloud/groups", HttpMethod.GET, emptyEntity(), OcsGroups.class);
     } else {
-      groups = getForObject("/cloud/groups?search={filter}", OcsGroups.class, filter);
+      groups = exchange("/cloud/groups?search={filter}", HttpMethod.GET, emptyEntity(), OcsGroups.class);
     }
     return groups.getData().getGroups();
   }
@@ -66,7 +69,23 @@ class OwncloudUserQueryServiceImpl extends AbstractOwncloudServiceImpl implement
       return resourceService.getAllMembersOfGroup(groupname);
     }
 
-    OcsUsers users = getForObject("/cloud/groups/{group}", OcsUsers.class, groupname);
+    OcsUsers users = exchange("/cloud/groups/{group}", HttpMethod.GET, emptyEntity(), OcsUsers.class, (uri, metaInformation) -> {
+      if ("ok".equals(metaInformation.getStatus())) {
+        return;
+      }
+
+      switch (metaInformation.getStatuscode()) {
+        case 100:
+          return;
+        case 997:
+          throw new AccessDeniedException("Not Authorized to access Resource " + uri);
+        case 998:
+          throw new OwncloudGroupNotFoundException(groupname);
+        default:
+          throw new IllegalStateException("Unknown Error Code " + metaInformation.getStatuscode() + ". Reason: " + metaInformation.getMessage());
+      }
+    }, groupname);
+
     return users.getData().getUsers();
   }
 

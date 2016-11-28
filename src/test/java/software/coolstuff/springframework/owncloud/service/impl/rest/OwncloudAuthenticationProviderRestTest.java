@@ -1,4 +1,4 @@
-package software.coolstuff.springframework.owncloud.service.impl;
+package software.coolstuff.springframework.owncloud.service.impl.rest;
 
 import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.header;
@@ -10,43 +10,40 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.client.RestClientTest;
 import org.springframework.http.MediaType;
-import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.RememberMeAuthenticationToken;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.web.client.MockRestServiceServer;
 
 import software.coolstuff.springframework.owncloud.model.OwncloudAuthentication;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
+import software.coolstuff.springframework.owncloud.service.impl.AbstractOwncloudRestTest;
+import software.coolstuff.springframework.owncloud.service.impl.OwncloudAuthenticationProvider;
+import software.coolstuff.springframework.owncloud.service.impl.OwncloudUserDetailsService;
 
 @RestClientTest(OwncloudAuthenticationProvider.class)
 @ActiveProfiles("URL-TEST")
 public class OwncloudAuthenticationProviderRestTest extends AbstractOwncloudRestTest {
 
   @Autowired
-  private AuthenticationProvider authenticationProvider;
+  private OwncloudAuthenticationProvider authenticationProvider;
 
   @Autowired
-  private UserDetailsService userDetailsService;
-
-  private MockRestServiceServer server;
+  private OwncloudUserDetailsService userDetailsService;
 
   @Override
   protected String getResourcePrefix() {
     return "/authentication";
   }
 
-  @Before
-  public void setUp() {
-    server = MockRestServiceServer.createServer(((OwncloudAuthenticationProvider) authenticationProvider).getRestTemplate());
+  @Override
+  protected OwncloudAuthenticationProvider owncloudService() {
+    return authenticationProvider;
   }
 
   @Test
@@ -73,7 +70,7 @@ public class OwncloudAuthenticationProviderRestTest extends AbstractOwncloudRest
         .andExpect(method(GET))
         .andExpect(header("Authorization", credentials.getForBasicAuthorizationHeader()))
         .andRespond(withSuccess(getResponseContentOf(credentials.getUsername() + "_details"), MediaType.TEXT_XML));
-    MockRestServiceServer.createServer(((OwncloudUserDetailsService) userDetailsService).getRestTemplate())
+    createServer(userDetailsService)
         .expect(requestToWithPrefix("/cloud/users/" + credentials.getUsername() + "/groups"))
         .andExpect(method(GET))
         .andExpect(header("Authorization", getDefaultBasicAuthorizationHeader()))

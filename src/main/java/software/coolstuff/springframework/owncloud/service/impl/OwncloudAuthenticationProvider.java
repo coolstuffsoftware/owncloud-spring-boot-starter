@@ -2,7 +2,6 @@ package software.coolstuff.springframework.owncloud.service.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -33,8 +32,7 @@ public class OwncloudAuthenticationProvider extends AbstractOwncloudServiceImpl 
 
     OwncloudUserDetails owncloudUserDetails = null;
     if (isRestAvailable()) {
-      final HttpEntity<String> request = new HttpEntity<>(prepareHeaderWithBasicAuthorization(username, password));
-      OcsUserInformation ocsUserInformation = exchange("/cloud/users/{user}", HttpMethod.GET, request, OcsUserInformation.class, username);
+      OcsUserInformation ocsUserInformation = exchange("/cloud/users/{user}", HttpMethod.GET, emptyEntity(username, password), OcsUserInformation.class, username);
       owncloudUserDetails = userDetailsService.loadPreloadedUserByUsername(username, ocsUserInformation);
     } else {
       if (resourceService == null) {

@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<ocs>
+  <meta>
+    <statuscode>100</statuscode>
+    <status>ok</status>
+  </meta>
+  <data>
+    <users>
+      <element>user1</element>
+      <element>user2</element>
+      <element>user3</element>
+      <element>user4</element>
+      <element>user5</element>
+    </users>
+  </data>
+</ocs>
