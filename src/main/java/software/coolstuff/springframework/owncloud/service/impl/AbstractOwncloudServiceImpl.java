@@ -84,7 +84,7 @@ abstract class AbstractOwncloudServiceImpl implements InitializingBean {
       rootURI = URI.create(url.toString() + DEFAULT_PATH).toString();
     }
 
-    if (addBasicAuthentication && properties.isAuthenticateWithAdministrator()) {
+    if (addBasicAuthentication && !properties.isUseAuthentication()) {
       restTemplate = restTemplateBuilder
           .basicAuthorization(properties.getUsername(), properties.getPassword())
           .messageConverters(messageConverter)
@@ -114,8 +114,8 @@ abstract class AbstractOwncloudServiceImpl implements InitializingBean {
     return !isRestAvailable();
   }
 
-  protected boolean isAuthenticateWithAdministrator() {
-    return properties.isAuthenticateWithAdministrator();
+  protected boolean isUseAdministratorCredentials() {
+    return !properties.isUseAuthentication();
   }
 
   protected HttpHeaders prepareHeaderWithBasicAuthorization(String username, String password) {
@@ -129,7 +129,7 @@ abstract class AbstractOwncloudServiceImpl implements InitializingBean {
   }
 
   protected HttpHeaders prepareHeadersWithBasicAuthorization() {
-    if (properties.isAuthenticateWithAdministrator()) {
+    if (isUseAdministratorCredentials()) {
       if (addBasicAuthentication) {
         return new HttpHeaders();
       }
@@ -150,23 +150,6 @@ abstract class AbstractOwncloudServiceImpl implements InitializingBean {
 
   protected HttpEntity<String> emptyEntity() {
     return new HttpEntity<>(prepareHeadersWithBasicAuthorization());
-  }
-
-  protected <T extends AbstractOcs> T getForObject(
-      String url,
-      Class<T> clazz,
-      Object... urlVariables) throws OwncloudStatusException {
-    return getForObject(url, clazz, this::checkFailure, urlVariables);
-  }
-
-  protected <T extends AbstractOcs> T getForObject(
-      String url,
-      Class<T> clazz,
-      OwncloudResponseStatusChecker statusChecker,
-      Object... urlVariables) throws OwncloudStatusException {
-    T result = restTemplate.getForObject(url, clazz, urlVariables);
-    statusChecker.checkForFailure(url, result.getMeta());
-    return result;
   }
 
   protected <T extends AbstractOcs, ENTITY> T exchange(

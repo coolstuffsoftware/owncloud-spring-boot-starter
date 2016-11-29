@@ -18,8 +18,8 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.RememberMeAuthenticationToken;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.test.context.ActiveProfiles;
 
+import software.coolstuff.springframework.owncloud.config.WithMockOwncloudUser;
 import software.coolstuff.springframework.owncloud.model.OwncloudAuthentication;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
 import software.coolstuff.springframework.owncloud.service.impl.AbstractOwncloudRestTest;
@@ -27,8 +27,7 @@ import software.coolstuff.springframework.owncloud.service.impl.OwncloudAuthenti
 import software.coolstuff.springframework.owncloud.service.impl.OwncloudUserDetailsService;
 
 @RestClientTest(OwncloudAuthenticationProvider.class)
-@ActiveProfiles("URL-TEST")
-public class OwncloudAuthenticationProviderRestTest extends AbstractOwncloudRestTest {
+public abstract class AbstractOwncloudAuthenticationProviderRestTest extends AbstractOwncloudRestTest {
 
   @Autowired
   private OwncloudAuthenticationProvider authenticationProvider;
@@ -59,6 +58,7 @@ public class OwncloudAuthenticationProviderRestTest extends AbstractOwncloudRest
   }
 
   @Test
+  @WithMockOwncloudUser(username = "user1", password = "password")
   public void testAuthenticate_OK() throws IOException {
     Credentials credentials = Credentials.builder()
         .username("user1")
@@ -73,7 +73,7 @@ public class OwncloudAuthenticationProviderRestTest extends AbstractOwncloudRest
     createServer(userDetailsService)
         .expect(requestToWithPrefix("/cloud/users/" + credentials.getUsername() + "/groups"))
         .andExpect(method(GET))
-        .andExpect(header("Authorization", getDefaultBasicAuthorizationHeader()))
+        .andExpect(header("Authorization", getBasicAuthenticationHeaderForUserDetailsService()))
         .andRespond(withSuccess(getResponseContentOf(credentials.getUsername() + "_groups"), MediaType.TEXT_XML));
 
     UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(credentials.getUsername(), credentials.getPassword());
@@ -96,6 +96,8 @@ public class OwncloudAuthenticationProviderRestTest extends AbstractOwncloudRest
 
     checkAuthorities(principal.getAuthorities(), "Group1", "Group2");
   }
+
+  protected abstract String getBasicAuthenticationHeaderForUserDetailsService();
 
   @Test(expected = BadCredentialsException.class)
   public void testAuthenticate_NOK() throws MalformedURLException {

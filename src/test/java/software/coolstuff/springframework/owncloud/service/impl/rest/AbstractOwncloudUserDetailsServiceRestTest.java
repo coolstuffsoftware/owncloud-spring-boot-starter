@@ -14,15 +14,14 @@ import org.springframework.boot.test.autoconfigure.web.client.RestClientTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.test.context.ActiveProfiles;
 
+import software.coolstuff.springframework.owncloud.config.WithMockOwncloudUser;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
 import software.coolstuff.springframework.owncloud.service.impl.AbstractOwncloudRestTest;
 import software.coolstuff.springframework.owncloud.service.impl.OwncloudUserDetailsService;
 
 @RestClientTest(OwncloudUserDetailsService.class)
-@ActiveProfiles("URL-TEST")
-public class OwncloudUserDetailsServiceRestTest extends AbstractOwncloudRestTest {
+public abstract class AbstractOwncloudUserDetailsServiceRestTest extends AbstractOwncloudRestTest {
 
   @Autowired
   private OwncloudUserDetailsService userDetailsService;
@@ -43,16 +42,17 @@ public class OwncloudUserDetailsServiceRestTest extends AbstractOwncloudRestTest
   }
 
   @Test
+  @WithMockOwncloudUser(username = "user1", password = "password")
   public void testUserDetails_OK() throws IOException {
     server
         .expect(requestToWithPrefix("/cloud/users/user1"))
         .andExpect(method(GET))
-        .andExpect(header("Authorization", getDefaultBasicAuthorizationHeader()))
+        .andExpect(header("Authorization", getBasicAuthorizationHeader()))
         .andRespond(withSuccess(getResponseContentOf("user1_details"), MediaType.TEXT_XML));
     server
         .expect(requestToWithPrefix("/cloud/users/user1/groups"))
         .andExpect(method(GET))
-        .andExpect(header("Authorization", getDefaultBasicAuthorizationHeader()))
+        .andExpect(header("Authorization", getBasicAuthorizationHeader()))
         .andRespond(withSuccess(getResponseContentOf("user1_groups"), MediaType.TEXT_XML));
 
     UserDetails userDetails = userDetailsService.loadUserByUsername("user1");
@@ -70,12 +70,15 @@ public class OwncloudUserDetailsServiceRestTest extends AbstractOwncloudRestTest
     Assert.assertEquals("user1@example.com", owncloudUserDetails.getEmail());
   }
 
+  protected abstract String getBasicAuthorizationHeader();
+
   @Test(expected = UsernameNotFoundException.class)
+  @WithMockOwncloudUser(username = "user1", password = "password")
   public void testUserDetials_NotFound() throws IOException {
     server
         .expect(requestToWithPrefix("/cloud/users/unknown"))
         .andExpect(method(GET))
-        .andExpect(header("Authorization", getDefaultBasicAuthorizationHeader()))
+        .andExpect(header("Authorization", getBasicAuthorizationHeader()))
         .andRespond(withSuccess(getResponseContentOf("unknown_user"), MediaType.TEXT_XML));
 
     userDetailsService.loadUserByUsername("unknown");

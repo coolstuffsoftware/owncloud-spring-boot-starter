@@ -17,15 +17,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.client.RestClientTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.test.context.ActiveProfiles;
 
+import software.coolstuff.springframework.owncloud.config.WithMockOwncloudUser;
 import software.coolstuff.springframework.owncloud.exception.OwncloudGroupNotFoundException;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudUserQueryService;
 
-@ActiveProfiles("URL-TEST")
 @RestClientTest(OwncloudUserQueryService.class)
-public class OwncloudUserQueryServiceRestTest extends AbstractOwncloudRestTest {
+public abstract class AbstractOwncloudUserQueryServiceRestTest extends AbstractOwncloudRestTest {
 
   @Autowired
   private OwncloudUserQueryService userQueryService;
@@ -41,11 +40,12 @@ public class OwncloudUserQueryServiceRestTest extends AbstractOwncloudRestTest {
   }
 
   @Test
+  @WithMockOwncloudUser(username = "user1", password = "password")
   public void testFindAllUsers() throws MalformedURLException, IOException {
     server
         .expect(requestToWithPrefix("/cloud/users"))
         .andExpect(method(GET))
-        .andExpect(header("Authorization", getDefaultBasicAuthorizationHeader()))
+        .andExpect(header("Authorization", getBasicAuthorizationHeader()))
         .andRespond(withSuccess(getResponseContentOf("findAllUsers"), MediaType.TEXT_XML));
 
     List<String> users = userQueryService.findAllUsers();
@@ -61,12 +61,15 @@ public class OwncloudUserQueryServiceRestTest extends AbstractOwncloudRestTest {
     Assert.assertTrue(expectedUsers.isEmpty());
   }
 
+  protected abstract String getBasicAuthorizationHeader();
+
   @Test
+  @WithMockOwncloudUser(username = "user1", password = "password")
   public void testFindAllGroups() throws MalformedURLException, IOException {
     server
         .expect(requestToWithPrefix("/cloud/groups"))
         .andExpect(method(GET))
-        .andExpect(header("Authorization", getDefaultBasicAuthorizationHeader()))
+        .andExpect(header("Authorization", getBasicAuthorizationHeader()))
         .andRespond(withSuccess(getResponseContentOf("findAllGroups"), MediaType.TEXT_XML));
 
     List<String> groups = userQueryService.findAllGroups();
@@ -83,11 +86,12 @@ public class OwncloudUserQueryServiceRestTest extends AbstractOwncloudRestTest {
   }
 
   @Test
+  @WithMockOwncloudUser(username = "user1", password = "password")
   public void testFindAllMembersOfGroup_OK() throws MalformedURLException, IOException {
     server
         .expect(requestToWithPrefix("/cloud/groups/group1"))
         .andExpect(method(GET))
-        .andExpect(header("Authorization", getDefaultBasicAuthorizationHeader()))
+        .andExpect(header("Authorization", getBasicAuthorizationHeader()))
         .andRespond(withSuccess(getResponseContentOf("findAllMembersOfGroup_OK"), MediaType.TEXT_XML));
 
     List<String> membersOfGroup = userQueryService.findAllMembersOfGroup("group1");
@@ -104,11 +108,12 @@ public class OwncloudUserQueryServiceRestTest extends AbstractOwncloudRestTest {
   }
 
   @Test(expected = OwncloudGroupNotFoundException.class)
+  @WithMockOwncloudUser(username = "user1", password = "password")
   public void testFindAllMembersOfGroup_UnknownGroup() throws MalformedURLException, IOException {
     server
         .expect(requestToWithPrefix("/cloud/groups/group1"))
         .andExpect(method(GET))
-        .andExpect(header("Authorization", getDefaultBasicAuthorizationHeader()))
+        .andExpect(header("Authorization", getBasicAuthorizationHeader()))
         .andRespond(withSuccess(getResponseContentOf("findAllMembersOfGroup_UnknownGroup"), MediaType.TEXT_XML));
 
     userQueryService.findAllMembersOfGroup("group1");
@@ -125,16 +130,17 @@ public class OwncloudUserQueryServiceRestTest extends AbstractOwncloudRestTest {
   }
 
   @Test
+  @WithMockOwncloudUser(username = "user1", password = "password")
   public void testFindOneUser_OK() throws MalformedURLException, IOException {
     server
         .expect(requestToWithPrefix("/cloud/users/user1"))
         .andExpect(method(GET))
-        .andExpect(header("Authorization", getDefaultBasicAuthorizationHeader()))
+        .andExpect(header("Authorization", getBasicAuthorizationHeader()))
         .andRespond(withSuccess(getResponseContentOf("findOneUser_Information"), MediaType.TEXT_XML));
     server
         .expect(requestToWithPrefix("/cloud/users/user1/groups"))
         .andExpect(method(GET))
-        .andExpect(header("Authorization", getDefaultBasicAuthorizationHeader()))
+        .andExpect(header("Authorization", getBasicAuthorizationHeader()))
         .andRespond(withSuccess(getResponseContentOf("findOneUser_Groups"), MediaType.TEXT_XML));
 
     OwncloudUserDetails user = userQueryService.findOneUser("user1");
@@ -148,11 +154,12 @@ public class OwncloudUserQueryServiceRestTest extends AbstractOwncloudRestTest {
   }
 
   @Test(expected = UsernameNotFoundException.class)
+  @WithMockOwncloudUser(username = "user1", password = "password")
   public void testFindOneUser_UnknownUser() throws MalformedURLException, IOException {
     server
         .expect(requestToWithPrefix("/cloud/users/user1"))
         .andExpect(method(GET))
-        .andExpect(header("Authorization", getDefaultBasicAuthorizationHeader()))
+        .andExpect(header("Authorization", getBasicAuthorizationHeader()))
         .andRespond(withSuccess(getResponseContentOf("findOneUser_UnknownUser"), MediaType.TEXT_XML));
 
     userQueryService.findOneUser("user1");

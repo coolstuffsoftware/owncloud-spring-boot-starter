@@ -10,6 +10,8 @@ import java.util.Base64;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.test.web.client.RequestMatcher;
 
@@ -49,6 +51,11 @@ public abstract class AbstractOwncloudRestTest extends AbstractOwncloudTest {
 
   protected String getDefaultBasicAuthorizationHeader() {
     return "Basic " + Base64.getEncoder().encodeToString((properties.getUsername() + ":" + properties.getPassword()).getBytes());
+  }
+
+  protected String getSecurityContextBasicAuthorizationHeader() {
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    return "Basic " + Base64.getEncoder().encodeToString((authentication.getName() + ":" + authentication.getCredentials()).getBytes());
   }
 
   @Data

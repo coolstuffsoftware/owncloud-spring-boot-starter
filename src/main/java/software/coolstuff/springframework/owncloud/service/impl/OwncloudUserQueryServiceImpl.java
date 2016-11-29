@@ -96,8 +96,8 @@ class OwncloudUserQueryServiceImpl extends AbstractOwncloudServiceImpl implement
       return resourceService.getUser(username);
     }
 
-    OcsUserInformation userInformation = getForObject("/cloud/users/{user}", OcsUserInformation.class, username);
-    OcsGroups groups = getForObject("/cloud/users/{user}/groups", OcsGroups.class, username);
+    OcsUserInformation userInformation = exchange("/cloud/users/{user}", HttpMethod.GET, emptyEntity(), OcsUserInformation.class, username);
+    OcsGroups groups = exchange("/cloud/users/{user}/groups", HttpMethod.GET, emptyEntity(), OcsGroups.class, username);
     return createUserDetails(username, userInformation, groups);
   }
 

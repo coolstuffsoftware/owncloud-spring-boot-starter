@@ -121,6 +121,13 @@
       <scope>test</scope>
     </dependency>
 
+    <!-- Spring Security -->
+    <dependency>
+      <groupId>org.springframework.security</groupId>
+      <artifactId>spring-security-test</artifactId>
+      <scope>test</scope>
+    </dependency>
+
     <!-- Apache Commons -->
     <dependency>
       <groupId>commons-io</groupId>

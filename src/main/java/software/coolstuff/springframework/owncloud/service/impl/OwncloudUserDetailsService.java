@@ -3,6 +3,7 @@ package software.coolstuff.springframework.owncloud.service.impl;
 import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -23,7 +24,7 @@ public class OwncloudUserDetailsService extends AbstractOwncloudServiceImpl impl
     Validate.notBlank(username);
 
     if (isRestAvailable()) {
-      OcsUserInformation ocsUserInformation = getForObject("/cloud/users/{user}", OcsUserInformation.class, username);
+      OcsUserInformation ocsUserInformation = exchange("/cloud/users/{user}", HttpMethod.GET, emptyEntity(), OcsUserInformation.class, username);
       return loadPreloadedUserByUsername(username, ocsUserInformation);
     }
 
@@ -31,7 +32,7 @@ public class OwncloudUserDetailsService extends AbstractOwncloudServiceImpl impl
   }
 
   public OwncloudUserDetails loadPreloadedUserByUsername(String username, OcsUserInformation preloadedInformation) throws UsernameNotFoundException {
-    OcsGroups ocsGroups = getForObject("/cloud/users/{user}/groups", OcsGroups.class, username);
+    OcsGroups ocsGroups = exchange("/cloud/users/{user}/groups", HttpMethod.GET, emptyEntity(), OcsGroups.class, username);
     return createUserDetails(username, preloadedInformation, ocsGroups);
   }
 
