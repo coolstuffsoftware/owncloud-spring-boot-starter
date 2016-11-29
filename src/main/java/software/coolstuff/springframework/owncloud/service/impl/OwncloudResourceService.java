@@ -21,6 +21,7 @@ import org.springframework.security.core.authority.AuthorityUtils;
 
 import lombok.Data;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
+import software.coolstuff.springframework.owncloud.properties.OwncloudProperties;
 
 /**
  * If you define a URL prefixed with either <code>file:</code> or <code>classpath:</code> this Class will be available as a Service.

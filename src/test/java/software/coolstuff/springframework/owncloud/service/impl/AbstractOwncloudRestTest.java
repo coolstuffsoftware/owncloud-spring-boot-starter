@@ -18,6 +18,7 @@ import org.springframework.test.web.client.RequestMatcher;
 import lombok.Builder;
 import lombok.Data;
 import software.coolstuff.springframework.owncloud.AbstractOwncloudTest;
+import software.coolstuff.springframework.owncloud.properties.OwncloudProperties;
 
 public abstract class AbstractOwncloudRestTest extends AbstractOwncloudTest {
 

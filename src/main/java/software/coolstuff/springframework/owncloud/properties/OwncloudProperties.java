@@ -1,4 +1,4 @@
-package software.coolstuff.springframework.owncloud.service.impl;
+package software.coolstuff.springframework.owncloud.properties;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 

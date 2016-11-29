@@ -34,6 +34,7 @@ import software.coolstuff.springframework.owncloud.exception.OwncloudInvalidAuth
 import software.coolstuff.springframework.owncloud.exception.OwncloudStatusException;
 import software.coolstuff.springframework.owncloud.model.OwncloudAuthentication;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
+import software.coolstuff.springframework.owncloud.properties.OwncloudProperties;
 
 abstract class AbstractOwncloudServiceImpl implements InitializingBean {
 
