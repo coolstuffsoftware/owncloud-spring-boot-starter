@@ -46,3 +46,10 @@ public class MyWebSecurityConfigurerAdapter extends WebSecurityConfigurerAdapter
 
 ## Services
 ### OwncloudAuthenticationProvider
+This autoconfigured Service implements the ``AuthenticationProvider`` Interface.
+It is used to authenticate a User against an Owncloud Instance.
+An successfully authenticated Owncloud User will be saved as an ``Authentication`` Object within the ``SecurityContext``.
+### OwncloudUserDetailsService
+This autoconfigured Service implements the ``UserDetailsService`` Interface.
+It is used to retrieve the ``UserDetails`` (Display-Name, eMail, Groups) from the Owncloud Instance.
+This Information is then saved as the ``Principal`` Information within the ``Authentication`` Object.
