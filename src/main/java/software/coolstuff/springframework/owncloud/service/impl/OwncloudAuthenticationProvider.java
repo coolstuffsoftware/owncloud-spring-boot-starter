@@ -1,14 +1,21 @@
 package software.coolstuff.springframework.owncloud.service.impl;
 
+import java.io.IOException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.context.SecurityContextHolder;
 
+import lombok.NoArgsConstructor;
+import software.coolstuff.springframework.owncloud.exception.OwncloudStatusException;
 import software.coolstuff.springframework.owncloud.model.OwncloudAuthentication;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
 
@@ -21,7 +28,7 @@ public class OwncloudAuthenticationProvider extends AbstractOwncloudServiceImpl 
   private OwncloudResourceService resourceService;
 
   public OwncloudAuthenticationProvider(RestTemplateBuilder builder) {
-    super(builder, false);
+    super(builder, false, new OwncloudAuthenticationProviderResponseErrorHandler());
   }
 
   @Override
@@ -33,6 +40,7 @@ public class OwncloudAuthenticationProvider extends AbstractOwncloudServiceImpl 
     OwncloudUserDetails owncloudUserDetails = null;
     if (isRestAvailable()) {
       OcsUserInformation ocsUserInformation = exchange("/cloud/users/{user}", HttpMethod.GET, emptyEntity(username, password), OcsUserInformation.class, username);
+      SecurityContextHolder.getContext().setAuthentication(new OwncloudMinimalAuthentication(username, password));
       owncloudUserDetails = userDetailsService.loadPreloadedUserByUsername(username, ocsUserInformation);
     } else {
       if (resourceService == null) {
@@ -49,9 +57,30 @@ public class OwncloudAuthenticationProvider extends AbstractOwncloudServiceImpl 
   }
 
   @Override
+  protected void checkFailure(String uri, AbstractOcs.Meta metaInformation) throws OwncloudStatusException {
+    if ("ok".equals(metaInformation.getStatus())) {
+      return;
+    }
+    throw new BadCredentialsException(metaInformation.getMessage());
+  }
+
+  @Override
   public boolean supports(Class<?> authentication) {
     return UsernamePasswordAuthenticationToken.class.isAssignableFrom(authentication) ||
         OwncloudAuthentication.class.isAssignableFrom(authentication);
   }
 
+  @NoArgsConstructor
+  private static class OwncloudAuthenticationProviderResponseErrorHandler extends DefaultOwncloudResponseErrorHandler {
+
+    @Override
+    public void handleError(ClientHttpResponse response) throws IOException {
+      HttpStatus statusCode = response.getStatusCode();
+      if (HttpStatus.UNAUTHORIZED.compareTo(statusCode) == 0) {
+        throw new BadCredentialsException("User not found or wrong password");
+      }
+      super.handleError(response);
+    }
+
+  }
 }

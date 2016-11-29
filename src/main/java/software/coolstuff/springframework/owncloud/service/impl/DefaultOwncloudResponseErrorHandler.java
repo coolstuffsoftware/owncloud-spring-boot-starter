@@ -22,6 +22,8 @@ class DefaultOwncloudResponseErrorHandler extends DefaultResponseErrorHandler {
         throw new BadCredentialsException(statusCode.getReasonPhrase());
       }
       super.handleError(response);
+    } catch (BadCredentialsException notLogged) {
+      throw notLogged;
     } catch (Exception e) {
       log.error(e.getMessage(), e);
       throw e;

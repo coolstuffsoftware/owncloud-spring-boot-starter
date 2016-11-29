@@ -27,6 +27,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.web.client.ResponseErrorHandler;
 import org.springframework.web.client.RestTemplate;
 
 import lombok.EqualsAndHashCode;
@@ -42,6 +43,7 @@ abstract class AbstractOwncloudServiceImpl implements InitializingBean {
 
   private final RestTemplateBuilder restTemplateBuilder;
   private final boolean addBasicAuthentication;
+  private final ResponseErrorHandler responseErrorHandler;
 
   private RestTemplate restTemplate;
 
@@ -62,8 +64,13 @@ abstract class AbstractOwncloudServiceImpl implements InitializingBean {
   }
 
   protected AbstractOwncloudServiceImpl(RestTemplateBuilder builder, boolean addBasicAuthentication) {
+    this(builder, addBasicAuthentication, new DefaultOwncloudResponseErrorHandler());
+  }
+
+  protected AbstractOwncloudServiceImpl(RestTemplateBuilder builder, boolean addBasicAuthentication, ResponseErrorHandler responseErrorHandler) {
     this.restTemplateBuilder = builder;
     this.addBasicAuthentication = addBasicAuthentication;
+    this.responseErrorHandler = responseErrorHandler;
   }
 
   @Override
@@ -89,13 +96,13 @@ abstract class AbstractOwncloudServiceImpl implements InitializingBean {
       restTemplate = restTemplateBuilder
           .basicAuthorization(properties.getUsername(), properties.getPassword())
           .messageConverters(messageConverter)
-          .errorHandler(new DefaultOwncloudResponseErrorHandler())
+          .errorHandler(responseErrorHandler)
           .rootUri(rootURI)
           .build();
     } else {
       restTemplate = restTemplateBuilder
           .messageConverters(messageConverter)
-          .errorHandler(new DefaultOwncloudResponseErrorHandler())
+          .errorHandler(responseErrorHandler)
           .rootUri(rootURI)
           .build();
     }
@@ -138,7 +145,7 @@ abstract class AbstractOwncloudServiceImpl implements InitializingBean {
     }
 
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-    if (!(authentication instanceof OwncloudAuthentication)) {
+    if (!(authentication instanceof OwncloudAuthentication) && !(authentication instanceof OwncloudMinimalAuthentication)) {
       throw new OwncloudInvalidAuthenticationException(authentication);
     }
 
@@ -206,7 +213,7 @@ abstract class AbstractOwncloudServiceImpl implements InitializingBean {
         .credentialsNonExpired(true)
         .build();
 
-    if (groups != null) {
+    if (isGroupAvailable(groups)) {
       List<GrantedAuthority> authorities = new ArrayList<>();
       for (String group : groups.getData().getGroups()) {
         authorities.add(new SimpleGrantedAuthority(group));
@@ -217,9 +224,15 @@ abstract class AbstractOwncloudServiceImpl implements InitializingBean {
       } else {
         userDetails.setAuthorities(authorities);
       }
+    } else {
+      userDetails.setAuthorities(new ArrayList<>());
     }
 
     return userDetails;
+  }
+
+  private boolean isGroupAvailable(OcsGroups groups) {
+    return groups != null && groups.getData() != null && groups.getData().getGroups() != null;
   }
 
   @lombok.Data
