@@ -6,6 +6,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
+import java.util.Map;
 
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -27,11 +28,13 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.ResponseErrorHandler;
 import org.springframework.web.client.RestTemplate;
 
 import lombok.EqualsAndHashCode;
-import software.coolstuff.springframework.owncloud.exception.OwncloudInvalidAuthenticationException;
+import software.coolstuff.springframework.owncloud.exception.OwncloudInvalidAuthenticationObjectException;
 import software.coolstuff.springframework.owncloud.exception.OwncloudStatusException;
 import software.coolstuff.springframework.owncloud.model.OwncloudAuthentication;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
@@ -92,7 +95,7 @@ abstract class AbstractOwncloudServiceImpl implements InitializingBean {
       rootURI = URI.create(url.toString() + DEFAULT_PATH).toString();
     }
 
-    if (addBasicAuthentication && !properties.isUseAuthentication()) {
+    if (addBasicAuthentication && !properties.isUseAuthenticationObject()) {
       restTemplate = restTemplateBuilder
           .basicAuthorization(properties.getUsername(), properties.getPassword())
           .messageConverters(messageConverter)
@@ -123,7 +126,7 @@ abstract class AbstractOwncloudServiceImpl implements InitializingBean {
   }
 
   protected boolean isUseAdministratorCredentials() {
-    return !properties.isUseAuthentication();
+    return !properties.isUseAuthenticationObject();
   }
 
   protected HttpHeaders prepareHeaderWithBasicAuthorization(String username, String password) {
@@ -146,7 +149,7 @@ abstract class AbstractOwncloudServiceImpl implements InitializingBean {
 
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     if (!(authentication instanceof OwncloudAuthentication) && !(authentication instanceof OwncloudMinimalAuthentication)) {
-      throw new OwncloudInvalidAuthenticationException(authentication);
+      throw new OwncloudInvalidAuthenticationObjectException(authentication);
     }
 
     return prepareHeaderWithBasicAuthorization(authentication.getName(), (String) authentication.getCredentials());
@@ -158,6 +161,10 @@ abstract class AbstractOwncloudServiceImpl implements InitializingBean {
 
   protected HttpEntity<String> emptyEntity() {
     return new HttpEntity<>(prepareHeadersWithBasicAuthorization());
+  }
+
+  protected HttpEntity<MultiValueMap<String, String>> multiValuedEntity(Map<String, List<String>> data) {
+    return new HttpEntity<MultiValueMap<String, String>>(new LinkedMultiValueMap<>(data), prepareHeadersWithBasicAuthorization());
   }
 
   protected <T extends AbstractOcs, ENTITY> T exchange(
@@ -233,6 +240,13 @@ abstract class AbstractOwncloudServiceImpl implements InitializingBean {
 
   private boolean isGroupAvailable(OcsGroups groups) {
     return groups != null && groups.getData() != null && groups.getData().getGroups() != null;
+  }
+
+  @lombok.Data
+  @EqualsAndHashCode(callSuper = true)
+  @XmlRootElement(name = "ocs")
+  protected static class OcsVoid extends AbstractOcs {
+    private String data;
   }
 
   @lombok.Data

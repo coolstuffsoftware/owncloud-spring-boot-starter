@@ -14,7 +14,7 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 
-import software.coolstuff.springframework.owncloud.exception.OwncloudInvalidAuthenticationException;
+import software.coolstuff.springframework.owncloud.exception.OwncloudInvalidAuthenticationObjectException;
 import software.coolstuff.springframework.owncloud.service.impl.OwncloudUserDetailsService;
 import software.coolstuff.springframework.owncloud.service.impl.rest.AbstractOwncloudUserDetailsServiceRestTest;
 
@@ -29,7 +29,7 @@ public class OwncloudUserDetailsServiceRestAuthenticatedUserTest extends Abstrac
     return getSecurityContextBasicAuthorizationHeader();
   }
 
-  @Test(expected = OwncloudInvalidAuthenticationException.class)
+  @Test(expected = OwncloudInvalidAuthenticationObjectException.class)
   @WithMockUser(username = "user1", password = "password")
   public void testUserDetails_WrongAuthenticationObject() throws MalformedURLException, IOException {
     server
