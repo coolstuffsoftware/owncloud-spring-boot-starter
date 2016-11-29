@@ -6,7 +6,7 @@ This Project aims at Developers who wants to enable their SpringBoot Application
 
 ## Usage
 ### Maven
-Include this in your ``pom.xml``:
+Add the following Dependency to your ``pom.xml``:
 ```xml
 <dependency>
   <groupId>software.coolstuff</groupId>
@@ -15,13 +15,12 @@ Include this in your ``pom.xml``:
 </dependency>
 ```
 ### application.properties
-Add these Parameters to your ``application.properties``
+Add the following Property to your ``application.properties``
 ```properties
 owncloud.location=https://owncloud.example.com # URL of the Owncloud Instance
-owncloud.username=Administrator                # Username of the Administrator
-owncloud.password=s3cr3t                       # Password of the Administrator
 ```
 ### WebSecurityConfigurerAdapter
+Configure the ``WebSecurityConfigurerAdapter`` the following Way:
 ```java
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationProvider;
