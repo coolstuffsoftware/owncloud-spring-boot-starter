@@ -20,8 +20,10 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.FormHttpMessageConverter;
 import org.springframework.http.converter.xml.MappingJackson2XmlHttpMessageConverter;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -54,7 +56,10 @@ abstract class AbstractOwncloudServiceImpl implements InitializingBean {
   private OwncloudProperties properties;
 
   @Autowired
-  private MappingJackson2XmlHttpMessageConverter messageConverter;
+  private MappingJackson2XmlHttpMessageConverter mappingJackson2XmlHttpMessageConverter;
+
+  @Autowired
+  private FormHttpMessageConverter formHttpMessageConverter;
 
   @Autowired(required = false)
   private GrantedAuthoritiesMapper grantedAuthoritiesMapper;
@@ -95,16 +100,18 @@ abstract class AbstractOwncloudServiceImpl implements InitializingBean {
       rootURI = URI.create(url.toString() + DEFAULT_PATH).toString();
     }
 
-    if (addBasicAuthentication && !properties.isUseAuthenticationObject()) {
+    if (addBasicAuthentication && StringUtils.isNotBlank(properties.getUsername())) {
       restTemplate = restTemplateBuilder
           .basicAuthorization(properties.getUsername(), properties.getPassword())
-          .messageConverters(messageConverter)
+          .messageConverters(mappingJackson2XmlHttpMessageConverter)
+          .additionalMessageConverters(formHttpMessageConverter)
           .errorHandler(responseErrorHandler)
           .rootUri(rootURI)
           .build();
     } else {
       restTemplate = restTemplateBuilder
-          .messageConverters(messageConverter)
+          .messageConverters(mappingJackson2XmlHttpMessageConverter)
+          .additionalMessageConverters(formHttpMessageConverter)
           .errorHandler(responseErrorHandler)
           .rootUri(rootURI)
           .build();
@@ -126,7 +133,7 @@ abstract class AbstractOwncloudServiceImpl implements InitializingBean {
   }
 
   protected boolean isUseAdministratorCredentials() {
-    return !properties.isUseAuthenticationObject();
+    return StringUtils.isNotBlank(properties.getUsername());
   }
 
   protected HttpHeaders prepareHeaderWithBasicAuthorization(String username, String password) {
@@ -148,7 +155,7 @@ abstract class AbstractOwncloudServiceImpl implements InitializingBean {
     }
 
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-    if (!(authentication instanceof OwncloudAuthentication) && !(authentication instanceof OwncloudMinimalAuthentication)) {
+    if (!(authentication instanceof OwncloudAuthentication) && !(authentication instanceof UsernamePasswordAuthenticationToken)) {
       throw new OwncloudInvalidAuthenticationObjectException(authentication);
     }
 

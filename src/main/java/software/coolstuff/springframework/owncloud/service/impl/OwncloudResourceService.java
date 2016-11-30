@@ -2,7 +2,9 @@ package software.coolstuff.springframework.owncloud.service.impl;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.validation.constraints.NotNull;
 import javax.xml.bind.annotation.XmlElementWrapper;
@@ -18,8 +20,11 @@ import org.springframework.core.io.ResourceLoader;
 import org.springframework.http.converter.xml.MappingJackson2XmlHttpMessageConverter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.AuthorityUtils;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import lombok.Data;
+import software.coolstuff.springframework.owncloud.exception.OwncloudGroupAlreadyExistsException;
+import software.coolstuff.springframework.owncloud.exception.OwncloudGroupNotFoundException;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
 import software.coolstuff.springframework.owncloud.properties.OwncloudProperties;
 
@@ -73,7 +78,8 @@ class OwncloudResourceService implements InitializingBean {
   @Autowired
   private MappingJackson2XmlHttpMessageConverter messageConverter;
 
-  private OwncloudResourceData resourceData;
+  private Map<String, OwncloudResourceData.User> users = new HashMap<>();
+  private List<String> groups = new ArrayList<>();
 
   @Override
   public void afterPropertiesSet() throws Exception {
@@ -82,11 +88,16 @@ class OwncloudResourceService implements InitializingBean {
     Validate.isTrue(resource.exists());
     Validate.isTrue(resource.isReadable());
 
-    resourceData = messageConverter.getObjectMapper().readValue(resource.getInputStream(), OwncloudResourceData.class);
-    checkGroupReferences();
+    OwncloudResourceData resourceData = messageConverter.getObjectMapper().readValue(resource.getInputStream(), OwncloudResourceData.class);
+    checkGroupReferences(resourceData);
+
+    for (OwncloudResourceData.User user : resourceData.getUsers()) {
+      users.put(user.getUsername(), user);
+    }
+    groups.addAll(resourceData.getGroups());
   }
 
-  private void checkGroupReferences() {
+  private void checkGroupReferences(OwncloudResourceData resourceData) {
     for (OwncloudResourceData.User user : resourceData.getUsers()) {
       if (CollectionUtils.isEmpty(user.getGroups())) {
         continue;
@@ -150,12 +161,11 @@ class OwncloudResourceService implements InitializingBean {
    *         </ul>
    */
   public boolean authenticate(String username, String password) {
-    for (OwncloudResourceData.User user : resourceData.getUsers()) {
-      if (StringUtils.equals(username, user.getUsername()) && StringUtils.equals(password, user.getPassword())) {
-        return true;
-      }
+    OwncloudResourceData.User user = users.get(username);
+    if (user == null) {
+      return false;
     }
-    return false;
+    return StringUtils.equals(password, user.getPassword());
   }
 
   /**
@@ -168,17 +178,11 @@ class OwncloudResourceService implements InitializingBean {
    * @return Details of the User
    */
   public OwncloudUserDetails getUser(String username) {
-    if (CollectionUtils.isEmpty(resourceData.getUsers())) {
+    OwncloudResourceData.User user = users.get(username);
+    if (user == null) {
       return null;
     }
-
-    for (OwncloudResourceData.User user : resourceData.getUsers()) {
-      if (StringUtils.equals(username, user.getUsername())) {
-        return convertToOwncloudUserDetailsFrom(user);
-      }
-    }
-
-    return null;
+    return convertToOwncloudUserDetailsFrom(user);
   }
 
   private OwncloudUserDetails convertToOwncloudUserDetailsFrom(OwncloudResourceData.User user) {
@@ -208,18 +212,13 @@ class OwncloudResourceService implements InitializingBean {
    * @return List of Users
    */
   public List<String> getAllUsers(String filter) {
-    List<String> users = new ArrayList<>();
-    if (CollectionUtils.isEmpty(resourceData.getUsers())) {
-      return users;
-    }
-
-    for (OwncloudResourceData.User user : resourceData.getUsers()) {
+    List<String> filteredUsers = new ArrayList<>();
+    for (OwncloudResourceData.User user : users.values()) {
       if (StringUtils.isBlank(filter) || StringUtils.contains(user.getDisplayName(), filter)) {
-        users.add(user.getUsername());
+        filteredUsers.add(user.getUsername());
       }
     }
-
-    return users;
+    return filteredUsers;
   }
 
   /**
@@ -232,18 +231,13 @@ class OwncloudResourceService implements InitializingBean {
    * @return List of Groups
    */
   public List<String> getAllGroups(String filter) {
-    List<String> groups = new ArrayList<>();
-    if (CollectionUtils.isEmpty(resourceData.getGroups())) {
-      return groups;
-    }
-
-    for (String group : resourceData.getGroups()) {
+    List<String> filteredGroups = new ArrayList<>();
+    for (String group : groups) {
       if (StringUtils.isBlank(filter) || StringUtils.contains(group, filter)) {
-        groups.add(group);
+        filteredGroups.add(group);
       }
     }
-
-    return groups;
+    return filteredGroups;
   }
 
   /**
@@ -254,18 +248,13 @@ class OwncloudResourceService implements InitializingBean {
    * @return List of Users
    */
   public List<String> getAllMembersOfGroup(String groupname) {
-    List<String> users = new ArrayList<>();
-    if (CollectionUtils.isEmpty(resourceData.getGroups())) {
-      return users;
-    }
-
-    for (OwncloudResourceData.User user : resourceData.getUsers()) {
+    List<String> members = new ArrayList<>();
+    for (OwncloudResourceData.User user : users.values()) {
       if (CollectionUtils.isNotEmpty(user.getGroups()) && user.getGroups().contains(groupname)) {
-        users.add(user.getUsername());
+        members.add(user.getUsername());
       }
     }
-
-    return users;
+    return members;
   }
 
   /**
@@ -276,17 +265,78 @@ class OwncloudResourceService implements InitializingBean {
    * @return List of Groups
    */
   public List<String> getGroupsOfUser(String username) {
-    if (CollectionUtils.isEmpty(resourceData.getUsers())) {
+    OwncloudResourceData.User user = users.get(username);
+    if (user == null) {
       return new ArrayList<>();
     }
+    return new ArrayList<>(user.getGroups());
+  }
 
-    for (OwncloudResourceData.User user : resourceData.getUsers()) {
-      if (StringUtils.equals(username, username)) {
-        return new ArrayList<>(user.getGroups());
-      }
+  public OwncloudUserDetails saveUser(OwncloudUserDetails userDetails) {
+    OwncloudResourceData.User user = users.get(userDetails.getUsername());
+
+    if (user == null) {
+      Validate.notBlank(userDetails.getPassword());
+
+      user = new OwncloudResourceData.User();
+      user.setUsername(userDetails.getUsername());
+      users.put(user.getUsername(), user);
     }
 
-    return new ArrayList<>();
+    user.setDisplayName(userDetails.getDisplayName());
+    user.setEmail(userDetails.getEmail());
+    user.setEnabled(userDetails.isEnabled());
+    if (StringUtils.isNotBlank(userDetails.getPassword())) {
+      user.setPassword(userDetails.getPassword());
+    }
+
+    manageGroups(user, userDetails);
+
+    return convertToOwncloudUserDetailsFrom(users.get(userDetails.getUsername()));
+  }
+
+  private void manageGroups(OwncloudResourceService.OwncloudResourceData.User user, OwncloudUserDetails userDetails) {
+    List<String> existingGroups = new ArrayList<>(user.getGroups());
+    for (GrantedAuthority authority : userDetails.getAuthorities()) {
+      if (existingGroups.contains(authority.getAuthority())) {
+        existingGroups.remove(authority.getAuthority());
+        continue;
+      }
+
+      if (!groups.contains(authority.getAuthority())) {
+        throw new OwncloudGroupNotFoundException(authority.getAuthority());
+      }
+      user.getGroups().add(authority.getAuthority());
+    }
+
+    for (String removableGroup : existingGroups) {
+      user.getGroups().remove(removableGroup);
+    }
+  }
+
+  public void deleteUser(String username) {
+    if (!users.containsKey(username)) {
+      throw new UsernameNotFoundException(username);
+    }
+    users.remove(username);
+  }
+
+  public void createGroup(String groupname) {
+    if (groups.contains(groupname)) {
+      throw new OwncloudGroupAlreadyExistsException(groupname);
+    }
+    groups.add(groupname);
+  }
+
+  public void deleteGroup(String groupname) {
+    if (!groups.contains(groupname)) {
+      throw new OwncloudGroupNotFoundException(groupname);
+    }
+
+    for (OwncloudResourceData.User user : users.values()) {
+      user.getGroups().remove(groupname);
+    }
+    groups.remove(groupname);
   }
 
   @Data

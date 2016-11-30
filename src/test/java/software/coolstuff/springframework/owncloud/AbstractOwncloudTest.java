@@ -11,7 +11,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.test.autoconfigure.SpringBootDependencyInjectionTestExecutionListener;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
@@ -34,7 +33,6 @@ import software.coolstuff.springframework.owncloud.service.impl.OwncloudAutoConf
     DependencyInjectionTestExecutionListener.class,
     WithSecurityContextTestExecutionListener.class
 })
-@EnableConfigurationProperties
 public abstract class AbstractOwncloudTest {
 
   @Autowired

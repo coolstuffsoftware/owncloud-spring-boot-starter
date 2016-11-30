@@ -40,7 +40,7 @@ public class OwncloudAuthenticationProvider extends AbstractOwncloudServiceImpl 
     OwncloudUserDetails owncloudUserDetails = null;
     if (isRestAvailable()) {
       OcsUserInformation ocsUserInformation = exchange("/cloud/users/{user}", HttpMethod.GET, emptyEntity(username, password), OcsUserInformation.class, username);
-      SecurityContextHolder.getContext().setAuthentication(new OwncloudMinimalAuthentication(username, password));
+      SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(username, password));
       owncloudUserDetails = userDetailsService.loadPreloadedUserByUsername(username, ocsUserInformation);
     } else {
       if (resourceService == null) {

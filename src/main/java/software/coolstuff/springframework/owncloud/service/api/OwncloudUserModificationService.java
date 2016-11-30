@@ -4,6 +4,12 @@ import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
 
 public interface OwncloudUserModificationService {
 
-  void saveUser(OwncloudUserDetails userDetails);
+  OwncloudUserDetails saveUser(OwncloudUserDetails userDetails);
+
+  void deleteUser(String username);
+
+  void createGroup(String groupname);
+
+  void deleteGroup(String groupname);
 
 }

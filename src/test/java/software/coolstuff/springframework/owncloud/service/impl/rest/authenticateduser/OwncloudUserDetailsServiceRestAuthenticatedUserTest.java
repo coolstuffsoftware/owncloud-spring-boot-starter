@@ -11,7 +11,7 @@ import java.net.MalformedURLException;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.test.context.ActiveProfiles;
 
 import software.coolstuff.springframework.owncloud.exception.OwncloudInvalidAuthenticationObjectException;
@@ -30,7 +30,7 @@ public class OwncloudUserDetailsServiceRestAuthenticatedUserTest extends Abstrac
   }
 
   @Test(expected = OwncloudInvalidAuthenticationObjectException.class)
-  @WithMockUser(username = "user1", password = "password")
+  @WithAnonymousUser
   public void testUserDetails_WrongAuthenticationObject() throws MalformedURLException, IOException {
     server
         .expect(requestToWithPrefix("/cloud/users/user1"))

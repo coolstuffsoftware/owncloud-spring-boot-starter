@@ -16,6 +16,8 @@ public interface OwncloudUserQueryService {
 
   List<String> findAllMembersOfGroup(String group);
 
+  List<String> findAllGroupsOfUser(String username);
+
   OwncloudUserDetails findOneUser(String username);
 
 }

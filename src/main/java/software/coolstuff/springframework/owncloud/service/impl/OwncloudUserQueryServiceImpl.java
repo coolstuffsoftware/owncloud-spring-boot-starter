@@ -1,5 +1,6 @@
 package software.coolstuff.springframework.owncloud.service.impl;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
@@ -8,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.util.CollectionUtils;
 
 import software.coolstuff.springframework.owncloud.exception.OwncloudGroupNotFoundException;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
@@ -39,6 +41,9 @@ class OwncloudUserQueryServiceImpl extends AbstractOwncloudServiceImpl implement
     } else {
       users = exchange("/cloud/users?search={filter}", HttpMethod.GET, emptyEntity(), OcsUsers.class, filter);
     }
+    if (CollectionUtils.isEmpty(users.getData().getUsers())) {
+      return new ArrayList<>();
+    }
     return users.getData().getUsers();
   }
 
@@ -57,7 +62,10 @@ class OwncloudUserQueryServiceImpl extends AbstractOwncloudServiceImpl implement
     if (StringUtils.isBlank(filter)) {
       groups = exchange("/cloud/groups", HttpMethod.GET, emptyEntity(), OcsGroups.class);
     } else {
-      groups = exchange("/cloud/groups?search={filter}", HttpMethod.GET, emptyEntity(), OcsGroups.class);
+      groups = exchange("/cloud/groups?search={filter}", HttpMethod.GET, emptyEntity(), OcsGroups.class, filter);
+    }
+    if (CollectionUtils.isEmpty(groups.getData().getGroups())) {
+      return new ArrayList<>();
     }
     return groups.getData().getGroups();
   }
@@ -86,7 +94,24 @@ class OwncloudUserQueryServiceImpl extends AbstractOwncloudServiceImpl implement
       }
     }, groupname);
 
+    if (CollectionUtils.isEmpty(users.getData().getUsers())) {
+      return new ArrayList<>();
+    }
     return users.getData().getUsers();
+  }
+
+  @Override
+  public List<String> findAllGroupsOfUser(String username) {
+    Validate.notBlank(username);
+    if (isRestNotAvailable()) {
+      return resourceService.getGroupsOfUser(username);
+    }
+
+    OcsGroups ocsGroups = exchange("/cloud/users/{user}/groups", HttpMethod.GET, emptyEntity(), OcsGroups.class, username);
+    if (CollectionUtils.isEmpty(ocsGroups.getData().getGroups())) {
+      return new ArrayList<>();
+    }
+    return ocsGroups.getData().getGroups();
   }
 
   @Override

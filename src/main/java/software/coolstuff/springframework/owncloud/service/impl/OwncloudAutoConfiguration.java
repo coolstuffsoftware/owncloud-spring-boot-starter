@@ -8,6 +8,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.converter.FormHttpMessageConverter;
 import org.springframework.http.converter.xml.MappingJackson2XmlHttpMessageConverter;
 
 import software.coolstuff.springframework.owncloud.properties.OwncloudProperties;
@@ -15,10 +16,20 @@ import software.coolstuff.springframework.owncloud.service.api.OwncloudUserModif
 import software.coolstuff.springframework.owncloud.service.api.OwncloudUserQueryService;
 
 @Configuration
-@ConditionalOnClass({ RestTemplateBuilder.class, MappingJackson2XmlHttpMessageConverter.class })
+@ConditionalOnClass({
+    RestTemplateBuilder.class,
+    MappingJackson2XmlHttpMessageConverter.class,
+    FormHttpMessageConverter.class
+})
 @ConditionalOnProperty(prefix = "owncloud", name = "location")
 @EnableConfigurationProperties(OwncloudProperties.class)
 public class OwncloudAutoConfiguration {
+
+  @Bean
+  @ConditionalOnMissingBean(FormHttpMessageConverter.class)
+  public FormHttpMessageConverter formHttpMessageConverter() {
+    return new FormHttpMessageConverter();
+  }
 
   @Bean
   public OwncloudUserQueryService owncloudUserQueryService(RestTemplateBuilder builder) {

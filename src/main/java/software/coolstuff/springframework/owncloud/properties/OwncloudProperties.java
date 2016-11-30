@@ -8,7 +8,6 @@ import lombok.Data;
 @ConfigurationProperties(prefix = "owncloud")
 public class OwncloudProperties {
   private String location;
-  private boolean useAuthenticationObject = false;
   private String username;
   private String password;
   private boolean enableModification = false;
