@@ -35,6 +35,7 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.ResponseErrorHandler;
 import org.springframework.web.client.RestTemplate;
 
+import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import software.coolstuff.springframework.owncloud.exception.OwncloudInvalidAuthenticationObjectException;
 import software.coolstuff.springframework.owncloud.exception.OwncloudStatusException;
@@ -171,7 +172,7 @@ abstract class AbstractOwncloudServiceImpl implements InitializingBean {
   }
 
   protected HttpEntity<MultiValueMap<String, String>> multiValuedEntity(Map<String, List<String>> data) {
-    return new HttpEntity<MultiValueMap<String, String>>(new LinkedMultiValueMap<>(data), prepareHeadersWithBasicAuthorization());
+    return new HttpEntity<>(new LinkedMultiValueMap<>(data), prepareHeadersWithBasicAuthorization());
   }
 
   protected <T extends AbstractOcs, ENTITY> T exchange(
@@ -229,8 +230,8 @@ abstract class AbstractOwncloudServiceImpl implements InitializingBean {
 
     if (isGroupAvailable(groups)) {
       List<GrantedAuthority> authorities = new ArrayList<>();
-      for (String group : groups.getData().getGroups()) {
-        authorities.add(new SimpleGrantedAuthority(group));
+      for (OcsGroups.Groups.Group group : groups.getData().getGroups()) {
+        authorities.add(new SimpleGrantedAuthority(group.getGroup()));
       }
 
       if (grantedAuthoritiesMapper != null) {
@@ -253,6 +254,7 @@ abstract class AbstractOwncloudServiceImpl implements InitializingBean {
   @EqualsAndHashCode(callSuper = true)
   @XmlRootElement(name = "ocs")
   protected static class OcsVoid extends AbstractOcs {
+
     private String data;
   }
 
@@ -263,6 +265,7 @@ abstract class AbstractOwncloudServiceImpl implements InitializingBean {
 
     @lombok.Data
     protected static class Users {
+
       @XmlElementWrapper
       private List<String> users;
     }
@@ -280,6 +283,7 @@ abstract class AbstractOwncloudServiceImpl implements InitializingBean {
 
       @lombok.Data
       protected static class Quota {
+
         private Long free;
         private Long used;
         private Long total;
@@ -302,8 +306,16 @@ abstract class AbstractOwncloudServiceImpl implements InitializingBean {
 
     @lombok.Data
     protected static class Groups {
+
+      @lombok.Data
+      @AllArgsConstructor
+      protected static class Group {
+
+        private String group;
+      }
+
       @XmlElementWrapper
-      private List<String> groups;
+      private List<Group> groups;
     }
 
     private Groups data;

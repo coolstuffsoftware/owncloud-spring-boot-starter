@@ -10,6 +10,7 @@ import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.assertj.core.util.Lists;
 import org.junit.Assert;
 import org.junit.Test;
@@ -173,5 +174,21 @@ public abstract class AbstractOwncloudUserQueryServiceRestTest extends AbstractO
   @Test(expected = IllegalArgumentException.class)
   public void testFindOneUser_BlankUser() {
     userQueryService.findOneUser("");
+  }
+
+  @Test
+  @WithMockOwncloudUser(username = "user1", password = "password")
+  public void testFindAllGroupsOfUser_OK() throws MalformedURLException, IOException {
+    server
+        .expect(requestToWithPrefix("/cloud/users/user1/groups"))
+        .andExpect(method(GET))
+        .andExpect(header("Authorization", getBasicAuthorizationHeader()))
+        .andRespond(withSuccess(getResponseContentOf("findOneUser_Groups"), MediaType.TEXT_XML));
+
+    List<String> groups = userQueryService.findAllGroupsOfUser("user1");
+    Assert.assertNotNull(groups);
+    Assert.assertEquals(2, groups.size());
+
+    Assert.assertTrue(CollectionUtils.isEqualCollection(Lists.newArrayList("group1", "group2"), groups));
   }
 }

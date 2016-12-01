@@ -13,7 +13,6 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.SpringBootDependencyInjectionTestExecutionListener;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.security.core.GrantedAuthority;
@@ -27,7 +26,7 @@ import org.springframework.test.context.support.DependencyInjectionTestExecution
 import software.coolstuff.springframework.owncloud.service.impl.OwncloudAutoConfiguration;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = { TestConfiguration.class, OwncloudAutoConfiguration.class })
+@SpringBootTest(classes = { OwncloudAutoConfiguration.class })
 @TestExecutionListeners({
     SpringBootDependencyInjectionTestExecutionListener.class,
     DependencyInjectionTestExecutionListener.class,

@@ -144,7 +144,7 @@ class OwncloudUserModificationServiceImpl extends AbstractOwncloudServiceImpl im
 
   private void manageGroupMemberships(String username, Collection<? extends GrantedAuthority> expectedAuthorities) {
     OcsGroups ocsGroups = exchange("/cloud/users/{user}/groups", HttpMethod.GET, emptyEntity(), OcsGroups.class, username);
-    List<String> actualGroups = ocsGroups.getData().getGroups();
+    List<String> actualGroups = OwncloudUserQueryServiceImpl.convertOcsGroups(ocsGroups);
 
     // add new Group Memberships
     for (GrantedAuthority authority : expectedAuthorities) {
