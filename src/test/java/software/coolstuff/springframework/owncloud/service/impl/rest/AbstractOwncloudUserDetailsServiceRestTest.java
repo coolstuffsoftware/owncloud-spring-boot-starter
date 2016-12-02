@@ -27,12 +27,12 @@ public abstract class AbstractOwncloudUserDetailsServiceRestTest extends Abstrac
   private OwncloudUserDetailsService userDetailsService;
 
   @Override
-  protected String getResourcePrefix() {
+  protected final String getResourcePrefix() {
     return "/userDetails";
   }
 
   @Override
-  protected OwncloudUserDetailsService owncloudService() {
+  protected final OwncloudUserDetailsService owncloudService() {
     return userDetailsService;
   }
 
@@ -44,14 +44,10 @@ public abstract class AbstractOwncloudUserDetailsServiceRestTest extends Abstrac
   @Test
   @WithMockOwncloudUser(username = "user1", password = "password")
   public void testUserDetails_OK() throws IOException {
-    server
-        .expect(requestToWithPrefix("/cloud/users/user1"))
-        .andExpect(method(GET))
+    server.expect(requestToWithPrefix("/cloud/users/user1")).andExpect(method(GET))
         .andExpect(header("Authorization", getBasicAuthorizationHeader()))
         .andRespond(withSuccess(getResponseContentOf("user1_details"), MediaType.TEXT_XML));
-    server
-        .expect(requestToWithPrefix("/cloud/users/user1/groups"))
-        .andExpect(method(GET))
+    server.expect(requestToWithPrefix("/cloud/users/user1/groups")).andExpect(method(GET))
         .andExpect(header("Authorization", getBasicAuthorizationHeader()))
         .andRespond(withSuccess(getResponseContentOf("user1_groups"), MediaType.TEXT_XML));
 
@@ -75,9 +71,7 @@ public abstract class AbstractOwncloudUserDetailsServiceRestTest extends Abstrac
   @Test(expected = UsernameNotFoundException.class)
   @WithMockOwncloudUser(username = "user1", password = "password")
   public void testUserDetials_NotFound() throws IOException {
-    server
-        .expect(requestToWithPrefix("/cloud/users/unknown"))
-        .andExpect(method(GET))
+    server.expect(requestToWithPrefix("/cloud/users/unknown")).andExpect(method(GET))
         .andExpect(header("Authorization", getBasicAuthorizationHeader()))
         .andRespond(withSuccess(getResponseContentOf("unknown_user"), MediaType.TEXT_XML));
 

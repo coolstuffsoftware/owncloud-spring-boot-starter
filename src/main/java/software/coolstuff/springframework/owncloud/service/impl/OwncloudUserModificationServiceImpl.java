@@ -41,7 +41,7 @@ class OwncloudUserModificationServiceImpl extends AbstractOwncloudServiceImpl im
 
   @Override
   public OwncloudUserDetails saveUser(OwncloudUserDetails userDetails) {
-    checkModificationEnabled();
+    checkModificationsEnabled();
 
     Validate.notNull(userDetails);
     Validate.notBlank(userDetails.getUsername());
@@ -66,8 +66,8 @@ class OwncloudUserModificationServiceImpl extends AbstractOwncloudServiceImpl im
     return foundUserDetails;
   }
 
-  private void checkModificationEnabled() {
-    if (!owncloudProperties.isEnableModification()) {
+  private void checkModificationsEnabled() {
+    if (!owncloudProperties.isEnableModifications()) {
       throw new AccessDeniedException("no modifications allowed");
     }
   }
@@ -248,7 +248,7 @@ class OwncloudUserModificationServiceImpl extends AbstractOwncloudServiceImpl im
 
   @Override
   public void deleteUser(String username) {
-    checkModificationEnabled();
+    checkModificationsEnabled();
 
     Validate.notBlank(username);
 
@@ -277,7 +277,7 @@ class OwncloudUserModificationServiceImpl extends AbstractOwncloudServiceImpl im
 
   @Override
   public void createGroup(String groupname) {
-    checkModificationEnabled();
+    checkModificationsEnabled();
 
     Validate.notBlank(groupname);
 
@@ -313,7 +313,7 @@ class OwncloudUserModificationServiceImpl extends AbstractOwncloudServiceImpl im
 
   @Override
   public void deleteGroup(String groupname) {
-    checkModificationEnabled();
+    checkModificationsEnabled();
 
     Validate.notBlank(groupname);
 

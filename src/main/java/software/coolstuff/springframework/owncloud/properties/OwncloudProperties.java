@@ -10,5 +10,5 @@ public class OwncloudProperties {
   private String location;
   private String username;
   private String password;
-  private boolean enableModification = false;
+  private boolean enableModifications = false;
 }

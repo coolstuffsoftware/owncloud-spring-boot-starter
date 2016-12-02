@@ -36,12 +36,12 @@ public abstract class AbstractOwncloudAuthenticationProviderRestTest extends Abs
   private OwncloudUserDetailsService userDetailsService;
 
   @Override
-  protected String getResourcePrefix() {
+  protected final String getResourcePrefix() {
     return "/authentication";
   }
 
   @Override
-  protected OwncloudAuthenticationProvider owncloudService() {
+  protected final OwncloudAuthenticationProvider owncloudService() {
     return authenticationProvider;
   }
 
@@ -60,23 +60,18 @@ public abstract class AbstractOwncloudAuthenticationProviderRestTest extends Abs
   @Test
   @WithMockOwncloudUser(username = "user1", password = "password")
   public void testAuthenticate_OK() throws IOException {
-    Credentials credentials = Credentials.builder()
-        .username("user1")
-        .password("password")
-        .build();
+    Credentials credentials = Credentials.builder().username("user1").password("password").build();
 
-    server
-        .expect(requestToWithPrefix("/cloud/users/" + credentials.getUsername()))
-        .andExpect(method(GET))
+    server.expect(requestToWithPrefix("/cloud/users/" + credentials.getUsername())).andExpect(method(GET))
         .andExpect(header("Authorization", credentials.getForBasicAuthorizationHeader()))
         .andRespond(withSuccess(getResponseContentOf(credentials.getUsername() + "_details"), MediaType.TEXT_XML));
     createServer(userDetailsService)
-        .expect(requestToWithPrefix("/cloud/users/" + credentials.getUsername() + "/groups"))
-        .andExpect(method(GET))
+        .expect(requestToWithPrefix("/cloud/users/" + credentials.getUsername() + "/groups")).andExpect(method(GET))
         .andExpect(header("Authorization", getBasicAuthenticationHeaderForUserDetailsService()))
         .andRespond(withSuccess(getResponseContentOf(credentials.getUsername() + "_groups"), MediaType.TEXT_XML));
 
-    UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(credentials.getUsername(), credentials.getPassword());
+    UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
+        credentials.getUsername(), credentials.getPassword());
     Authentication authentication = authenticationProvider.authenticate(authenticationToken);
     server.verify();
 
@@ -101,18 +96,14 @@ public abstract class AbstractOwncloudAuthenticationProviderRestTest extends Abs
 
   @Test(expected = BadCredentialsException.class)
   public void testAuthenticate_NOK() throws MalformedURLException {
-    Credentials credentials = Credentials.builder()
-        .username("user1")
-        .password("wrongPassword")
-        .build();
+    Credentials credentials = Credentials.builder().username("user1").password("wrongPassword").build();
 
-    server
-        .expect(requestToWithPrefix("/cloud/users/user1"))
-        .andExpect(method(GET))
+    server.expect(requestToWithPrefix("/cloud/users/user1")).andExpect(method(GET))
         .andExpect(header("Authorization", credentials.getForBasicAuthorizationHeader()))
         .andRespond(withUnauthorizedRequest());
 
-    UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(credentials.getUsername(), credentials.getPassword());
+    UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
+        credentials.getUsername(), credentials.getPassword());
     authenticationProvider.authenticate(authenticationToken);
   }
 }

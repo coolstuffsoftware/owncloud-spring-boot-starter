@@ -2,3 +2,4 @@ owncloud:
   location: https://owncloud.example.com
   username: admin
   password: s3cr3t
+  enable-modifications: true

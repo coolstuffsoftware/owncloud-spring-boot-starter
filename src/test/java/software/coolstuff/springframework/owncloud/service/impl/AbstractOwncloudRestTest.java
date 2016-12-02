@@ -28,17 +28,17 @@ public abstract class AbstractOwncloudRestTest extends AbstractOwncloudTest {
   protected MockRestServiceServer server;
 
   @Before
-  public void setUp() {
+  public final void setUp() {
     server = createServer(owncloudService());
   }
 
-  protected MockRestServiceServer createServer(AbstractOwncloudServiceImpl owncloudService) {
+  protected final MockRestServiceServer createServer(AbstractOwncloudServiceImpl owncloudService) {
     return MockRestServiceServer.createServer(owncloudService.getRestTemplate());
   }
 
   protected abstract AbstractOwncloudServiceImpl owncloudService();
 
-  protected RequestMatcher requestToWithPrefix(String uri) throws MalformedURLException {
+  protected final RequestMatcher requestToWithPrefix(String uri) throws MalformedURLException {
     String rootURI = null;
     if (OwncloudResourceService.isNoResource(properties.getLocation())) {
       URL url = new URL(properties.getLocation());
@@ -50,18 +50,21 @@ public abstract class AbstractOwncloudRestTest extends AbstractOwncloudTest {
     return requestTo(rootURI + uri);
   }
 
-  protected String getDefaultBasicAuthorizationHeader() {
-    return "Basic " + Base64.getEncoder().encodeToString((properties.getUsername() + ":" + properties.getPassword()).getBytes());
+  protected final String getDefaultBasicAuthorizationHeader() {
+    return "Basic "
+        + Base64.getEncoder().encodeToString((properties.getUsername() + ":" + properties.getPassword()).getBytes());
   }
 
-  protected String getSecurityContextBasicAuthorizationHeader() {
+  protected final String getSecurityContextBasicAuthorizationHeader() {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-    return "Basic " + Base64.getEncoder().encodeToString((authentication.getName() + ":" + authentication.getCredentials()).getBytes());
+    return "Basic " + Base64.getEncoder()
+        .encodeToString((authentication.getName() + ":" + authentication.getCredentials()).getBytes());
   }
 
   @Data
   @Builder
-  public static class Credentials {
+  protected static class Credentials {
+
     private final String username;
     private final String password;
 

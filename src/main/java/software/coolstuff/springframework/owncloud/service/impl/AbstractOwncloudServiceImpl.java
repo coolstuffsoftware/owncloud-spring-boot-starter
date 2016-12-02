@@ -18,6 +18,7 @@ import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.FormHttpMessageConverter;
 import org.springframework.http.converter.xml.MappingJackson2XmlHttpMessageConverter;
@@ -142,7 +143,7 @@ abstract class AbstractOwncloudServiceImpl implements InitializingBean {
     String encodedCredentials = Base64.getEncoder().encodeToString((username + ":" + password).getBytes());
 
     HttpHeaders headers = new HttpHeaders();
-    headers.add("Authorization", "Basic " + encodedCredentials);
+    headers.add(HttpHeaders.AUTHORIZATION, "Basic " + encodedCredentials);
     return headers;
   }
 
@@ -171,7 +172,9 @@ abstract class AbstractOwncloudServiceImpl implements InitializingBean {
   }
 
   protected HttpEntity<MultiValueMap<String, String>> multiValuedEntity(Map<String, List<String>> data) {
-    return new HttpEntity<>(new LinkedMultiValueMap<>(data), prepareHeadersWithBasicAuthorization());
+    HttpHeaders headers = prepareHeadersWithBasicAuthorization();
+    headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+    return new HttpEntity<>(new LinkedMultiValueMap<>(data), headers);
   }
 
   protected <T extends AbstractOcs, ENTITY> T exchange(
