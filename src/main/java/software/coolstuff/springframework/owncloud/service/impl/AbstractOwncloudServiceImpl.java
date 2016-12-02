@@ -8,7 +8,6 @@ import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 
-import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import org.apache.commons.lang3.StringUtils;
@@ -266,8 +265,15 @@ abstract class AbstractOwncloudServiceImpl implements InitializingBean {
     @lombok.Data
     protected static class Users {
 
-      @XmlElementWrapper
-      private List<String> users;
+      @lombok.Data
+      @AllArgsConstructor
+      protected static class Element {
+
+        private String element;
+
+      }
+
+      private List<Element> users;
     }
 
     private Users data;
@@ -312,10 +318,11 @@ abstract class AbstractOwncloudServiceImpl implements InitializingBean {
       protected static class Group {
 
         private String group;
+
       }
 
-      @XmlElementWrapper
       private List<Group> groups;
+
     }
 
     private Groups data;

@@ -9,12 +9,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.util.CollectionUtils;
 
 import software.coolstuff.springframework.owncloud.exception.OwncloudGroupNotFoundException;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudUserQueryService;
 import software.coolstuff.springframework.owncloud.service.impl.AbstractOwncloudServiceImpl.OcsGroups.Groups.Group;
+import software.coolstuff.springframework.owncloud.service.impl.AbstractOwncloudServiceImpl.OcsUsers.Users.Element;
 
 class OwncloudUserQueryServiceImpl extends AbstractOwncloudServiceImpl implements OwncloudUserQueryService {
 
@@ -42,10 +42,21 @@ class OwncloudUserQueryServiceImpl extends AbstractOwncloudServiceImpl implement
     } else {
       users = exchange("/cloud/users?search={filter}", HttpMethod.GET, emptyEntity(), OcsUsers.class, filter);
     }
-    if (CollectionUtils.isEmpty(users.getData().getUsers())) {
-      return new ArrayList<>();
+    return convertOcsUsers(users);
+  }
+
+  private List<String> convertOcsUsers(OcsUsers ocsUsers) {
+    List<String> users = new ArrayList<>();
+    if (isOcsUsersNotNull(ocsUsers)) {
+      for (Element element : ocsUsers.getData().getUsers()) {
+        users.add(element.getElement());
+      }
     }
-    return users.getData().getUsers();
+    return users;
+  }
+
+  private boolean isOcsUsersNotNull(OcsUsers ocsUsers) {
+    return ocsUsers != null && ocsUsers.getData() != null && ocsUsers.getData().getUsers() != null;
   }
 
   @Override
@@ -105,11 +116,7 @@ class OwncloudUserQueryServiceImpl extends AbstractOwncloudServiceImpl implement
           throw new IllegalStateException("Unknown Error Code " + metaInformation.getStatuscode() + ". Reason: " + metaInformation.getMessage());
       }
     }, groupname);
-
-    if (CollectionUtils.isEmpty(users.getData().getUsers())) {
-      return new ArrayList<>();
-    }
-    return users.getData().getUsers();
+    return convertOcsUsers(users);
   }
 
   @Override
