@@ -9,7 +9,7 @@ import org.springframework.test.context.ActiveProfiles;
 
 import software.coolstuff.springframework.owncloud.service.impl.AbstractOwncloudUserModificationServiceRestTest;
 
-@ActiveProfiles("NO-MODIFICATION-TEST")
+@ActiveProfiles("NO-MODIFICATION-URL-TEST")
 public class OwncloudUserModificationServiceRestNoModificationTest
     extends AbstractOwncloudUserModificationServiceRestTest {
 
