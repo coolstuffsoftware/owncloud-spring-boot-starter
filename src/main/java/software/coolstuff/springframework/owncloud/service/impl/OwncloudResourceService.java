@@ -80,7 +80,7 @@ class OwncloudResourceService implements InitializingBean, DisposableBean {
   private MappingJackson2XmlHttpMessageConverter messageConverter;
 
   private Map<String, OwncloudResourceData.User> users = new HashMap<>();
-  private List<OwncloudResourceData.Group> groups = new ArrayList<>();
+  private Collection<OwncloudResourceData.Group> groups = new ArrayList<>();
 
   @Override
   public void afterPropertiesSet() throws Exception {
@@ -118,8 +118,13 @@ class OwncloudResourceService implements InitializingBean, DisposableBean {
     if (!(resource instanceof WritableResource)) {
       return;
     }
-    WritableResource writableResource = (WritableResource) resource;
+
     OwncloudResourceData resourceData = new OwncloudResourceData();
+    resourceData.setUsers(users.values());
+    resourceData.setGroups(groups);
+
+    WritableResource writableResource = (WritableResource) resource;
+    messageConverter.getObjectMapper().writeValue(writableResource.getOutputStream(), resourceData);
   }
 
   /**
@@ -380,8 +385,8 @@ class OwncloudResourceService implements InitializingBean, DisposableBean {
       private List<Group> groups;
     }
 
-    private List<User> users;
-    private List<Group> groups;
+    private Collection<User> users;
+    private Collection<Group> groups;
   }
 
 }
