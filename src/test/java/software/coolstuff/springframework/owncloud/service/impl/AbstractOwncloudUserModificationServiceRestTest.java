@@ -11,6 +11,7 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 import java.io.IOException;
 import java.net.MalformedURLException;
 
+import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.client.RestClientTest;
@@ -21,6 +22,7 @@ import org.springframework.util.MultiValueMap;
 
 import com.google.common.collect.Lists;
 
+import software.coolstuff.springframework.owncloud.config.WithMockOwncloudUser;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudUserModificationService;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudUserQueryService;
@@ -45,9 +47,8 @@ public abstract class AbstractOwncloudUserModificationServiceRestTest extends Ab
   }
 
   @Test
+  @WithMockOwncloudUser(username = "user1", password = "password")
   public void testSaveUser_CreateUser_OK() throws MalformedURLException, IOException {
-    MockRestServiceServer queryServer = createServer((OwncloudUserQueryServiceImpl) userQueryService);
-
     OwncloudUserDetails newUser = OwncloudUserDetails.builder()
         .username("user1")
         .password("password")
@@ -60,7 +61,7 @@ public abstract class AbstractOwncloudUserModificationServiceRestTest extends Ab
         .expect(requestToWithPrefix("/cloud/users/" + newUser.getUsername()))
         .andExpect(method(GET))
         .andExpect(header("Authorization", getBasicAuthorizationHeader()))
-        .andRespond(withSuccess(getResponseContentOf("findOneUser_UnknownUser"), MediaType.TEXT_XML));
+        .andRespond(withSuccess(getResponseContentOf("findUser1_NotFound"), MediaType.TEXT_XML));
 
     MultiValueMap<String, String> postData = new LinkedMultiValueMap<>();
     postData.put("userid", Lists.newArrayList(newUser.getUsername()));
@@ -75,8 +76,9 @@ public abstract class AbstractOwncloudUserModificationServiceRestTest extends Ab
         .expect(requestToWithPrefix("/cloud/users/" + newUser.getUsername()))
         .andExpect(method(GET))
         .andExpect(header("Authorization", getBasicAuthorizationHeader()))
-        .andRespond(withSuccess(getResponseContentOf("findOneUser_AfterCreation"), MediaType.TEXT_XML));
+        .andRespond(withSuccess(getResponseContentOf("findUser1_AfterCreation"), MediaType.TEXT_XML));
 
+    // change the Displayname
     MultiValueMap<String, String> putData = new LinkedMultiValueMap<>();
     putData.put("key", Lists.newArrayList("display"));
     putData.put("value", Lists.newArrayList(newUser.getDisplayName()));
@@ -87,6 +89,7 @@ public abstract class AbstractOwncloudUserModificationServiceRestTest extends Ab
         .andExpect(content().formData(putData))
         .andRespond(withSuccess(getResponseContentOf("success"), MediaType.TEXT_XML));
 
+    // change the eMail
     putData = new LinkedMultiValueMap<>();
     putData.put("key", Lists.newArrayList("email"));
     putData.put("value", Lists.newArrayList(newUser.getEmail()));
@@ -97,7 +100,33 @@ public abstract class AbstractOwncloudUserModificationServiceRestTest extends Ab
         .andExpect(content().formData(putData))
         .andRespond(withSuccess(getResponseContentOf("success"), MediaType.TEXT_XML));
 
-    newUser = userModificationService.saveUser(newUser);
+    server
+        .expect(requestToWithPrefix("/cloud/users/" + newUser.getUsername() + "/groups"))
+        .andExpect(method(GET))
+        .andExpect(header("Authorization", getBasicAuthorizationHeader()))
+        .andRespond(withSuccess(getResponseContentOf("findUser1_AfterSaveGroups"), MediaType.TEXT_XML));
+
+    MockRestServiceServer queryServer = createServer((OwncloudUserQueryServiceImpl) userQueryService);
+    queryServer
+        .expect(requestToWithPrefix("/cloud/users/" + newUser.getUsername()))
+        .andExpect(method(GET))
+        .andExpect(header("Authorization", getBasicAuthorizationHeader()))
+        .andRespond(withSuccess(getResponseContentOf("findUser1_AfterSave"), MediaType.TEXT_XML));
+    queryServer
+        .expect(requestToWithPrefix("/cloud/users/" + newUser.getUsername() + "/groups"))
+        .andExpect(method(GET))
+        .andExpect(header("Authorization", getBasicAuthorizationHeader()))
+        .andRespond(withSuccess(getResponseContentOf("findUser1_AfterSaveGroups"), MediaType.TEXT_XML));
+
+    OwncloudUserDetails createdUser = userModificationService.saveUser(newUser);
+    Assert.assertNotNull(createdUser);
+    Assert.assertEquals(newUser.getUsername(), createdUser.getUsername());
+    Assert.assertEquals(newUser.getPassword(), createdUser.getPassword());
+    Assert.assertEquals(newUser.isEnabled(), createdUser.isEnabled());
+    Assert.assertEquals(newUser.getDisplayName(), createdUser.getDisplayName());
+    Assert.assertEquals(newUser.getEmail(), createdUser.getEmail());
+
+    checkAuthorities(createdUser.getAuthorities());
   }
 
   protected abstract String getBasicAuthorizationHeader();

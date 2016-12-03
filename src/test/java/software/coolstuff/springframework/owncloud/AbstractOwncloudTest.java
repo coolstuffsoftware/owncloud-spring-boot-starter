@@ -7,6 +7,7 @@ import java.util.List;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
 import org.junit.runner.RunWith;
@@ -57,10 +58,12 @@ public abstract class AbstractOwncloudTest {
   }
 
   protected void checkAuthorities(Collection<? extends GrantedAuthority> actual, String... expected) {
-    Assert.assertEquals(expected.length, actual.size());
+    Assert.assertEquals(expected.length, actual == null ? 0 : actual.size());
     List<SimpleGrantedAuthority> authorities = new ArrayList<>();
-    for (String authority : expected) {
-      authorities.add(new SimpleGrantedAuthority(authority));
+    if (ArrayUtils.isNotEmpty(expected)) {
+      for (String authority : expected) {
+        authorities.add(new SimpleGrantedAuthority(authority));
+      }
     }
     if (grantedAuthoritiesMapper != null) {
       Assert.assertTrue(CollectionUtils.isEqualCollection(actual, grantedAuthoritiesMapper.mapAuthorities(authorities)));

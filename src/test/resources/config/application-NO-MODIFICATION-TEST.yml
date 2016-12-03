@@ -1,2 +1,2 @@
 owncloud:
-  location: classpath:/owncloud.xml
+  location: https://owncloud.example.com
