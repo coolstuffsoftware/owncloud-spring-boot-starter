@@ -25,6 +25,7 @@
     <guava.version>14.0.1</guava.version>
     <commons-io.version>2.4</commons-io.version>
     <commons-collections4.version>4.1</commons-collections4.version>
+    <xmlunit.version>2.3.0</xmlunit.version>
   </properties>
 
   <scm>
@@ -73,6 +74,13 @@
         <groupId>com.google.guava</groupId>
         <artifactId>guava</artifactId>
         <version>${guava.version}</version>
+      </dependency>
+      
+      <!-- XMLUnit -->
+      <dependency>
+        <groupId>org.xmlunit</groupId>
+        <artifactId>xmlunit-core</artifactId>
+        <version>${xmlunit.version}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -146,6 +154,13 @@
     <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <!-- XMLUnit -->
+    <dependency>
+      <groupId>org.xmlunit</groupId>
+      <artifactId>xmlunit-core</artifactId>
       <scope>test</scope>
     </dependency>
   </dependencies>

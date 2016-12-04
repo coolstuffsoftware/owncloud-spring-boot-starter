@@ -17,7 +17,6 @@
       <enabled>false</enabled>
       <displayName>Mrs. User 2</displayName>
       <email>user2@example.com</email>
-      <groups />
     </user>
   </users>
   <groups>

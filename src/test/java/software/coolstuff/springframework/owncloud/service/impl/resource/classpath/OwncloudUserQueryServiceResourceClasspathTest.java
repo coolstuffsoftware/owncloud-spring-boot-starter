@@ -1,4 +1,4 @@
-package software.coolstuff.springframework.owncloud.service.impl.resource;
+package software.coolstuff.springframework.owncloud.service.impl.resource.classpath;
 
 import java.util.List;
 
@@ -15,8 +15,8 @@ import software.coolstuff.springframework.owncloud.AbstractOwncloudTest;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudUserQueryService;
 
 @RestClientTest(OwncloudUserQueryService.class)
-@ActiveProfiles("RESOURCE-TEST")
-public class OwncloudUserQueryServiceResourceTest extends AbstractOwncloudTest {
+@ActiveProfiles("RESOURCE-CLASSPATH-TEST")
+public class OwncloudUserQueryServiceResourceClasspathTest extends AbstractOwncloudTest {
 
   @Autowired
   private OwncloudUserQueryService userQueryService;

@@ -1,4 +1,4 @@
-package software.coolstuff.springframework.owncloud.service.impl.resource;
+package software.coolstuff.springframework.owncloud.service.impl.resource.classpath;
 
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,8 +9,8 @@ import software.coolstuff.springframework.owncloud.AbstractOwncloudTest;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudUserModificationService;
 
 @RestClientTest(OwncloudUserModificationService.class)
-@ActiveProfiles("RESOURCE-TEST")
-public class OwncloudUserModificationServiceResourceTest extends AbstractOwncloudTest {
+@ActiveProfiles("RESOURCE-CLASSPATH-TEST")
+public class OwncloudUserModificationServiceResourceClasspathTest extends AbstractOwncloudTest {
 
   @Autowired
   private OwncloudUserModificationService userModificationService;

@@ -1,4 +1,4 @@
-package software.coolstuff.springframework.owncloud.service.impl.resource;
+package software.coolstuff.springframework.owncloud.service.impl;
 
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -6,19 +6,23 @@ import org.springframework.boot.test.autoconfigure.web.client.RestClientTest;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.test.context.ActiveProfiles;
 
-import software.coolstuff.springframework.owncloud.AbstractOwncloudTest;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudUserModificationService;
 
 @RestClientTest(OwncloudUserModificationService.class)
-@ActiveProfiles("NO-MODIFICATION-RESOURCE-TEST")
-public class OwncloudUserModificationServiceResourceNoModificationsTest extends AbstractOwncloudTest {
+@ActiveProfiles("NO-MODIFICATION-URL-TEST")
+public class OwncloudUserModificationServiceNoModificationRestTest extends AbstractOwncloudRestTest {
 
   @Autowired
   private OwncloudUserModificationService userModificationService;
 
   @Override
-  protected String getResourcePrefix() {
+  protected final AbstractOwncloudServiceImpl owncloudService() {
+    return (OwncloudUserModificationServiceImpl) userModificationService;
+  }
+
+  @Override
+  protected final String getResourcePrefix() {
     return "/modificationService";
   }
 
@@ -41,4 +45,5 @@ public class OwncloudUserModificationServiceResourceNoModificationsTest extends 
   public void testDeleteUser() {
     userModificationService.deleteUser("shouldBeAccessDenied");
   }
+
 }

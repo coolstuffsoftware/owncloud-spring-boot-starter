@@ -4,18 +4,18 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.client.RestClientTest;
+import org.springframework.core.io.Resource;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.test.context.ActiveProfiles;
 
-import software.coolstuff.springframework.owncloud.AbstractOwncloudTest;
+import software.coolstuff.springframework.owncloud.config.CompareResourceAfter;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
+import software.coolstuff.springframework.owncloud.service.impl.AbstractOwncloudResourceTest;
 import software.coolstuff.springframework.owncloud.service.impl.OwncloudUserDetailsService;
 
 @RestClientTest(OwncloudUserDetailsService.class)
-@ActiveProfiles("RESOURCE-TEST")
-public class OwncloudUserDetailsServiceResourceTest extends AbstractOwncloudTest {
+public abstract class AbstractOwncloudUserDetailsServiceResourceTest extends AbstractOwncloudResourceTest {
 
   @Autowired
   private UserDetailsService userDetailsService;
@@ -41,8 +41,19 @@ public class OwncloudUserDetailsServiceResourceTest extends AbstractOwncloudTest
     Assert.assertEquals("user1@example.com", owncloudUserDetails.getEmail());
   }
 
+  @CompareResourceAfter("testOK")
+  public void compareAfterTestOK(Resource target) throws Exception {
+    compareResources(target);
+  }
+
   @Test(expected = UsernameNotFoundException.class)
   public void testNOK() {
     userDetailsService.loadUserByUsername("unknown");
   }
+
+  @CompareResourceAfter("testNOK")
+  public void compareAfterTestNOK(Resource target) throws Exception {
+    compareResources(target);
+  }
+
 }

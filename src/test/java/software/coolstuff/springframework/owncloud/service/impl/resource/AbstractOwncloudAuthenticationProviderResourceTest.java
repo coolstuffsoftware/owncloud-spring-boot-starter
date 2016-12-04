@@ -4,26 +4,26 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.client.RestClientTest;
+import org.springframework.core.io.Resource;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.test.context.ActiveProfiles;
 
-import software.coolstuff.springframework.owncloud.AbstractOwncloudTest;
+import software.coolstuff.springframework.owncloud.config.CompareResourceAfter;
 import software.coolstuff.springframework.owncloud.model.OwncloudAuthentication;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
+import software.coolstuff.springframework.owncloud.service.impl.AbstractOwncloudResourceTest;
 import software.coolstuff.springframework.owncloud.service.impl.OwncloudAuthenticationProvider;
 
 @RestClientTest(OwncloudAuthenticationProvider.class)
-@ActiveProfiles("RESOURCE-TEST")
-public class OwncloudAuthenticationProviderResourceTest extends AbstractOwncloudTest {
+public abstract class AbstractOwncloudAuthenticationProviderResourceTest extends AbstractOwncloudResourceTest {
 
   @Autowired
   private AuthenticationProvider authenticationProvider;
 
   @Override
-  protected String getResourcePrefix() {
+  protected final String getResourcePrefix() {
     return "/authentication";
   }
 
@@ -49,9 +49,19 @@ public class OwncloudAuthenticationProviderResourceTest extends AbstractOwncloud
     checkAuthorities(principal.getAuthorities(), "Group1", "Group2");
   }
 
+  @CompareResourceAfter("testOK")
+  public void compareAfterTestOK(Resource target) throws Exception {
+    compareResources(target);
+  }
+
   @Test(expected = BadCredentialsException.class)
   public void testNOK() {
     UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken("user1", "wrongPassword");
     authenticationProvider.authenticate(authenticationToken);
+  }
+
+  @CompareResourceAfter("testNOK")
+  public void compareAfterTestNOK(Resource target) throws Exception {
+    compareResources(target);
   }
 }

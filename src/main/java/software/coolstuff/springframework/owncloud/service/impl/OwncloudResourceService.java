@@ -1,5 +1,9 @@
 package software.coolstuff.springframework.owncloud.service.impl;
 
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -7,7 +11,6 @@ import java.util.List;
 import java.util.Map;
 
 import javax.validation.constraints.NotNull;
-import javax.xml.bind.annotation.XmlRootElement;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -17,13 +20,19 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
-import org.springframework.core.io.WritableResource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.http.converter.xml.MappingJackson2XmlHttpMessageConverter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlText;
+
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import software.coolstuff.springframework.owncloud.exception.OwncloudGroupAlreadyExistsException;
 import software.coolstuff.springframework.owncloud.exception.OwncloudGroupNotFoundException;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
@@ -68,6 +77,7 @@ import software.coolstuff.springframework.owncloud.properties.OwncloudProperties
  * @author mufasa1976@coolstuff.software
  *
  */
+@Slf4j
 class OwncloudResourceService implements InitializingBean, DisposableBean {
 
   @Autowired
@@ -84,18 +94,23 @@ class OwncloudResourceService implements InitializingBean, DisposableBean {
 
   @Override
   public void afterPropertiesSet() throws Exception {
+    log.debug("Load Resource from Location {}", properties.getLocation());
     Resource resource = resourceLoader.getResource(properties.getLocation());
     Validate.notNull(resource);
     Validate.isTrue(resource.exists());
     Validate.isTrue(resource.isReadable());
 
+    log.debug("Read the Resource {} to the Class {}", resource.getFilename(), OwncloudResourceData.class.getName());
     OwncloudResourceData resourceData = messageConverter.getObjectMapper().readValue(resource.getInputStream(), OwncloudResourceData.class);
     checkGroupReferences(resourceData);
 
+    log.debug("Save the Users as a Map");
+    users = new HashMap<>();
     for (OwncloudResourceData.User user : resourceData.getUsers()) {
       users.put(user.getUsername(), user);
     }
-    groups.addAll(resourceData.getGroups());
+    log.debug("Save the Groups as a List");
+    groups = new ArrayList<>(resourceData.getGroups());
   }
 
   private void checkGroupReferences(OwncloudResourceData resourceData) {
@@ -104,6 +119,7 @@ class OwncloudResourceService implements InitializingBean, DisposableBean {
         continue;
       }
 
+      log.debug("Check, if the Groups of User {} are registered within the general Group Definitions", user.getUsername());
       if (!CollectionUtils.isSubCollection(user.getGroups(), resourceData.getGroups())) {
         Collection<OwncloudResourceData.Group> unknownGroups = CollectionUtils.subtract(user.getGroups(), resourceData.getGroups());
         throw new IllegalStateException(
@@ -114,17 +130,24 @@ class OwncloudResourceService implements InitializingBean, DisposableBean {
 
   @Override
   public void destroy() throws Exception {
+    log.debug("Load Resource from Location {}", properties.getLocation());
     Resource resource = resourceLoader.getResource(properties.getLocation());
-    if (!(resource instanceof WritableResource)) {
+    if (!(resource instanceof UrlResource)) {
+      log.debug("Resource {} is not of Type {}. Can't synchronize changed Data", resource.getFilename(), UrlResource.class.getName());
       return;
     }
 
     OwncloudResourceData resourceData = new OwncloudResourceData();
+    log.debug("Add Users to the Synchronization Structure {}", OwncloudResourceData.class.getName());
     resourceData.setUsers(users.values());
+    log.debug("Add Gropus to the Synchronization Structure {}", OwncloudResourceData.class.getName());
     resourceData.setGroups(groups);
 
-    WritableResource writableResource = (WritableResource) resource;
-    messageConverter.getObjectMapper().writeValue(writableResource.getOutputStream(), resourceData);
+    File file = resource.getFile();
+    log.info("Save changed Data to Resource {}", resource.getFilename());
+    try (OutputStream output = new BufferedOutputStream(new FileOutputStream(file))) {
+      messageConverter.getObjectMapper().writeValue(output, resourceData);
+    }
   }
 
   /**
@@ -364,28 +387,50 @@ class OwncloudResourceService implements InitializingBean, DisposableBean {
   }
 
   @lombok.Data
-  @XmlRootElement(name = "owncloud")
+  @JacksonXmlRootElement(localName = "owncloud")
   private static class OwncloudResourceData {
 
     @lombok.Data
     @AllArgsConstructor
+    @JacksonXmlRootElement(localName = "group")
     public static class Group {
+
+      @JacksonXmlText
       private String group;
+
     }
 
     @lombok.Data
+    @JacksonXmlRootElement(localName = "user")
     public static class User {
 
       @NotNull
+      @JacksonXmlProperty(localName = "username")
       private String username;
+
+      @JacksonXmlProperty(localName = "password")
       private String password;
+
+      @JacksonXmlProperty(localName = "enabled")
       private boolean enabled = true;
+
+      @JacksonXmlProperty(localName = "displayName")
       private String displayName;
+
+      @JacksonXmlProperty(localName = "email")
       private String email;
+
+      @JacksonXmlElementWrapper(localName = "groups", useWrapping = true)
+      @JacksonXmlProperty(localName = "group")
       private List<Group> groups;
     }
 
+    @JacksonXmlElementWrapper(localName = "users", useWrapping = true)
+    @JacksonXmlProperty(localName = "user")
     private Collection<User> users;
+
+    @JacksonXmlElementWrapper(localName = "groups", useWrapping = true)
+    @JacksonXmlProperty(localName = "group")
     private Collection<Group> groups;
   }
 
