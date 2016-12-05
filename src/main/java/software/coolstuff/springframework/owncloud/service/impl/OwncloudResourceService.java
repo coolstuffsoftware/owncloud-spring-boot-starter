@@ -35,6 +35,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import software.coolstuff.springframework.owncloud.exception.OwncloudGroupAlreadyExistsException;
 import software.coolstuff.springframework.owncloud.exception.OwncloudGroupNotFoundException;
+import software.coolstuff.springframework.owncloud.model.OwncloudModificationUser;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
 import software.coolstuff.springframework.owncloud.properties.OwncloudProperties;
 
@@ -221,10 +222,10 @@ class OwncloudResourceService implements InitializingBean, DisposableBean {
     if (user == null) {
       return null;
     }
-    return convertToOwncloudUserDetailsFrom(user);
+    return convert(user);
   }
 
-  private OwncloudUserDetails convertToOwncloudUserDetailsFrom(OwncloudResourceData.User user) {
+  private OwncloudUserDetails convert(OwncloudResourceData.User user) {
     List<GrantedAuthority> authorities = new ArrayList<>();
     if (CollectionUtils.isNotEmpty(user.getGroups())) {
       for (OwncloudResourceData.Group group : user.getGroups()) {
@@ -319,46 +320,38 @@ class OwncloudResourceService implements InitializingBean, DisposableBean {
     return groups;
   }
 
-  public OwncloudUserDetails saveUser(OwncloudUserDetails userDetails) {
-    OwncloudResourceData.User user = users.get(userDetails.getUsername());
+  public OwncloudUserDetails saveUser(OwncloudModificationUser user) {
+    OwncloudResourceData.User existingUser = users.get(user.getUsername());
 
-    if (user == null) {
-      Validate.notBlank(userDetails.getPassword());
+    if (existingUser == null) {
+      Validate.notBlank(user.getPassword());
 
-      user = new OwncloudResourceData.User();
-      user.setUsername(userDetails.getUsername());
-      users.put(user.getUsername(), user);
+      existingUser = new OwncloudResourceData.User();
+      existingUser.setUsername(user.getUsername());
+      users.put(existingUser.getUsername(), existingUser);
     }
 
-    user.setDisplayName(userDetails.getDisplayName());
-    user.setEmail(userDetails.getEmail());
-    user.setEnabled(userDetails.isEnabled());
-    if (StringUtils.isNotBlank(userDetails.getPassword())) {
-      user.setPassword(userDetails.getPassword());
+    existingUser.setDisplayName(user.getDisplayName());
+    existingUser.setEmail(user.getEmail());
+    existingUser.setEnabled(user.isEnabled());
+    if (StringUtils.isNotBlank(user.getPassword())) {
+      existingUser.setPassword(user.getPassword());
     }
 
-    manageGroups(user, userDetails);
+    manageGroups(existingUser, user);
 
-    return convertToOwncloudUserDetailsFrom(users.get(userDetails.getUsername()));
+    return convert(users.get(user.getUsername()));
   }
 
-  private void manageGroups(OwncloudResourceService.OwncloudResourceData.User user, OwncloudUserDetails userDetails) {
-    List<OwncloudResourceData.Group> existingGroups = new ArrayList<>(user.getGroups());
-    for (GrantedAuthority authority : userDetails.getAuthorities()) {
-      if (existingGroups.contains(authority.getAuthority())) {
-        existingGroups.remove(authority.getAuthority());
-        continue;
+  private void manageGroups(OwncloudResourceData.User existingUser, OwncloudModificationUser newUser) {
+    List<OwncloudResourceData.Group> groups = new ArrayList<>();
+    for (String group : newUser.getGroups()) {
+      if (!groups.contains(group)) {
+        throw new OwncloudGroupNotFoundException(group);
       }
-
-      if (!groups.contains(authority.getAuthority())) {
-        throw new OwncloudGroupNotFoundException(authority.getAuthority());
-      }
-      user.getGroups().add(new OwncloudResourceData.Group(authority.getAuthority()));
+      groups.add(new OwncloudResourceData.Group(group));
     }
-
-    for (OwncloudResourceData.Group removableGroup : existingGroups) {
-      user.getGroups().remove(removableGroup);
-    }
+    existingUser.setGroups(groups);
   }
 
   public void deleteUser(String username) {

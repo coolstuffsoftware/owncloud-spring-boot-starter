@@ -23,6 +23,7 @@ import org.springframework.util.MultiValueMap;
 import com.google.common.collect.Lists;
 
 import software.coolstuff.springframework.owncloud.config.WithMockOwncloudUser;
+import software.coolstuff.springframework.owncloud.model.OwncloudModificationUser;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudUserModificationService;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudUserQueryService;
@@ -49,7 +50,7 @@ public abstract class AbstractOwncloudUserModificationServiceRestTest extends Ab
   @Test
   @WithMockOwncloudUser(username = "user1", password = "password")
   public void testSaveUser_CreateUser_OK() throws MalformedURLException, IOException {
-    OwncloudUserDetails newUser = OwncloudUserDetails.builder()
+    OwncloudModificationUser newUser = OwncloudModificationUser.builder()
         .username("user1")
         .password("password")
         .enabled(true)
