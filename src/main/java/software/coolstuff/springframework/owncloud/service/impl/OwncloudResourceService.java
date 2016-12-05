@@ -340,16 +340,20 @@ class OwncloudResourceService implements InitializingBean, DisposableBean {
 
     manageGroups(existingUser, user);
 
-    return convert(users.get(user.getUsername()));
+    OwncloudUserDetails userDetails = convert(users.get(user.getUsername()));
+    userDetails.setPassword(user.getPassword());
+    return userDetails;
   }
 
   private void manageGroups(OwncloudResourceData.User existingUser, OwncloudModificationUser newUser) {
     List<OwncloudResourceData.Group> groups = new ArrayList<>();
-    for (String group : newUser.getGroups()) {
-      if (!groups.contains(group)) {
-        throw new OwncloudGroupNotFoundException(group);
+    if (CollectionUtils.isNotEmpty(newUser.getGroups())) {
+      for (String group : newUser.getGroups()) {
+        if (!groups.contains(group)) {
+          throw new OwncloudGroupNotFoundException(group);
+        }
+        groups.add(new OwncloudResourceData.Group(group));
       }
-      groups.add(new OwncloudResourceData.Group(group));
     }
     existingUser.setGroups(groups);
   }
