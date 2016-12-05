@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<ocs>
+ <meta>
+  <status>ok</status>
+  <statuscode>100</statuscode>
+  <message/>
+ </meta>
+ <data>
+  <enabled>true</enabled>
+  <quota/>
+  <email>user2@example.com</email>
+  <displayname>Mrs. User 2</displayname>
+  <two_factor_auth_enabled>false</two_factor_auth_enabled>
+ </data>
+</ocs>
