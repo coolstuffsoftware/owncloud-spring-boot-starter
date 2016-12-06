@@ -12,6 +12,8 @@ import java.net.MalformedURLException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 
+import software.coolstuff.springframework.owncloud.service.AbstractOwncloudAuthenticationProviderTest;
+
 public abstract class AbstractOwncloudAuthenticationProviderRestTest extends AbstractOwncloudAuthenticationProviderTest implements OwncloudServiceRestTest {
 
   @Autowired

@@ -1,4 +1,4 @@
-package software.coolstuff.springframework.owncloud.service.impl;
+package software.coolstuff.springframework.owncloud.service;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -12,6 +12,8 @@ import org.springframework.security.core.Authentication;
 import software.coolstuff.springframework.owncloud.config.WithMockOwncloudUser;
 import software.coolstuff.springframework.owncloud.model.OwncloudAuthentication;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
+import software.coolstuff.springframework.owncloud.service.impl.AbstractOwncloudServiceTest;
+import software.coolstuff.springframework.owncloud.service.impl.OwncloudAuthenticationProvider;
 
 @RestClientTest(OwncloudAuthenticationProvider.class)
 public abstract class AbstractOwncloudAuthenticationProviderTest extends AbstractOwncloudServiceTest {
@@ -65,7 +67,7 @@ public abstract class AbstractOwncloudAuthenticationProviderTest extends Abstrac
     checkAuthorities(principal.getAuthorities(), "Group1", "Group2");
   }
 
-  protected abstract void prepareTestAuthenticate_OK(Credentials credentials) throws Exception;
+  protected void prepareTestAuthenticate_OK(Credentials credentials) throws Exception {};
 
   @Test(expected = BadCredentialsException.class)
   public void testAuthenticate_NOK() throws Exception {
@@ -78,5 +80,5 @@ public abstract class AbstractOwncloudAuthenticationProviderTest extends Abstrac
     authenticationProvider.authenticate(authenticationToken);
   }
 
-  protected abstract void prepareTestAuthenticate_NOK(Credentials credentials) throws Exception;
+  protected void prepareTestAuthenticate_NOK(Credentials credentials) throws Exception {};
 }
