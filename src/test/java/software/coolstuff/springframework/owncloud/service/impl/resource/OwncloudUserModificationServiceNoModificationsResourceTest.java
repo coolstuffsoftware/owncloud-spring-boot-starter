@@ -8,11 +8,11 @@ import org.springframework.test.context.ActiveProfiles;
 
 import software.coolstuff.springframework.owncloud.model.OwncloudModificationUser;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudUserModificationService;
-import software.coolstuff.springframework.owncloud.service.impl.AbstractOwncloudResourceTest;
+import software.coolstuff.springframework.owncloud.service.impl.AbstractOwncloudServiceTest;
 
 @RestClientTest(OwncloudUserModificationService.class)
 @ActiveProfiles("NO-MODIFICATION-RESOURCE-TEST")
-public class OwncloudUserModificationServiceNoModificationsResourceTest extends AbstractOwncloudResourceTest {
+public class OwncloudUserModificationServiceNoModificationsResourceTest extends AbstractOwncloudServiceTest {
 
   @Autowired
   private OwncloudUserModificationService userModificationService;

@@ -15,12 +15,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.test.web.client.RequestMatcher;
 
-import lombok.Builder;
-import lombok.Data;
-import software.coolstuff.springframework.owncloud.AbstractOwncloudTest;
 import software.coolstuff.springframework.owncloud.properties.OwncloudProperties;
 
-public abstract class AbstractOwncloudRestTest extends AbstractOwncloudTest {
+public abstract class AbstractOwncloudServiceRestTest extends AbstractOwncloudServiceTest implements OwncloudServiceRestTest {
 
   @Autowired
   private OwncloudProperties properties;
@@ -28,15 +25,19 @@ public abstract class AbstractOwncloudRestTest extends AbstractOwncloudTest {
   protected MockRestServiceServer server;
 
   @Before
-  public final void setUp() {
-    server = createServer(owncloudService());
+  public final void setUpServer() {
+    if (this instanceof OwncloudServiceRestTest) {
+      server = createServer(((OwncloudServiceRestTest) this).owncloudService());
+    }
   }
 
   protected final MockRestServiceServer createServer(AbstractOwncloudServiceImpl owncloudService) {
     return MockRestServiceServer.createServer(owncloudService.getRestTemplate());
   }
 
-  protected abstract AbstractOwncloudServiceImpl owncloudService();
+  protected final MockRestServiceServer getServer() {
+    return server;
+  }
 
   protected final RequestMatcher requestToWithPrefix(String uri) throws MalformedURLException {
     String rootURI = null;
@@ -59,18 +60,6 @@ public abstract class AbstractOwncloudRestTest extends AbstractOwncloudTest {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     return "Basic " + Base64.getEncoder()
         .encodeToString((authentication.getName() + ":" + authentication.getCredentials()).getBytes());
-  }
-
-  @Data
-  @Builder
-  protected static class Credentials {
-
-    private final String username;
-    private final String password;
-
-    public String getForBasicAuthorizationHeader() {
-      return "Basic " + Base64.getEncoder().encodeToString((getUsername() + ":" + getPassword()).getBytes());
-    }
   }
 
 }

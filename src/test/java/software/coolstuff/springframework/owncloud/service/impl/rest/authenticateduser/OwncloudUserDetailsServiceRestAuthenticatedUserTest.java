@@ -14,9 +14,9 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.test.context.ActiveProfiles;
 
+import software.coolstuff.springframework.owncloud.AbstractOwncloudUserDetailsServiceRestTest;
 import software.coolstuff.springframework.owncloud.exception.OwncloudInvalidAuthenticationObjectException;
 import software.coolstuff.springframework.owncloud.service.impl.OwncloudUserDetailsService;
-import software.coolstuff.springframework.owncloud.service.impl.rest.AbstractOwncloudUserDetailsServiceRestTest;
 
 @ActiveProfiles("URL-TEST-AUTHENTICATED-USER")
 public class OwncloudUserDetailsServiceRestAuthenticatedUserTest extends AbstractOwncloudUserDetailsServiceRestTest {

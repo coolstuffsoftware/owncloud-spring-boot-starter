@@ -13,11 +13,11 @@ import org.springframework.security.core.Authentication;
 import software.coolstuff.springframework.owncloud.config.CompareResourceAfter;
 import software.coolstuff.springframework.owncloud.model.OwncloudAuthentication;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
-import software.coolstuff.springframework.owncloud.service.impl.AbstractOwncloudResourceTest;
+import software.coolstuff.springframework.owncloud.service.impl.AbstractOwncloudServiceTest;
 import software.coolstuff.springframework.owncloud.service.impl.OwncloudAuthenticationProvider;
 
 @RestClientTest(OwncloudAuthenticationProvider.class)
-public abstract class AbstractOwncloudAuthenticationProviderResourceTest extends AbstractOwncloudResourceTest {
+public abstract class AbstractOwncloudAuthenticationProviderResourceTest extends AbstractOwncloudServiceTest {
 
   @Autowired
   private AuthenticationProvider authenticationProvider;

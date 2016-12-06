@@ -25,13 +25,13 @@ import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudUserQueryService;
 
 @RestClientTest(OwncloudUserQueryService.class)
-public abstract class AbstractOwncloudUserQueryServiceRestTest extends AbstractOwncloudRestTest {
+public abstract class AbstractOwncloudUserQueryServiceRestTest extends AbstractOwncloudServiceRestTest {
 
   @Autowired
   private OwncloudUserQueryService userQueryService;
 
   @Override
-  protected AbstractOwncloudServiceImpl owncloudService() {
+  public final AbstractOwncloudServiceImpl owncloudService() {
     return (OwncloudUserQueryServiceImpl) userQueryService;
   }
 

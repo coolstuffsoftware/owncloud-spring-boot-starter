@@ -2,7 +2,7 @@ package software.coolstuff.springframework.owncloud.service.impl.rest.administra
 
 import org.springframework.test.context.ActiveProfiles;
 
-import software.coolstuff.springframework.owncloud.service.impl.rest.AbstractOwncloudAuthenticationProviderRestTest;
+import software.coolstuff.springframework.owncloud.AbstractOwncloudAuthenticationProviderRestTest;
 
 @ActiveProfiles("URL-TEST-ADMINISTRATOR")
 public class OwncloudAuthenticationProviderRestAdministratorTest extends AbstractOwncloudAuthenticationProviderRestTest {

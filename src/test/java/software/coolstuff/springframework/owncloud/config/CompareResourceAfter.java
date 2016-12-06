@@ -7,8 +7,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import software.coolstuff.springframework.owncloud.service.impl.AbstractOwncloudResourceTest;
-
 /**
  * By setting this Annotation on a Method it will be invoked by {@link AbstractOwncloudResourceTest#tearDown()} right after the TestMethod configured by {@link #value()} and after the changed Resource
  * has been written to the Disk.

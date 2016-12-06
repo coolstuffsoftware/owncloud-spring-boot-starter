@@ -1,4 +1,4 @@
-package software.coolstuff.springframework.owncloud.service.impl.rest;
+package software.coolstuff.springframework.owncloud;
 
 import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.header;
@@ -22,12 +22,12 @@ import org.springframework.security.core.Authentication;
 import software.coolstuff.springframework.owncloud.config.WithMockOwncloudUser;
 import software.coolstuff.springframework.owncloud.model.OwncloudAuthentication;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
-import software.coolstuff.springframework.owncloud.service.impl.AbstractOwncloudRestTest;
+import software.coolstuff.springframework.owncloud.service.impl.AbstractOwncloudServiceRestTest;
 import software.coolstuff.springframework.owncloud.service.impl.OwncloudAuthenticationProvider;
 import software.coolstuff.springframework.owncloud.service.impl.OwncloudUserDetailsService;
 
 @RestClientTest(OwncloudAuthenticationProvider.class)
-public abstract class AbstractOwncloudAuthenticationProviderRestTest extends AbstractOwncloudRestTest {
+public abstract class AbstractOwncloudAuthenticationProviderRestTest extends AbstractOwncloudServiceRestTest {
 
   @Autowired
   private OwncloudAuthenticationProvider authenticationProvider;
@@ -41,7 +41,7 @@ public abstract class AbstractOwncloudAuthenticationProviderRestTest extends Abs
   }
 
   @Override
-  protected final OwncloudAuthenticationProvider owncloudService() {
+  public final OwncloudAuthenticationProvider owncloudService() {
     return authenticationProvider;
   }
 

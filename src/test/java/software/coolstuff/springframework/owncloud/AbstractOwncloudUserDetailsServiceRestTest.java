@@ -1,4 +1,4 @@
-package software.coolstuff.springframework.owncloud.service.impl.rest;
+package software.coolstuff.springframework.owncloud;
 
 import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.header;
@@ -17,11 +17,11 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import software.coolstuff.springframework.owncloud.config.WithMockOwncloudUser;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
-import software.coolstuff.springframework.owncloud.service.impl.AbstractOwncloudRestTest;
+import software.coolstuff.springframework.owncloud.service.impl.AbstractOwncloudServiceRestTest;
 import software.coolstuff.springframework.owncloud.service.impl.OwncloudUserDetailsService;
 
 @RestClientTest(OwncloudUserDetailsService.class)
-public abstract class AbstractOwncloudUserDetailsServiceRestTest extends AbstractOwncloudRestTest {
+public abstract class AbstractOwncloudUserDetailsServiceRestTest extends AbstractOwncloudServiceRestTest {
 
   @Autowired
   private OwncloudUserDetailsService userDetailsService;
@@ -32,7 +32,7 @@ public abstract class AbstractOwncloudUserDetailsServiceRestTest extends Abstrac
   }
 
   @Override
-  protected final OwncloudUserDetailsService owncloudService() {
+  public final OwncloudUserDetailsService owncloudService() {
     return userDetailsService;
   }
 

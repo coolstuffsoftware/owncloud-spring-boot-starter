@@ -11,11 +11,11 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import software.coolstuff.springframework.owncloud.config.CompareResourceAfter;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
-import software.coolstuff.springframework.owncloud.service.impl.AbstractOwncloudResourceTest;
+import software.coolstuff.springframework.owncloud.service.impl.AbstractOwncloudServiceTest;
 import software.coolstuff.springframework.owncloud.service.impl.OwncloudUserDetailsService;
 
 @RestClientTest(OwncloudUserDetailsService.class)
-public abstract class AbstractOwncloudUserDetailsServiceResourceTest extends AbstractOwncloudResourceTest {
+public abstract class AbstractOwncloudUserDetailsServiceResourceTest extends AbstractOwncloudServiceTest {
 
   @Autowired
   private UserDetailsService userDetailsService;

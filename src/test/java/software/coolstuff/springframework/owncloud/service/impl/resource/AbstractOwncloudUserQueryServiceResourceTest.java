@@ -11,10 +11,10 @@ import org.springframework.boot.test.autoconfigure.web.client.RestClientTest;
 import com.google.common.collect.Lists;
 
 import software.coolstuff.springframework.owncloud.service.api.OwncloudUserQueryService;
-import software.coolstuff.springframework.owncloud.service.impl.AbstractOwncloudResourceTest;
+import software.coolstuff.springframework.owncloud.service.impl.AbstractOwncloudServiceTest;
 
 @RestClientTest(OwncloudUserQueryService.class)
-public abstract class AbstractOwncloudUserQueryServiceResourceTest extends AbstractOwncloudResourceTest {
+public abstract class AbstractOwncloudUserQueryServiceResourceTest extends AbstractOwncloudServiceTest {
 
   @Autowired
   private OwncloudUserQueryService userQueryService;

@@ -11,13 +11,13 @@ import software.coolstuff.springframework.owncloud.service.api.OwncloudUserModif
 
 @RestClientTest(OwncloudUserModificationService.class)
 @ActiveProfiles("NO-MODIFICATION-URL-TEST")
-public class OwncloudUserModificationServiceNoModificationRestTest extends AbstractOwncloudRestTest {
+public class OwncloudUserModificationServiceNoModificationRestTest extends AbstractOwncloudServiceRestTest {
 
   @Autowired
   private OwncloudUserModificationService userModificationService;
 
   @Override
-  protected final AbstractOwncloudServiceImpl owncloudService() {
+  public final AbstractOwncloudServiceImpl owncloudService() {
     return (OwncloudUserModificationServiceImpl) userModificationService;
   }
 

@@ -8,10 +8,10 @@ import org.springframework.boot.test.autoconfigure.web.client.RestClientTest;
 import software.coolstuff.springframework.owncloud.model.OwncloudModificationUser;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudUserModificationService;
-import software.coolstuff.springframework.owncloud.service.impl.AbstractOwncloudResourceTest;
+import software.coolstuff.springframework.owncloud.service.impl.AbstractOwncloudServiceTest;
 
 @RestClientTest(OwncloudUserModificationService.class)
-public abstract class AbstractOwncloudUserModificationServiceResourceTest extends AbstractOwncloudResourceTest {
+public abstract class AbstractOwncloudUserModificationServiceResourceTest extends AbstractOwncloudServiceTest {
 
   @Autowired
   private OwncloudUserModificationService userModificationService;
