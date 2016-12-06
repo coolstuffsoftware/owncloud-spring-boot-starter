@@ -1,19 +1,9 @@
-package software.coolstuff.springframework.owncloud;
-
-import static org.springframework.http.HttpMethod.GET;
-import static org.springframework.test.web.client.match.MockRestRequestMatchers.header;
-import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
-import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
-import static org.springframework.test.web.client.response.MockRestResponseCreators.withUnauthorizedRequest;
-
-import java.io.IOException;
-import java.net.MalformedURLException;
+package software.coolstuff.springframework.owncloud.service.impl;
 
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.client.RestClientTest;
-import org.springframework.http.MediaType;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.RememberMeAuthenticationToken;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -22,27 +12,16 @@ import org.springframework.security.core.Authentication;
 import software.coolstuff.springframework.owncloud.config.WithMockOwncloudUser;
 import software.coolstuff.springframework.owncloud.model.OwncloudAuthentication;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
-import software.coolstuff.springframework.owncloud.service.impl.AbstractOwncloudServiceRestTest;
-import software.coolstuff.springframework.owncloud.service.impl.OwncloudAuthenticationProvider;
-import software.coolstuff.springframework.owncloud.service.impl.OwncloudUserDetailsService;
 
 @RestClientTest(OwncloudAuthenticationProvider.class)
-public abstract class AbstractOwncloudAuthenticationProviderRestTest extends AbstractOwncloudServiceRestTest {
+public abstract class AbstractOwncloudAuthenticationProviderTest extends AbstractOwncloudServiceTest {
 
   @Autowired
   private OwncloudAuthenticationProvider authenticationProvider;
 
-  @Autowired
-  private OwncloudUserDetailsService userDetailsService;
-
   @Override
   protected final String getResourcePrefix() {
     return "/authentication";
-  }
-
-  @Override
-  public final OwncloudAuthenticationProvider owncloudService() {
-    return authenticationProvider;
   }
 
   @Test
@@ -58,22 +37,16 @@ public abstract class AbstractOwncloudAuthenticationProviderRestTest extends Abs
   }
 
   @Test
-  @WithMockOwncloudUser(username = "user1", password = "password")
-  public void testAuthenticate_OK() throws IOException {
-    Credentials credentials = Credentials.builder().username("user1").password("password").build();
+  @WithMockOwncloudUser(username = "user1", password = "s3cr3t")
+  public void testAuthenticate_OK() throws Exception {
+    Credentials credentials = Credentials.builder().username("user1").password("s3cr3t").build();
 
-    server.expect(requestToWithPrefix("/cloud/users/" + credentials.getUsername())).andExpect(method(GET))
-        .andExpect(header("Authorization", credentials.getForBasicAuthorizationHeader()))
-        .andRespond(withSuccess(getResponseContentOf(credentials.getUsername() + "_details"), MediaType.TEXT_XML));
-    createServer(userDetailsService)
-        .expect(requestToWithPrefix("/cloud/users/" + credentials.getUsername() + "/groups")).andExpect(method(GET))
-        .andExpect(header("Authorization", getBasicAuthenticationHeaderForUserDetailsService()))
-        .andRespond(withSuccess(getResponseContentOf(credentials.getUsername() + "_groups"), MediaType.TEXT_XML));
+    prepareTestAuthenticate_OK(credentials);
 
     UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
         credentials.getUsername(), credentials.getPassword());
     Authentication authentication = authenticationProvider.authenticate(authenticationToken);
-    server.verify();
+    verifyServer();
 
     Assert.assertNotNull(authentication);
     Assert.assertTrue(OwncloudAuthentication.class.isAssignableFrom(authentication.getClass()));
@@ -92,18 +65,18 @@ public abstract class AbstractOwncloudAuthenticationProviderRestTest extends Abs
     checkAuthorities(principal.getAuthorities(), "Group1", "Group2");
   }
 
-  protected abstract String getBasicAuthenticationHeaderForUserDetailsService();
+  protected abstract void prepareTestAuthenticate_OK(Credentials credentials) throws Exception;
 
   @Test(expected = BadCredentialsException.class)
-  public void testAuthenticate_NOK() throws MalformedURLException {
+  public void testAuthenticate_NOK() throws Exception {
     Credentials credentials = Credentials.builder().username("user1").password("wrongPassword").build();
 
-    server.expect(requestToWithPrefix("/cloud/users/user1")).andExpect(method(GET))
-        .andExpect(header("Authorization", credentials.getForBasicAuthorizationHeader()))
-        .andRespond(withUnauthorizedRequest());
+    prepareTestAuthenticate_NOK(credentials);
 
     UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
         credentials.getUsername(), credentials.getPassword());
     authenticationProvider.authenticate(authenticationToken);
   }
+
+  protected abstract void prepareTestAuthenticate_NOK(Credentials credentials) throws Exception;
 }

@@ -29,7 +29,7 @@ import software.coolstuff.springframework.owncloud.service.api.OwncloudUserModif
 import software.coolstuff.springframework.owncloud.service.api.OwncloudUserQueryService;
 
 @RestClientTest(OwncloudUserModificationService.class)
-public abstract class AbstractOwncloudUserModificationServiceRestTest extends AbstractOwncloudServiceRestTest {
+public abstract class AbstractOwncloudUserModificationServiceRestTest extends AbstractOwncloudServiceTest implements OwncloudServiceRestTest {
 
   @Autowired
   private OwncloudUserModificationService userModificationService;

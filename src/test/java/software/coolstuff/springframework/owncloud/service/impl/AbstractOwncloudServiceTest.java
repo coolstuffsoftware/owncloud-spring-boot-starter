@@ -1,5 +1,7 @@
 package software.coolstuff.springframework.owncloud.service.impl;
 
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.FileNotFoundException;
@@ -8,6 +10,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Method;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Collection;
@@ -31,13 +36,17 @@ import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.io.UrlResource;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.test.context.support.WithSecurityContextTestExecutionListener;
 import org.springframework.test.context.TestExecutionListeners;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.support.DependencyInjectionTestExecutionListener;
+import org.springframework.test.web.client.MockRestServiceServer;
+import org.springframework.test.web.client.RequestMatcher;
 import org.xmlunit.builder.DiffBuilder;
 import org.xmlunit.builder.Input;
 import org.xmlunit.diff.Diff;
@@ -78,12 +87,32 @@ public abstract class AbstractOwncloudServiceTest {
   @Autowired(required = false)
   private OwncloudResourceService resourceService;
 
+  protected MockRestServiceServer server;
+
   @Before
-  public final void setUpResource() throws Exception {
+  public final void setUp() throws Exception {
+    if (this instanceof OwncloudServiceRestTest) {
+      server = createServer(((OwncloudServiceRestTest) this).owncloudService());
+    }
+
     if (this instanceof OwncloudResourceFileTest) {
       copyClasspathResourceToFile();
       resourceService.afterPropertiesSet();
     }
+  }
+
+  protected final MockRestServiceServer createServer(AbstractOwncloudServiceImpl owncloudService) {
+    return MockRestServiceServer.createServer(owncloudService.getRestTemplate());
+  }
+
+  protected void verifyServer() {
+    if (server != null) {
+      server.verify();
+    }
+  }
+
+  protected final MockRestServiceServer getServer() {
+    return server;
   }
 
   private void copyClasspathResourceToFile() throws IOException, FileNotFoundException {
@@ -188,6 +217,29 @@ public abstract class AbstractOwncloudServiceTest {
           .build();
       Assert.assertFalse(diff.toString(), diff.hasDifferences());
     }
+  }
+
+  protected final RequestMatcher requestToWithPrefix(String uri) throws MalformedURLException {
+    String rootURI = null;
+    if (OwncloudResourceService.isNoResource(properties.getLocation())) {
+      URL url = new URL(properties.getLocation());
+      rootURI = properties.getLocation();
+      if (StringUtils.isBlank(url.getPath()) || "/".equals(url.getPath())) {
+        rootURI = URI.create(url.toString() + AbstractOwncloudServiceImpl.DEFAULT_PATH).toString();
+      }
+    }
+    return requestTo(rootURI + uri);
+  }
+
+  protected final String getDefaultBasicAuthorizationHeader() {
+    return "Basic "
+        + Base64.getEncoder().encodeToString((properties.getUsername() + ":" + properties.getPassword()).getBytes());
+  }
+
+  protected final String getSecurityContextBasicAuthorizationHeader() {
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    return "Basic " + Base64.getEncoder()
+        .encodeToString((authentication.getName() + ":" + authentication.getCredentials()).getBytes());
   }
 
   @Data
