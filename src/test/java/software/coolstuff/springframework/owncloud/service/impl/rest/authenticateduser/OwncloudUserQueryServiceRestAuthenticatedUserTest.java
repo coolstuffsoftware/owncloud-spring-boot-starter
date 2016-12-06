@@ -8,7 +8,7 @@ import software.coolstuff.springframework.owncloud.service.impl.AbstractOwncloud
 public class OwncloudUserQueryServiceRestAuthenticatedUserTest extends AbstractOwncloudUserQueryServiceRestTest {
 
   @Override
-  protected String getBasicAuthorizationHeader() {
+  public String getBasicAuthorizationHeader() {
     return getSecurityContextBasicAuthorizationHeader();
   }
 

@@ -25,14 +25,14 @@ public class OwncloudUserDetailsServiceRestAuthenticatedUserTest extends Abstrac
   private OwncloudUserDetailsService userDetailsService;
 
   @Override
-  protected String getBasicAuthorizationHeader() {
+  public final String getBasicAuthorizationHeader() {
     return getSecurityContextBasicAuthorizationHeader();
   }
 
   @Test(expected = OwncloudInvalidAuthenticationObjectException.class)
   @WithAnonymousUser
   public void testUserDetails_WrongAuthenticationObject() throws MalformedURLException, IOException {
-    server
+    getServer()
         .expect(requestToWithPrefix("/cloud/users/user1"))
         .andExpect(method(GET))
         .andExpect(header("Authorization", getBasicAuthorizationHeader()))

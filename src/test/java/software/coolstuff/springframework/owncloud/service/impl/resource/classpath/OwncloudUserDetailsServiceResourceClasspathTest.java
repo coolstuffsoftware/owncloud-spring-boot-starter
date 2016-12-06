@@ -2,9 +2,9 @@ package software.coolstuff.springframework.owncloud.service.impl.resource.classp
 
 import org.springframework.test.context.ActiveProfiles;
 
-import software.coolstuff.springframework.owncloud.service.impl.resource.AbstractOwncloudUserDetailsServiceResourceTest;
+import software.coolstuff.springframework.owncloud.service.AbstractOwncloudUserDetailsServiceTest;
 
 @ActiveProfiles("RESOURCE-CLASSPATH-TEST")
-public class OwncloudUserDetailsServiceResourceClasspathTest extends AbstractOwncloudUserDetailsServiceResourceTest {
+public class OwncloudUserDetailsServiceResourceClasspathTest extends AbstractOwncloudUserDetailsServiceTest {
 
 }

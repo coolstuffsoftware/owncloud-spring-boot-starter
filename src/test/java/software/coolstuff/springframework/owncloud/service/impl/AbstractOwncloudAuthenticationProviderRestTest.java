@@ -29,20 +29,22 @@ public abstract class AbstractOwncloudAuthenticationProviderRestTest extends Abs
 
   @Override
   protected void prepareTestAuthenticate_OK(Credentials credentials) throws IOException {
-    server.expect(requestToWithPrefix("/cloud/users/" + credentials.getUsername())).andExpect(method(GET))
+    getServer()
+        .expect(requestToWithPrefix("/cloud/users/" + credentials.getUsername()))
+        .andExpect(method(GET))
         .andExpect(header("Authorization", credentials.getForBasicAuthorizationHeader()))
         .andRespond(withSuccess(getResponseContentOf(credentials.getUsername() + "_details"), MediaType.TEXT_XML));
     createServer(userDetailsService)
-        .expect(requestToWithPrefix("/cloud/users/" + credentials.getUsername() + "/groups")).andExpect(method(GET))
-        .andExpect(header("Authorization", getBasicAuthenticationHeaderForUserDetailsService()))
+        .expect(requestToWithPrefix("/cloud/users/" + credentials.getUsername() + "/groups"))
+        .andExpect(method(GET))
+        .andExpect(header("Authorization", getBasicAuthorizationHeader()))
         .andRespond(withSuccess(getResponseContentOf(credentials.getUsername() + "_groups"), MediaType.TEXT_XML));
   }
 
-  protected abstract String getBasicAuthenticationHeaderForUserDetailsService();
-
   @Override
   protected void prepareTestAuthenticate_NOK(Credentials credentials) throws MalformedURLException {
-    server.expect(requestToWithPrefix("/cloud/users/" + credentials.getUsername()))
+    getServer()
+        .expect(requestToWithPrefix("/cloud/users/" + credentials.getUsername()))
         .andExpect(method(GET))
         .andExpect(header("Authorization", credentials.getForBasicAuthorizationHeader()))
         .andRespond(withUnauthorizedRequest());

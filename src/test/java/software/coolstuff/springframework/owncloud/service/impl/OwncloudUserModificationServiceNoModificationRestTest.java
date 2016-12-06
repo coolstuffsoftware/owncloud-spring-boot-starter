@@ -22,6 +22,11 @@ public class OwncloudUserModificationServiceNoModificationRestTest extends Abstr
   }
 
   @Override
+  public String getBasicAuthorizationHeader() {
+    return null;
+  }
+
+  @Override
   protected final String getResourcePrefix() {
     return "/modificationService";
   }

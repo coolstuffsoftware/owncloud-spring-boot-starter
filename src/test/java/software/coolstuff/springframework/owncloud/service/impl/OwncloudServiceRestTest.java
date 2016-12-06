@@ -4,4 +4,6 @@ public interface OwncloudServiceRestTest {
 
   AbstractOwncloudServiceImpl owncloudService();
 
+  String getBasicAuthorizationHeader();
+
 }

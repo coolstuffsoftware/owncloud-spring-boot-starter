@@ -87,7 +87,7 @@ public abstract class AbstractOwncloudServiceTest {
   @Autowired(required = false)
   private OwncloudResourceService resourceService;
 
-  protected MockRestServiceServer server;
+  private MockRestServiceServer server;
 
   @Before
   public final void setUp() throws Exception {

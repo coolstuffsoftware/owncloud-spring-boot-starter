@@ -220,7 +220,7 @@ class OwncloudResourceService implements InitializingBean, DisposableBean {
   public OwncloudUserDetails getUser(String username) {
     OwncloudResourceData.User user = users.get(username);
     if (user == null) {
-      return null;
+      throw new UsernameNotFoundException(username);
     }
     return convert(user);
   }
@@ -292,8 +292,13 @@ class OwncloudResourceService implements InitializingBean, DisposableBean {
   public List<String> getAllMembersOfGroup(String groupname) {
     List<String> members = new ArrayList<>();
     for (OwncloudResourceData.User user : users.values()) {
-      if (CollectionUtils.isNotEmpty(user.getGroups()) && user.getGroups().contains(groupname)) {
-        members.add(user.getUsername());
+      if (CollectionUtils.isNotEmpty(user.getGroups())) {
+        for (OwncloudResourceData.Group group : user.getGroups()) {
+          if (StringUtils.equals(groupname, group.getGroup())) {
+            members.add(user.getUsername());
+            break;
+          }
+        }
       }
     }
     return members;
