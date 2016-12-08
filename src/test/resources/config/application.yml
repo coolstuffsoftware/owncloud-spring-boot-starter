@@ -4,4 +4,4 @@ spring:
       indent-output: true
 logging:
   level:
-    root: debug
+    root: info
