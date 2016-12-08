@@ -9,6 +9,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -130,11 +131,12 @@ public abstract class AbstractOwncloudServiceTest {
   }
 
   @After
-  public void tearDownResource() throws Exception {
+  public void tearDownResource() throws Throwable {
     if (this instanceof OwncloudResourceFileTest) {
       resourceService.destroy();
       Resource target = resourceLoader.getResource(properties.getLocation());
 
+      boolean hasSpecificResourceTest = false;
       for (Method method : this.getClass().getMethods()) {
         // is this Method annotated by @CompareResourceAfter
         CompareResourceAfter compareResourceAfter = AnnotationUtils.findAnnotation(method, CompareResourceAfter.class);
@@ -165,12 +167,26 @@ public abstract class AbstractOwncloudServiceTest {
         }
 
         log.debug("Call the Resource Comparsion Method {} on Class {}", method.getName(), this.getClass().getName());
-        method.invoke(this, target);
+        hasSpecificResourceTest = true;
+        try {
+          method.invoke(this, target);
+        } catch (InvocationTargetException e) {
+          throw e.getCause();
+        }
+      }
+
+      if (!hasSpecificResourceTest && ((OwncloudResourceFileTest) this).isCheckAllResourcesAgainstOriginal()) {
+        compareResourcesWithOriginalSource(target);
       }
     }
   }
 
   protected String getResponseContentOf(String testCase) throws IOException {
+    Resource resource = getResourceOf(testCase);
+    return IOUtils.toString(resource.getInputStream());
+  }
+
+  protected Resource getResourceOf(String testCase) {
     String path = "/";
     if (StringUtils.isNotBlank(getResourcePrefix())) {
       if (StringUtils.startsWith(getResourcePrefix(), "/")) {
@@ -180,8 +196,7 @@ public abstract class AbstractOwncloudServiceTest {
       }
     }
 
-    Resource resource = resourceLoader.getResource("classpath:" + path + testCase + ".xml");
-    return IOUtils.toString(resource.getInputStream());
+    return resourceLoader.getResource("classpath:" + path + testCase + ".xml");
   }
 
   protected abstract String getResourcePrefix();
@@ -209,8 +224,12 @@ public abstract class AbstractOwncloudServiceTest {
     return resource;
   }
 
-  protected void compareResources(Resource target) throws Exception {
-    try (InputStream isSource = new BufferedInputStream(getSourceResource().getInputStream());
+  protected void compareResourcesWithOriginalSource(Resource target) throws Exception {
+    compareResources(getSourceResource(), target);
+  }
+
+  protected void compareResources(Resource source, Resource target) throws Exception {
+    try (InputStream isSource = new BufferedInputStream(source.getInputStream());
         InputStream isTarget = new BufferedInputStream(target.getInputStream())) {
       Diff diff = DiffBuilder.compare(Input.fromStream(isSource))
           .withTest(Input.fromStream(isTarget))

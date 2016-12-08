@@ -6,6 +6,7 @@ import static org.springframework.test.web.client.match.MockRestRequestMatchers.
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 
 import software.coolstuff.springframework.owncloud.service.AbstractOwncloudUserDetailsServiceTest;
@@ -25,12 +26,12 @@ public abstract class AbstractOwncloudUserDetailsServiceRestTest extends Abstrac
     getServer()
         .expect(requestToWithPrefix("/cloud/users/" + user))
         .andExpect(method(GET))
-        .andExpect(header("Authorization", getBasicAuthorizationHeader()))
+        .andExpect(header(HttpHeaders.AUTHORIZATION, getBasicAuthorizationHeader()))
         .andRespond(withSuccess(getResponseContentOf("user1_details"), MediaType.TEXT_XML));
     getServer()
         .expect(requestToWithPrefix("/cloud/users/" + user + "/groups"))
         .andExpect(method(GET))
-        .andExpect(header("Authorization", getBasicAuthorizationHeader()))
+        .andExpect(header(HttpHeaders.AUTHORIZATION, getBasicAuthorizationHeader()))
         .andRespond(withSuccess(getResponseContentOf("user1_groups"), MediaType.TEXT_XML));
   }
 
@@ -39,7 +40,7 @@ public abstract class AbstractOwncloudUserDetailsServiceRestTest extends Abstrac
     getServer()
         .expect(requestToWithPrefix("/cloud/users/unknown"))
         .andExpect(method(GET))
-        .andExpect(header("Authorization", getBasicAuthorizationHeader()))
+        .andExpect(header(HttpHeaders.AUTHORIZATION, getBasicAuthorizationHeader()))
         .andRespond(withSuccess(getResponseContentOf("unknown_user"), MediaType.TEXT_XML));
   }
 

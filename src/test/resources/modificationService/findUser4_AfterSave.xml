@@ -8,8 +8,8 @@
  <data>
   <enabled>true</enabled>
   <quota/>
-  <email>user2@example.com</email>
-  <displayname>Mrs. User 2</displayname>
+  <email>user4@example.com</email>
+  <displayname>Mrs. User 4</displayname>
   <two_factor_auth_enabled>false</two_factor_auth_enabled>
  </data>
 </ocs>

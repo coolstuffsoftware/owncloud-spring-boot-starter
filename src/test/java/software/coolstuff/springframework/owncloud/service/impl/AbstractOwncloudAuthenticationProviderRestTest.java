@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 
 import software.coolstuff.springframework.owncloud.service.AbstractOwncloudAuthenticationProviderTest;
@@ -32,12 +33,12 @@ public abstract class AbstractOwncloudAuthenticationProviderRestTest extends Abs
     getServer()
         .expect(requestToWithPrefix("/cloud/users/" + credentials.getUsername()))
         .andExpect(method(GET))
-        .andExpect(header("Authorization", credentials.getForBasicAuthorizationHeader()))
+        .andExpect(header(HttpHeaders.AUTHORIZATION, credentials.getForBasicAuthorizationHeader()))
         .andRespond(withSuccess(getResponseContentOf(credentials.getUsername() + "_details"), MediaType.TEXT_XML));
     createServer(userDetailsService)
         .expect(requestToWithPrefix("/cloud/users/" + credentials.getUsername() + "/groups"))
         .andExpect(method(GET))
-        .andExpect(header("Authorization", getBasicAuthorizationHeader()))
+        .andExpect(header(HttpHeaders.AUTHORIZATION, getBasicAuthorizationHeader()))
         .andRespond(withSuccess(getResponseContentOf(credentials.getUsername() + "_groups"), MediaType.TEXT_XML));
   }
 
@@ -46,7 +47,7 @@ public abstract class AbstractOwncloudAuthenticationProviderRestTest extends Abs
     getServer()
         .expect(requestToWithPrefix("/cloud/users/" + credentials.getUsername()))
         .andExpect(method(GET))
-        .andExpect(header("Authorization", credentials.getForBasicAuthorizationHeader()))
+        .andExpect(header(HttpHeaders.AUTHORIZATION, credentials.getForBasicAuthorizationHeader()))
         .andRespond(withUnauthorizedRequest());
   }
 }

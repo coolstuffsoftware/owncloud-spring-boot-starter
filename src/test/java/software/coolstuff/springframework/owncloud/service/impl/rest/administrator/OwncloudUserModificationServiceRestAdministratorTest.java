@@ -5,11 +5,10 @@ import org.springframework.test.context.ActiveProfiles;
 import software.coolstuff.springframework.owncloud.service.impl.AbstractOwncloudUserModificationServiceRestTest;
 
 @ActiveProfiles("URL-TEST-ADMINISTRATOR")
-public class OwncloudUserModificationServiceRestAdministratorTest
-    extends AbstractOwncloudUserModificationServiceRestTest {
+public class OwncloudUserModificationServiceRestAdministratorTest extends AbstractOwncloudUserModificationServiceRestTest {
 
   @Override
-  protected String getBasicAuthorizationHeader() {
+  public String getBasicAuthorizationHeader() {
     return getDefaultBasicAuthorizationHeader();
   }
 

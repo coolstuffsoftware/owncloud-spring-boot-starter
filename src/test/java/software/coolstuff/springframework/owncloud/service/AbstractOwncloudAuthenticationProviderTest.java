@@ -64,7 +64,7 @@ public abstract class AbstractOwncloudAuthenticationProviderTest extends Abstrac
     Assert.assertEquals("user1@example.com", principal.getEmail());
     Assert.assertEquals(2, principal.getAuthorities().size());
 
-    checkAuthorities(principal.getAuthorities(), "Group1", "Group2");
+    checkAuthorities(principal.getAuthorities(), "group1", "group2");
   }
 
   protected void prepareTestAuthenticate_OK(Credentials credentials) throws Exception {};

@@ -40,7 +40,7 @@ public abstract class AbstractOwncloudUserDetailsServiceTest extends AbstractOwn
 
     Assert.assertEquals("user1", userDetails.getUsername());
     Assert.assertNull(userDetails.getPassword());
-    checkAuthorities(userDetails.getAuthorities(), "Group1", "Group2");
+    checkAuthorities(userDetails.getAuthorities(), "group1", "group2");
 
     Assert.assertTrue(OwncloudUserDetails.class.isAssignableFrom(userDetails.getClass()));
     OwncloudUserDetails owncloudUserDetails = (OwncloudUserDetails) userDetails;
@@ -48,11 +48,11 @@ public abstract class AbstractOwncloudUserDetailsServiceTest extends AbstractOwn
     Assert.assertEquals("user1@example.com", owncloudUserDetails.getEmail());
   }
 
-  protected void prepareTestUserDetails_OK(String string) throws Exception {}
+  protected void prepareTestUserDetails_OK(String user) throws Exception {}
 
   @Test(expected = UsernameNotFoundException.class)
   @WithMockOwncloudUser(username = "user1", password = "password")
-  public void testUserDetials_NotFound() throws Exception {
+  public void testUserDetails_NotFound() throws Exception {
     prepareTestUserDetails_NotFound();
 
     userDetailsService.loadUserByUsername("unknown");

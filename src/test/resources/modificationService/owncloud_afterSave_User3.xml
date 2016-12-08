@@ -1,0 +1,34 @@
+<owncloud>
+  <users>
+    <user>
+      <username>user1</username>
+      <password>s3cr3t</password>
+      <enabled>true</enabled>
+      <displayName>Mr. User 1</displayName>
+      <email>user1@example.com</email>
+      <groups>
+        <group>group1</group>
+        <group>group2</group>
+      </groups>
+    </user>
+    <user>
+      <username>user2</username>
+      <password>s3cr3t</password>
+      <enabled>false</enabled>
+      <displayName>Mrs. User 2</displayName>
+      <email>user2@example.com</email>
+    </user>
+    <user>
+      <username>user3</username>
+      <password>password</password>
+      <enabled>true</enabled>
+      <displayName>Mr. User 3</displayName>
+      <email>user3@example.com</email>
+      <groups/>
+    </user>
+  </users>
+  <groups>
+    <group>group1</group>
+    <group>group2</group>
+  </groups>
+</owncloud>

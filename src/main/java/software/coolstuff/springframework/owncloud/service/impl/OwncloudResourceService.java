@@ -102,7 +102,8 @@ class OwncloudResourceService implements InitializingBean, DisposableBean {
     Validate.isTrue(resource.isReadable());
 
     log.debug("Read the Resource {} to the Class {}", resource.getFilename(), OwncloudResourceData.class.getName());
-    OwncloudResourceData resourceData = messageConverter.getObjectMapper().readValue(resource.getInputStream(), OwncloudResourceData.class);
+    OwncloudResourceData resourceData = messageConverter.getObjectMapper().readValue(resource.getInputStream(),
+        OwncloudResourceData.class);
     checkGroupReferences(resourceData);
 
     log.debug("Save the Users as a Map");
@@ -120,11 +121,13 @@ class OwncloudResourceService implements InitializingBean, DisposableBean {
         continue;
       }
 
-      log.debug("Check, if the Groups of User {} are registered within the general Group Definitions", user.getUsername());
+      log.debug("Check, if the Groups of User {} are registered within the general Group Definitions",
+          user.getUsername());
       if (!CollectionUtils.isSubCollection(user.getGroups(), resourceData.getGroups())) {
-        Collection<OwncloudResourceData.Group> unknownGroups = CollectionUtils.subtract(user.getGroups(), resourceData.getGroups());
-        throw new IllegalStateException(
-            "User " + user.getUsername() + " has unknown Groups defined: " + unknownGroups + " Please define these Groups within <groups> or remove these Groups from the User");
+        Collection<OwncloudResourceData.Group> unknownGroups = CollectionUtils.subtract(user.getGroups(),
+            resourceData.getGroups());
+        throw new IllegalStateException("User " + user.getUsername() + " has unknown Groups defined: " + unknownGroups
+            + " Please define these Groups within <groups> or remove these Groups from the User");
       }
     }
   }
@@ -134,7 +137,8 @@ class OwncloudResourceService implements InitializingBean, DisposableBean {
     log.debug("Load Resource from Location {}", properties.getLocation());
     Resource resource = resourceLoader.getResource(properties.getLocation());
     if (!(resource instanceof UrlResource)) {
-      log.debug("Resource {} is not of Type {}. Can't synchronize changed Data", resource.getFilename(), UrlResource.class.getName());
+      log.debug("Resource {} is not of Type {}. Can't synchronize changed Data", resource.getFilename(),
+          UrlResource.class.getName());
       return;
     }
 
@@ -232,16 +236,9 @@ class OwncloudResourceService implements InitializingBean, DisposableBean {
         authorities.add(new SimpleGrantedAuthority(group.getGroup()));
       }
     }
-    return OwncloudUserDetails.builder()
-        .username(user.getUsername())
-        .enabled(user.isEnabled())
-        .displayName(user.getDisplayName())
-        .email(user.getEmail())
-        .authorities(authorities)
-        .accountNonExpired(true)
-        .accountNonLocked(true)
-        .credentialsNonExpired(true)
-        .build();
+    return OwncloudUserDetails.builder().username(user.getUsername()).enabled(user.isEnabled())
+        .displayName(user.getDisplayName()).email(user.getEmail()).authorities(authorities).accountNonExpired(true)
+        .accountNonLocked(true).credentialsNonExpired(true).build();
   }
 
   /**
@@ -290,18 +287,42 @@ class OwncloudResourceService implements InitializingBean, DisposableBean {
    * @return List of Users
    */
   public List<String> getAllMembersOfGroup(String groupname) {
+    checkGroupExistence(groupname);
     List<String> members = new ArrayList<>();
     for (OwncloudResourceData.User user : users.values()) {
-      if (CollectionUtils.isNotEmpty(user.getGroups())) {
-        for (OwncloudResourceData.Group group : user.getGroups()) {
-          if (StringUtils.equals(groupname, group.getGroup())) {
-            members.add(user.getUsername());
-            break;
-          }
+      addWhenMemberOfGroup(groupname, members, user);
+    }
+    return members;
+  }
+
+  private void checkGroupExistence(String groupname) {
+    if (notExistsGroup(groupname)) {
+      throw new OwncloudGroupNotFoundException(groupname);
+    }
+  }
+
+  private boolean notExistsGroup(String groupname) {
+    return !existsGroup(groupname);
+  }
+
+  private boolean existsGroup(String groupname) {
+    for (OwncloudResourceData.Group group : groups) {
+      if (StringUtils.equals(groupname, group.getGroup())) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private void addWhenMemberOfGroup(String groupname, List<String> members, OwncloudResourceData.User user) {
+    if (CollectionUtils.isNotEmpty(user.getGroups())) {
+      for (OwncloudResourceData.Group group : user.getGroups()) {
+        if (StringUtils.equals(groupname, group.getGroup())) {
+          members.add(user.getUsername());
+          break;
         }
       }
     }
-    return members;
   }
 
   /**
@@ -339,6 +360,7 @@ class OwncloudResourceService implements InitializingBean, DisposableBean {
     existingUser.setDisplayName(user.getDisplayName());
     existingUser.setEmail(user.getEmail());
     existingUser.setEnabled(user.isEnabled());
+
     if (StringUtils.isNotBlank(user.getPassword())) {
       existingUser.setPassword(user.getPassword());
     }
@@ -354,9 +376,7 @@ class OwncloudResourceService implements InitializingBean, DisposableBean {
     List<OwncloudResourceData.Group> groups = new ArrayList<>();
     if (CollectionUtils.isNotEmpty(newUser.getGroups())) {
       for (String group : newUser.getGroups()) {
-        if (!groups.contains(group)) {
-          throw new OwncloudGroupNotFoundException(group);
-        }
+        checkGroupExistence(group);
         groups.add(new OwncloudResourceData.Group(group));
       }
     }

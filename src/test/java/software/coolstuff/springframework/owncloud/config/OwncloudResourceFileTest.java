@@ -16,4 +16,8 @@ package software.coolstuff.springframework.owncloud.config;
  */
 public interface OwncloudResourceFileTest {
 
+  default boolean isCheckAllResourcesAgainstOriginal() {
+    return true;
+  }
+
 }

@@ -60,9 +60,9 @@ public abstract class AbstractOwncloudUserQueryServiceTest extends AbstractOwncl
 
     Assert.assertNotNull(groups);
     Assert.assertFalse(groups.isEmpty());
-    Assert.assertEquals(5, groups.size());
+    Assert.assertEquals(2, groups.size());
 
-    ArrayList<String> expectedGroups = Lists.newArrayList("group1", "group2", "group3", "group4", "group5");
+    ArrayList<String> expectedGroups = Lists.newArrayList("group1", "group2");
     for (String group : groups) {
       Assert.assertTrue(expectedGroups.contains(group));
       expectedGroups.remove(group);
@@ -97,8 +97,8 @@ public abstract class AbstractOwncloudUserQueryServiceTest extends AbstractOwncl
   @Test(expected = OwncloudGroupNotFoundException.class)
   @WithMockOwncloudUser(username = "user1", password = "password")
   public void testFindAllMembersOfGroup_UnknownGroup() throws Exception {
-    prepareTestFindAllMembersOfGroup_UnknownGroup("group1");
-    userQueryService.findAllMembersOfGroup("group1");
+    prepareTestFindAllMembersOfGroup_UnknownGroup("group3");
+    userQueryService.findAllMembersOfGroup("group3");
   }
 
   protected void prepareTestFindAllMembersOfGroup_UnknownGroup(String group) throws Exception {}
