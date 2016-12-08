@@ -1,6 +1,5 @@
 package software.coolstuff.springframework.owncloud.service.impl;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -12,7 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import com.google.common.collect.Lists;
@@ -20,6 +18,7 @@ import com.google.common.collect.Lists;
 import software.coolstuff.springframework.owncloud.exception.OwncloudGroupAlreadyExistsException;
 import software.coolstuff.springframework.owncloud.exception.OwncloudGroupNotFoundException;
 import software.coolstuff.springframework.owncloud.exception.OwncloudUsernameAlreadyExistsException;
+import software.coolstuff.springframework.owncloud.model.OwncloudModificationUser;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
 import software.coolstuff.springframework.owncloud.properties.OwncloudProperties;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudUserModificationService;
@@ -41,29 +40,29 @@ class OwncloudUserModificationServiceImpl extends AbstractOwncloudServiceImpl im
   }
 
   @Override
-  public OwncloudUserDetails saveUser(OwncloudUserDetails userDetails) {
+  public OwncloudUserDetails saveUser(OwncloudModificationUser user) {
     checkModificationsEnabled();
 
-    Validate.notNull(userDetails);
-    Validate.notBlank(userDetails.getUsername());
+    Validate.notNull(user);
+    Validate.notBlank(user.getUsername());
 
     if (isRestNotAvailable()) {
-      return resourceService.saveUser(userDetails);
+      return resourceService.saveUser(user);
     }
 
     try {
       // First check, if the User already exists within the Owncloud
-      OcsUserInformation userInformation = exchange("/cloud/users/{user}", HttpMethod.GET, emptyEntity(), OcsUserInformation.class, userDetails.getUsername());
+      OcsUserInformation existingUser = exchange("/cloud/users/{user}", HttpMethod.GET, emptyEntity(), OcsUserInformation.class, user.getUsername());
 
       // User exists --> update User
-      updateUser(userDetails, userInformation.getData());
+      updateUser(user, existingUser.getData());
     } catch (UsernameNotFoundException e) {
       // User doesn't exist --> create User
-      createUser(userDetails);
+      createUser(user);
     }
 
-    OwncloudUserDetails foundUserDetails = userQueryService.findOneUser(userDetails.getUsername());
-    foundUserDetails.setPassword(userDetails.getPassword());
+    OwncloudUserDetails foundUserDetails = userQueryService.findOneUser(user.getUsername());
+    foundUserDetails.setPassword(user.getPassword());
     return foundUserDetails;
   }
 
@@ -73,23 +72,23 @@ class OwncloudUserModificationServiceImpl extends AbstractOwncloudServiceImpl im
     }
   }
 
-  private void updateUser(OwncloudUserDetails expectedDetails, OcsUserInformation.User actualDetails) {
+  private void updateUser(OwncloudModificationUser user, OcsUserInformation.User existingUser) {
     // change the Display Name
-    if (!StringUtils.equals(expectedDetails.getDisplayName(), actualDetails.getDisplayname())) {
-      updateOwncloudUserField(expectedDetails.getUsername(), UserUpdateField.DISPLAY_NAME, expectedDetails.getDisplayName());
+    if (!StringUtils.equals(user.getDisplayName(), existingUser.getDisplayname())) {
+      updateOwncloudUserField(user.getUsername(), UserUpdateField.DISPLAY_NAME, user.getDisplayName());
     }
 
     // change the eMail
-    if (!StringUtils.equals(expectedDetails.getEmail(), actualDetails.getEmail())) {
-      updateOwncloudUserField(expectedDetails.getUsername(), UserUpdateField.EMAIL, expectedDetails.getEmail());
+    if (!StringUtils.equals(user.getEmail(), existingUser.getEmail())) {
+      updateOwncloudUserField(user.getUsername(), UserUpdateField.EMAIL, user.getEmail());
     }
 
     // change the availability Status
-    if (expectedDetails.isEnabled() != actualDetails.isEnabled()) {
-      changeOwncloudUserAvailabilityStatus(expectedDetails.getUsername(), expectedDetails.isEnabled());
+    if (user.isEnabled() != existingUser.isEnabled()) {
+      changeOwncloudUserAvailabilityStatus(user.getUsername(), user.isEnabled());
     }
 
-    manageGroupMemberships(expectedDetails.getUsername(), expectedDetails.getAuthorities());
+    manageGroupMemberships(user.getUsername(), user.getGroups());
   }
 
   private void updateOwncloudUserField(String username, UserUpdateField updateField, String value) {
@@ -138,20 +137,20 @@ class OwncloudUserModificationServiceImpl extends AbstractOwncloudServiceImpl im
     }, username, status ? "enable" : "disable");
   }
 
-  private void manageGroupMemberships(String username, Collection<? extends GrantedAuthority> expectedAuthorities) {
+  private void manageGroupMemberships(String username, List<String> expectedGroups) {
     OcsGroups ocsGroups = exchange("/cloud/users/{user}/groups", HttpMethod.GET, emptyEntity(), OcsGroups.class, username);
     List<String> actualGroups = OwncloudUserQueryServiceImpl.convertOcsGroups(ocsGroups);
 
     // add new Group Memberships
-    if (CollectionUtils.isNotEmpty(expectedAuthorities)) {
-      for (GrantedAuthority authority : expectedAuthorities) {
-        if (actualGroups.contains(authority.getAuthority())) {
-          actualGroups.remove(authority.getAuthority());
+    if (CollectionUtils.isNotEmpty(expectedGroups)) {
+      for (String group : expectedGroups) {
+        if (actualGroups.contains(group)) {
+          actualGroups.remove(group);
           continue;
         }
 
         Map<String, List<String>> data = new HashMap<>();
-        data.put("groupid", Lists.newArrayList(authority.getAuthority()));
+        data.put("groupid", Lists.newArrayList(group));
 
         exchange("/cloud/users/{user}/groups", HttpMethod.POST, multiValuedEntity(data), OcsVoid.class, (uri, metaInformation) -> {
           if ("ok".equals(metaInformation.getStatus())) {
@@ -164,13 +163,13 @@ class OwncloudUserModificationServiceImpl extends AbstractOwncloudServiceImpl im
             case 101:
               throw new IllegalArgumentException(metaInformation.getMessage());
             case 102:
-              throw new OwncloudGroupNotFoundException(authority.getAuthority());
+              throw new OwncloudGroupNotFoundException(group);
             case 103:
               throw new UsernameNotFoundException(username);
             case 104:
-              throw new AccessDeniedException("Not authorized to add a Group " + authority.getAuthority() + " to User " + username);
+              throw new AccessDeniedException("Not authorized to add a Group " + group + " to User " + username);
             case 105:
-              throw new IllegalStateException("Error while adding Group " + authority.getAuthority() + " to User " + username + ". Reason: " + metaInformation.getMessage());
+              throw new IllegalStateException("Error while adding Group " + group + " to User " + username + ". Reason: " + metaInformation.getMessage());
             case 997:
               throw new AccessDeniedException("Not Authorized to access Resource " + uri);
             default:
@@ -214,12 +213,12 @@ class OwncloudUserModificationServiceImpl extends AbstractOwncloudServiceImpl im
     }
   }
 
-  private void createUser(OwncloudUserDetails userDetails) {
-    Validate.notBlank(userDetails.getPassword());
+  private void createUser(OwncloudModificationUser user) {
+    Validate.notBlank(user.getPassword());
 
     Map<String, List<String>> data = new HashMap<>();
-    data.put("userid", Lists.newArrayList(userDetails.getUsername()));
-    data.put("password", Lists.newArrayList(userDetails.getPassword()));
+    data.put("userid", Lists.newArrayList(user.getUsername()));
+    data.put("password", Lists.newArrayList(user.getPassword()));
 
     exchange("/cloud/users", HttpMethod.POST, multiValuedEntity(data), OcsVoid.class, (uri, metaInformation) -> {
       if ("ok".equals(metaInformation.getStatus())) {
@@ -232,7 +231,7 @@ class OwncloudUserModificationServiceImpl extends AbstractOwncloudServiceImpl im
         case 101:
           throw new IllegalArgumentException(metaInformation.getMessage());
         case 102:
-          throw new OwncloudUsernameAlreadyExistsException(userDetails.getUsername());
+          throw new OwncloudUsernameAlreadyExistsException(user.getUsername());
         case 103:
           throw new IllegalStateException(metaInformation.getMessage());
         case 997:
@@ -242,8 +241,8 @@ class OwncloudUserModificationServiceImpl extends AbstractOwncloudServiceImpl im
       }
     });
 
-    OcsUserInformation userInformation = exchange("/cloud/users/{user}", HttpMethod.GET, emptyEntity(), OcsUserInformation.class, userDetails.getUsername());
-    updateUser(userDetails, userInformation.getData());
+    OcsUserInformation existingUser = exchange("/cloud/users/{user}", HttpMethod.GET, emptyEntity(), OcsUserInformation.class, user.getUsername());
+    updateUser(user, existingUser.getData());
   }
 
   @Override

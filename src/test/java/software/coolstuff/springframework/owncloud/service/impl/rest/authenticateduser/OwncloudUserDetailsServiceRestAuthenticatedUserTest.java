@@ -15,8 +15,8 @@ import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.test.context.ActiveProfiles;
 
 import software.coolstuff.springframework.owncloud.exception.OwncloudInvalidAuthenticationObjectException;
+import software.coolstuff.springframework.owncloud.service.impl.AbstractOwncloudUserDetailsServiceRestTest;
 import software.coolstuff.springframework.owncloud.service.impl.OwncloudUserDetailsService;
-import software.coolstuff.springframework.owncloud.service.impl.rest.AbstractOwncloudUserDetailsServiceRestTest;
 
 @ActiveProfiles("URL-TEST-AUTHENTICATED-USER")
 public class OwncloudUserDetailsServiceRestAuthenticatedUserTest extends AbstractOwncloudUserDetailsServiceRestTest {
@@ -25,14 +25,14 @@ public class OwncloudUserDetailsServiceRestAuthenticatedUserTest extends Abstrac
   private OwncloudUserDetailsService userDetailsService;
 
   @Override
-  protected String getBasicAuthorizationHeader() {
+  public final String getBasicAuthorizationHeader() {
     return getSecurityContextBasicAuthorizationHeader();
   }
 
   @Test(expected = OwncloudInvalidAuthenticationObjectException.class)
   @WithAnonymousUser
   public void testUserDetails_WrongAuthenticationObject() throws MalformedURLException, IOException {
-    server
+    getServer()
         .expect(requestToWithPrefix("/cloud/users/user1"))
         .andExpect(method(GET))
         .andExpect(header("Authorization", getBasicAuthorizationHeader()))

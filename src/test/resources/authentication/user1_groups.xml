@@ -7,8 +7,8 @@
   </meta>
   <data>
     <groups>
-      <element>Group1</element>
-      <element>Group2</element>
+      <element>group1</element>
+      <element>group2</element>
     </groups>
   </data>
 </ocs>

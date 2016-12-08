@@ -1,39 +1,46 @@
-package software.coolstuff.springframework.owncloud.service.impl.resource;
+package software.coolstuff.springframework.owncloud.service;
 
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.client.RestClientTest;
-import org.springframework.core.io.Resource;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
-import software.coolstuff.springframework.owncloud.config.CompareResourceAfter;
+import software.coolstuff.springframework.owncloud.config.WithMockOwncloudUser;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
-import software.coolstuff.springframework.owncloud.service.impl.AbstractOwncloudResourceTest;
+import software.coolstuff.springframework.owncloud.service.impl.AbstractOwncloudServiceTest;
 import software.coolstuff.springframework.owncloud.service.impl.OwncloudUserDetailsService;
 
 @RestClientTest(OwncloudUserDetailsService.class)
-public abstract class AbstractOwncloudUserDetailsServiceResourceTest extends AbstractOwncloudResourceTest {
+public abstract class AbstractOwncloudUserDetailsServiceTest extends AbstractOwncloudServiceTest {
 
   @Autowired
-  private UserDetailsService userDetailsService;
+  private OwncloudUserDetailsService userDetailsService;
 
   @Override
-  protected String getResourcePrefix() {
+  protected final String getResourcePrefix() {
     return "/userDetails";
   }
 
   @Test
-  public void testOK() {
+  public void testCorrectClass() {
+    Assert.assertEquals(OwncloudUserDetailsService.class, userDetailsService.getClass());
+  }
+
+  @Test
+  @WithMockOwncloudUser(username = "user1", password = "password")
+  public void testUserDetails_OK() throws Exception {
+    prepareTestUserDetails_OK("user1");
+
     UserDetails userDetails = userDetailsService.loadUserByUsername("user1");
+    verifyServer();
 
     Assert.assertNotNull(userDetails);
 
     Assert.assertEquals("user1", userDetails.getUsername());
     Assert.assertNull(userDetails.getPassword());
-    checkAuthorities(userDetails.getAuthorities(), "Group1", "Group2");
+    checkAuthorities(userDetails.getAuthorities(), "group1", "group2");
 
     Assert.assertTrue(OwncloudUserDetails.class.isAssignableFrom(userDetails.getClass()));
     OwncloudUserDetails owncloudUserDetails = (OwncloudUserDetails) userDetails;
@@ -41,19 +48,16 @@ public abstract class AbstractOwncloudUserDetailsServiceResourceTest extends Abs
     Assert.assertEquals("user1@example.com", owncloudUserDetails.getEmail());
   }
 
-  @CompareResourceAfter("testOK")
-  public void compareAfterTestOK(Resource target) throws Exception {
-    compareResources(target);
-  }
+  protected void prepareTestUserDetails_OK(String user) throws Exception {}
 
   @Test(expected = UsernameNotFoundException.class)
-  public void testNOK() {
+  @WithMockOwncloudUser(username = "user1", password = "password")
+  public void testUserDetails_NotFound() throws Exception {
+    prepareTestUserDetails_NotFound();
+
     userDetailsService.loadUserByUsername("unknown");
   }
 
-  @CompareResourceAfter("testNOK")
-  public void compareAfterTestNOK(Resource target) throws Exception {
-    compareResources(target);
-  }
+  protected void prepareTestUserDetails_NotFound() throws Exception {}
 
 }

@@ -35,6 +35,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import software.coolstuff.springframework.owncloud.exception.OwncloudGroupAlreadyExistsException;
 import software.coolstuff.springframework.owncloud.exception.OwncloudGroupNotFoundException;
+import software.coolstuff.springframework.owncloud.model.OwncloudModificationUser;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
 import software.coolstuff.springframework.owncloud.properties.OwncloudProperties;
 
@@ -101,7 +102,8 @@ class OwncloudResourceService implements InitializingBean, DisposableBean {
     Validate.isTrue(resource.isReadable());
 
     log.debug("Read the Resource {} to the Class {}", resource.getFilename(), OwncloudResourceData.class.getName());
-    OwncloudResourceData resourceData = messageConverter.getObjectMapper().readValue(resource.getInputStream(), OwncloudResourceData.class);
+    OwncloudResourceData resourceData = messageConverter.getObjectMapper().readValue(resource.getInputStream(),
+        OwncloudResourceData.class);
     checkGroupReferences(resourceData);
 
     log.debug("Save the Users as a Map");
@@ -119,11 +121,13 @@ class OwncloudResourceService implements InitializingBean, DisposableBean {
         continue;
       }
 
-      log.debug("Check, if the Groups of User {} are registered within the general Group Definitions", user.getUsername());
+      log.debug("Check, if the Groups of User {} are registered within the general Group Definitions",
+          user.getUsername());
       if (!CollectionUtils.isSubCollection(user.getGroups(), resourceData.getGroups())) {
-        Collection<OwncloudResourceData.Group> unknownGroups = CollectionUtils.subtract(user.getGroups(), resourceData.getGroups());
-        throw new IllegalStateException(
-            "User " + user.getUsername() + " has unknown Groups defined: " + unknownGroups + " Please define these Groups within <groups> or remove these Groups from the User");
+        Collection<OwncloudResourceData.Group> unknownGroups = CollectionUtils.subtract(user.getGroups(),
+            resourceData.getGroups());
+        throw new IllegalStateException("User " + user.getUsername() + " has unknown Groups defined: " + unknownGroups
+            + " Please define these Groups within <groups> or remove these Groups from the User");
       }
     }
   }
@@ -133,7 +137,8 @@ class OwncloudResourceService implements InitializingBean, DisposableBean {
     log.debug("Load Resource from Location {}", properties.getLocation());
     Resource resource = resourceLoader.getResource(properties.getLocation());
     if (!(resource instanceof UrlResource)) {
-      log.debug("Resource {} is not of Type {}. Can't synchronize changed Data", resource.getFilename(), UrlResource.class.getName());
+      log.debug("Resource {} is not of Type {}. Can't synchronize changed Data", resource.getFilename(),
+          UrlResource.class.getName());
       return;
     }
 
@@ -219,28 +224,21 @@ class OwncloudResourceService implements InitializingBean, DisposableBean {
   public OwncloudUserDetails getUser(String username) {
     OwncloudResourceData.User user = users.get(username);
     if (user == null) {
-      return null;
+      throw new UsernameNotFoundException(username);
     }
-    return convertToOwncloudUserDetailsFrom(user);
+    return convert(user);
   }
 
-  private OwncloudUserDetails convertToOwncloudUserDetailsFrom(OwncloudResourceData.User user) {
+  private OwncloudUserDetails convert(OwncloudResourceData.User user) {
     List<GrantedAuthority> authorities = new ArrayList<>();
     if (CollectionUtils.isNotEmpty(user.getGroups())) {
       for (OwncloudResourceData.Group group : user.getGroups()) {
         authorities.add(new SimpleGrantedAuthority(group.getGroup()));
       }
     }
-    return OwncloudUserDetails.builder()
-        .username(user.getUsername())
-        .enabled(user.isEnabled())
-        .displayName(user.getDisplayName())
-        .email(user.getEmail())
-        .authorities(authorities)
-        .accountNonExpired(true)
-        .accountNonLocked(true)
-        .credentialsNonExpired(true)
-        .build();
+    return OwncloudUserDetails.builder().username(user.getUsername()).enabled(user.isEnabled())
+        .displayName(user.getDisplayName()).email(user.getEmail()).authorities(authorities).accountNonExpired(true)
+        .accountNonLocked(true).credentialsNonExpired(true).build();
   }
 
   /**
@@ -289,13 +287,42 @@ class OwncloudResourceService implements InitializingBean, DisposableBean {
    * @return List of Users
    */
   public List<String> getAllMembersOfGroup(String groupname) {
+    checkGroupExistence(groupname);
     List<String> members = new ArrayList<>();
     for (OwncloudResourceData.User user : users.values()) {
-      if (CollectionUtils.isNotEmpty(user.getGroups()) && user.getGroups().contains(groupname)) {
-        members.add(user.getUsername());
-      }
+      addWhenMemberOfGroup(groupname, members, user);
     }
     return members;
+  }
+
+  private void checkGroupExistence(String groupname) {
+    if (notExistsGroup(groupname)) {
+      throw new OwncloudGroupNotFoundException(groupname);
+    }
+  }
+
+  private boolean notExistsGroup(String groupname) {
+    return !existsGroup(groupname);
+  }
+
+  private boolean existsGroup(String groupname) {
+    for (OwncloudResourceData.Group group : groups) {
+      if (StringUtils.equals(groupname, group.getGroup())) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private void addWhenMemberOfGroup(String groupname, List<String> members, OwncloudResourceData.User user) {
+    if (CollectionUtils.isNotEmpty(user.getGroups())) {
+      for (OwncloudResourceData.Group group : user.getGroups()) {
+        if (StringUtils.equals(groupname, group.getGroup())) {
+          members.add(user.getUsername());
+          break;
+        }
+      }
+    }
   }
 
   /**
@@ -319,46 +346,41 @@ class OwncloudResourceService implements InitializingBean, DisposableBean {
     return groups;
   }
 
-  public OwncloudUserDetails saveUser(OwncloudUserDetails userDetails) {
-    OwncloudResourceData.User user = users.get(userDetails.getUsername());
+  public OwncloudUserDetails saveUser(OwncloudModificationUser user) {
+    OwncloudResourceData.User existingUser = users.get(user.getUsername());
 
-    if (user == null) {
-      Validate.notBlank(userDetails.getPassword());
+    if (existingUser == null) {
+      Validate.notBlank(user.getPassword());
 
-      user = new OwncloudResourceData.User();
-      user.setUsername(userDetails.getUsername());
-      users.put(user.getUsername(), user);
+      existingUser = new OwncloudResourceData.User();
+      existingUser.setUsername(user.getUsername());
+      users.put(existingUser.getUsername(), existingUser);
     }
 
-    user.setDisplayName(userDetails.getDisplayName());
-    user.setEmail(userDetails.getEmail());
-    user.setEnabled(userDetails.isEnabled());
-    if (StringUtils.isNotBlank(userDetails.getPassword())) {
-      user.setPassword(userDetails.getPassword());
+    existingUser.setDisplayName(user.getDisplayName());
+    existingUser.setEmail(user.getEmail());
+    existingUser.setEnabled(user.isEnabled());
+
+    if (StringUtils.isNotBlank(user.getPassword())) {
+      existingUser.setPassword(user.getPassword());
     }
 
-    manageGroups(user, userDetails);
+    manageGroups(existingUser, user);
 
-    return convertToOwncloudUserDetailsFrom(users.get(userDetails.getUsername()));
+    OwncloudUserDetails userDetails = convert(users.get(user.getUsername()));
+    userDetails.setPassword(user.getPassword());
+    return userDetails;
   }
 
-  private void manageGroups(OwncloudResourceService.OwncloudResourceData.User user, OwncloudUserDetails userDetails) {
-    List<OwncloudResourceData.Group> existingGroups = new ArrayList<>(user.getGroups());
-    for (GrantedAuthority authority : userDetails.getAuthorities()) {
-      if (existingGroups.contains(authority.getAuthority())) {
-        existingGroups.remove(authority.getAuthority());
-        continue;
+  private void manageGroups(OwncloudResourceData.User existingUser, OwncloudModificationUser newUser) {
+    List<OwncloudResourceData.Group> groups = new ArrayList<>();
+    if (CollectionUtils.isNotEmpty(newUser.getGroups())) {
+      for (String group : newUser.getGroups()) {
+        checkGroupExistence(group);
+        groups.add(new OwncloudResourceData.Group(group));
       }
-
-      if (!groups.contains(authority.getAuthority())) {
-        throw new OwncloudGroupNotFoundException(authority.getAuthority());
-      }
-      user.getGroups().add(new OwncloudResourceData.Group(authority.getAuthority()));
     }
-
-    for (OwncloudResourceData.Group removableGroup : existingGroups) {
-      user.getGroups().remove(removableGroup);
-    }
+    existingUser.setGroups(groups);
   }
 
   public void deleteUser(String username) {

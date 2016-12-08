@@ -6,19 +6,24 @@ import org.springframework.boot.test.autoconfigure.web.client.RestClientTest;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.test.context.ActiveProfiles;
 
-import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
+import software.coolstuff.springframework.owncloud.model.OwncloudModificationUser;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudUserModificationService;
 
 @RestClientTest(OwncloudUserModificationService.class)
 @ActiveProfiles("NO-MODIFICATION-URL-TEST")
-public class OwncloudUserModificationServiceNoModificationRestTest extends AbstractOwncloudRestTest {
+public class OwncloudUserModificationServiceNoModificationRestTest extends AbstractOwncloudServiceTest implements OwncloudServiceRestTest {
 
   @Autowired
   private OwncloudUserModificationService userModificationService;
 
   @Override
-  protected final AbstractOwncloudServiceImpl owncloudService() {
+  public final AbstractOwncloudServiceImpl owncloudService() {
     return (OwncloudUserModificationServiceImpl) userModificationService;
+  }
+
+  @Override
+  public String getBasicAuthorizationHeader() {
+    return null;
   }
 
   @Override
@@ -28,7 +33,7 @@ public class OwncloudUserModificationServiceNoModificationRestTest extends Abstr
 
   @Test(expected = AccessDeniedException.class)
   public void testSaveUser() {
-    userModificationService.saveUser(new OwncloudUserDetails());
+    userModificationService.saveUser(new OwncloudModificationUser());
   }
 
   @Test(expected = AccessDeniedException.class)

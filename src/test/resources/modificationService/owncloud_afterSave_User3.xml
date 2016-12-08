@@ -18,6 +18,14 @@
       <displayName>Mrs. User 2</displayName>
       <email>user2@example.com</email>
     </user>
+    <user>
+      <username>user3</username>
+      <password>password</password>
+      <enabled>true</enabled>
+      <displayName>Mr. User 3</displayName>
+      <email>user3@example.com</email>
+      <groups/>
+    </user>
   </users>
   <groups>
     <group>group1</group>

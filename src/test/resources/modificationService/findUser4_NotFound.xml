@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<ocs>
+ <meta>
+  <status>failure</status>
+  <statuscode>998</statuscode>
+  <message>The requested user could not be found</message>
+ </meta>
+ <data/>
+</ocs>

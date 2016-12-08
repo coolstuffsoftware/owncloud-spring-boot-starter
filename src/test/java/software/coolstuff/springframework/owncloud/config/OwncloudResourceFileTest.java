@@ -1,7 +1,5 @@
 package software.coolstuff.springframework.owncloud.config;
 
-import software.coolstuff.springframework.owncloud.service.impl.AbstractOwncloudResourceTest;
-
 /**
  * A markup Interface to inform the Method {@link OwncloudResourceFileTestExecutionListener#beforeTestClass(org.springframework.test.context.TestContext)} to copy the Classpath Resource
  * <code>classpath:/owncloud.xml</code> to the File-Location set within the application.yml File.
@@ -17,5 +15,9 @@ import software.coolstuff.springframework.owncloud.service.impl.AbstractOwncloud
  *
  */
 public interface OwncloudResourceFileTest {
+
+  default boolean isCheckAllResourcesAgainstOriginal() {
+    return true;
+  }
 
 }
