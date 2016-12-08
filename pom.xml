@@ -176,6 +176,48 @@
   </dependencies>
 
   <build>
+    <pluginManagement>
+      <plugins>
+        <!-- Cobertura -->
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>cobertura-maven-plugin</artifactId>
+          <version>2.7</version>
+          <dependencies>
+            <dependency>
+              <groupId>net.sourceforge.cobertura</groupId>
+              <artifactId>cobertura</artifactId>
+              <version>2.1.1</version>
+              <exclusions>
+                <exclusion>
+                  <groupId>ch.qos.logback</groupId>
+                  <artifactId>logback-classic</artifactId>
+                </exclusion>
+              </exclusions>
+            </dependency>
+          </dependencies>
+          <configuration>
+            <instrumentation>
+              <ignoreTrivial>true</ignoreTrivial>
+              <ignores>
+                <ignore>software.coolstuff.springframework.owncloud.service.api.*</ignore>
+              </ignores>
+              <excludes>
+                <exclude>software/coolstuff/springframework/owncloud/service/impl/AbstractOwncloudServiceImpl$Ocs*.class</exclude>
+                <exclude>software/coolstuff/springframework/owncloud/service/impl/OwncloudResourceService$OwncloudResourceData.class</exclude>
+                <exclude>software/coolstuff/springframework/owncloud/service/impl/AbstractOcs*.class</exclude>
+                <exclude>software/coolstuff/springframework/owncloud/properties/OwncloudProperties.class</exclude>
+              </excludes>
+            </instrumentation>
+            <formats>
+              <format>html</format>
+              <format>xml</format>
+            </formats>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+
     <plugins>
       <!-- Maven Plugins of Apache Group -->
       <plugin>
@@ -221,6 +263,12 @@
         </configuration>
       </plugin>
 
+      <!-- Cobertura -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>cobertura-maven-plugin</artifactId>
+      </plugin>
+
       <!-- Atlassian Plugins -->
       <plugin>
         <groupId>external.atlassian.jgitflow</groupId>
@@ -239,6 +287,15 @@
       </plugin>
     </plugins>
   </build>
+
+  <reporting>
+    <plugins>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>cobertura-maven-plugin</artifactId>
+      </plugin>
+    </plugins>
+  </reporting>
 
   <distributionManagement>
     <snapshotRepository>

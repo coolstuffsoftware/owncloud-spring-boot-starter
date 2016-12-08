@@ -33,6 +33,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.SpringBootDependencyInjectionTestExecutionListener;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
@@ -61,7 +62,7 @@ import software.coolstuff.springframework.owncloud.config.OwncloudResourceFileTe
 import software.coolstuff.springframework.owncloud.properties.OwncloudProperties;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = { OwncloudAutoConfiguration.class })
+@SpringBootTest(classes = { OwncloudAutoConfiguration.class }, webEnvironment = WebEnvironment.NONE)
 @TestExecutionListeners({
     SpringBootDependencyInjectionTestExecutionListener.class,
     DependencyInjectionTestExecutionListener.class,

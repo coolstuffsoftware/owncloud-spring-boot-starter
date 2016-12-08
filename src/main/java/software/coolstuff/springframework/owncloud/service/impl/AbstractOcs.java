@@ -3,7 +3,7 @@ package software.coolstuff.springframework.owncloud.service.impl;
 import lombok.Data;
 
 @Data
-class AbstractOcs {
+abstract class AbstractOcs {
 
   @Data
   static class Meta {
