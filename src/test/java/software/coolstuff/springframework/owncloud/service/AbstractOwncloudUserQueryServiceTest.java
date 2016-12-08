@@ -11,7 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.client.RestClientTest;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
-import software.coolstuff.springframework.owncloud.config.WithMockOwncloudUser;
+import software.coolstuff.springframework.owncloud.config.WithOwncloudMockUser;
 import software.coolstuff.springframework.owncloud.exception.OwncloudGroupNotFoundException;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudUserQueryService;
@@ -29,7 +29,7 @@ public abstract class AbstractOwncloudUserQueryServiceTest extends AbstractOwncl
   }
 
   @Test
-  @WithMockOwncloudUser(username = "user1", password = "password")
+  @WithOwncloudMockUser(username = "user1", password = "password")
   public void testFindAllUsers() throws Exception {
     prepareTestFindAllUsers();
 
@@ -51,7 +51,7 @@ public abstract class AbstractOwncloudUserQueryServiceTest extends AbstractOwncl
   protected void prepareTestFindAllUsers() throws Exception {}
 
   @Test
-  @WithMockOwncloudUser(username = "user1", password = "password")
+  @WithOwncloudMockUser(username = "user1", password = "password")
   public void testFindAllGroups() throws Exception {
     prepareTestFindAllGroups();
 
@@ -73,7 +73,7 @@ public abstract class AbstractOwncloudUserQueryServiceTest extends AbstractOwncl
   protected void prepareTestFindAllGroups() throws Exception {}
 
   @Test
-  @WithMockOwncloudUser(username = "user1", password = "password")
+  @WithOwncloudMockUser(username = "user1", password = "password")
   public void testFindAllMembersOfGroup_OK() throws Exception {
     prepareTestFindAllMembersOfGroup_OK("group1");
 
@@ -95,7 +95,7 @@ public abstract class AbstractOwncloudUserQueryServiceTest extends AbstractOwncl
   protected void prepareTestFindAllMembersOfGroup_OK(String group) throws Exception {}
 
   @Test(expected = OwncloudGroupNotFoundException.class)
-  @WithMockOwncloudUser(username = "user1", password = "password")
+  @WithOwncloudMockUser(username = "user1", password = "password")
   public void testFindAllMembersOfGroup_UnknownGroup() throws Exception {
     prepareTestFindAllMembersOfGroup_UnknownGroup("group3");
     userQueryService.findAllMembersOfGroup("group3");
@@ -114,7 +114,7 @@ public abstract class AbstractOwncloudUserQueryServiceTest extends AbstractOwncl
   }
 
   @Test
-  @WithMockOwncloudUser(username = "user1", password = "password")
+  @WithOwncloudMockUser(username = "user1", password = "password")
   public void testFindOneUser_OK() throws Exception {
     prepareTestFindOneUser_OK("user1");
 
@@ -133,7 +133,7 @@ public abstract class AbstractOwncloudUserQueryServiceTest extends AbstractOwncl
   protected void prepareTestFindOneUser_OK(String user) throws Exception {}
 
   @Test(expected = UsernameNotFoundException.class)
-  @WithMockOwncloudUser(username = "user3", password = "password")
+  @WithOwncloudMockUser(username = "user3", password = "password")
   public void testFindOneUser_UnknownUser() throws Exception {
     prepareTestFindOneUser_UnknownUser("user3");
     userQueryService.findOneUser("user3");
@@ -152,7 +152,7 @@ public abstract class AbstractOwncloudUserQueryServiceTest extends AbstractOwncl
   }
 
   @Test
-  @WithMockOwncloudUser(username = "user1", password = "password")
+  @WithOwncloudMockUser(username = "user1", password = "password")
   public void testFindAllGroupsOfUser_OK() throws Exception {
     prepareTestFindAllGroupsOfUser_OK("user1");
 

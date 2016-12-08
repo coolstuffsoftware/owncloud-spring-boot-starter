@@ -8,8 +8,6 @@ import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 
-import javax.xml.bind.annotation.XmlRootElement;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.InitializingBean;
@@ -35,8 +33,6 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.ResponseErrorHandler;
 import org.springframework.web.client.RestTemplate;
 
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
 import software.coolstuff.springframework.owncloud.exception.OwncloudInvalidAuthenticationObjectException;
 import software.coolstuff.springframework.owncloud.exception.OwncloudStatusException;
 import software.coolstuff.springframework.owncloud.model.OwncloudAuthentication;
@@ -177,7 +173,7 @@ abstract class AbstractOwncloudServiceImpl implements InitializingBean {
     return new HttpEntity<>(new LinkedMultiValueMap<>(data), headers);
   }
 
-  protected <T extends AbstractOcs, ENTITY> T exchange(
+  protected <T extends Ocs, ENTITY> T exchange(
       String url,
       HttpMethod method,
       HttpEntity<ENTITY> httpEntity,
@@ -186,7 +182,7 @@ abstract class AbstractOwncloudServiceImpl implements InitializingBean {
     return exchange(url, method, httpEntity, clazz, this::checkFailure, urlVariables);
   }
 
-  protected <T extends AbstractOcs, ENTITY> T exchange(
+  protected <T extends Ocs, ENTITY> T exchange(
       String url,
       HttpMethod method,
       HttpEntity<ENTITY> httpEntity,
@@ -199,32 +195,32 @@ abstract class AbstractOwncloudServiceImpl implements InitializingBean {
     return result;
   }
 
-  protected void checkFailure(String uri, AbstractOcs.Meta metaInformation) throws OwncloudStatusException {
-    if ("ok".equals(metaInformation.getStatus())) {
+  protected void checkFailure(String uri, Ocs.Meta meta) throws OwncloudStatusException {
+    if ("ok".equals(meta.getStatus())) {
       return;
     }
 
-    switch (metaInformation.getStatuscode()) {
+    switch (meta.getStatuscode()) {
       case 100:
         return;
       case 997:
         throw new AccessDeniedException("Not Authorized to access Resource " + uri);
       case 998:
-        throw new UsernameNotFoundException(metaInformation.getMessage());
+        throw new UsernameNotFoundException(meta.getMessage());
       default:
-        throw new IllegalStateException("Unknown Error Code " + metaInformation.getStatuscode() + ". Reason: " + metaInformation.getMessage());
+        throw new IllegalStateException("Unknown Error Code " + meta.getStatuscode() + ". Reason: " + meta.getMessage());
     }
   }
 
   protected OwncloudUserDetails createUserDetails(
       String username,
-      OcsUserInformation userInformation,
-      OcsGroups groups) {
+      Ocs.User user,
+      Ocs.Groups groups) {
     OwncloudUserDetails userDetails = OwncloudUserDetails.builder()
         .username(username)
-        .enabled(userInformation.getData().isEnabled())
-        .displayName(userInformation.getData().getDisplayname())
-        .email(userInformation.getData().getEmail())
+        .enabled(user.getData().isEnabled())
+        .displayName(user.getData().getDisplayname())
+        .email(user.getData().getEmail())
         .accountNonExpired(true)
         .accountNonLocked(true)
         .credentialsNonExpired(true)
@@ -232,7 +228,7 @@ abstract class AbstractOwncloudServiceImpl implements InitializingBean {
 
     if (isGroupAvailable(groups)) {
       List<GrantedAuthority> authorities = new ArrayList<>();
-      for (OcsGroups.Groups.Group group : groups.getData().getGroups()) {
+      for (Ocs.Groups.Data.Group group : groups.getData().getGroups()) {
         authorities.add(new SimpleGrantedAuthority(group.getGroup()));
       }
 
@@ -248,86 +244,7 @@ abstract class AbstractOwncloudServiceImpl implements InitializingBean {
     return userDetails;
   }
 
-  private boolean isGroupAvailable(OcsGroups groups) {
+  private boolean isGroupAvailable(Ocs.Groups groups) {
     return groups != null && groups.getData() != null && groups.getData().getGroups() != null;
-  }
-
-  @lombok.Data
-  @EqualsAndHashCode(callSuper = true)
-  @XmlRootElement(name = "ocs")
-  protected static class OcsVoid extends AbstractOcs {
-
-    private String data;
-  }
-
-  @lombok.Data
-  @EqualsAndHashCode(callSuper = true)
-  @XmlRootElement(name = "ocs")
-  protected static class OcsUsers extends AbstractOcs {
-
-    @lombok.Data
-    protected static class Users {
-
-      @lombok.Data
-      @AllArgsConstructor
-      protected static class Element {
-
-        private String element;
-
-      }
-
-      private List<Element> users;
-    }
-
-    private Users data;
-  }
-
-  @lombok.Data
-  @EqualsAndHashCode(callSuper = true)
-  @XmlRootElement(name = "ocs")
-  protected static class OcsUserInformation extends AbstractOcs {
-
-    @lombok.Data
-    protected static class User {
-
-      @lombok.Data
-      protected static class Quota {
-
-        private Long free;
-        private Long used;
-        private Long total;
-        private Float relative;
-      }
-
-      private boolean enabled;
-      private Quota quota;
-      private String email;
-      private String displayname;
-    }
-
-    private User data;
-  }
-
-  @lombok.Data
-  @EqualsAndHashCode(callSuper = true)
-  @XmlRootElement(name = "ocs")
-  protected static class OcsGroups extends AbstractOcs {
-
-    @lombok.Data
-    protected static class Groups {
-
-      @lombok.Data
-      @AllArgsConstructor
-      protected static class Group {
-
-        private String group;
-
-      }
-
-      private List<Group> groups;
-
-    }
-
-    private Groups data;
   }
 }

@@ -7,7 +7,7 @@ import org.springframework.boot.test.autoconfigure.web.client.RestClientTest;
 
 import com.google.common.collect.Lists;
 
-import software.coolstuff.springframework.owncloud.config.WithMockOwncloudUser;
+import software.coolstuff.springframework.owncloud.config.WithOwncloudMockUser;
 import software.coolstuff.springframework.owncloud.model.OwncloudModificationUser;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudUserModificationService;
@@ -29,7 +29,7 @@ public abstract class AbstractOwncloudUserModificationServiceTest extends Abstra
   }
 
   @Test
-  @WithMockOwncloudUser(username = "user1", password = "password")
+  @WithOwncloudMockUser(username = "user1", password = "password")
   public void testSaveUser_CreateUser_OK_WithoutGroups() throws Exception {
     OwncloudModificationUser newUser = OwncloudModificationUser.builder()
         .username("user3")
@@ -57,7 +57,7 @@ public abstract class AbstractOwncloudUserModificationServiceTest extends Abstra
   protected void prepareTestSaveUser_CreateUser_OK_WithoutGroups(OwncloudModificationUser newUser) throws Exception {}
 
   @Test
-  @WithMockOwncloudUser(username = "user1", password = "password")
+  @WithOwncloudMockUser(username = "user1", password = "password")
   public void testSaveUser_CreateUser_OK_WithGroups() throws Exception {
     OwncloudModificationUser newUser = OwncloudModificationUser.builder()
         .username("user4")

@@ -24,16 +24,16 @@ public class OwncloudUserDetailsService extends AbstractOwncloudServiceImpl impl
     Validate.notBlank(username);
 
     if (isRestAvailable()) {
-      OcsUserInformation ocsUserInformation = exchange("/cloud/users/{user}", HttpMethod.GET, emptyEntity(), OcsUserInformation.class, username);
-      return loadPreloadedUserByUsername(username, ocsUserInformation);
+      Ocs.User user = exchange("/cloud/users/{user}", HttpMethod.GET, emptyEntity(), Ocs.User.class, username);
+      return loadPreloadedUserByUsername(username, user);
     }
 
     return loadUserByUsernameFromResourceService(username);
   }
 
-  public OwncloudUserDetails loadPreloadedUserByUsername(String username, OcsUserInformation preloadedInformation) throws UsernameNotFoundException {
-    OcsGroups ocsGroups = exchange("/cloud/users/{user}/groups", HttpMethod.GET, emptyEntity(), OcsGroups.class, username);
-    return createUserDetails(username, preloadedInformation, ocsGroups);
+  OwncloudUserDetails loadPreloadedUserByUsername(String username, Ocs.User preloadedUser) throws UsernameNotFoundException {
+    Ocs.Groups groups = exchange("/cloud/users/{user}/groups", HttpMethod.GET, emptyEntity(), Ocs.Groups.class, username);
+    return createUserDetails(username, preloadedUser, groups);
   }
 
   public OwncloudUserDetails loadUserByUsernameFromResourceService(String username) {

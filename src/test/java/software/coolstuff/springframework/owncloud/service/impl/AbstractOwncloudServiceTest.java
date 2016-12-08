@@ -57,9 +57,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import software.coolstuff.springframework.owncloud.config.CompareResourceAfter;
-import software.coolstuff.springframework.owncloud.config.OwncloudResourceFileTest;
-import software.coolstuff.springframework.owncloud.config.OwncloudResourceFileTestExecutionListener;
+import software.coolstuff.springframework.owncloud.config.OwncloudFileResourceTestExecutionListener;
 import software.coolstuff.springframework.owncloud.properties.OwncloudProperties;
+import software.coolstuff.springframework.owncloud.service.impl.resource.file.OwncloudFileResourceTest;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = { OwncloudAutoConfiguration.class }, webEnvironment = WebEnvironment.NONE)
@@ -67,7 +67,7 @@ import software.coolstuff.springframework.owncloud.properties.OwncloudProperties
     SpringBootDependencyInjectionTestExecutionListener.class,
     DependencyInjectionTestExecutionListener.class,
     WithSecurityContextTestExecutionListener.class,
-    OwncloudResourceFileTestExecutionListener.class
+    OwncloudFileResourceTestExecutionListener.class
 })
 @Slf4j
 public abstract class AbstractOwncloudServiceTest {
@@ -97,7 +97,7 @@ public abstract class AbstractOwncloudServiceTest {
       server = createServer(((OwncloudServiceRestTest) this).owncloudService());
     }
 
-    if (this instanceof OwncloudResourceFileTest) {
+    if (this instanceof OwncloudFileResourceTest) {
       copyClasspathResourceToFile();
       resourceService.afterPropertiesSet();
     }
@@ -121,7 +121,7 @@ public abstract class AbstractOwncloudServiceTest {
     Resource target = resourceLoader.getResource(properties.getLocation());
     if (!(target instanceof UrlResource)) {
       throw new IllegalStateException(String.format("TestClass %s implements %s but the Resource-Location %s is not of Type %s", this.getClass().getName(),
-          OwncloudResourceFileTest.class.getName(), properties.getLocation(), UrlResource.class.getName()));
+          OwncloudFileResourceTest.class.getName(), properties.getLocation(), UrlResource.class.getName()));
     }
 
     try (InputStream is = new BufferedInputStream(getSourceResource().getInputStream());
@@ -133,7 +133,7 @@ public abstract class AbstractOwncloudServiceTest {
 
   @After
   public void tearDownResource() throws Throwable {
-    if (this instanceof OwncloudResourceFileTest) {
+    if (this instanceof OwncloudFileResourceTest) {
       resourceService.destroy();
       Resource target = resourceLoader.getResource(properties.getLocation());
 
@@ -176,7 +176,7 @@ public abstract class AbstractOwncloudServiceTest {
         }
       }
 
-      if (!hasSpecificResourceTest && ((OwncloudResourceFileTest) this).isCheckAllResourcesAgainstOriginal()) {
+      if (!hasSpecificResourceTest && ((OwncloudFileResourceTest) this).isCheckAllResourcesAgainstOriginal()) {
         compareResourcesWithOriginalSource(target);
       }
     }

@@ -9,10 +9,10 @@ import org.springframework.security.test.context.support.WithSecurityContextFact
 import software.coolstuff.springframework.owncloud.model.OwncloudAuthentication;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
 
-public class WithMockOwncloudUserFactory implements WithSecurityContextFactory<WithMockOwncloudUser> {
+public class WithOwncloudMockUserFactory implements WithSecurityContextFactory<WithOwncloudMockUser> {
 
   @Override
-  public SecurityContext createSecurityContext(WithMockOwncloudUser withMockOwncloudUser) {
+  public SecurityContext createSecurityContext(WithOwncloudMockUser withMockOwncloudUser) {
     String username = StringUtils.isNotBlank(withMockOwncloudUser.username()) ? withMockOwncloudUser.username() : withMockOwncloudUser.value();
     Validate.notBlank(username);
 

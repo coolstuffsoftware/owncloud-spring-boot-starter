@@ -5,7 +5,7 @@ import org.springframework.test.context.ActiveProfiles;
 import software.coolstuff.springframework.owncloud.service.impl.AbstractOwncloudUserQueryServiceRestTest;
 
 @ActiveProfiles("URL-TEST-ADMINISTRATOR")
-public class OwncloudUserQueryServiceRestAdministratorTest extends AbstractOwncloudUserQueryServiceRestTest {
+public class OwncloudUserQueryServiceAdministratorRestTest extends AbstractOwncloudUserQueryServiceRestTest {
 
   @Override
   public String getBasicAuthorizationHeader() {

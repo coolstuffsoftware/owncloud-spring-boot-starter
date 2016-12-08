@@ -7,7 +7,7 @@ import org.springframework.boot.test.autoconfigure.web.client.RestClientTest;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
-import software.coolstuff.springframework.owncloud.config.WithMockOwncloudUser;
+import software.coolstuff.springframework.owncloud.config.WithOwncloudMockUser;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
 import software.coolstuff.springframework.owncloud.service.impl.AbstractOwncloudServiceTest;
 import software.coolstuff.springframework.owncloud.service.impl.OwncloudUserDetailsService;
@@ -29,7 +29,7 @@ public abstract class AbstractOwncloudUserDetailsServiceTest extends AbstractOwn
   }
 
   @Test
-  @WithMockOwncloudUser(username = "user1", password = "password")
+  @WithOwncloudMockUser(username = "user1", password = "password")
   public void testUserDetails_OK() throws Exception {
     prepareTestUserDetails_OK("user1");
 
@@ -51,7 +51,7 @@ public abstract class AbstractOwncloudUserDetailsServiceTest extends AbstractOwn
   protected void prepareTestUserDetails_OK(String user) throws Exception {}
 
   @Test(expected = UsernameNotFoundException.class)
-  @WithMockOwncloudUser(username = "user1", password = "password")
+  @WithOwncloudMockUser(username = "user1", password = "password")
   public void testUserDetails_NotFound() throws Exception {
     prepareTestUserDetails_NotFound();
 

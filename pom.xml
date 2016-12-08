@@ -203,9 +203,8 @@
                 <ignore>software.coolstuff.springframework.owncloud.service.api.*</ignore>
               </ignores>
               <excludes>
-                <exclude>software/coolstuff/springframework/owncloud/service/impl/AbstractOwncloudServiceImpl$Ocs*.class</exclude>
                 <exclude>software/coolstuff/springframework/owncloud/service/impl/OwncloudResourceService$OwncloudResourceData.class</exclude>
-                <exclude>software/coolstuff/springframework/owncloud/service/impl/AbstractOcs*.class</exclude>
+                <exclude>software/coolstuff/springframework/owncloud/service/impl/Ocs*.class</exclude>
                 <exclude>software/coolstuff/springframework/owncloud/properties/OwncloudProperties.class</exclude>
               </excludes>
             </instrumentation>

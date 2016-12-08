@@ -5,6 +5,6 @@ import org.springframework.test.context.ActiveProfiles;
 import software.coolstuff.springframework.owncloud.service.AbstractOwncloudUserModificationServiceTest;
 
 @ActiveProfiles("RESOURCE-CLASSPATH-TEST")
-public class OwncloudUserModificationServiceResourceClasspathTest extends AbstractOwncloudUserModificationServiceTest {
+public class OwncloudUserModificationServiceClasspathResourceTest extends AbstractOwncloudUserModificationServiceTest {
 
 }

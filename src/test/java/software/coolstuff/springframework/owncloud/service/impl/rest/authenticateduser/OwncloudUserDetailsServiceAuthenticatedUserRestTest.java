@@ -19,7 +19,7 @@ import software.coolstuff.springframework.owncloud.service.impl.AbstractOwncloud
 import software.coolstuff.springframework.owncloud.service.impl.OwncloudUserDetailsService;
 
 @ActiveProfiles("URL-TEST-AUTHENTICATED-USER")
-public class OwncloudUserDetailsServiceRestAuthenticatedUserTest extends AbstractOwncloudUserDetailsServiceRestTest {
+public class OwncloudUserDetailsServiceAuthenticatedUserRestTest extends AbstractOwncloudUserDetailsServiceRestTest {
 
   @Autowired
   private OwncloudUserDetailsService userDetailsService;

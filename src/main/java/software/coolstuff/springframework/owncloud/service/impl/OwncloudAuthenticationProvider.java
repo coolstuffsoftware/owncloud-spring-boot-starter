@@ -39,9 +39,9 @@ public class OwncloudAuthenticationProvider extends AbstractOwncloudServiceImpl 
 
     OwncloudUserDetails owncloudUserDetails = null;
     if (isRestAvailable()) {
-      OcsUserInformation ocsUserInformation = exchange("/cloud/users/{user}", HttpMethod.GET, emptyEntity(username, password), OcsUserInformation.class, username);
+      Ocs.User user = exchange("/cloud/users/{user}", HttpMethod.GET, emptyEntity(username, password), Ocs.User.class, username);
       SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(username, password));
-      owncloudUserDetails = userDetailsService.loadPreloadedUserByUsername(username, ocsUserInformation);
+      owncloudUserDetails = userDetailsService.loadPreloadedUserByUsername(username, user);
     } else {
       if (resourceService == null) {
         throw new BadCredentialsException("resourceService is not available");
@@ -57,7 +57,7 @@ public class OwncloudAuthenticationProvider extends AbstractOwncloudServiceImpl 
   }
 
   @Override
-  protected void checkFailure(String uri, AbstractOcs.Meta metaInformation) throws OwncloudStatusException {
+  protected void checkFailure(String uri, Ocs.Meta metaInformation) throws OwncloudStatusException {
     if ("ok".equals(metaInformation.getStatus())) {
       return;
     }

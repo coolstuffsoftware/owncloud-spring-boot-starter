@@ -9,7 +9,7 @@ import org.springframework.security.authentication.RememberMeAuthenticationToken
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 
-import software.coolstuff.springframework.owncloud.config.WithMockOwncloudUser;
+import software.coolstuff.springframework.owncloud.config.WithOwncloudMockUser;
 import software.coolstuff.springframework.owncloud.model.OwncloudAuthentication;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
 import software.coolstuff.springframework.owncloud.service.impl.AbstractOwncloudServiceTest;
@@ -39,7 +39,7 @@ public abstract class AbstractOwncloudAuthenticationProviderTest extends Abstrac
   }
 
   @Test
-  @WithMockOwncloudUser(username = "user1", password = "s3cr3t")
+  @WithOwncloudMockUser(username = "user1", password = "s3cr3t")
   public void testAuthenticate_OK() throws Exception {
     Credentials credentials = Credentials.builder().username("user1").password("s3cr3t").build();
 

@@ -25,6 +25,7 @@ import org.yaml.snakeyaml.Yaml;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import software.coolstuff.springframework.owncloud.properties.OwncloudProperties;
+import software.coolstuff.springframework.owncloud.service.impl.resource.file.OwncloudFileResourceTest;
 
 /**
  * This Test-Execution Listener prepares the Tests for Resources prefixed with <code>file:</code> because these Resources will also be written on Disk just before the Bean
@@ -35,7 +36,7 @@ import software.coolstuff.springframework.owncloud.properties.OwncloudProperties
  *
  */
 @Slf4j
-public class OwncloudResourceFileTestExecutionListener extends AbstractTestExecutionListener {
+public class OwncloudFileResourceTestExecutionListener extends AbstractTestExecutionListener {
 
   private final static String PROPERTY_FILE_PREFIX = "classpath:config/application-";
   private final static String PROPERTY_FILE_SUFFIX = ".yml";
@@ -45,7 +46,7 @@ public class OwncloudResourceFileTestExecutionListener extends AbstractTestExecu
   @Override
   public void beforeTestClass(TestContext testContext) throws Exception {
     Class<?> testClass = testContext.getTestClass();
-    if (OwncloudResourceFileTest.class.isAssignableFrom(testClass)) {
+    if (OwncloudFileResourceTest.class.isAssignableFrom(testClass)) {
       ActiveProfiles activeProfiles = AnnotationUtils.findAnnotation(testClass, ActiveProfiles.class);
       OwncloudProperties owncloudProperties = loadProperties(activeProfiles.value());
       if (StringUtils.startsWith(owncloudProperties.getLocation(), "file:")) {

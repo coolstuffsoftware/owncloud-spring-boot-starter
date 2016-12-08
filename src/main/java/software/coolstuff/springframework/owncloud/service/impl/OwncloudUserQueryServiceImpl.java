@@ -13,8 +13,6 @@ import org.springframework.security.access.AccessDeniedException;
 import software.coolstuff.springframework.owncloud.exception.OwncloudGroupNotFoundException;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudUserQueryService;
-import software.coolstuff.springframework.owncloud.service.impl.AbstractOwncloudServiceImpl.OcsGroups.Groups.Group;
-import software.coolstuff.springframework.owncloud.service.impl.AbstractOwncloudServiceImpl.OcsUsers.Users.Element;
 
 class OwncloudUserQueryServiceImpl extends AbstractOwncloudServiceImpl implements OwncloudUserQueryService {
 
@@ -36,26 +34,26 @@ class OwncloudUserQueryServiceImpl extends AbstractOwncloudServiceImpl implement
       return resourceService.getAllUsers(filter);
     }
 
-    OcsUsers users = null;
+    Ocs.Users users = null;
     if (StringUtils.isBlank(filter)) {
-      users = exchange("/cloud/users", HttpMethod.GET, emptyEntity(), OcsUsers.class);
+      users = exchange("/cloud/users", HttpMethod.GET, emptyEntity(), Ocs.Users.class);
     } else {
-      users = exchange("/cloud/users?search={filter}", HttpMethod.GET, emptyEntity(), OcsUsers.class, filter);
+      users = exchange("/cloud/users?search={filter}", HttpMethod.GET, emptyEntity(), Ocs.Users.class, filter);
     }
-    return convertOcsUsers(users);
+    return convertUsers(users);
   }
 
-  private List<String> convertOcsUsers(OcsUsers ocsUsers) {
+  private List<String> convertUsers(Ocs.Users ocsUsers) {
     List<String> users = new ArrayList<>();
-    if (isOcsUsersNotNull(ocsUsers)) {
-      for (Element element : ocsUsers.getData().getUsers()) {
+    if (isUsersNotNull(ocsUsers)) {
+      for (Ocs.Users.Data.Element element : ocsUsers.getData().getUsers()) {
         users.add(element.getElement());
       }
     }
     return users;
   }
 
-  private boolean isOcsUsersNotNull(OcsUsers ocsUsers) {
+  private boolean isUsersNotNull(Ocs.Users ocsUsers) {
     return ocsUsers != null && ocsUsers.getData() != null && ocsUsers.getData().getUsers() != null;
   }
 
@@ -70,26 +68,26 @@ class OwncloudUserQueryServiceImpl extends AbstractOwncloudServiceImpl implement
       return resourceService.getAllGroups(filter);
     }
 
-    OcsGroups ocsGroups = null;
+    Ocs.Groups ocsGroups = null;
     if (StringUtils.isBlank(filter)) {
-      ocsGroups = exchange("/cloud/groups", HttpMethod.GET, emptyEntity(), OcsGroups.class);
+      ocsGroups = exchange("/cloud/groups", HttpMethod.GET, emptyEntity(), Ocs.Groups.class);
     } else {
-      ocsGroups = exchange("/cloud/groups?search={filter}", HttpMethod.GET, emptyEntity(), OcsGroups.class, filter);
+      ocsGroups = exchange("/cloud/groups?search={filter}", HttpMethod.GET, emptyEntity(), Ocs.Groups.class, filter);
     }
-    return convertOcsGroups(ocsGroups);
+    return convertGroups(ocsGroups);
   }
 
-  public static List<String> convertOcsGroups(OcsGroups ocsGroups) {
+  public static List<String> convertGroups(Ocs.Groups ocsGroups) {
     List<String> groups = new ArrayList<>();
-    if (isOcsGroupsNotNull(ocsGroups)) {
-      for (Group group : ocsGroups.getData().getGroups()) {
+    if (isGroupsNotNull(ocsGroups)) {
+      for (Ocs.Groups.Data.Group group : ocsGroups.getData().getGroups()) {
         groups.add(group.getGroup());
       }
     }
     return groups;
   }
 
-  private static boolean isOcsGroupsNotNull(OcsGroups ocsGroups) {
+  private static boolean isGroupsNotNull(Ocs.Groups ocsGroups) {
     return ocsGroups != null && ocsGroups.getData() != null && ocsGroups.getData().getGroups() != null;
   }
 
@@ -100,12 +98,12 @@ class OwncloudUserQueryServiceImpl extends AbstractOwncloudServiceImpl implement
       return resourceService.getAllMembersOfGroup(groupname);
     }
 
-    OcsUsers users = exchange("/cloud/groups/{group}", HttpMethod.GET, emptyEntity(), OcsUsers.class, (uri, metaInformation) -> {
-      if ("ok".equals(metaInformation.getStatus())) {
+    Ocs.Users users = exchange("/cloud/groups/{group}", HttpMethod.GET, emptyEntity(), Ocs.Users.class, (uri, meta) -> {
+      if ("ok".equals(meta.getStatus())) {
         return;
       }
 
-      switch (metaInformation.getStatuscode()) {
+      switch (meta.getStatuscode()) {
         case 100:
           return;
         case 997:
@@ -113,10 +111,10 @@ class OwncloudUserQueryServiceImpl extends AbstractOwncloudServiceImpl implement
         case 998:
           throw new OwncloudGroupNotFoundException(groupname);
         default:
-          throw new IllegalStateException("Unknown Error Code " + metaInformation.getStatuscode() + ". Reason: " + metaInformation.getMessage());
+          throw new IllegalStateException("Unknown Error Code " + meta.getStatuscode() + ". Reason: " + meta.getMessage());
       }
     }, groupname);
-    return convertOcsUsers(users);
+    return convertUsers(users);
   }
 
   @Override
@@ -126,8 +124,8 @@ class OwncloudUserQueryServiceImpl extends AbstractOwncloudServiceImpl implement
       return resourceService.getGroupsOfUser(username);
     }
 
-    OcsGroups ocsGroups = exchange("/cloud/users/{user}/groups", HttpMethod.GET, emptyEntity(), OcsGroups.class, username);
-    return convertOcsGroups(ocsGroups);
+    Ocs.Groups ocsGroups = exchange("/cloud/users/{user}/groups", HttpMethod.GET, emptyEntity(), Ocs.Groups.class, username);
+    return convertGroups(ocsGroups);
   }
 
   @Override
@@ -137,9 +135,9 @@ class OwncloudUserQueryServiceImpl extends AbstractOwncloudServiceImpl implement
       return resourceService.getUser(username);
     }
 
-    OcsUserInformation userInformation = exchange("/cloud/users/{user}", HttpMethod.GET, emptyEntity(), OcsUserInformation.class, username);
-    OcsGroups groups = exchange("/cloud/users/{user}/groups", HttpMethod.GET, emptyEntity(), OcsGroups.class, username);
-    return createUserDetails(username, userInformation, groups);
+    Ocs.User user = exchange("/cloud/users/{user}", HttpMethod.GET, emptyEntity(), Ocs.User.class, username);
+    Ocs.Groups groups = exchange("/cloud/users/{user}/groups", HttpMethod.GET, emptyEntity(), Ocs.Groups.class, username);
+    return createUserDetails(username, user, groups);
   }
 
 }

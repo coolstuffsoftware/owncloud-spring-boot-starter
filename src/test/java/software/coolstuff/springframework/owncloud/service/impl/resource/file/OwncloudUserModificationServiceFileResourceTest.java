@@ -4,12 +4,11 @@ import org.springframework.core.io.Resource;
 import org.springframework.test.context.ActiveProfiles;
 
 import software.coolstuff.springframework.owncloud.config.CompareResourceAfter;
-import software.coolstuff.springframework.owncloud.config.OwncloudResourceFileTest;
 import software.coolstuff.springframework.owncloud.service.AbstractOwncloudUserModificationServiceTest;
 
 @ActiveProfiles("RESOURCE-FILE-TEST")
-public class OwncloudUserModificationServiceResourceClasspathTest extends AbstractOwncloudUserModificationServiceTest
-    implements OwncloudResourceFileTest {
+public class OwncloudUserModificationServiceFileResourceTest extends AbstractOwncloudUserModificationServiceTest
+    implements OwncloudFileResourceTest {
 
   @CompareResourceAfter("testSaveUser_CreateUser_OK_WithoutGroups")
   public void compareAfterTestSaveUser_CreateUser_OK_WithoutGroups(Resource target) throws Exception {

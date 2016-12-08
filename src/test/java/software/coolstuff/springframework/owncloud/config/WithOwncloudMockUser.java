@@ -13,8 +13,8 @@ import org.springframework.security.test.context.support.WithSecurityContext;
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
 @Documented
-@WithSecurityContext(factory = WithMockOwncloudUserFactory.class)
-public @interface WithMockOwncloudUser {
+@WithSecurityContext(factory = WithOwncloudMockUserFactory.class)
+public @interface WithOwncloudMockUser {
 
   String value() default "user";
 

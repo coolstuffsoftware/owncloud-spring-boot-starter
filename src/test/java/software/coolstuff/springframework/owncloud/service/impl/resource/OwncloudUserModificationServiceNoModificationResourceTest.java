@@ -12,7 +12,7 @@ import software.coolstuff.springframework.owncloud.service.impl.AbstractOwncloud
 
 @RestClientTest(OwncloudUserModificationService.class)
 @ActiveProfiles("NO-MODIFICATION-RESOURCE-TEST")
-public class OwncloudUserModificationServiceNoModificationsResourceTest extends AbstractOwncloudServiceTest {
+public class OwncloudUserModificationServiceNoModificationResourceTest extends AbstractOwncloudServiceTest {
 
   @Autowired
   private OwncloudUserModificationService userModificationService;
