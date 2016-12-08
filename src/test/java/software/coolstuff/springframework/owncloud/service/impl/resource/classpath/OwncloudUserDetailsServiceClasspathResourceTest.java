@@ -4,7 +4,7 @@ import org.springframework.test.context.ActiveProfiles;
 
 import software.coolstuff.springframework.owncloud.service.AbstractOwncloudUserDetailsServiceTest;
 
-@ActiveProfiles("RESOURCE-CLASSPATH-TEST")
+@ActiveProfiles("CLASSPATH-RESOURCE")
 public class OwncloudUserDetailsServiceClasspathResourceTest extends AbstractOwncloudUserDetailsServiceTest {
 
 }

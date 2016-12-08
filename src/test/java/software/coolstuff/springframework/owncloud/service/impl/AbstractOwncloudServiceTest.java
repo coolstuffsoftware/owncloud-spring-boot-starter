@@ -53,16 +53,20 @@ import org.xmlunit.builder.DiffBuilder;
 import org.xmlunit.builder.Input;
 import org.xmlunit.diff.Diff;
 
-import lombok.Builder;
-import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import software.coolstuff.springframework.owncloud.config.CompareResourceAfter;
 import software.coolstuff.springframework.owncloud.config.OwncloudFileResourceTestExecutionListener;
+import software.coolstuff.springframework.owncloud.config.TestConfiguration;
 import software.coolstuff.springframework.owncloud.properties.OwncloudProperties;
 import software.coolstuff.springframework.owncloud.service.impl.resource.file.OwncloudFileResourceTest;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = { OwncloudAutoConfiguration.class }, webEnvironment = WebEnvironment.NONE)
+@SpringBootTest(
+    webEnvironment = WebEnvironment.NONE,
+    classes = {
+        OwncloudAutoConfiguration.class,
+        TestConfiguration.class
+    })
 @TestExecutionListeners({
     SpringBootDependencyInjectionTestExecutionListener.class,
     DependencyInjectionTestExecutionListener.class,
@@ -260,18 +264,6 @@ public abstract class AbstractOwncloudServiceTest {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     return "Basic " + Base64.getEncoder()
         .encodeToString((authentication.getName() + ":" + authentication.getCredentials()).getBytes());
-  }
-
-  @Data
-  @Builder
-  protected static class Credentials {
-
-    private final String username;
-    private final String password;
-
-    public String getForBasicAuthorizationHeader() {
-      return "Basic " + Base64.getEncoder().encodeToString((getUsername() + ":" + getPassword()).getBytes());
-    }
   }
 
 }

@@ -1,5 +1,7 @@
 package software.coolstuff.springframework.owncloud.service;
 
+import java.util.Base64;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +11,8 @@ import org.springframework.security.authentication.RememberMeAuthenticationToken
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 
+import lombok.Builder;
+import lombok.Data;
 import software.coolstuff.springframework.owncloud.config.WithOwncloudMockUser;
 import software.coolstuff.springframework.owncloud.model.OwncloudAuthentication;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
@@ -41,17 +45,19 @@ public abstract class AbstractOwncloudAuthenticationProviderTest extends Abstrac
   @Test
   @WithOwncloudMockUser(username = "user1", password = "s3cr3t")
   public void testAuthenticate_OK() throws Exception {
-    Credentials credentials = Credentials.builder().username("user1").password("s3cr3t").build();
+    Credentials credentials = Credentials.builder()
+        .username("user1")
+        .password("s3cr3t")
+        .build();
 
     prepareTestAuthenticate_OK(credentials);
 
-    UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
-        credentials.getUsername(), credentials.getPassword());
-    Authentication authentication = authenticationProvider.authenticate(authenticationToken);
+    Authentication authentication = authenticationProvider.authenticate(credentials.getUsernamePasswordAuthenticationToken());
     verifyServer();
 
     Assert.assertNotNull(authentication);
     Assert.assertTrue(OwncloudAuthentication.class.isAssignableFrom(authentication.getClass()));
+    checkAuthorities(authentication.getAuthorities(), "group1", "group2");
 
     Assert.assertEquals(credentials.getUsername(), authentication.getName());
     Assert.assertEquals(credentials.getPassword(), authentication.getCredentials());
@@ -63,22 +69,37 @@ public abstract class AbstractOwncloudAuthenticationProviderTest extends Abstrac
     Assert.assertEquals("Mr. User 1", principal.getDisplayName());
     Assert.assertEquals("user1@example.com", principal.getEmail());
     Assert.assertEquals(2, principal.getAuthorities().size());
-
-    checkAuthorities(principal.getAuthorities(), "group1", "group2");
   }
 
   protected void prepareTestAuthenticate_OK(Credentials credentials) throws Exception {};
 
   @Test(expected = BadCredentialsException.class)
   public void testAuthenticate_NOK() throws Exception {
-    Credentials credentials = Credentials.builder().username("user1").password("wrongPassword").build();
+    Credentials credentials = Credentials.builder()
+        .username("user1")
+        .password("wrongPassword")
+        .build();
 
     prepareTestAuthenticate_NOK(credentials);
 
-    UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
-        credentials.getUsername(), credentials.getPassword());
-    authenticationProvider.authenticate(authenticationToken);
+    authenticationProvider.authenticate(credentials.getUsernamePasswordAuthenticationToken());
   }
 
   protected void prepareTestAuthenticate_NOK(Credentials credentials) throws Exception {};
+
+  @Data
+  @Builder
+  protected static class Credentials {
+
+    private final String username;
+    private final String password;
+
+    public String getForBasicAuthorizationHeader() {
+      return "Basic " + Base64.getEncoder().encodeToString((getUsername() + ":" + getPassword()).getBytes());
+    }
+
+    public UsernamePasswordAuthenticationToken getUsernamePasswordAuthenticationToken() {
+      return new UsernamePasswordAuthenticationToken(username, password);
+    }
+  }
 }

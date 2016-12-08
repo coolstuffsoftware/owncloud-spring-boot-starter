@@ -18,7 +18,7 @@ import software.coolstuff.springframework.owncloud.exception.OwncloudInvalidAuth
 import software.coolstuff.springframework.owncloud.service.impl.AbstractOwncloudUserDetailsServiceRestTest;
 import software.coolstuff.springframework.owncloud.service.impl.OwncloudUserDetailsService;
 
-@ActiveProfiles("URL-TEST-AUTHENTICATED-USER")
+@ActiveProfiles("AUTHENTICATED-USER-URL")
 public class OwncloudUserDetailsServiceAuthenticatedUserRestTest extends AbstractOwncloudUserDetailsServiceRestTest {
 
   @Autowired

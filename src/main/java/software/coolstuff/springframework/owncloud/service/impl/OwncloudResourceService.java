@@ -38,6 +38,7 @@ import software.coolstuff.springframework.owncloud.exception.OwncloudGroupNotFou
 import software.coolstuff.springframework.owncloud.model.OwncloudModificationUser;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
 import software.coolstuff.springframework.owncloud.properties.OwncloudProperties;
+import software.coolstuff.springframework.owncloud.service.api.OwncloudGrantedAuthoritiesMapper;
 
 /**
  * If you define a URL prefixed with either <code>file:</code> or <code>classpath:</code> this Class will be available as a Service.
@@ -86,6 +87,9 @@ class OwncloudResourceService implements InitializingBean, DisposableBean {
 
   @Autowired
   private OwncloudProperties properties;
+
+  @Autowired(required = false)
+  private OwncloudGrantedAuthoritiesMapper grantedAuthoritiesMapper;
 
   @Autowired
   private MappingJackson2XmlHttpMessageConverter messageConverter;
@@ -236,9 +240,21 @@ class OwncloudResourceService implements InitializingBean, DisposableBean {
         authorities.add(new SimpleGrantedAuthority(group.getGroup()));
       }
     }
-    return OwncloudUserDetails.builder().username(user.getUsername()).enabled(user.isEnabled())
-        .displayName(user.getDisplayName()).email(user.getEmail()).authorities(authorities).accountNonExpired(true)
-        .accountNonLocked(true).credentialsNonExpired(true).build();
+
+    OwncloudUserDetails userDetails = OwncloudUserDetails.builder()
+        .username(user.getUsername())
+        .enabled(user.isEnabled())
+        .displayName(user.getDisplayName())
+        .email(user.getEmail())
+        .authorities(authorities)
+        .accountNonExpired(true)
+        .accountNonLocked(true)
+        .credentialsNonExpired(true)
+        .build();
+    if (grantedAuthoritiesMapper != null) {
+      userDetails.setAuthorities(grantedAuthoritiesMapper.mapAuthorities(userDetails.getUsername(), userDetails.getAuthorities()));
+    }
+    return userDetails;
   }
 
   /**

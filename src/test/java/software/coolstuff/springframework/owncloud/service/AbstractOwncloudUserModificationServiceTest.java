@@ -1,9 +1,11 @@
 package software.coolstuff.springframework.owncloud.service;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.client.RestClientTest;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import com.google.common.collect.Lists;
 
@@ -26,6 +28,47 @@ public abstract class AbstractOwncloudUserModificationServiceTest extends Abstra
   @Override
   protected final String getResourcePrefix() {
     return "/modificationService";
+  }
+
+  @Test
+  public void testOwncloudModificationUserBuilderWithGroups() throws Exception {
+    OwncloudUserDetails userDetails = OwncloudUserDetails.builder()
+        .username("user1")
+        .password("password")
+        .enabled(true)
+        .displayName("Mr. User 1")
+        .email("user1@example.com")
+        .authorities(Lists.newArrayList(new SimpleGrantedAuthority("group1"), new SimpleGrantedAuthority("group2")))
+        .build();
+
+    OwncloudModificationUser modificationUser = new OwncloudModificationUser(userDetails);
+    Assert.assertNotNull(modificationUser);
+    Assert.assertEquals(userDetails.getUsername(), modificationUser.getUsername());
+    Assert.assertEquals(userDetails.getPassword(), modificationUser.getPassword());
+    Assert.assertEquals(userDetails.isEnabled(), modificationUser.isEnabled());
+    Assert.assertEquals(userDetails.getDisplayName(), modificationUser.getDisplayName());
+    Assert.assertEquals(userDetails.getEmail(), modificationUser.getEmail());
+    Assert.assertTrue(CollectionUtils.isEqualCollection(modificationUser.getGroups(), Lists.newArrayList("group1", "group2")));
+  }
+
+  @Test
+  public void testOwncloudModificationUserBuilderWithoutGroups() throws Exception {
+    OwncloudUserDetails userDetails = OwncloudUserDetails.builder()
+        .username("user1")
+        .password("password")
+        .enabled(true)
+        .displayName("Mr. User 1")
+        .email("user1@example.com")
+        .build();
+
+    OwncloudModificationUser modificationUser = new OwncloudModificationUser(userDetails);
+    Assert.assertNotNull(modificationUser);
+    Assert.assertEquals(userDetails.getUsername(), modificationUser.getUsername());
+    Assert.assertEquals(userDetails.getPassword(), modificationUser.getPassword());
+    Assert.assertEquals(userDetails.isEnabled(), modificationUser.isEnabled());
+    Assert.assertEquals(userDetails.getDisplayName(), modificationUser.getDisplayName());
+    Assert.assertEquals(userDetails.getEmail(), modificationUser.getEmail());
+    Assert.assertTrue(CollectionUtils.isEmpty(modificationUser.getGroups()));
   }
 
   @Test

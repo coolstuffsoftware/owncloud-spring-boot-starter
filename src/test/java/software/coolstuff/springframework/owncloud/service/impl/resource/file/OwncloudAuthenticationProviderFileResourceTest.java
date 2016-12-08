@@ -4,7 +4,7 @@ import org.springframework.test.context.ActiveProfiles;
 
 import software.coolstuff.springframework.owncloud.service.AbstractOwncloudAuthenticationProviderTest;
 
-@ActiveProfiles("RESOURCE-FILE-TEST")
+@ActiveProfiles("FILE-RESOURCE")
 public class OwncloudAuthenticationProviderFileResourceTest extends AbstractOwncloudAuthenticationProviderTest implements OwncloudFileResourceTest {
 
 }

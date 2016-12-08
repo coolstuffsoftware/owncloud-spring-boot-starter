@@ -4,7 +4,7 @@ import org.springframework.test.context.ActiveProfiles;
 
 import software.coolstuff.springframework.owncloud.service.impl.AbstractOwncloudUserModificationServiceRestTest;
 
-@ActiveProfiles("URL-TEST-ADMINISTRATOR")
+@ActiveProfiles("ADMINISTRATOR-URL")
 public class OwncloudUserModificationServiceAdministratorRestTest extends AbstractOwncloudUserModificationServiceRestTest {
 
   @Override

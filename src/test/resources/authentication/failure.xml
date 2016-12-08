@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<ocs>
+ <meta>
+  <status>failure</status>
+  <statuscode>999</statuscode>
+  <message>not relevant</message>
+ </meta>
+ <data/>
+</ocs>

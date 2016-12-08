@@ -3,15 +3,20 @@ package software.coolstuff.springframework.owncloud.service.impl;
 import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.header;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withUnauthorizedRequest;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
 
+import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.web.client.HttpStatusCodeException;
 
 import software.coolstuff.springframework.owncloud.service.AbstractOwncloudAuthenticationProviderTest;
 
@@ -50,4 +55,37 @@ public abstract class AbstractOwncloudAuthenticationProviderRestTest extends Abs
         .andExpect(header(HttpHeaders.AUTHORIZATION, credentials.getForBasicAuthorizationHeader()))
         .andRespond(withUnauthorizedRequest());
   }
+
+  @Test(expected = HttpStatusCodeException.class)
+  public void test404NotFound() throws Exception {
+    Credentials credentials = Credentials.builder()
+        .username("user1")
+        .password("password")
+        .build();
+
+    getServer()
+        .expect(requestToWithPrefix("/cloud/users/" + credentials.getUsername()))
+        .andExpect(method(GET))
+        .andExpect(header(HttpHeaders.AUTHORIZATION, credentials.getForBasicAuthorizationHeader()))
+        .andRespond(withStatus(HttpStatus.NOT_FOUND));
+
+    authenticationProvider.authenticate(credentials.getUsernamePasswordAuthenticationToken());
+  }
+
+  @Test(expected = BadCredentialsException.class)
+  public void testBadCredentialsByRestError() throws Exception {
+    Credentials credentials = Credentials.builder()
+        .username("user1")
+        .password("password")
+        .build();
+
+    getServer()
+        .expect(requestToWithPrefix("/cloud/users/" + credentials.getUsername()))
+        .andExpect(method(GET))
+        .andExpect(header(HttpHeaders.AUTHORIZATION, credentials.getForBasicAuthorizationHeader()))
+        .andRespond(withSuccess(getResponseContentOf("failure"), MediaType.TEXT_XML));
+
+    authenticationProvider.authenticate(credentials.getUsernamePasswordAuthenticationToken());
+  }
+
 }

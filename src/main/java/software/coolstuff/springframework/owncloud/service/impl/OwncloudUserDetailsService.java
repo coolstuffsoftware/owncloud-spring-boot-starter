@@ -36,16 +36,7 @@ public class OwncloudUserDetailsService extends AbstractOwncloudServiceImpl impl
     return createUserDetails(username, preloadedUser, groups);
   }
 
-  public OwncloudUserDetails loadUserByUsernameFromResourceService(String username) {
-    if (resourceService == null) {
-      throw new UsernameNotFoundException("resourceService is not available");
-    }
-
-    OwncloudUserDetails userDetails = resourceService.getUser(username);
-    if (userDetails == null) {
-      throw new UsernameNotFoundException(username);
-    }
-
-    return userDetails;
+  OwncloudUserDetails loadUserByUsernameFromResourceService(String username) {
+    return resourceService.getUser(username);
   }
 }

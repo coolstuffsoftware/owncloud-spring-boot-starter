@@ -6,7 +6,7 @@ import org.springframework.test.context.ActiveProfiles;
 import software.coolstuff.springframework.owncloud.config.CompareResourceAfter;
 import software.coolstuff.springframework.owncloud.service.AbstractOwncloudUserModificationServiceTest;
 
-@ActiveProfiles("RESOURCE-FILE-TEST")
+@ActiveProfiles("FILE-RESOURCE")
 public class OwncloudUserModificationServiceFileResourceTest extends AbstractOwncloudUserModificationServiceTest
     implements OwncloudFileResourceTest {
 

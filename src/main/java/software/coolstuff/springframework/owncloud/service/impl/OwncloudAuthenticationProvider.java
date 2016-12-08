@@ -43,9 +43,6 @@ public class OwncloudAuthenticationProvider extends AbstractOwncloudServiceImpl 
       SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(username, password));
       owncloudUserDetails = userDetailsService.loadPreloadedUserByUsername(username, user);
     } else {
-      if (resourceService == null) {
-        throw new BadCredentialsException("resourceService is not available");
-      }
       if (!resourceService.authenticate(username, password)) {
         throw new BadCredentialsException("wrong password or user not found");
       }

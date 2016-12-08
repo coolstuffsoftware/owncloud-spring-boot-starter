@@ -25,7 +25,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.util.LinkedMultiValueMap;
@@ -38,6 +37,7 @@ import software.coolstuff.springframework.owncloud.exception.OwncloudStatusExcep
 import software.coolstuff.springframework.owncloud.model.OwncloudAuthentication;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
 import software.coolstuff.springframework.owncloud.properties.OwncloudProperties;
+import software.coolstuff.springframework.owncloud.service.api.OwncloudGrantedAuthoritiesMapper;
 
 abstract class AbstractOwncloudServiceImpl implements InitializingBean {
 
@@ -59,7 +59,7 @@ abstract class AbstractOwncloudServiceImpl implements InitializingBean {
   private FormHttpMessageConverter formHttpMessageConverter;
 
   @Autowired(required = false)
-  private GrantedAuthoritiesMapper grantedAuthoritiesMapper;
+  private OwncloudGrantedAuthoritiesMapper grantedAuthoritiesMapper;
 
   @Autowired(required = false)
   private OwncloudResourceService resourceService;
@@ -201,8 +201,6 @@ abstract class AbstractOwncloudServiceImpl implements InitializingBean {
     }
 
     switch (meta.getStatuscode()) {
-      case 100:
-        return;
       case 997:
         throw new AccessDeniedException("Not Authorized to access Resource " + uri);
       case 998:
@@ -212,33 +210,26 @@ abstract class AbstractOwncloudServiceImpl implements InitializingBean {
     }
   }
 
-  protected OwncloudUserDetails createUserDetails(
-      String username,
-      Ocs.User user,
-      Ocs.Groups groups) {
+  protected OwncloudUserDetails createUserDetails(String username, Ocs.User user, Ocs.Groups groups) {
+    List<GrantedAuthority> authorities = new ArrayList<>();
+    if (isGroupAvailable(groups)) {
+      for (Ocs.Groups.Data.Group group : groups.getData().getGroups()) {
+        authorities.add(new SimpleGrantedAuthority(group.getGroup()));
+      }
+    }
+
     OwncloudUserDetails userDetails = OwncloudUserDetails.builder()
         .username(username)
         .enabled(user.getData().isEnabled())
         .displayName(user.getData().getDisplayname())
         .email(user.getData().getEmail())
+        .authorities(authorities)
         .accountNonExpired(true)
         .accountNonLocked(true)
         .credentialsNonExpired(true)
         .build();
-
-    if (isGroupAvailable(groups)) {
-      List<GrantedAuthority> authorities = new ArrayList<>();
-      for (Ocs.Groups.Data.Group group : groups.getData().getGroups()) {
-        authorities.add(new SimpleGrantedAuthority(group.getGroup()));
-      }
-
-      if (grantedAuthoritiesMapper != null) {
-        userDetails.setAuthorities(grantedAuthoritiesMapper.mapAuthorities(authorities));
-      } else {
-        userDetails.setAuthorities(authorities);
-      }
-    } else {
-      userDetails.setAuthorities(new ArrayList<>());
+    if (grantedAuthoritiesMapper != null) {
+      userDetails.setAuthorities(grantedAuthoritiesMapper.mapAuthorities(userDetails.getUsername(), authorities));
     }
 
     return userDetails;
