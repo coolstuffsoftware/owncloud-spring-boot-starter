@@ -1,6 +1,9 @@
 package software.coolstuff.springframework.owncloud.service.impl;
 
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.header;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -9,20 +12,30 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collection;
 import java.util.List;
+import java.util.function.Supplier;
+
+import javax.validation.constraints.NotNull;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.velocity.Template;
+import org.apache.velocity.VelocityContext;
+import org.apache.velocity.app.VelocityEngine;
+import org.apache.velocity.context.Context;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -38,6 +51,9 @@ import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.io.UrlResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -53,10 +69,15 @@ import org.xmlunit.builder.DiffBuilder;
 import org.xmlunit.builder.Input;
 import org.xmlunit.diff.Diff;
 
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import software.coolstuff.springframework.owncloud.config.CompareResourceAfter;
 import software.coolstuff.springframework.owncloud.config.OwncloudFileResourceTestExecutionListener;
-import software.coolstuff.springframework.owncloud.config.TestConfiguration;
+import software.coolstuff.springframework.owncloud.config.OwncloudGrantedAuthoritiesMapperConfiguration;
+import software.coolstuff.springframework.owncloud.config.VelocityConfiguration;
 import software.coolstuff.springframework.owncloud.properties.OwncloudProperties;
 import software.coolstuff.springframework.owncloud.service.impl.resource.file.OwncloudFileResourceTest;
 
@@ -65,7 +86,8 @@ import software.coolstuff.springframework.owncloud.service.impl.resource.file.Ow
     webEnvironment = WebEnvironment.NONE,
     classes = {
         OwncloudAutoConfiguration.class,
-        TestConfiguration.class
+        VelocityConfiguration.class,
+        OwncloudGrantedAuthoritiesMapperConfiguration.class
     })
 @TestExecutionListeners({
     SpringBootDependencyInjectionTestExecutionListener.class,
@@ -77,6 +99,7 @@ import software.coolstuff.springframework.owncloud.service.impl.resource.file.Ow
 public abstract class AbstractOwncloudServiceTest {
 
   private final static String ORIGINAL_RESOURCE = "classpath:/owncloud.xml";
+  private final static String VELOCITY_PATH_PREFIX = "/velocity/";
 
   @Autowired
   private ResourceLoader resourceLoader;
@@ -86,6 +109,9 @@ public abstract class AbstractOwncloudServiceTest {
 
   @Autowired
   private OwncloudProperties properties;
+
+  @Autowired
+  private VelocityEngine velocityEngine;
 
   @Rule
   public TestName testName = new TestName();
@@ -191,6 +217,68 @@ public abstract class AbstractOwncloudServiceTest {
     return IOUtils.toString(resource.getInputStream());
   }
 
+  protected void respondUsers(RestRequest request, String... users) throws IOException {
+    Context context = new VelocityContext();
+    setSuccessMetaInformation(context);
+    context.put("users", Arrays.asList(users));
+
+    request.getServer()
+        .expect(requestToWithPrefix(request.getUrl()))
+        .andExpect(method(request.getMethod()))
+        .andExpect(header(HttpHeaders.AUTHORIZATION, request.getBasicAuthorization().get()))
+        .andRespond(withSuccess(merge("users.vm", context), MediaType.TEXT_XML));
+  }
+
+  private void setSuccessMetaInformation(Context context) {
+    context.put("status", "ok");
+    context.put("statuscode", 100);
+  }
+
+  protected void respondGroups(RestRequest request, String... groups) throws IOException {
+    Context context = new VelocityContext();
+    setSuccessMetaInformation(context);
+    context.put("groups", Arrays.asList(groups));
+
+    request.getServer()
+        .expect(requestToWithPrefix(request.getUrl()))
+        .andExpect(method(request.getMethod()))
+        .andExpect(header(HttpHeaders.AUTHORIZATION, request.getBasicAuthorization().get()))
+        .andRespond(withSuccess(merge("groups.vm", context), MediaType.TEXT_XML));
+  }
+
+  protected void respondFailure(RestRequest request, int statuscode, String message) throws IOException {
+    Context context = new VelocityContext();
+    setFailureMetaInformation(context, statuscode, message);
+
+    request.getServer()
+        .expect(requestToWithPrefix(request.getUrl()))
+        .andExpect(method(request.getMethod()))
+        .andExpect(header(HttpHeaders.AUTHORIZATION, request.getBasicAuthorization().get()))
+        .andRespond(withSuccess(merge("void.vm", context), MediaType.TEXT_XML));
+  }
+
+  private void setFailureMetaInformation(Context context, int statuscode, String message) {
+    context.put("status", "failure");
+    context.put("statuscode", statuscode);
+    context.put("message", "message");
+  }
+
+  private String merge(String templateName, Context context) throws IOException {
+    String prefixedTemplateName = templateName;
+    if (!StringUtils.startsWith(templateName, VELOCITY_PATH_PREFIX)) {
+      prefixedTemplateName = VELOCITY_PATH_PREFIX + templateName;
+      if (StringUtils.startsWith(templateName, "/")) {
+        prefixedTemplateName = VELOCITY_PATH_PREFIX + StringUtils.substring(templateName, 1);
+      }
+    }
+    Template template = velocityEngine.getTemplate(prefixedTemplateName);
+    try (Writer writer = new StringWriter()) {
+      template.merge(context, writer);
+      writer.flush();
+      return writer.toString();
+    }
+  }
+
   protected Resource getResourceOf(String testCase) {
     String path = "/";
     if (StringUtils.isNotBlank(getResourcePrefix())) {
@@ -266,4 +354,17 @@ public abstract class AbstractOwncloudServiceTest {
         .encodeToString((authentication.getName() + ":" + authentication.getCredentials()).getBytes());
   }
 
+  @Data
+  @AllArgsConstructor(access = AccessLevel.PRIVATE)
+  @Builder
+  protected static class RestRequest {
+    @NotNull
+    private final MockRestServiceServer server;
+    @NotNull
+    private final HttpMethod method;
+    @NotNull
+    private final String url;
+    @NotNull
+    private final Supplier<String> basicAuthorization;
+  }
 }

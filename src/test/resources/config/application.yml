@@ -5,3 +5,11 @@ spring:
 logging:
   level:
     root: info
+owncloud:
+  test:
+    velocity:
+      properties:
+        input.encoding: UTF8
+        resource.load: classpath
+        classpath.resource.loader.class: org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader
+        classpath.resource.loader.path: /velocity

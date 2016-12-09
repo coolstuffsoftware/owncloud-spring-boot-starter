@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<ocs>
+  <meta>
+    <status>${status}</status>
+    <statuscode>${statuscode}</statuscode>
+#if ( ${message} )
+    <message>${message}</message>
+#else
+    <message/>
+#end
+  </meta>
+  <data/>
+</ocs>

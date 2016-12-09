@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<ocs>
+  <meta>
+    <status>${status}</status>
+    <statuscode>${statuscode}</statuscode>
+#if ( ${message} )
+    <message>${message}</message>
+#else
+    <message/>
+#end
+  </meta>
+#if ( ! ${users.isEmpty()} )
+  <data>
+    <users>
+#foreach ( $user in ${users} )
+      <element>${user}</element>
+#end
+    </users>
+  </data>
+#else
+  <data/>
+#end
+</ocs>

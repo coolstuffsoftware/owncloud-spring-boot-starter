@@ -30,38 +30,46 @@ public abstract class AbstractOwncloudUserQueryServiceRestTest extends AbstractO
 
   @Override
   protected void prepareTestFindAllUsers() throws Exception {
-    getServer()
-        .expect(requestToWithPrefix("/cloud/users"))
-        .andExpect(method(GET))
-        .andExpect(header(HttpHeaders.AUTHORIZATION, getBasicAuthorizationHeader()))
-        .andRespond(withSuccess(getResponseContentOf("findAllUsers"), MediaType.TEXT_XML));
+    RestRequest request = RestRequest.builder()
+        .server(getServer())
+        .method(GET)
+        .url("/cloud/users")
+        .basicAuthorization(this::getBasicAuthorizationHeader)
+        .build();
+    respondUsers(request, "user1", "user2");
   }
 
   @Override
   protected void prepareTestFindAllGroups() throws Exception {
-    getServer()
-        .expect(requestToWithPrefix("/cloud/groups"))
-        .andExpect(method(GET))
-        .andExpect(header(HttpHeaders.AUTHORIZATION, getBasicAuthorizationHeader()))
-        .andRespond(withSuccess(getResponseContentOf("findAllGroups"), MediaType.TEXT_XML));
+    RestRequest request = RestRequest.builder()
+        .server(getServer())
+        .method(GET)
+        .url("/cloud/groups")
+        .basicAuthorization(this::getBasicAuthorizationHeader)
+        .build();
+    respondGroups(request, "group1", "group2");
   }
 
   @Override
   protected void prepareTestFindAllMembersOfGroup_OK(String group) throws Exception {
-    getServer()
-        .expect(requestToWithPrefix("/cloud/groups/" + group))
-        .andExpect(method(GET))
-        .andExpect(header(HttpHeaders.AUTHORIZATION, getBasicAuthorizationHeader()))
-        .andRespond(withSuccess(getResponseContentOf("findAllMembersOfGroup_OK"), MediaType.TEXT_XML));
+    RestRequest request = RestRequest.builder()
+        .server(getServer())
+        .method(GET)
+        .url("/cloud/groups/" + group)
+        .basicAuthorization(this::getBasicAuthorizationHeader)
+        .build();
+    respondUsers(request, "user1");
   }
 
   @Override
   protected void prepareTestFindAllMembersOfGroup_UnknownGroup(String group) throws Exception {
-    getServer()
-        .expect(requestToWithPrefix("/cloud/groups/" + group))
-        .andExpect(method(GET))
-        .andExpect(header(HttpHeaders.AUTHORIZATION, getBasicAuthorizationHeader()))
-        .andRespond(withSuccess(getResponseContentOf("findAllMembersOfGroup_UnknownGroup"), MediaType.TEXT_XML));
+    RestRequest request = RestRequest.builder()
+        .server(getServer())
+        .method(GET)
+        .url("/cloud/groups/" + group)
+        .basicAuthorization(this::getBasicAuthorizationHeader)
+        .build();
+    respondFailure(request, 998, "The requested group could not be found");
   }
 
   @Override
