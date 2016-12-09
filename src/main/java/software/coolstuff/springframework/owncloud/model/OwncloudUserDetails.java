@@ -38,4 +38,10 @@ public class OwncloudUserDetails implements UserDetails {
   private String displayName;
   private String email;
 
+  public static class OwncloudUserDetailsBuilder {
+    private boolean enabled = true;
+    private boolean accountNonExpired = true;
+    private boolean accountNonLocked = true;
+    private boolean credentialsNonExpired = true;
+  }
 }

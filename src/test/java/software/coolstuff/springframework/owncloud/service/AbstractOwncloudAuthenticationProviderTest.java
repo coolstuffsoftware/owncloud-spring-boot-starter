@@ -50,7 +50,7 @@ public abstract class AbstractOwncloudAuthenticationProviderTest extends Abstrac
         .password("s3cr3t")
         .build();
 
-    prepareTestAuthenticate_OK(credentials);
+    prepareTestAuthenticate_OK(credentials, true, "user1@example.com", "Mr. User 1", "group1", "group2");
 
     Authentication authentication = authenticationProvider.authenticate(credentials.getUsernamePasswordAuthenticationToken());
     verifyServer();
@@ -71,7 +71,7 @@ public abstract class AbstractOwncloudAuthenticationProviderTest extends Abstrac
     Assert.assertEquals(2, principal.getAuthorities().size());
   }
 
-  protected void prepareTestAuthenticate_OK(Credentials credentials) throws Exception {};
+  protected void prepareTestAuthenticate_OK(Credentials credentials, boolean enabled, String email, String displayName, String... groups) throws Exception {};
 
   @Test(expected = BadCredentialsException.class)
   public void testAuthenticate_NOK() throws Exception {

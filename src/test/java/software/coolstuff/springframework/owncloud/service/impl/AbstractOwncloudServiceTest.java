@@ -1,8 +1,10 @@
 package software.coolstuff.springframework.owncloud.service.impl;
 
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.content;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.header;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
 import java.io.BufferedInputStream;
@@ -24,7 +26,6 @@ import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collection;
 import java.util.List;
-import java.util.function.Supplier;
 
 import javax.validation.constraints.NotNull;
 
@@ -53,6 +54,7 @@ import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -65,6 +67,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.support.DependencyInjectionTestExecutionListener;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.test.web.client.RequestMatcher;
+import org.springframework.test.web.client.ResponseActions;
+import org.springframework.util.MultiValueMap;
 import org.xmlunit.builder.DiffBuilder;
 import org.xmlunit.builder.Input;
 import org.xmlunit.diff.Diff;
@@ -218,49 +222,38 @@ public abstract class AbstractOwncloudServiceTest {
   }
 
   protected void respondUsers(RestRequest request, String... users) throws IOException {
+    if (isNoRestTestClass()) {
+      return;
+    }
+    ResponseActions preparedRequest = prepareRestRequest(request);
+
     Context context = new VelocityContext();
     setSuccessMetaInformation(context);
     context.put("users", Arrays.asList(users));
 
-    request.getServer()
+    preparedRequest
+        .andRespond(withSuccess(merge("users.vm", context), MediaType.TEXT_XML));
+  }
+
+  private boolean isNoRestTestClass() {
+    return !(this instanceof OwncloudServiceRestTest);
+  }
+
+  private ResponseActions prepareRestRequest(RestRequest request) throws MalformedURLException {
+    OwncloudServiceRestTest restTest = (OwncloudServiceRestTest) this;
+    MockRestServiceServer server = this.server;
+    if (request.getServer() != null) {
+      server = request.getServer();
+    }
+    return server
         .expect(requestToWithPrefix(request.getUrl()))
         .andExpect(method(request.getMethod()))
-        .andExpect(header(HttpHeaders.AUTHORIZATION, request.getBasicAuthorization().get()))
-        .andRespond(withSuccess(merge("users.vm", context), MediaType.TEXT_XML));
+        .andExpect(header(HttpHeaders.AUTHORIZATION, restTest.getBasicAuthorizationHeader()));
   }
 
   private void setSuccessMetaInformation(Context context) {
     context.put("status", "ok");
     context.put("statuscode", 100);
-  }
-
-  protected void respondGroups(RestRequest request, String... groups) throws IOException {
-    Context context = new VelocityContext();
-    setSuccessMetaInformation(context);
-    context.put("groups", Arrays.asList(groups));
-
-    request.getServer()
-        .expect(requestToWithPrefix(request.getUrl()))
-        .andExpect(method(request.getMethod()))
-        .andExpect(header(HttpHeaders.AUTHORIZATION, request.getBasicAuthorization().get()))
-        .andRespond(withSuccess(merge("groups.vm", context), MediaType.TEXT_XML));
-  }
-
-  protected void respondFailure(RestRequest request, int statuscode, String message) throws IOException {
-    Context context = new VelocityContext();
-    setFailureMetaInformation(context, statuscode, message);
-
-    request.getServer()
-        .expect(requestToWithPrefix(request.getUrl()))
-        .andExpect(method(request.getMethod()))
-        .andExpect(header(HttpHeaders.AUTHORIZATION, request.getBasicAuthorization().get()))
-        .andRespond(withSuccess(merge("void.vm", context), MediaType.TEXT_XML));
-  }
-
-  private void setFailureMetaInformation(Context context, int statuscode, String message) {
-    context.put("status", "failure");
-    context.put("statuscode", statuscode);
-    context.put("message", "message");
   }
 
   private String merge(String templateName, Context context) throws IOException {
@@ -277,6 +270,76 @@ public abstract class AbstractOwncloudServiceTest {
       writer.flush();
       return writer.toString();
     }
+  }
+
+  protected void respondGroups(RestRequest request, String... groups) throws IOException {
+    if (isNoRestTestClass()) {
+      return;
+    }
+    ResponseActions preparedRequest = prepareRestRequest(request);
+
+    Context context = new VelocityContext();
+    setSuccessMetaInformation(context);
+    context.put("groups", Arrays.asList(groups));
+
+    preparedRequest
+        .andRespond(withSuccess(merge("groups.vm", context), request.getResponseType()));
+  }
+
+  protected void respondFailure(RestRequest request, int statuscode, String message) throws IOException {
+    if (isNoRestTestClass()) {
+      return;
+    }
+    ResponseActions preparedRequest = prepareRestRequest(request);
+
+    Context context = new VelocityContext();
+    setFailureMetaInformation(context, statuscode, message);
+
+    preparedRequest
+        .andRespond(withSuccess(merge("void.vm", context), request.getResponseType()));
+  }
+
+  protected void respondHttpStatus(RestRequest request, HttpStatus httpStatus) throws MalformedURLException {
+    if (isNoRestTestClass()) {
+      return;
+    }
+    prepareRestRequest(request).andRespond(withStatus(httpStatus));
+  }
+
+  protected void respondSuccess(RestRequest request, MultiValueMap<String, String> requestBody) throws IOException {
+    if (isNoRestTestClass()) {
+      return;
+    }
+    ResponseActions preparedRequest = prepareRestRequest(request);
+
+    Context context = new VelocityContext();
+    setSuccessMetaInformation(context);
+
+    preparedRequest
+        .andExpect(content().formData(requestBody))
+        .andRespond(withSuccess(merge("void.vm", context), MediaType.TEXT_XML));
+  }
+
+  private void setFailureMetaInformation(Context context, int statuscode, String message) {
+    context.put("status", "failure");
+    context.put("statuscode", statuscode);
+    context.put("message", "message");
+  }
+
+  protected void respondUser(RestRequest request, boolean enabled, String email, String displayName) throws IOException {
+    if (isNoRestTestClass()) {
+      return;
+    }
+    ResponseActions preparedRequest = prepareRestRequest(request);
+
+    Context context = new VelocityContext();
+    setSuccessMetaInformation(context);
+    context.put("enabled", Boolean.toString(enabled));
+    context.put("email", email);
+    context.put("displayName", displayName);
+
+    preparedRequest
+        .andRespond(withSuccess(merge("user.vm", context), MediaType.TEXT_XML));
   }
 
   protected Resource getResourceOf(String testCase) {
@@ -358,13 +421,15 @@ public abstract class AbstractOwncloudServiceTest {
   @AllArgsConstructor(access = AccessLevel.PRIVATE)
   @Builder
   protected static class RestRequest {
-    @NotNull
-    private final MockRestServiceServer server;
+    private MockRestServiceServer server;
     @NotNull
     private final HttpMethod method;
     @NotNull
     private final String url;
-    @NotNull
-    private final Supplier<String> basicAuthorization;
+    private MediaType responseType = MediaType.TEXT_XML;
+
+    protected static class RestRequestBuilder {
+      private MediaType responseType = MediaType.TEXT_XML;
+    }
   }
 }

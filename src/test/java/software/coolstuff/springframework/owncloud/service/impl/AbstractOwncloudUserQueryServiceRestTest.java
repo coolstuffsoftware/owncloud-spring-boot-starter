@@ -4,18 +4,17 @@ import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.header;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
-import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withUnauthorizedRequest;
 
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.client.HttpClientErrorException;
 
 import software.coolstuff.springframework.owncloud.config.WithOwncloudMockUser;
+import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
 import software.coolstuff.springframework.owncloud.service.AbstractOwncloudUserQueryServiceTest;
 
 public abstract class AbstractOwncloudUserQueryServiceRestTest extends AbstractOwncloudUserQueryServiceTest implements OwncloudServiceRestTest {
@@ -29,79 +28,48 @@ public abstract class AbstractOwncloudUserQueryServiceRestTest extends AbstractO
   }
 
   @Override
-  protected void prepareTestFindAllUsers() throws Exception {
-    RestRequest request = RestRequest.builder()
-        .server(getServer())
-        .method(GET)
-        .url("/cloud/users")
-        .basicAuthorization(this::getBasicAuthorizationHeader)
-        .build();
-    respondUsers(request, "user1", "user2");
+  protected void prepareTestFindAllUsers(String... users) throws Exception {
+    RestRequest request = RestRequest.builder().method(GET).url("/cloud/users").build();
+    respondUsers(request, users);
   }
 
   @Override
-  protected void prepareTestFindAllGroups() throws Exception {
-    RestRequest request = RestRequest.builder()
-        .server(getServer())
-        .method(GET)
-        .url("/cloud/groups")
-        .basicAuthorization(this::getBasicAuthorizationHeader)
-        .build();
-    respondGroups(request, "group1", "group2");
+  protected void prepareTestFindAllGroups(String... groups) throws Exception {
+    RestRequest request = RestRequest.builder().method(GET).url("/cloud/groups").build();
+    respondGroups(request, groups);
   }
 
   @Override
-  protected void prepareTestFindAllMembersOfGroup_OK(String group) throws Exception {
-    RestRequest request = RestRequest.builder()
-        .server(getServer())
-        .method(GET)
-        .url("/cloud/groups/" + group)
-        .basicAuthorization(this::getBasicAuthorizationHeader)
-        .build();
-    respondUsers(request, "user1");
+  protected void prepareTestFindAllMembersOfGroup_OK(String group, String... users) throws Exception {
+    RestRequest request = RestRequest.builder().method(GET).url("/cloud/groups/" + group).build();
+    respondUsers(request, users);
   }
 
   @Override
   protected void prepareTestFindAllMembersOfGroup_UnknownGroup(String group) throws Exception {
-    RestRequest request = RestRequest.builder()
-        .server(getServer())
-        .method(GET)
-        .url("/cloud/groups/" + group)
-        .basicAuthorization(this::getBasicAuthorizationHeader)
-        .build();
+    RestRequest request = RestRequest.builder().method(GET).url("/cloud/groups/" + group).build();
     respondFailure(request, 998, "The requested group could not be found");
   }
 
   @Override
-  protected void prepareTestFindOneUser_OK(String user) throws Exception {
-    getServer()
-        .expect(requestToWithPrefix("/cloud/users/" + user))
-        .andExpect(method(GET))
-        .andExpect(header(HttpHeaders.AUTHORIZATION, getBasicAuthorizationHeader()))
-        .andRespond(withSuccess(getResponseContentOf("findOneUser_Information"), MediaType.TEXT_XML));
-    getServer()
-        .expect(requestToWithPrefix("/cloud/users/" + user + "/groups"))
-        .andExpect(method(GET))
-        .andExpect(header(HttpHeaders.AUTHORIZATION, getBasicAuthorizationHeader()))
-        .andRespond(withSuccess(getResponseContentOf("findOneUser_Groups"), MediaType.TEXT_XML));
+  protected void prepareTestFindOneUser_OK(OwncloudUserDetails expectedUser, String... groups) throws Exception {
+    RestRequest request = RestRequest.builder().method(GET).url("/cloud/users/" + expectedUser.getUsername()).build();
+    respondUser(request, expectedUser.isEnabled(), expectedUser.getEmail(), expectedUser.getDisplayName());
+
+    request = RestRequest.builder().method(GET).url("/cloud/users/" + expectedUser.getUsername() + "/groups").build();
+    respondGroups(request, groups);
   }
 
   @Override
   protected void prepareTestFindOneUser_UnknownUser(String user) throws Exception {
-    getServer()
-        .expect(requestToWithPrefix("/cloud/users/" + user))
-        .andExpect(method(GET))
-        .andExpect(header(HttpHeaders.AUTHORIZATION, getBasicAuthorizationHeader()))
-        .andRespond(withSuccess(getResponseContentOf("findOneUser_UnknownUser"), MediaType.TEXT_XML));
+    RestRequest request = RestRequest.builder().method(GET).url("/cloud/users/" + user).build();
+    respondFailure(request, 998, "The requested user could not be found");
   }
 
   @Override
-  protected void prepareTestFindAllGroupsOfUser_OK(String user) throws Exception {
-    getServer()
-        .expect(requestToWithPrefix("/cloud/users/" + user + "/groups"))
-        .andExpect(method(GET))
-        .andExpect(header(HttpHeaders.AUTHORIZATION, getBasicAuthorizationHeader()))
-        .andRespond(withSuccess(getResponseContentOf("findOneUser_Groups"), MediaType.TEXT_XML));
+  protected void prepareTestFindAllGroupsOfUser_OK(String user, String... groups) throws Exception {
+    RestRequest request = RestRequest.builder().method(GET).url("/cloud/users/" + user + "/groups").build();
+    respondGroups(request, groups);
   }
 
   @Test(expected = BadCredentialsException.class)

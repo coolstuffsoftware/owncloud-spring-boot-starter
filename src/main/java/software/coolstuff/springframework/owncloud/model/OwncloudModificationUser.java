@@ -12,6 +12,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.Singular;
 
 @Data
 @NoArgsConstructor
@@ -26,7 +27,12 @@ public class OwncloudModificationUser {
   private String displayName;
   private String email;
 
+  @Singular("group")
   private List<String> groups = new ArrayList<>();
+
+  public static class OwncloudModificationUserBuilder {
+    private boolean enabled = true;
+  }
 
   public OwncloudModificationUser(OwncloudUserDetails userDetails) {
     Validate.notNull(userDetails);

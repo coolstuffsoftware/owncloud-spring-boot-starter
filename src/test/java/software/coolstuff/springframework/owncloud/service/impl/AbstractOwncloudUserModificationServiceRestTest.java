@@ -3,14 +3,9 @@ package software.coolstuff.springframework.owncloud.service.impl;
 import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.http.HttpMethod.PUT;
-import static org.springframework.test.web.client.match.MockRestRequestMatchers.content;
-import static org.springframework.test.web.client.match.MockRestRequestMatchers.header;
-import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
-import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -36,141 +31,74 @@ public abstract class AbstractOwncloudUserModificationServiceRestTest extends Ab
 
   @Override
   protected void prepareTestSaveUser_CreateUser_OK_WithoutGroups(OwncloudModificationUser newUser) throws Exception {
-    getServer()
-        .expect(requestToWithPrefix("/cloud/users/" + newUser.getUsername()))
-        .andExpect(method(GET))
-        .andExpect(header(HttpHeaders.AUTHORIZATION, getBasicAuthorizationHeader()))
-        .andRespond(withSuccess(getResponseContentOf("findUser3_NotFound"), MediaType.TEXT_XML));
+    respondFailure(RestRequest.builder().method(GET).url("/cloud/users/" + newUser.getUsername()).build(), 998, "The requested user could not be found");
 
     MultiValueMap<String, String> postData = new LinkedMultiValueMap<>();
     postData.put("userid", Lists.newArrayList(newUser.getUsername()));
     postData.put("password", Lists.newArrayList(newUser.getPassword()));
-    getServer()
-        .expect(requestToWithPrefix("/cloud/users"))
-        .andExpect(method(POST))
-        .andExpect(header(HttpHeaders.AUTHORIZATION, getBasicAuthorizationHeader()))
-        .andExpect(content().formData(postData))
-        .andRespond(withSuccess(getResponseContentOf("success"), MediaType.TEXT_XML));
-    getServer()
-        .expect(requestToWithPrefix("/cloud/users/" + newUser.getUsername()))
-        .andExpect(method(GET))
-        .andExpect(header(HttpHeaders.AUTHORIZATION, getBasicAuthorizationHeader()))
-        .andRespond(withSuccess(getResponseContentOf("findUser3_AfterCreation"), MediaType.TEXT_XML));
+    respondSuccess(RestRequest.builder().method(POST).url("/cloud/users").build(), postData);
+
+    respondUser(RestRequest.builder().method(GET).url("/cloud/users/" + newUser.getUsername()).build(), true, null, newUser.getUsername());
 
     // change the Displayname
     MultiValueMap<String, String> putData = new LinkedMultiValueMap<>();
     putData.put("key", Lists.newArrayList("display"));
     putData.put("value", Lists.newArrayList(newUser.getDisplayName()));
-    getServer()
-        .expect(requestToWithPrefix("/cloud/users/" + newUser.getUsername()))
-        .andExpect(method(PUT))
-        .andExpect(header(HttpHeaders.AUTHORIZATION, getBasicAuthorizationHeader()))
-        .andExpect(content().formData(putData))
-        .andRespond(withSuccess(getResponseContentOf("success"), MediaType.TEXT_XML));
+    respondSuccess(RestRequest.builder().method(PUT).url("/cloud/users/" + newUser.getUsername()).build(), putData);
 
     // change the eMail
     putData = new LinkedMultiValueMap<>();
     putData.put("key", Lists.newArrayList("email"));
     putData.put("value", Lists.newArrayList(newUser.getEmail()));
-    getServer()
-        .expect(requestToWithPrefix("/cloud/users/" + newUser.getUsername()))
-        .andExpect(method(PUT))
-        .andExpect(header(HttpHeaders.AUTHORIZATION, getBasicAuthorizationHeader()))
-        .andExpect(content().formData(putData))
-        .andRespond(withSuccess(getResponseContentOf("success"), MediaType.TEXT_XML));
+    respondSuccess(RestRequest.builder().method(PUT).url("/cloud/users/" + newUser.getUsername()).build(), putData);
 
-    getServer()
-        .expect(requestToWithPrefix("/cloud/users/" + newUser.getUsername() + "/groups"))
-        .andExpect(method(GET))
-        .andExpect(header(HttpHeaders.AUTHORIZATION, getBasicAuthorizationHeader()))
-        .andRespond(withSuccess(getResponseContentOf("findUser3_AfterSaveGroups"), MediaType.TEXT_XML));
+    respondGroups(RestRequest.builder().method(GET).url("/cloud/users/" + newUser.getUsername() + "/groups").build());
 
     MockRestServiceServer queryServer = createServer((OwncloudUserQueryServiceImpl) userQueryService);
-    queryServer
-        .expect(requestToWithPrefix("/cloud/users/" + newUser.getUsername()))
-        .andExpect(method(GET))
-        .andExpect(header(HttpHeaders.AUTHORIZATION, getBasicAuthorizationHeader()))
-        .andRespond(withSuccess(getResponseContentOf("findUser3_AfterSave"), MediaType.TEXT_XML));
-    queryServer
-        .expect(requestToWithPrefix("/cloud/users/" + newUser.getUsername() + "/groups"))
-        .andExpect(method(GET))
-        .andExpect(header(HttpHeaders.AUTHORIZATION, getBasicAuthorizationHeader()))
-        .andRespond(withSuccess(getResponseContentOf("findUser3_AfterSaveGroups"), MediaType.TEXT_XML));
+    respondUser(
+        RestRequest.builder().server(queryServer).method(GET).url("/cloud/users/" + newUser.getUsername()).build(),
+        newUser.isEnabled(), newUser.getEmail(), newUser.getDisplayName());
+    respondGroups(RestRequest.builder().server(queryServer).method(GET).url("/cloud/users/" + newUser.getUsername() + "/groups").build(),
+        CollectionUtils.isEmpty(newUser.getGroups()) ? new String[] {} : newUser.getGroups().toArray(new String[] {}));
   };
 
   @Override
   protected void prepareTestSaveUser_CreateUser_OK_WithGroups(OwncloudModificationUser newUser) throws Exception {
-    getServer()
-        .expect(requestToWithPrefix("/cloud/users/" + newUser.getUsername()))
-        .andExpect(method(GET))
-        .andExpect(header(HttpHeaders.AUTHORIZATION, getBasicAuthorizationHeader()))
-        .andRespond(withSuccess(getResponseContentOf("findUser4_NotFound"), MediaType.TEXT_XML));
+    respondFailure(RestRequest.builder().method(GET).url("/cloud/users/" + newUser.getUsername()).build(), 998, "The requested user could not be found");
 
     MultiValueMap<String, String> postData = new LinkedMultiValueMap<>();
     postData.put("userid", Lists.newArrayList(newUser.getUsername()));
     postData.put("password", Lists.newArrayList(newUser.getPassword()));
-    getServer()
-        .expect(requestToWithPrefix("/cloud/users"))
-        .andExpect(method(POST))
-        .andExpect(header(HttpHeaders.AUTHORIZATION, getBasicAuthorizationHeader()))
-        .andExpect(content().formData(postData))
-        .andRespond(withSuccess(getResponseContentOf("success"), MediaType.TEXT_XML));
-    getServer()
-        .expect(requestToWithPrefix("/cloud/users/" + newUser.getUsername()))
-        .andExpect(method(GET))
-        .andExpect(header(HttpHeaders.AUTHORIZATION, getBasicAuthorizationHeader()))
-        .andRespond(withSuccess(getResponseContentOf("findUser4_AfterCreation"), MediaType.TEXT_XML));
+    respondSuccess(RestRequest.builder().method(POST).url("/cloud/users").build(), postData);
+
+    respondUser(RestRequest.builder().method(GET).url("/cloud/users/" + newUser.getUsername()).build(), true, null, newUser.getUsername());
 
     // change the Displayname
     MultiValueMap<String, String> putData = new LinkedMultiValueMap<>();
     putData.put("key", Lists.newArrayList("display"));
     putData.put("value", Lists.newArrayList(newUser.getDisplayName()));
-    getServer()
-        .expect(requestToWithPrefix("/cloud/users/" + newUser.getUsername()))
-        .andExpect(method(PUT))
-        .andExpect(header(HttpHeaders.AUTHORIZATION, getBasicAuthorizationHeader()))
-        .andExpect(content().formData(putData))
-        .andRespond(withSuccess(getResponseContentOf("success"), MediaType.TEXT_XML));
+    respondSuccess(RestRequest.builder().method(PUT).url("/cloud/users/" + newUser.getUsername()).build(), putData);
 
     // change the eMail
     putData = new LinkedMultiValueMap<>();
     putData.put("key", Lists.newArrayList("email"));
     putData.put("value", Lists.newArrayList(newUser.getEmail()));
-    getServer()
-        .expect(requestToWithPrefix("/cloud/users/" + newUser.getUsername()))
-        .andExpect(method(PUT))
-        .andExpect(header(HttpHeaders.AUTHORIZATION, getBasicAuthorizationHeader()))
-        .andExpect(content().formData(putData))
-        .andRespond(withSuccess(getResponseContentOf("success"), MediaType.TEXT_XML));
+    respondSuccess(RestRequest.builder().method(PUT).url("/cloud/users/" + newUser.getUsername()).build(), putData);
 
-    getServer()
-        .expect(requestToWithPrefix("/cloud/users/" + newUser.getUsername() + "/groups"))
-        .andExpect(method(GET))
-        .andExpect(header(HttpHeaders.AUTHORIZATION, getBasicAuthorizationHeader()))
-        .andRespond(withSuccess(getResponseContentOf("findUser4_BeforeGroups"), MediaType.TEXT_XML));
+    respondGroups(RestRequest.builder().method(GET).url("/cloud/users/" + newUser.getUsername() + "/groups").build());
 
     for (String group : newUser.getGroups()) {
       postData = new LinkedMultiValueMap<>();
       postData.put("groupid", Lists.newArrayList(group));
-      getServer()
-          .expect(requestToWithPrefix("/cloud/users/" + newUser.getUsername() + "/groups"))
-          .andExpect(method(POST))
-          .andExpect(header(HttpHeaders.AUTHORIZATION, getBasicAuthorizationHeader()))
-          .andExpect(content().formData(postData))
-          .andRespond(withSuccess(getResponseContentOf("success"), MediaType.TEXT_XML));
+      respondSuccess(RestRequest.builder().method(POST).url("/cloud/users/" + newUser.getUsername() + "/groups").build(), postData);
     }
 
     MockRestServiceServer queryServer = createServer((OwncloudUserQueryServiceImpl) userQueryService);
-    queryServer
-        .expect(requestToWithPrefix("/cloud/users/" + newUser.getUsername()))
-        .andExpect(method(GET))
-        .andExpect(header(HttpHeaders.AUTHORIZATION, getBasicAuthorizationHeader()))
-        .andRespond(withSuccess(getResponseContentOf("findUser4_AfterSave"), MediaType.TEXT_XML));
-    queryServer
-        .expect(requestToWithPrefix("/cloud/users/" + newUser.getUsername() + "/groups"))
-        .andExpect(method(GET))
-        .andExpect(header(HttpHeaders.AUTHORIZATION, getBasicAuthorizationHeader()))
-        .andRespond(withSuccess(getResponseContentOf("findUser4_AfterSaveGroups"), MediaType.TEXT_XML));
+    respondUser(
+        RestRequest.builder().server(queryServer).method(GET).url("/cloud/users/" + newUser.getUsername()).build(),
+        newUser.isEnabled(), newUser.getEmail(), newUser.getDisplayName());
+    respondGroups(RestRequest.builder().server(queryServer).method(GET).url("/cloud/users/" + newUser.getUsername() + "/groups").build(),
+        CollectionUtils.isEmpty(newUser.getGroups()) ? new String[] {} : newUser.getGroups().toArray(new String[] {}));
   }
 
 }
