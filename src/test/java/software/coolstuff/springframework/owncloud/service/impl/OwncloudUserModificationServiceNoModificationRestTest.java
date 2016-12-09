@@ -26,11 +26,6 @@ public class OwncloudUserModificationServiceNoModificationRestTest extends Abstr
     return null;
   }
 
-  @Override
-  protected final String getResourcePrefix() {
-    return "/modificationService";
-  }
-
   @Test(expected = AccessDeniedException.class)
   public void testSaveUser() {
     userModificationService.saveUser(new OwncloudModificationUser());

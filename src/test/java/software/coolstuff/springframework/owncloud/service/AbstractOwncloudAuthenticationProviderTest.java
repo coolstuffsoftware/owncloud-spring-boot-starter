@@ -25,11 +25,6 @@ public abstract class AbstractOwncloudAuthenticationProviderTest extends Abstrac
   @Autowired
   private OwncloudAuthenticationProvider authenticationProvider;
 
-  @Override
-  protected final String getResourcePrefix() {
-    return "/authentication";
-  }
-
   @Test
   public void testCorrectClass() {
     Assert.assertEquals(OwncloudAuthenticationProvider.class, authenticationProvider.getClass());

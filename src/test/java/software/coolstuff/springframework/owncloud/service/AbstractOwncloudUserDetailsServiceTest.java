@@ -18,11 +18,6 @@ public abstract class AbstractOwncloudUserDetailsServiceTest extends AbstractOwn
   @Autowired
   private OwncloudUserDetailsService userDetailsService;
 
-  @Override
-  protected final String getResourcePrefix() {
-    return "/userDetails";
-  }
-
   @Test
   public void testCorrectClass() {
     Assert.assertEquals(OwncloudUserDetailsService.class, userDetailsService.getClass());

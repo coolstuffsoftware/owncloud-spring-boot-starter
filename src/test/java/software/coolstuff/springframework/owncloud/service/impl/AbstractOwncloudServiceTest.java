@@ -84,6 +84,7 @@ import software.coolstuff.springframework.owncloud.config.OwncloudGrantedAuthori
 import software.coolstuff.springframework.owncloud.config.VelocityConfiguration;
 import software.coolstuff.springframework.owncloud.properties.OwncloudProperties;
 import software.coolstuff.springframework.owncloud.service.impl.resource.file.OwncloudFileResourceTest;
+import software.coolstuff.springframework.owncloud.service.impl.resource.file.OwncloudModifyingFileResourceTest;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(
@@ -216,11 +217,6 @@ public abstract class AbstractOwncloudServiceTest {
     }
   }
 
-  protected String getResponseContentOf(String testCase) throws IOException {
-    Resource resource = getResourceOf(testCase);
-    return IOUtils.toString(resource.getInputStream());
-  }
-
   protected void respondUsers(RestRequest request, String... users) throws IOException {
     if (isNoRestTestClass()) {
       return;
@@ -254,6 +250,18 @@ public abstract class AbstractOwncloudServiceTest {
       responseActions.andExpect(header(HttpHeaders.AUTHORIZATION, restTest.getBasicAuthorizationHeader()));
     }
     return responseActions;
+  }
+
+  private RequestMatcher requestToWithPrefix(String uri) throws MalformedURLException {
+    String rootURI = null;
+    if (OwncloudResourceService.isNoResource(properties.getLocation())) {
+      URL url = new URL(properties.getLocation());
+      rootURI = properties.getLocation();
+      if (StringUtils.isBlank(url.getPath()) || "/".equals(url.getPath())) {
+        rootURI = URI.create(url.toString() + AbstractOwncloudServiceImpl.DEFAULT_PATH).toString();
+      }
+    }
+    return requestTo(rootURI + uri);
   }
 
   private void setSuccessMetaInformation(Context context) {
@@ -348,19 +356,23 @@ public abstract class AbstractOwncloudServiceTest {
   }
 
   protected Resource getResourceOf(String testCase) {
+    if (!(this instanceof OwncloudModifyingFileResourceTest)) {
+      return null;
+    }
+
+    OwncloudModifyingFileResourceTest modifyingFileResourceTest = (OwncloudModifyingFileResourceTest) this;
+
     String path = "/";
-    if (StringUtils.isNotBlank(getResourcePrefix())) {
-      if (StringUtils.startsWith(getResourcePrefix(), "/")) {
-        path = StringUtils.appendIfMissing(getResourcePrefix(), "/");
+    if (StringUtils.isNotBlank(modifyingFileResourceTest.getResourcePrefix())) {
+      if (StringUtils.startsWith(modifyingFileResourceTest.getResourcePrefix(), "/")) {
+        path = StringUtils.appendIfMissing(modifyingFileResourceTest.getResourcePrefix(), "/");
       } else {
-        path += StringUtils.appendIfMissing(getResourcePrefix(), "/");
+        path += StringUtils.appendIfMissing(modifyingFileResourceTest.getResourcePrefix(), "/");
       }
     }
 
     return resourceLoader.getResource("classpath:" + path + testCase + ".xml");
   }
-
-  protected abstract String getResourcePrefix();
 
   protected void checkAuthorities(Collection<? extends GrantedAuthority> actual, String... expected) {
     Assert.assertEquals(expected.length, actual == null ? 0 : actual.size());
@@ -397,18 +409,6 @@ public abstract class AbstractOwncloudServiceTest {
           .build();
       Assert.assertFalse(diff.toString(), diff.hasDifferences());
     }
-  }
-
-  protected final RequestMatcher requestToWithPrefix(String uri) throws MalformedURLException {
-    String rootURI = null;
-    if (OwncloudResourceService.isNoResource(properties.getLocation())) {
-      URL url = new URL(properties.getLocation());
-      rootURI = properties.getLocation();
-      if (StringUtils.isBlank(url.getPath()) || "/".equals(url.getPath())) {
-        rootURI = URI.create(url.toString() + AbstractOwncloudServiceImpl.DEFAULT_PATH).toString();
-      }
-    }
-    return requestTo(rootURI + uri);
   }
 
   protected final String getDefaultBasicAuthorizationHeader() {

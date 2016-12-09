@@ -17,11 +17,6 @@ public class OwncloudUserModificationServiceNoModificationResourceTest extends A
   @Autowired
   private OwncloudUserModificationService userModificationService;
 
-  @Override
-  protected String getResourcePrefix() {
-    return "/modificationService";
-  }
-
   @Test(expected = AccessDeniedException.class)
   public void testSaveUser() {
     userModificationService.saveUser(new OwncloudModificationUser());

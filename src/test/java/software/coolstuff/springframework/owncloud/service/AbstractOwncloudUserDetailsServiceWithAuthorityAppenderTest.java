@@ -21,11 +21,6 @@ public abstract class AbstractOwncloudUserDetailsServiceWithAuthorityAppenderTes
   @Autowired
   private ApplicationContext applicationContext;
 
-  @Override
-  protected String getResourcePrefix() {
-    return "/userDetails";
-  }
-
   @Test
   public void testGrantedAuthorityAppenderLoadedByApplicationContext() throws Exception {
     applicationContext.getBean(OwncloudGrantedAuthoritiesMapper.class);
@@ -35,9 +30,13 @@ public abstract class AbstractOwncloudUserDetailsServiceWithAuthorityAppenderTes
   @WithOwncloudMockUser(username = "test1", password = "password")
   public void testAppendedGroups() throws Exception {
     prepareTestAppendedGroups("user1", true, "user1@example.com", "Mr. User 1", "group1", "group2");
+
     UserDetails userDetails = userDetailsService.loadUserByUsername("user1");
+    verifyServer();
+
     Assert.assertNotNull(userDetails);
     Assert.assertEquals("user1", userDetails.getUsername());
+
     checkAuthorities(userDetails.getAuthorities(), "group1", "group2", "group98", "group99");
   }
 

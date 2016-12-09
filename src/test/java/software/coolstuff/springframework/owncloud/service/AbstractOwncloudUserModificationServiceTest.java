@@ -13,7 +13,6 @@ import software.coolstuff.springframework.owncloud.config.WithOwncloudMockUser;
 import software.coolstuff.springframework.owncloud.model.OwncloudModificationUser;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudUserModificationService;
-import software.coolstuff.springframework.owncloud.service.api.OwncloudUserQueryService;
 import software.coolstuff.springframework.owncloud.service.impl.AbstractOwncloudServiceTest;
 
 @RestClientTest(OwncloudUserModificationService.class)
@@ -21,14 +20,6 @@ public abstract class AbstractOwncloudUserModificationServiceTest extends Abstra
 
   @Autowired
   private OwncloudUserModificationService userModificationService;
-
-  @Autowired
-  private OwncloudUserQueryService userQueryService;
-
-  @Override
-  protected final String getResourcePrefix() {
-    return "/modificationService";
-  }
 
   @Test
   public void testOwncloudModificationUserBuilderWithGroups() throws Exception {
@@ -42,6 +33,8 @@ public abstract class AbstractOwncloudUserModificationServiceTest extends Abstra
         .build();
 
     OwncloudModificationUser modificationUser = new OwncloudModificationUser(userDetails);
+    verifyServer();
+
     Assert.assertNotNull(modificationUser);
     Assert.assertEquals(userDetails.getUsername(), modificationUser.getUsername());
     Assert.assertEquals(userDetails.getPassword(), modificationUser.getPassword());
@@ -62,6 +55,8 @@ public abstract class AbstractOwncloudUserModificationServiceTest extends Abstra
         .build();
 
     OwncloudModificationUser modificationUser = new OwncloudModificationUser(userDetails);
+    verifyServer();
+
     Assert.assertNotNull(modificationUser);
     Assert.assertEquals(userDetails.getUsername(), modificationUser.getUsername());
     Assert.assertEquals(userDetails.getPassword(), modificationUser.getPassword());

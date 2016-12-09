@@ -7,8 +7,12 @@ import software.coolstuff.springframework.owncloud.config.CompareResourceAfter;
 import software.coolstuff.springframework.owncloud.service.AbstractOwncloudUserModificationServiceTest;
 
 @ActiveProfiles("FILE-RESOURCE")
-public class OwncloudUserModificationServiceFileResourceTest extends AbstractOwncloudUserModificationServiceTest
-    implements OwncloudFileResourceTest {
+public class OwncloudUserModificationServiceFileResourceTest extends AbstractOwncloudUserModificationServiceTest implements OwncloudModifyingFileResourceTest {
+
+  @Override
+  public String getResourcePrefix() {
+    return "/modificationService";
+  }
 
   @CompareResourceAfter("testSaveUser_CreateUser_OK_WithoutGroups")
   public void compareAfterTestSaveUser_CreateUser_OK_WithoutGroups(Resource target) throws Exception {
@@ -19,4 +23,5 @@ public class OwncloudUserModificationServiceFileResourceTest extends AbstractOwn
   public void compareAfterTestSaveUser_CreateUser_OK_WithGroups(Resource target) throws Exception {
     compareResources(getResourceOf("owncloud_afterSave_User4"), target);
   }
+
 }

@@ -23,11 +23,6 @@ public abstract class AbstractOwncloudUserQueryServiceTest extends AbstractOwncl
   @Autowired
   private OwncloudUserQueryService userQueryService;
 
-  @Override
-  protected String getResourcePrefix() {
-    return "/queryService";
-  }
-
   @Test
   @WithOwncloudMockUser(username = "user1", password = "password")
   public void testFindAllUsers() throws Exception {
