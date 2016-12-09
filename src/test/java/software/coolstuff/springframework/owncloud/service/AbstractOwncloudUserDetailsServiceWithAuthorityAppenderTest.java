@@ -34,13 +34,13 @@ public abstract class AbstractOwncloudUserDetailsServiceWithAuthorityAppenderTes
   @Test
   @WithOwncloudMockUser(username = "test1", password = "password")
   public void testAppendedGroups() throws Exception {
-    prepareTestAppendedGroups("user1");
+    prepareTestAppendedGroups("user1", true, "user1@example.com", "Mr. User 1", "group1", "group2");
     UserDetails userDetails = userDetailsService.loadUserByUsername("user1");
     Assert.assertNotNull(userDetails);
     Assert.assertEquals("user1", userDetails.getUsername());
     checkAuthorities(userDetails.getAuthorities(), "group1", "group2", "group98", "group99");
   }
 
-  protected void prepareTestAppendedGroups(String username) throws Exception {}
+  protected void prepareTestAppendedGroups(String username, boolean enable, String email, String displayName, String... groups) throws Exception {}
 
 }

@@ -1,13 +1,8 @@
 package software.coolstuff.springframework.owncloud.service.impl;
 
 import static org.springframework.http.HttpMethod.GET;
-import static org.springframework.test.web.client.match.MockRestRequestMatchers.header;
-import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
-import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 
 import software.coolstuff.springframework.owncloud.service.AbstractOwncloudUserDetailsServiceWithAuthorityAppenderTest;
@@ -29,16 +24,20 @@ public class OwncloudUserDetailsServiceWithAuthorityAppenderRestTest extends Abs
   }
 
   @Override
-  protected void prepareTestAppendedGroups(String username) throws Exception {
-    getServer()
-        .expect(requestToWithPrefix("/cloud/users/" + username))
-        .andExpect(method(GET))
-        .andExpect(header(HttpHeaders.AUTHORIZATION, getBasicAuthorizationHeader()))
-        .andRespond(withSuccess(getResponseContentOf("user1_details"), MediaType.TEXT_XML));
-    getServer()
-        .expect(requestToWithPrefix("/cloud/users/" + username + "/groups"))
-        .andExpect(method(GET))
-        .andExpect(header(HttpHeaders.AUTHORIZATION, getBasicAuthorizationHeader()))
-        .andRespond(withSuccess(getResponseContentOf("user1_groups"), MediaType.TEXT_XML));
+  protected void prepareTestAppendedGroups(String username, boolean enabled, String email, String displayName, String... groups) throws Exception {
+    respondUser(
+        RestRequest.builder()
+            .method(GET)
+            .url("/cloud/users/" + username)
+            .build(),
+        enabled,
+        email,
+        displayName);
+    respondGroups(
+        RestRequest.builder()
+            .method(GET)
+            .url("/cloud/users/" + username + "/groups")
+            .build(),
+        groups);
   }
 }

@@ -94,7 +94,7 @@ public abstract class AbstractOwncloudAuthenticationProviderTest extends Abstrac
     private final String username;
     private final String password;
 
-    public String getForBasicAuthorizationHeader() {
+    public String getBasicAuthorizationHeader() {
       return "Basic " + Base64.getEncoder().encodeToString((getUsername() + ":" + getPassword()).getBytes());
     }
 

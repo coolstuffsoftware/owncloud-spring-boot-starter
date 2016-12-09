@@ -1,16 +1,12 @@
 package software.coolstuff.springframework.owncloud.service.impl.rest.authenticateduser;
 
 import static org.springframework.http.HttpMethod.GET;
-import static org.springframework.test.web.client.match.MockRestRequestMatchers.header;
-import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
-import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
 
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.test.context.ActiveProfiles;
 
@@ -32,11 +28,14 @@ public class OwncloudUserDetailsServiceAuthenticatedUserRestTest extends Abstrac
   @Test(expected = OwncloudInvalidAuthenticationObjectException.class)
   @WithAnonymousUser
   public void testUserDetails_WrongAuthenticationObject() throws MalformedURLException, IOException {
-    getServer()
-        .expect(requestToWithPrefix("/cloud/users/user1"))
-        .andExpect(method(GET))
-        .andExpect(header("Authorization", getBasicAuthorizationHeader()))
-        .andRespond(withSuccess(getResponseContentOf("user1_details"), MediaType.TEXT_XML));
+    respondUser(
+        RestRequest.builder()
+            .method(GET)
+            .url("/cloud/user/user1")
+            .build(),
+        true,
+        "user1@example.com",
+        "Mr. User 1");
 
     userDetailsService.loadUserByUsername("user1");
   }

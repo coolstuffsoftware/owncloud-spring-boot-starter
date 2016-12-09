@@ -245,10 +245,15 @@ public abstract class AbstractOwncloudServiceTest {
     if (request.getServer() != null) {
       server = request.getServer();
     }
-    return server
+    ResponseActions responseActions = server
         .expect(requestToWithPrefix(request.getUrl()))
-        .andExpect(method(request.getMethod()))
-        .andExpect(header(HttpHeaders.AUTHORIZATION, restTest.getBasicAuthorizationHeader()));
+        .andExpect(method(request.getMethod()));
+    if (StringUtils.isNotBlank(request.getBasicAuthentication())) {
+      responseActions.andExpect(header(HttpHeaders.AUTHORIZATION, request.getBasicAuthentication()));
+    } else {
+      responseActions.andExpect(header(HttpHeaders.AUTHORIZATION, restTest.getBasicAuthorizationHeader()));
+    }
+    return responseActions;
   }
 
   private void setSuccessMetaInformation(Context context) {
@@ -426,9 +431,10 @@ public abstract class AbstractOwncloudServiceTest {
     private final HttpMethod method;
     @NotNull
     private final String url;
+    private String basicAuthentication;
     private MediaType responseType = MediaType.TEXT_XML;
 
-    protected static class RestRequestBuilder {
+    public static class RestRequestBuilder {
       private MediaType responseType = MediaType.TEXT_XML;
     }
   }
