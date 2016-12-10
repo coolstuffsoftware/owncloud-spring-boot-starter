@@ -146,6 +146,8 @@ abstract class AbstractOwncloudServiceImpl implements InitializingBean {
   protected HttpHeaders prepareHeadersWithBasicAuthorization() {
     if (isUseAdministratorCredentials()) {
       if (addBasicAuthentication) {
+        // Authentication Header will be added by RestTemplate.basicAuthorization()
+        // so we don't need to add any Authentication Headers
         return new HttpHeaders();
       }
       return prepareHeaderWithBasicAuthorization(properties.getUsername(), properties.getPassword());

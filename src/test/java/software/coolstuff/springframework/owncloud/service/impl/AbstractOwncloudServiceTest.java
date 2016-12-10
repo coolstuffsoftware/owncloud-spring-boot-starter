@@ -299,6 +299,10 @@ public abstract class AbstractOwncloudServiceTest {
         .andRespond(withSuccess(merge("groups.vm", context), request.getResponseType()));
   }
 
+  protected void respondFailure(RestRequest request, int statuscode) throws IOException {
+    respondFailure(request, statuscode, null);
+  }
+
   protected void respondFailure(RestRequest request, int statuscode, String message) throws IOException {
     if (isNoRestTestClass()) {
       return;

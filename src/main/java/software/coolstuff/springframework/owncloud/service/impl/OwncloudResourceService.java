@@ -210,9 +210,6 @@ class OwncloudResourceService implements InitializingBean, DisposableBean {
    */
   public boolean authenticate(String username, String password) {
     OwncloudResourceData.User user = users.get(username);
-    if (user == null) {
-      return false;
-    }
     return StringUtils.equals(password, user.getPassword());
   }
 
@@ -351,9 +348,6 @@ class OwncloudResourceService implements InitializingBean, DisposableBean {
   public List<String> getGroupsOfUser(String username) {
     OwncloudResourceData.User user = users.get(username);
     List<String> groups = new ArrayList<>();
-    if (user == null) {
-      return groups;
-    }
     if (CollectionUtils.isNotEmpty(user.getGroups())) {
       for (OwncloudResourceData.Group group : user.getGroups()) {
         groups.add(group.getGroup());

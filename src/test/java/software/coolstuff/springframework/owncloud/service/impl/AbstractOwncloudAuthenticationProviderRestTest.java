@@ -83,7 +83,7 @@ public abstract class AbstractOwncloudAuthenticationProviderRestTest extends Abs
             .url("/cloud/users/" + credentials.getUsername())
             .basicAuthentication(credentials.getBasicAuthorizationHeader())
             .build(),
-        999, null);
+        999);
     authenticationProvider.authenticate(credentials.getUsernamePasswordAuthenticationToken());
   }
 

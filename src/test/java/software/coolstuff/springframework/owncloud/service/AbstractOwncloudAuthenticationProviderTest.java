@@ -82,6 +82,26 @@ public abstract class AbstractOwncloudAuthenticationProviderTest extends Abstrac
 
   protected void prepareTestAuthenticate_NOK(Credentials credentials) throws Exception {};
 
+  @Test(expected = BadCredentialsException.class)
+  public void testAuthentication_NOK_NoUser() throws Exception {
+    Credentials credentials = Credentials.builder()
+        .username(null)
+        .password(null)
+        .build();
+
+    authenticationProvider.authenticate(credentials.getUsernamePasswordAuthenticationToken());
+  }
+
+  @Test(expected = BadCredentialsException.class)
+  public void testAuthentication_NOK_NoPassword() throws Exception {
+    Credentials credentials = Credentials.builder()
+        .username("user1")
+        .password(null)
+        .build();
+
+    authenticationProvider.authenticate(credentials.getUsernamePasswordAuthenticationToken());
+  }
+
   @Data
   @Builder
   protected static class Credentials {

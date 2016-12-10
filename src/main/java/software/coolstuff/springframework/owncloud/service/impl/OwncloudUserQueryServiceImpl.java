@@ -104,8 +104,6 @@ class OwncloudUserQueryServiceImpl extends AbstractOwncloudServiceImpl implement
       }
 
       switch (meta.getStatuscode()) {
-        case 100:
-          return;
         case 997:
           throw new AccessDeniedException("Not Authorized to access Resource " + uri);
         case 998:

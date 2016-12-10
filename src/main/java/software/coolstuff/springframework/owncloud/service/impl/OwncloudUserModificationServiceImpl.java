@@ -102,8 +102,6 @@ class OwncloudUserModificationServiceImpl extends AbstractOwncloudServiceImpl im
       }
 
       switch (meta.getStatuscode()) {
-        case 100:
-          return;
         case 101:
           throw new UsernameNotFoundException(username);
         case 102:
@@ -123,8 +121,6 @@ class OwncloudUserModificationServiceImpl extends AbstractOwncloudServiceImpl im
       }
 
       switch (meta.getStatuscode()) {
-        case 100:
-          return;
         case 101:
           throw new UsernameNotFoundException(username);
         case 102:
@@ -158,8 +154,6 @@ class OwncloudUserModificationServiceImpl extends AbstractOwncloudServiceImpl im
           }
 
           switch (meta.getStatuscode()) {
-            case 100:
-              return;
             case 101:
               throw new IllegalArgumentException(meta.getMessage());
             case 102:
@@ -191,8 +185,6 @@ class OwncloudUserModificationServiceImpl extends AbstractOwncloudServiceImpl im
           }
 
           switch (meta.getStatuscode()) {
-            case 100:
-              return;
             case 101:
               throw new IllegalArgumentException(meta.getMessage());
             case 102:
@@ -226,8 +218,6 @@ class OwncloudUserModificationServiceImpl extends AbstractOwncloudServiceImpl im
       }
 
       switch (meta.getStatuscode()) {
-        case 100:
-          return;
         case 101:
           throw new IllegalArgumentException(meta.getMessage());
         case 102:
@@ -262,8 +252,6 @@ class OwncloudUserModificationServiceImpl extends AbstractOwncloudServiceImpl im
       }
 
       switch (meta.getStatuscode()) {
-        case 100:
-          return;
         case 101:
           throw new UsernameNotFoundException(username);
         case 997:
@@ -294,8 +282,6 @@ class OwncloudUserModificationServiceImpl extends AbstractOwncloudServiceImpl im
       }
 
       switch (meta.getStatuscode()) {
-        case 100:
-          return;
         case 101:
           throw new IllegalArgumentException(meta.getMessage());
         case 102:
@@ -330,8 +316,6 @@ class OwncloudUserModificationServiceImpl extends AbstractOwncloudServiceImpl im
       }
 
       switch (meta.getStatuscode()) {
-        case 100:
-          return;
         case 101:
           throw new OwncloudGroupNotFoundException(groupname);
         case 102:

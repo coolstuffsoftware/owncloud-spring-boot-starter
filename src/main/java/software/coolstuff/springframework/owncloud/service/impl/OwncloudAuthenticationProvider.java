@@ -2,6 +2,7 @@ package software.coolstuff.springframework.owncloud.service.impl;
 
 import java.io.IOException;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpMethod;
@@ -33,6 +34,14 @@ public class OwncloudAuthenticationProvider extends AbstractOwncloudServiceImpl 
 
   @Override
   public Authentication authenticate(Authentication authentication) throws AuthenticationException {
+
+    if (StringUtils.isBlank(authentication.getName())) {
+      throw new BadCredentialsException("empty username");
+    }
+
+    if (authentication.getCredentials() == null) {
+      throw new BadCredentialsException("empty password");
+    }
 
     String username = authentication.getName();
     String password = authentication.getCredentials().toString();

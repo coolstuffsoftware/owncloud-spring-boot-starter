@@ -35,37 +35,59 @@ public abstract class AbstractOwncloudUserQueryServiceTest extends AbstractOwncl
     Assert.assertFalse(users.isEmpty());
     Assert.assertEquals(2, users.size());
 
-    ArrayList<String> expectedUsers = Lists.newArrayList("user1", "user2");
-    for (String user : users) {
-      Assert.assertTrue(expectedUsers.contains(user));
-      expectedUsers.remove(user);
-    }
-    Assert.assertTrue(expectedUsers.isEmpty());
+    Assert.assertTrue(CollectionUtils.isEqualCollection(users, Lists.newArrayList("user1", "user2")));
   }
 
   protected void prepareTestFindAllUsers(String... users) throws Exception {}
 
   @Test
   @WithOwncloudMockUser(username = "user1", password = "password")
+  public void testFindAllUsersWithFilter() throws Exception {
+    prepareTestFindAllUsersWithFilter("User 1", "user1");
+
+    List<String> users = userQueryService.findAllUsers("User 1");
+    verifyServer();
+
+    Assert.assertNotNull(users);
+    Assert.assertEquals(1, users.size());
+
+    Assert.assertTrue(CollectionUtils.isEqualCollection(users, Lists.newArrayList("user1")));
+  }
+
+  protected void prepareTestFindAllUsersWithFilter(String filter, String... users) throws Exception {}
+
+  @Test
+  @WithOwncloudMockUser(username = "user1", password = "password")
   public void testFindAllGroups() throws Exception {
-    prepareTestFindAllGroups("group1", "group2");
+    prepareTestFindAllGroups("group1", "group2", "group3");
 
     List<String> groups = userQueryService.findAllGroups();
     verifyServer();
 
     Assert.assertNotNull(groups);
     Assert.assertFalse(groups.isEmpty());
-    Assert.assertEquals(2, groups.size());
+    Assert.assertEquals(3, groups.size());
 
-    ArrayList<String> expectedGroups = Lists.newArrayList("group1", "group2");
-    for (String group : groups) {
-      Assert.assertTrue(expectedGroups.contains(group));
-      expectedGroups.remove(group);
-    }
-    Assert.assertTrue(expectedGroups.isEmpty());
+    Assert.assertTrue(CollectionUtils.isEqualCollection(groups, Lists.newArrayList("group1", "group2", "group3")));
   }
 
   protected void prepareTestFindAllGroups(String... groups) throws Exception {}
+
+  @Test
+  @WithOwncloudMockUser(username = "user1", password = "password")
+  public void testFindAllGroupsWithFilter() throws Exception {
+    prepareTestFindAllGroupsWithFilter("p2", "group2");
+
+    List<String> groups = userQueryService.findAllGroups("p2");
+    verifyServer();
+
+    Assert.assertNotNull(groups);
+    Assert.assertEquals(1, groups.size());
+
+    Assert.assertTrue(CollectionUtils.isEqualCollection(groups, Lists.newArrayList("group2")));
+  }
+
+  protected void prepareTestFindAllGroupsWithFilter(String filter, String... groups) throws Exception {}
 
   @Test
   @WithOwncloudMockUser(username = "user1", password = "password")
@@ -92,11 +114,22 @@ public abstract class AbstractOwncloudUserQueryServiceTest extends AbstractOwncl
   @Test(expected = OwncloudGroupNotFoundException.class)
   @WithOwncloudMockUser(username = "user1", password = "password")
   public void testFindAllMembersOfGroup_UnknownGroup() throws Exception {
-    prepareTestFindAllMembersOfGroup_UnknownGroup("group3");
-    userQueryService.findAllMembersOfGroup("group3");
+    prepareTestFindAllMembersOfGroup_UnknownGroup("group4");
+    userQueryService.findAllMembersOfGroup("group4");
   }
 
   protected void prepareTestFindAllMembersOfGroup_UnknownGroup(String group) throws Exception {}
+
+  @Test
+  @WithOwncloudMockUser(username = "user1", password = "password")
+  public void testFindAllMembersOfGroup_GroupWithoutMembers() throws Exception {
+    prepareTestFindAllMembersOfGroup_GroupWithoutMembers("group3");
+    List<String> membersOfGroup = userQueryService.findAllMembersOfGroup("group3");
+    Assert.assertNotNull(membersOfGroup);
+    Assert.assertTrue(membersOfGroup.isEmpty());
+  }
+
+  protected void prepareTestFindAllMembersOfGroup_GroupWithoutMembers(String groupname) throws Exception {}
 
   @Test(expected = NullPointerException.class)
   public void testFindAllMembersOfGroup_NoGroup() {
@@ -158,6 +191,8 @@ public abstract class AbstractOwncloudUserQueryServiceTest extends AbstractOwncl
     prepareTestFindAllGroupsOfUser_OK("user1", "group1", "group2");
 
     List<String> groups = userQueryService.findAllGroupsOfUser("user1");
+    verifyServer();
+
     Assert.assertNotNull(groups);
     Assert.assertEquals(2, groups.size());
 
@@ -165,4 +200,18 @@ public abstract class AbstractOwncloudUserQueryServiceTest extends AbstractOwncl
   }
 
   protected void prepareTestFindAllGroupsOfUser_OK(String user, String... groups) throws Exception {}
+
+  @Test
+  @WithOwncloudMockUser(username = "user2", password = "password")
+  public void testFindAllGroupsOfUser_OK_NoGroups() throws Exception {
+    prepareTestFindAllGroupsOfUser_OK_NoGroups("user2");
+
+    List<String> groups = userQueryService.findAllGroupsOfUser("user2");
+    verifyServer();
+
+    Assert.assertNotNull(groups);
+    Assert.assertTrue(groups.isEmpty());
+  }
+
+  protected void prepareTestFindAllGroupsOfUser_OK_NoGroups(String user) throws Exception {}
 }

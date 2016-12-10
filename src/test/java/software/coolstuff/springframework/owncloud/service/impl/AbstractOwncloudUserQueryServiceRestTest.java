@@ -5,8 +5,10 @@ import static org.springframework.http.HttpMethod.GET;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.util.UriUtils;
 
 import software.coolstuff.springframework.owncloud.config.WithOwncloudMockUser;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
@@ -33,11 +35,31 @@ public abstract class AbstractOwncloudUserQueryServiceRestTest extends AbstractO
   }
 
   @Override
+  protected void prepareTestFindAllUsersWithFilter(String filter, String... users) throws Exception {
+    respondUsers(
+        RestRequest.builder()
+            .method(GET)
+            .url("/cloud/users?search=" + UriUtils.encode(filter, "UTF8"))
+            .build(),
+        users);
+  }
+
+  @Override
   protected void prepareTestFindAllGroups(String... groups) throws Exception {
     respondGroups(
         RestRequest.builder()
             .method(GET)
             .url("/cloud/groups")
+            .build(),
+        groups);
+  }
+
+  @Override
+  protected void prepareTestFindAllGroupsWithFilter(String filter, String... groups) throws Exception {
+    respondGroups(
+        RestRequest.builder()
+            .method(GET)
+            .url("/cloud/groups?search=" + UriUtils.encode(filter, "UTF8"))
             .build(),
         groups);
   }
@@ -61,6 +83,16 @@ public abstract class AbstractOwncloudUserQueryServiceRestTest extends AbstractO
             .build(),
         998,
         "The requested group could not be found");
+  }
+
+  @Override
+  protected void prepareTestFindAllMembersOfGroup_GroupWithoutMembers(String groupname) throws Exception {
+    respondUsers(
+        RestRequest.builder()
+            .method(GET)
+            .url("/cloud/groups/" + groupname)
+            .build(),
+        new String[] {});
   }
 
   @Override
@@ -102,6 +134,16 @@ public abstract class AbstractOwncloudUserQueryServiceRestTest extends AbstractO
         groups);
   }
 
+  @Override
+  protected void prepareTestFindAllGroupsOfUser_OK_NoGroups(String user) throws Exception {
+    respondGroups(
+        RestRequest.builder()
+            .method(GET)
+            .url("/cloud/users/" + user + "/groups")
+            .build(),
+        new String[] {});
+  }
+
   @Test(expected = BadCredentialsException.class)
   @WithOwncloudMockUser(username = "user1", password = "password")
   public void testBadCredentialsBy401() throws Exception {
@@ -126,5 +168,29 @@ public abstract class AbstractOwncloudUserQueryServiceRestTest extends AbstractO
         HttpStatus.NOT_FOUND);
 
     userQueryService.findAllGroups();
+  }
+
+  @Test(expected = AccessDeniedException.class)
+  @WithOwncloudMockUser(username = "user1", password = "password")
+  public void testFindAllMembersOfGroup_NOK_AccessDenied() throws Exception {
+    respondFailure(
+        RestRequest.builder()
+            .method(GET)
+            .url("/cloud/groups/group1")
+            .build(),
+        997);
+    userQueryService.findAllMembersOfGroup("group1");
+  }
+
+  @Test(expected = IllegalStateException.class)
+  @WithOwncloudMockUser(username = "user1", password = "password")
+  public void testFindAllMembersOfGroup_NOK_UnknownError() throws Exception {
+    respondFailure(
+        RestRequest.builder()
+            .method(GET)
+            .url("/cloud/groups/group1")
+            .build(),
+        999);
+    userQueryService.findAllMembersOfGroup("group1");
   }
 }
