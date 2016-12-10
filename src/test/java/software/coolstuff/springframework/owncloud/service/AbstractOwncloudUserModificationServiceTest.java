@@ -122,4 +122,39 @@ public abstract class AbstractOwncloudUserModificationServiceTest extends Abstra
   }
 
   protected void prepareTestSaveUser_CreateUser_OK_WithGroups(OwncloudModificationUser newUser) throws Exception {}
+
+  @Test
+  @WithOwncloudMockUser(username = "user1", password = "password")
+  public void testSaveUser_UpdateUser_OK_WithoutGroups() throws Exception {
+    OwncloudModificationUser existingUser = OwncloudModificationUser.builder()
+        .username("user2")
+        .password("password")
+        .enabled(true)
+        .displayName("Mrs. User 1")
+        .email("user2@example.com")
+        .build();
+
+    OwncloudModificationUser updateUser = OwncloudModificationUser.builder()
+        .username("user2")
+        .password("password")
+        .enabled(true)
+        .displayName("Mrs. User 2 in Subdomain")
+        .email("user2@subdomain.example.com")
+        .build();
+
+    prepareTestSaveUser_UpdateUser_OK_WithoutGroups(existingUser, updateUser);
+
+    OwncloudUserDetails updatedUser = userModificationService.saveUser(updateUser);
+    verifyServer();
+
+    Assert.assertNotNull(updatedUser);
+    Assert.assertEquals(updateUser.getUsername(), updatedUser.getUsername());
+    Assert.assertEquals(updateUser.getPassword(), updatedUser.getPassword());
+    Assert.assertEquals(updateUser.isEnabled(), updatedUser.isEnabled());
+    Assert.assertEquals(updateUser.getDisplayName(), updatedUser.getDisplayName());
+    Assert.assertEquals(updateUser.getEmail(), updatedUser.getEmail());
+    Assert.assertTrue(CollectionUtils.isEmpty(updatedUser.getAuthorities()));
+  }
+
+  protected void prepareTestSaveUser_UpdateUser_OK_WithoutGroups(OwncloudModificationUser existingUser, OwncloudModificationUser updateUser) throws Exception {}
 }
