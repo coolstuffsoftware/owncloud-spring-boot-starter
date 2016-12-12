@@ -89,7 +89,7 @@ public abstract class AbstractOwncloudUserModificationServiceTest extends Abstra
     Assert.assertEquals(newUser.getDisplayName(), createdUser.getDisplayName());
     Assert.assertEquals(newUser.getEmail(), createdUser.getEmail());
 
-    checkAuthorities(createdUser.getAuthorities());
+    checkAuthorities(createdUser.getUsername(), createdUser.getAuthorities());
   }
 
   protected void prepareTestSaveUser_CreateUser_OK_WithoutGroups(OwncloudModificationUser newUser) throws Exception {}
@@ -118,7 +118,7 @@ public abstract class AbstractOwncloudUserModificationServiceTest extends Abstra
     Assert.assertEquals(newUser.getDisplayName(), createdUser.getDisplayName());
     Assert.assertEquals(newUser.getEmail(), createdUser.getEmail());
 
-    checkAuthorities(createdUser.getAuthorities(), "group1", "group2");
+    checkAuthorities(createdUser.getUsername(), createdUser.getAuthorities(), "group1", "group2");
   }
 
   protected void prepareTestSaveUser_CreateUser_OK_WithGroups(OwncloudModificationUser newUser) throws Exception {}

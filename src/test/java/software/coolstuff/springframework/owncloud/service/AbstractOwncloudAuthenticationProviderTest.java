@@ -52,7 +52,7 @@ public abstract class AbstractOwncloudAuthenticationProviderTest extends Abstrac
 
     Assert.assertNotNull(authentication);
     Assert.assertTrue(OwncloudAuthentication.class.isAssignableFrom(authentication.getClass()));
-    checkAuthorities(authentication.getAuthorities(), "group1", "group2");
+    checkAuthorities(authentication.getName(), authentication.getAuthorities(), "group1", "group2");
 
     Assert.assertEquals(credentials.getUsername(), authentication.getName());
     Assert.assertEquals(credentials.getPassword(), authentication.getCredentials());

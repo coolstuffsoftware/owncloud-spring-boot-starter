@@ -78,11 +78,13 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import software.coolstuff.springframework.owncloud.config.AuthorityAppenderConfiguration;
+import software.coolstuff.springframework.owncloud.config.AuthorityMapperConfiguration;
 import software.coolstuff.springframework.owncloud.config.CompareResourceAfter;
 import software.coolstuff.springframework.owncloud.config.OwncloudFileResourceTestExecutionListener;
-import software.coolstuff.springframework.owncloud.config.OwncloudGrantedAuthoritiesMapperConfiguration;
 import software.coolstuff.springframework.owncloud.config.VelocityConfiguration;
 import software.coolstuff.springframework.owncloud.properties.OwncloudProperties;
+import software.coolstuff.springframework.owncloud.service.api.OwncloudGrantedAuthoritiesMapper;
 import software.coolstuff.springframework.owncloud.service.impl.resource.file.OwncloudFileResourceTest;
 import software.coolstuff.springframework.owncloud.service.impl.resource.file.OwncloudModifyingFileResourceTest;
 
@@ -92,7 +94,8 @@ import software.coolstuff.springframework.owncloud.service.impl.resource.file.Ow
     classes = {
         OwncloudAutoConfiguration.class,
         VelocityConfiguration.class,
-        OwncloudGrantedAuthoritiesMapperConfiguration.class
+        AuthorityAppenderConfiguration.class,
+        AuthorityMapperConfiguration.class
     })
 @TestExecutionListeners({
     SpringBootDependencyInjectionTestExecutionListener.class,
@@ -108,6 +111,9 @@ public abstract class AbstractOwncloudServiceTest {
 
   @Autowired
   private ResourceLoader resourceLoader;
+
+  @Autowired(required = false)
+  private OwncloudGrantedAuthoritiesMapper owncloudGrantedAuthoritiesMapper;
 
   @Autowired(required = false)
   private GrantedAuthoritiesMapper grantedAuthoritiesMapper;
@@ -378,7 +384,7 @@ public abstract class AbstractOwncloudServiceTest {
     return resourceLoader.getResource("classpath:" + path + testCase + ".xml");
   }
 
-  protected void checkAuthorities(Collection<? extends GrantedAuthority> actual, String... expected) {
+  protected void checkAuthorities(String username, Collection<? extends GrantedAuthority> actual, String... expected) {
     Assert.assertEquals(expected.length, actual == null ? 0 : actual.size());
     List<SimpleGrantedAuthority> authorities = new ArrayList<>();
     if (ArrayUtils.isNotEmpty(expected)) {
@@ -386,7 +392,9 @@ public abstract class AbstractOwncloudServiceTest {
         authorities.add(new SimpleGrantedAuthority(authority));
       }
     }
-    if (grantedAuthoritiesMapper != null) {
+    if (owncloudGrantedAuthoritiesMapper != null) {
+      Assert.assertTrue(CollectionUtils.isEqualCollection(actual, owncloudGrantedAuthoritiesMapper.mapAuthorities(username, authorities)));
+    } else if (grantedAuthoritiesMapper != null) {
       Assert.assertTrue(CollectionUtils.isEqualCollection(actual, grantedAuthoritiesMapper.mapAuthorities(authorities)));
     } else {
       Assert.assertTrue(CollectionUtils.isEqualCollection(actual, authorities));

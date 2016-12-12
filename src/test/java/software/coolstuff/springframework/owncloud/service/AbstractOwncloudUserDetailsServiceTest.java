@@ -35,7 +35,7 @@ public abstract class AbstractOwncloudUserDetailsServiceTest extends AbstractOwn
 
     Assert.assertEquals("user1", userDetails.getUsername());
     Assert.assertNull(userDetails.getPassword());
-    checkAuthorities(userDetails.getAuthorities(), "group1", "group2");
+    checkAuthorities(userDetails.getUsername(), userDetails.getAuthorities(), "group1", "group2");
 
     Assert.assertTrue(OwncloudUserDetails.class.isAssignableFrom(userDetails.getClass()));
     OwncloudUserDetails owncloudUserDetails = (OwncloudUserDetails) userDetails;

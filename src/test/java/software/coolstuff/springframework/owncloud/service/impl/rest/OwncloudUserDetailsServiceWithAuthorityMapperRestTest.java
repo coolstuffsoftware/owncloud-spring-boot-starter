@@ -1,20 +1,22 @@
-package software.coolstuff.springframework.owncloud.service.impl;
+package software.coolstuff.springframework.owncloud.service.impl.rest;
 
 import static org.springframework.http.HttpMethod.GET;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ActiveProfiles;
 
-import software.coolstuff.springframework.owncloud.service.AbstractOwncloudUserDetailsServiceWithAuthorityAppenderTest;
+import software.coolstuff.springframework.owncloud.service.AbstractOwncloudUserDetailsServiceWithAuthorityMapperTest;
+import software.coolstuff.springframework.owncloud.service.impl.OwncloudServiceRestTest;
+import software.coolstuff.springframework.owncloud.service.impl.OwncloudUserDetailsService;
 
-@ActiveProfiles("AUTHORITY-APPENDER-URL")
-public class OwncloudUserDetailsServiceWithAuthorityAppenderRestTest extends AbstractOwncloudUserDetailsServiceWithAuthorityAppenderTest implements OwncloudServiceRestTest {
+@ActiveProfiles("AUTHORITY-MAPPER-URL")
+public class OwncloudUserDetailsServiceWithAuthorityMapperRestTest extends AbstractOwncloudUserDetailsServiceWithAuthorityMapperTest implements OwncloudServiceRestTest {
 
   @Autowired
   private OwncloudUserDetailsService userDetailsService;
 
   @Override
-  public AbstractOwncloudServiceImpl owncloudService() {
+  public OwncloudUserDetailsService owncloudService() {
     return userDetailsService;
   }
 
@@ -24,7 +26,7 @@ public class OwncloudUserDetailsServiceWithAuthorityAppenderRestTest extends Abs
   }
 
   @Override
-  protected void prepareTestAppendedGroups(String username, boolean enabled, String email, String displayName, String... groups) throws Exception {
+  protected void prepareTestMappedGroups(String username, boolean enabled, String email, String displayName, String... groups) throws Exception {
     respondUser(
         RestRequest.builder()
             .method(GET)

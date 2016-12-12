@@ -161,7 +161,7 @@ public abstract class AbstractOwncloudUserQueryServiceTest extends AbstractOwncl
     Assert.assertEquals(expectedUser.getDisplayName(), actualUser.getDisplayName());
     Assert.assertEquals(expectedUser.getEmail(), actualUser.getEmail());
 
-    checkAuthorities(actualUser.getAuthorities(), "group1", "group2");
+    checkAuthorities(actualUser.getUsername(), actualUser.getAuthorities(), "group1", "group2");
   }
 
   protected void prepareTestFindOneUser_OK(OwncloudUserDetails expectedUser, String... groups) throws Exception {}

@@ -25,6 +25,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.util.LinkedMultiValueMap;
@@ -59,7 +60,10 @@ abstract class AbstractOwncloudServiceImpl implements InitializingBean {
   private FormHttpMessageConverter formHttpMessageConverter;
 
   @Autowired(required = false)
-  private OwncloudGrantedAuthoritiesMapper grantedAuthoritiesMapper;
+  private OwncloudGrantedAuthoritiesMapper owncloudGrantedAuthoritiesMapper;
+
+  @Autowired(required = false)
+  private GrantedAuthoritiesMapper grantedAuthoritiesMapper;
 
   @Autowired(required = false)
   private OwncloudResourceService resourceService;
@@ -212,11 +216,13 @@ abstract class AbstractOwncloudServiceImpl implements InitializingBean {
     }
   }
 
-  protected OwncloudUserDetails createUserDetails(String username, Ocs.User user, Ocs.Groups groups) {
+  protected OwncloudUserDetails createUserDetails(String username, Ocs.User user, Ocs.Groups groupsFromBackend) {
     List<GrantedAuthority> authorities = new ArrayList<>();
-    if (isGroupAvailable(groups)) {
-      for (Ocs.Groups.Data.Group group : groups.getData().getGroups()) {
+    List<String> groups = new ArrayList<>();
+    if (isGroupAvailable(groupsFromBackend)) {
+      for (Ocs.Groups.Data.Group group : groupsFromBackend.getData().getGroups()) {
         authorities.add(new SimpleGrantedAuthority(group.getGroup()));
+        groups.add(group.getGroup());
       }
     }
 
@@ -225,13 +231,16 @@ abstract class AbstractOwncloudServiceImpl implements InitializingBean {
         .enabled(user.getData().isEnabled())
         .displayName(user.getData().getDisplayname())
         .email(user.getData().getEmail())
+        .groups(groups)
         .authorities(authorities)
         .accountNonExpired(true)
         .accountNonLocked(true)
         .credentialsNonExpired(true)
         .build();
-    if (grantedAuthoritiesMapper != null) {
-      userDetails.setAuthorities(grantedAuthoritiesMapper.mapAuthorities(userDetails.getUsername(), authorities));
+    if (owncloudGrantedAuthoritiesMapper != null) {
+      userDetails.setAuthorities(owncloudGrantedAuthoritiesMapper.mapAuthorities(userDetails.getUsername(), authorities));
+    } else if (grantedAuthoritiesMapper != null) {
+      userDetails.setAuthorities(grantedAuthoritiesMapper.mapAuthorities(authorities));
     }
 
     return userDetails;

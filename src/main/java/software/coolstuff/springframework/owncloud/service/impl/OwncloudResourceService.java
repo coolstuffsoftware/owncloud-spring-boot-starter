@@ -24,6 +24,7 @@ import org.springframework.core.io.UrlResource;
 import org.springframework.http.converter.xml.MappingJackson2XmlHttpMessageConverter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
@@ -89,7 +90,10 @@ class OwncloudResourceService implements InitializingBean, DisposableBean {
   private OwncloudProperties properties;
 
   @Autowired(required = false)
-  private OwncloudGrantedAuthoritiesMapper grantedAuthoritiesMapper;
+  private OwncloudGrantedAuthoritiesMapper owncloudGrantedAuthoritiesMapper;
+
+  @Autowired(required = false)
+  private GrantedAuthoritiesMapper grantedAuthoritiesMapper;
 
   @Autowired
   private MappingJackson2XmlHttpMessageConverter messageConverter;
@@ -232,9 +236,11 @@ class OwncloudResourceService implements InitializingBean, DisposableBean {
 
   private OwncloudUserDetails convert(OwncloudResourceData.User user) {
     List<GrantedAuthority> authorities = new ArrayList<>();
+    List<String> groups = new ArrayList<>();
     if (CollectionUtils.isNotEmpty(user.getGroups())) {
       for (OwncloudResourceData.Group group : user.getGroups()) {
         authorities.add(new SimpleGrantedAuthority(group.getGroup()));
+        groups.add(group.getGroup());
       }
     }
 
@@ -243,13 +249,16 @@ class OwncloudResourceService implements InitializingBean, DisposableBean {
         .enabled(user.isEnabled())
         .displayName(user.getDisplayName())
         .email(user.getEmail())
+        .groups(groups)
         .authorities(authorities)
         .accountNonExpired(true)
         .accountNonLocked(true)
         .credentialsNonExpired(true)
         .build();
-    if (grantedAuthoritiesMapper != null) {
-      userDetails.setAuthorities(grantedAuthoritiesMapper.mapAuthorities(userDetails.getUsername(), userDetails.getAuthorities()));
+    if (owncloudGrantedAuthoritiesMapper != null) {
+      userDetails.setAuthorities(owncloudGrantedAuthoritiesMapper.mapAuthorities(userDetails.getUsername(), userDetails.getAuthorities()));
+    } else if (grantedAuthoritiesMapper != null) {
+      userDetails.setAuthorities(grantedAuthoritiesMapper.mapAuthorities(authorities));
     }
     return userDetails;
   }
@@ -364,16 +373,13 @@ class OwncloudResourceService implements InitializingBean, DisposableBean {
 
       existingUser = new OwncloudResourceData.User();
       existingUser.setUsername(user.getUsername());
+      existingUser.setPassword(user.getPassword());
       users.put(existingUser.getUsername(), existingUser);
     }
 
     existingUser.setDisplayName(user.getDisplayName());
     existingUser.setEmail(user.getEmail());
     existingUser.setEnabled(user.isEnabled());
-
-    if (StringUtils.isNotBlank(user.getPassword())) {
-      existingUser.setPassword(user.getPassword());
-    }
 
     manageGroups(existingUser, user);
 

@@ -13,7 +13,7 @@
     </user>
     <user>
       <username>user2</username>
-      <password>password</password>
+      <password>s3cr3t</password>
       <enabled>true</enabled>
       <displayName>Mrs. User 2 in Subdomain</displayName>
       <email>user2@subdomain.example.com</email>

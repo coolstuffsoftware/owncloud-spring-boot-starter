@@ -1,6 +1,8 @@
 package software.coolstuff.springframework.owncloud.model;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 import javax.validation.constraints.NotNull;
 
@@ -35,6 +37,7 @@ public class OwncloudUserDetails implements UserDetails {
 
   private Collection<? extends GrantedAuthority> authorities;
 
+  private List<String> groups = new ArrayList<>();
   private String displayName;
   private String email;
 
