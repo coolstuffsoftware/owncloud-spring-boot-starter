@@ -5,7 +5,12 @@ import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.http.HttpMethod.PUT;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
@@ -35,142 +40,128 @@ public abstract class AbstractOwncloudUserModificationServiceRestTest extends Ab
 
   @Override
   protected void prepareTestSaveUser_CreateUser_OK_WithoutGroups(OwncloudModificationUser newUser) throws Exception {
-    respondFailure(
-        RestRequest.builder()
-            .method(GET).url("/cloud/users/" + newUser.getUsername())
-            .build(),
-        998,
-        "The requested user could not be found");
-
-    MultiValueMap<String, String> postData = new LinkedMultiValueMap<>();
-    postData.put("userid", Lists.newArrayList(newUser.getUsername()));
-    postData.put("password", Lists.newArrayList(newUser.getPassword()));
-    respondSuccess(
-        RestRequest.builder()
-            .method(POST)
-            .url("/cloud/users")
-            .build(),
-        postData);
-
-    respondUser(
-        RestRequest.builder()
-            .method(GET)
-            .url("/cloud/users/" + newUser.getUsername())
-            .build(),
-        true,
-        null,
-        newUser.getUsername());
-
-    // change the Displayname
-    MultiValueMap<String, String> putData = new LinkedMultiValueMap<>();
-    putData.put("key", Lists.newArrayList("display"));
-    putData.put("value", Lists.newArrayList(newUser.getDisplayName()));
-    respondSuccess(
-        RestRequest.builder()
-            .method(PUT)
-            .url("/cloud/users/" + newUser.getUsername())
-            .build(),
-        putData);
-
-    // change the eMail
-    putData = new LinkedMultiValueMap<>();
-    putData.put("key", Lists.newArrayList("email"));
-    putData.put("value", Lists.newArrayList(newUser.getEmail()));
-    respondSuccess(
-        RestRequest.builder()
-            .method(PUT)
-            .url("/cloud/users/" + newUser.getUsername())
-            .build(),
-        putData);
-
-    respondGroups(
-        RestRequest.builder()
-            .method(GET)
-            .url("/cloud/users/" + newUser.getUsername() + "/groups")
-            .build());
-
-    MockRestServiceServer queryServer = createServer((OwncloudUserQueryServiceImpl) userQueryService);
-    respondUser(
-        RestRequest.builder()
-            .server(queryServer)
-            .method(GET)
-            .url("/cloud/users/" + newUser.getUsername())
-            .build(),
-        newUser.isEnabled(),
-        newUser.getEmail(),
-        newUser.getDisplayName());
-    respondGroups(
-        RestRequest.builder()
-            .server(queryServer)
-            .method(GET)
-            .url("/cloud/users/" + newUser.getUsername() + "/groups")
-            .build(),
-        CollectionUtils.isEmpty(newUser.getGroups()) ? new String[] {} : newUser.getGroups().toArray(new String[] {}));
+    prepareModificationRestTest(null, newUser);
   };
 
   @Override
   protected void prepareTestSaveUser_CreateUser_OK_WithGroups(OwncloudModificationUser newUser) throws Exception {
-    respondFailure(
-        RestRequest.builder()
-            .method(GET)
-            .url("/cloud/users/" + newUser.getUsername())
-            .build(),
-        998,
-        "The requested user could not be found");
+    prepareModificationRestTest(null, newUser);
+  }
 
-    MultiValueMap<String, String> postData = new LinkedMultiValueMap<>();
-    postData.put("userid", Lists.newArrayList(newUser.getUsername()));
-    postData.put("password", Lists.newArrayList(newUser.getPassword()));
-    respondSuccess(
-        RestRequest.builder()
-            .method(POST)
-            .url("/cloud/users")
-            .build(),
-        postData);
+  private void prepareModificationRestTest(OwncloudModificationUser existingUser, OwncloudModificationUser newUser) throws IOException {
+    if (existingUser != null) {
+      respondUser(
+          RestRequest.builder()
+              .method(GET)
+              .url("/cloud/users/" + existingUser.getUsername())
+              .build(),
+          existingUser.isEnabled(),
+          existingUser.getEmail(),
+          existingUser.getDisplayName());
+    } else {
+      respondFailure(
+          RestRequest.builder()
+              .method(GET)
+              .url("/cloud/users/" + newUser.getUsername())
+              .build(),
+          998,
+          "The requested user could not be found");
 
-    respondUser(
-        RestRequest.builder()
-            .method(GET)
-            .url("/cloud/users/" + newUser.getUsername())
-            .build(),
-        true,
-        null,
-        newUser.getUsername());
+      MultiValueMap<String, String> postData = new LinkedMultiValueMap<>();
+      postData.put("userid", Lists.newArrayList(newUser.getUsername()));
+      postData.put("password", Lists.newArrayList(newUser.getPassword()));
+      respondSuccess(
+          RestRequest.builder()
+              .method(POST)
+              .url("/cloud/users")
+              .build(),
+          postData);
+
+      respondUser(
+          RestRequest.builder()
+              .method(GET)
+              .url("/cloud/users/" + newUser.getUsername())
+              .build(),
+          true,
+          null,
+          newUser.getUsername());
+    }
 
     // change the Displayname
-    MultiValueMap<String, String> putData = new LinkedMultiValueMap<>();
-    putData.put("key", Lists.newArrayList("display"));
-    putData.put("value", Lists.newArrayList(newUser.getDisplayName()));
-    respondSuccess(
-        RestRequest.builder()
-            .method(PUT)
-            .url("/cloud/users/" + newUser.getUsername())
-            .build(),
-        putData);
+    if (existingUser == null || !StringUtils.equals(existingUser.getDisplayName(), newUser.getDisplayName())) {
+      MultiValueMap<String, String> putData = new LinkedMultiValueMap<>();
+      putData.put("key", Lists.newArrayList("display"));
+      putData.put("value", Lists.newArrayList(newUser.getDisplayName()));
+      respondSuccess(
+          RestRequest.builder()
+              .method(PUT)
+              .url("/cloud/users/" + newUser.getUsername())
+              .build(),
+          putData);
+    }
 
     // change the eMail
-    putData = new LinkedMultiValueMap<>();
-    putData.put("key", Lists.newArrayList("email"));
-    putData.put("value", Lists.newArrayList(newUser.getEmail()));
-    respondSuccess(
-        RestRequest.builder()
-            .method(PUT)
-            .url("/cloud/users/" + newUser.getUsername())
-            .build(),
-        putData);
+    if (existingUser == null || !StringUtils.equals(existingUser.getEmail(), newUser.getEmail())) {
+      MultiValueMap<String, String> putData = new LinkedMultiValueMap<>();
+      putData = new LinkedMultiValueMap<>();
+      putData.put("key", Lists.newArrayList("email"));
+      putData.put("value", Lists.newArrayList(newUser.getEmail()));
+      respondSuccess(
+          RestRequest.builder()
+              .method(PUT)
+              .url("/cloud/users/" + newUser.getUsername())
+              .build(),
+          putData);
+    }
 
-    respondGroups(
-        RestRequest.builder()
-            .method(GET)
-            .url("/cloud/users/" + newUser.getUsername() + "/groups")
-            .build());
+    // change the availatility (enable/disable)
+    if (existingUser != null && existingUser.isEnabled() != newUser.isEnabled()) {
+      respondSuccess(
+          RestRequest.builder()
+              .method(PUT)
+              .url("/cloud/users/" + newUser.getUsername() + "/" + (newUser.isEnabled() ? "enable" : "disable"))
+              .build());
+    }
 
-    for (String group : newUser.getGroups()) {
+    List<String> addedGroups = new ArrayList<>();
+    List<String> removedGroups = new ArrayList<>();
+    if (existingUser != null && CollectionUtils.isNotEmpty(existingUser.getGroups())) {
+      respondGroups(
+          RestRequest.builder()
+              .method(GET)
+              .url("/cloud/users/" + newUser.getUsername() + "/groups")
+              .build(),
+          existingUser.getGroups().toArray(new String[] {}));
+      addedGroups.addAll(CollectionUtils.subtract(newUser.getGroups(), existingUser.getGroups()));
+      removedGroups.addAll(CollectionUtils.subtract(existingUser.getGroups(), newUser.getGroups()));
+    } else {
+      respondGroups(
+          RestRequest.builder()
+              .method(GET)
+              .url("/cloud/users/" + newUser.getUsername() + "/groups")
+              .build());
+      addedGroups.addAll(newUser.getGroups());
+    }
+
+    for (String group : addedGroups) {
+      MultiValueMap<String, String> postData = new LinkedMultiValueMap<>();
       postData = new LinkedMultiValueMap<>();
       postData.put("groupid", Lists.newArrayList(group));
       respondSuccess(
           RestRequest.builder()
               .method(POST)
+              .url("/cloud/users/" + newUser.getUsername() + "/groups")
+              .build(),
+          postData);
+    }
+
+    for (String group : removedGroups) {
+      MultiValueMap<String, String> postData = new LinkedMultiValueMap<>();
+      postData = new LinkedMultiValueMap<>();
+      postData.put("groupid", Lists.newArrayList(group));
+      respondSuccess(
+          RestRequest.builder()
+              .method(DELETE)
               .url("/cloud/users/" + newUser.getUsername() + "/groups")
               .build(),
           postData);
@@ -197,82 +188,12 @@ public abstract class AbstractOwncloudUserModificationServiceRestTest extends Ab
 
   @Override
   protected void prepareTestSaveUser_UpdateUser_OK_WithoutGroups(OwncloudModificationUser existingUser, OwncloudModificationUser updateUser) throws Exception {
-    respondUser(
-        RestRequest.builder()
-            .method(GET)
-            .url("/cloud/users/" + existingUser.getUsername())
-            .build(),
-        existingUser.isEnabled(),
-        existingUser.getEmail(),
-        existingUser.getDisplayName());
+    prepareModificationRestTest(existingUser, updateUser);
+  }
 
-    // change the Displayname
-    MultiValueMap<String, String> putData = new LinkedMultiValueMap<>();
-    putData.put("key", Lists.newArrayList("display"));
-    putData.put("value", Lists.newArrayList(updateUser.getDisplayName()));
-    respondSuccess(
-        RestRequest.builder()
-            .method(PUT)
-            .url("/cloud/users/" + existingUser.getUsername())
-            .build(),
-        putData);
-
-    // change the eMail
-    putData = new LinkedMultiValueMap<>();
-    putData.put("key", Lists.newArrayList("email"));
-    putData.put("value", Lists.newArrayList(updateUser.getEmail()));
-    respondSuccess(
-        RestRequest.builder()
-            .method(PUT)
-            .url("/cloud/users/" + existingUser.getUsername())
-            .build(),
-        putData);
-
-    if (CollectionUtils.isEmpty(existingUser.getGroups())) {
-      respondGroups(
-          RestRequest.builder()
-              .method(GET)
-              .url("/cloud/users/" + existingUser.getUsername() + "/groups")
-              .build(),
-          new String[] {});
-
-      for (String group : existingUser.getGroups()) {
-        MultiValueMap<String, String> postData = new LinkedMultiValueMap<>();
-        postData = new LinkedMultiValueMap<>();
-        postData.put("groupid", Lists.newArrayList(group));
-        respondSuccess(
-            RestRequest.builder()
-                .method(DELETE)
-                .url("/cloud/users/" + existingUser.getUsername() + "/groups")
-                .build(),
-            postData);
-      }
-    } else {
-      respondGroups(
-          RestRequest.builder()
-              .method(GET)
-              .url("/cloud/users/" + existingUser.getUsername() + "/groups")
-              .build(),
-          existingUser.getGroups().toArray(new String[] {}));
-    }
-
-    MockRestServiceServer queryServer = createServer((OwncloudUserQueryServiceImpl) userQueryService);
-    respondUser(
-        RestRequest.builder()
-            .server(queryServer)
-            .method(GET)
-            .url("/cloud/users/" + updateUser.getUsername())
-            .build(),
-        updateUser.isEnabled(),
-        updateUser.getEmail(),
-        updateUser.getDisplayName());
-    respondGroups(
-        RestRequest.builder()
-            .server(queryServer)
-            .method(GET)
-            .url("/cloud/users/" + updateUser.getUsername() + "/groups")
-            .build(),
-        CollectionUtils.isEmpty(updateUser.getGroups()) ? new String[] {} : updateUser.getGroups().toArray(new String[] {}));
+  @Override
+  protected void prepareTestSaveUser_UpdateUser_OK_WithGroups(OwncloudModificationUser existingUser, OwncloudModificationUser updateUser) throws Exception {
+    prepareModificationRestTest(existingUser, updateUser);
   }
 
   @Test(expected = IllegalArgumentException.class)

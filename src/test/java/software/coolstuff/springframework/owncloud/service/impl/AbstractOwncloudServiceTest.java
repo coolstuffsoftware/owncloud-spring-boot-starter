@@ -329,6 +329,10 @@ public abstract class AbstractOwncloudServiceTest {
     prepareRestRequest(request).andRespond(withStatus(httpStatus));
   }
 
+  protected void respondSuccess(RestRequest request) throws IOException {
+    respondSuccess(request, null);
+  }
+
   protected void respondSuccess(RestRequest request, MultiValueMap<String, String> requestBody) throws IOException {
     if (isNoRestTestClass()) {
       return;
@@ -338,8 +342,10 @@ public abstract class AbstractOwncloudServiceTest {
     Context context = new VelocityContext();
     setSuccessMetaInformation(context);
 
+    if (requestBody != null) {
+      preparedRequest = preparedRequest.andExpect(content().formData(requestBody));
+    }
     preparedRequest
-        .andExpect(content().formData(requestBody))
         .andRespond(withSuccess(merge("void.vm", context), MediaType.TEXT_XML));
   }
 

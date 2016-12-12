@@ -157,4 +157,43 @@ public abstract class AbstractOwncloudUserModificationServiceTest extends Abstra
   }
 
   protected void prepareTestSaveUser_UpdateUser_OK_WithoutGroups(OwncloudModificationUser existingUser, OwncloudModificationUser updateUser) throws Exception {}
+
+  @Test
+  @WithOwncloudMockUser(username = "user1", password = "password")
+  public void testSaveUser_UpdateUser_OK_WithGroups() throws Exception {
+    OwncloudModificationUser existingUser = OwncloudModificationUser.builder()
+        .username("user1")
+        .password("s3cr3t")
+        .enabled(true)
+        .displayName("Mr. User 1")
+        .email("user1@example.com")
+        .group("group1")
+        .group("group2")
+        .build();
+
+    OwncloudModificationUser updateUser = OwncloudModificationUser.builder()
+        .username("user1")
+        .password("s3cr3t")
+        .enabled(false) // disabled instead of enabled
+        .displayName("Mr. User 1")
+        .email("user1@example.com")
+        .group("group1")
+        .group("group3") // group3 instead of group2
+        .build();
+
+    prepareTestSaveUser_UpdateUser_OK_WithGroups(existingUser, updateUser);
+
+    OwncloudUserDetails updatedUser = userModificationService.saveUser(updateUser);
+    verifyServer();
+
+    Assert.assertNotNull(updatedUser);
+    Assert.assertEquals(updateUser.getUsername(), updatedUser.getUsername());
+    Assert.assertEquals(updateUser.getPassword(), updatedUser.getPassword());
+    Assert.assertEquals(updateUser.isEnabled(), updatedUser.isEnabled());
+    Assert.assertEquals(updateUser.getDisplayName(), updatedUser.getDisplayName());
+    Assert.assertEquals(updateUser.getEmail(), updatedUser.getEmail());
+    checkAuthorities(updatedUser.getUsername(), updatedUser.getAuthorities(), updateUser.getGroups().toArray(new String[] {}));
+  }
+
+  protected void prepareTestSaveUser_UpdateUser_OK_WithGroups(OwncloudModificationUser existingUser, OwncloudModificationUser updateUser) throws Exception {}
 }

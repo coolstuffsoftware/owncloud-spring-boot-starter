@@ -28,4 +28,9 @@ public class OwncloudUserModificationServiceFileResourceTest extends AbstractOwn
   public void compareAfterTestSaveUser_UpdateUser_OK_WithoutGroups(Resource target) throws Exception {
     compareResources(getResourceOf("owncloud_afterSave_User2"), target);
   }
+
+  @CompareResourceAfter("testSaveUser_UpdateUser_OK_WithGroups")
+  public void compareTestSaveUser_UpdateUser_OK_WithGroups(Resource target) throws Exception {
+    compareResources(getResourceOf("owncloud_afterSave_User1"), target);
+  }
 }
