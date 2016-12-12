@@ -20,6 +20,8 @@ import org.springframework.util.MultiValueMap;
 
 import com.google.common.collect.Lists;
 
+import lombok.Builder;
+import lombok.Data;
 import software.coolstuff.springframework.owncloud.config.WithOwncloudMockUser;
 import software.coolstuff.springframework.owncloud.model.OwncloudModificationUser;
 import software.coolstuff.springframework.owncloud.service.AbstractOwncloudUserModificationServiceTest;
@@ -40,131 +42,183 @@ public abstract class AbstractOwncloudUserModificationServiceRestTest extends Ab
 
   @Override
   protected void prepareTestSaveUser_CreateUser_OK_WithoutGroups(OwncloudModificationUser newUser) throws Exception {
-    prepareModificationRestTest(null, newUser);
+    prepareModificationRestTest(
+        UserModification.builder()
+            .newUser(newUser)
+            .build());
   };
 
-  @Override
-  protected void prepareTestSaveUser_CreateUser_OK_WithGroups(OwncloudModificationUser newUser) throws Exception {
-    prepareModificationRestTest(null, newUser);
-  }
-
-  private void prepareModificationRestTest(OwncloudModificationUser existingUser, OwncloudModificationUser newUser) throws IOException {
-    if (existingUser != null) {
+  private void prepareModificationRestTest(UserModification userModification) throws IOException {
+    if (userModification.getExistingUser() != null) {
       respondUser(
           RestRequest.builder()
               .method(GET)
-              .url("/cloud/users/" + existingUser.getUsername())
+              .url("/cloud/users/" + userModification.getExistingUser().getUsername())
               .build(),
-          existingUser.isEnabled(),
-          existingUser.getEmail(),
-          existingUser.getDisplayName());
+          userModification.getExistingUser().isEnabled(),
+          userModification.getExistingUser().getEmail(),
+          userModification.getExistingUser().getDisplayName());
     } else {
       respondFailure(
           RestRequest.builder()
               .method(GET)
-              .url("/cloud/users/" + newUser.getUsername())
+              .url("/cloud/users/" + userModification.getNewUser().getUsername())
               .build(),
           998,
           "The requested user could not be found");
 
-      MultiValueMap<String, String> postData = new LinkedMultiValueMap<>();
-      postData.put("userid", Lists.newArrayList(newUser.getUsername()));
-      postData.put("password", Lists.newArrayList(newUser.getPassword()));
-      respondSuccess(
-          RestRequest.builder()
-              .method(POST)
-              .url("/cloud/users")
-              .build(),
-          postData);
+      if (userModification.isErrorCreateUser()) {
+        respondFailure(
+            RestRequest.builder()
+                .method(POST)
+                .url("/cloud/users")
+                .build(),
+            userModification.getErrorCodeCreateUser());
+      } else {
+        MultiValueMap<String, String> postData = new LinkedMultiValueMap<>();
+        postData.put("userid", Lists.newArrayList(userModification.getNewUser().getUsername()));
+        postData.put("password", Lists.newArrayList(userModification.getNewUser().getPassword()));
+        respondSuccess(
+            RestRequest.builder()
+                .method(POST)
+                .url("/cloud/users")
+                .build(),
+            postData);
+      }
 
       respondUser(
           RestRequest.builder()
               .method(GET)
-              .url("/cloud/users/" + newUser.getUsername())
+              .url("/cloud/users/" + userModification.getNewUser().getUsername())
               .build(),
           true,
           null,
-          newUser.getUsername());
+          userModification.getNewUser().getUsername());
     }
 
     // change the Displayname
-    if (existingUser == null || !StringUtils.equals(existingUser.getDisplayName(), newUser.getDisplayName())) {
-      MultiValueMap<String, String> putData = new LinkedMultiValueMap<>();
-      putData.put("key", Lists.newArrayList("display"));
-      putData.put("value", Lists.newArrayList(newUser.getDisplayName()));
-      respondSuccess(
-          RestRequest.builder()
-              .method(PUT)
-              .url("/cloud/users/" + newUser.getUsername())
-              .build(),
-          putData);
+    if (userModification.getExistingUser() == null || !StringUtils.equals(userModification.getExistingUser().getDisplayName(), userModification.getNewUser().getDisplayName())) {
+      if (userModification.isErrorUpdateDisplayName()) {
+        respondFailure(
+            RestRequest.builder()
+                .method(PUT)
+                .url("/cloud/users/" + userModification.getNewUser().getUsername())
+                .build(),
+            userModification.getErrorCodeUpdateDisplayName());
+      } else {
+        MultiValueMap<String, String> putData = new LinkedMultiValueMap<>();
+        putData.put("key", Lists.newArrayList("display"));
+        putData.put("value", Lists.newArrayList(userModification.getNewUser().getDisplayName()));
+        respondSuccess(
+            RestRequest.builder()
+                .method(PUT)
+                .url("/cloud/users/" + userModification.getNewUser().getUsername())
+                .build(),
+            putData);
+      }
     }
 
     // change the eMail
-    if (existingUser == null || !StringUtils.equals(existingUser.getEmail(), newUser.getEmail())) {
-      MultiValueMap<String, String> putData = new LinkedMultiValueMap<>();
-      putData = new LinkedMultiValueMap<>();
-      putData.put("key", Lists.newArrayList("email"));
-      putData.put("value", Lists.newArrayList(newUser.getEmail()));
-      respondSuccess(
-          RestRequest.builder()
-              .method(PUT)
-              .url("/cloud/users/" + newUser.getUsername())
-              .build(),
-          putData);
+    if (userModification.getExistingUser() == null || !StringUtils.equals(userModification.getExistingUser().getEmail(), userModification.getNewUser().getEmail())) {
+      if (userModification.isErrorUpdateEmail()) {
+        respondFailure(
+            RestRequest.builder()
+                .method(PUT)
+                .url("/cloud/users/" + userModification.getNewUser().getUsername())
+                .build(),
+            userModification.getErrorCodeUpdateEmail());
+      } else {
+        MultiValueMap<String, String> putData = new LinkedMultiValueMap<>();
+        putData = new LinkedMultiValueMap<>();
+        putData.put("key", Lists.newArrayList("email"));
+        putData.put("value", Lists.newArrayList(userModification.getNewUser().getEmail()));
+        respondSuccess(
+            RestRequest.builder()
+                .method(PUT)
+                .url("/cloud/users/" + userModification.getNewUser().getUsername())
+                .build(),
+            putData);
+      }
     }
 
     // change the availatility (enable/disable)
-    if (existingUser != null && existingUser.isEnabled() != newUser.isEnabled()) {
-      respondSuccess(
-          RestRequest.builder()
-              .method(PUT)
-              .url("/cloud/users/" + newUser.getUsername() + "/" + (newUser.isEnabled() ? "enable" : "disable"))
-              .build());
+    if (userModification.getExistingUser() != null && userModification.getExistingUser().isEnabled() != userModification.getNewUser().isEnabled()) {
+      if (userModification.isErrorEnableDisable()) {
+        respondFailure(
+            RestRequest.builder()
+                .method(PUT)
+                .url("/cloud/users/" + userModification.getNewUser().getUsername() + "/" + (userModification.getNewUser().isEnabled() ? "enable" : "disable"))
+                .build(),
+            userModification.getErrorCodeEnableDisable());
+      } else {
+        respondSuccess(
+            RestRequest.builder()
+                .method(PUT)
+                .url("/cloud/users/" + userModification.getNewUser().getUsername() + "/" + (userModification.getNewUser().isEnabled() ? "enable" : "disable"))
+                .build());
+      }
     }
 
     List<String> addedGroups = new ArrayList<>();
     List<String> removedGroups = new ArrayList<>();
-    if (existingUser != null && CollectionUtils.isNotEmpty(existingUser.getGroups())) {
+    if (userModification.getExistingUser() != null && CollectionUtils.isNotEmpty(userModification.getExistingUser().getGroups())) {
       respondGroups(
           RestRequest.builder()
               .method(GET)
-              .url("/cloud/users/" + newUser.getUsername() + "/groups")
+              .url("/cloud/users/" + userModification.getNewUser().getUsername() + "/groups")
               .build(),
-          existingUser.getGroups().toArray(new String[] {}));
-      addedGroups.addAll(CollectionUtils.subtract(newUser.getGroups(), existingUser.getGroups()));
-      removedGroups.addAll(CollectionUtils.subtract(existingUser.getGroups(), newUser.getGroups()));
+          userModification.getExistingUser().getGroups().toArray(new String[] {}));
+      addedGroups.addAll(CollectionUtils.subtract(userModification.getNewUser().getGroups(), userModification.getExistingUser().getGroups()));
+      removedGroups.addAll(CollectionUtils.subtract(userModification.getExistingUser().getGroups(), userModification.getNewUser().getGroups()));
     } else {
       respondGroups(
           RestRequest.builder()
               .method(GET)
-              .url("/cloud/users/" + newUser.getUsername() + "/groups")
+              .url("/cloud/users/" + userModification.getNewUser().getUsername() + "/groups")
               .build());
-      addedGroups.addAll(newUser.getGroups());
+      addedGroups.addAll(userModification.getNewUser().getGroups());
     }
 
-    for (String group : addedGroups) {
-      MultiValueMap<String, String> postData = new LinkedMultiValueMap<>();
-      postData = new LinkedMultiValueMap<>();
-      postData.put("groupid", Lists.newArrayList(group));
-      respondSuccess(
+    if (userModification.isErrorAddGroup()) {
+      respondFailure(
           RestRequest.builder()
               .method(POST)
-              .url("/cloud/users/" + newUser.getUsername() + "/groups")
+              .url("/cloud/users/" + userModification.getNewUser().getUsername() + "/groups")
               .build(),
-          postData);
+          userModification.getErrorCodeAddGroup());
+    } else {
+      for (String group : addedGroups) {
+        MultiValueMap<String, String> postData = new LinkedMultiValueMap<>();
+        postData = new LinkedMultiValueMap<>();
+        postData.put("groupid", Lists.newArrayList(group));
+        respondSuccess(
+            RestRequest.builder()
+                .method(POST)
+                .url("/cloud/users/" + userModification.getNewUser().getUsername() + "/groups")
+                .build(),
+            postData);
+      }
     }
 
-    for (String group : removedGroups) {
-      MultiValueMap<String, String> postData = new LinkedMultiValueMap<>();
-      postData = new LinkedMultiValueMap<>();
-      postData.put("groupid", Lists.newArrayList(group));
-      respondSuccess(
+    if (userModification.isErrorRemoveGroup()) {
+      respondFailure(
           RestRequest.builder()
               .method(DELETE)
-              .url("/cloud/users/" + newUser.getUsername() + "/groups")
+              .url("/cloud/users/" + userModification.getNewUser().getUsername() + "/groups")
               .build(),
-          postData);
+          userModification.getErrorCodeUpdateDisplayName());
+    } else {
+      for (String group : removedGroups) {
+        MultiValueMap<String, String> postData = new LinkedMultiValueMap<>();
+        postData = new LinkedMultiValueMap<>();
+        postData.put("groupid", Lists.newArrayList(group));
+        respondSuccess(
+            RestRequest.builder()
+                .method(DELETE)
+                .url("/cloud/users/" + userModification.getNewUser().getUsername() + "/groups")
+                .build(),
+            postData);
+      }
     }
 
     MockRestServiceServer queryServer = createServer((OwncloudUserQueryServiceImpl) userQueryService);
@@ -172,34 +226,50 @@ public abstract class AbstractOwncloudUserModificationServiceRestTest extends Ab
         RestRequest.builder()
             .server(queryServer)
             .method(GET)
-            .url("/cloud/users/" + newUser.getUsername())
+            .url("/cloud/users/" + userModification.getNewUser().getUsername())
             .build(),
-        newUser.isEnabled(),
-        newUser.getEmail(),
-        newUser.getDisplayName());
+        userModification.getNewUser().isEnabled(),
+        userModification.getNewUser().getEmail(),
+        userModification.getNewUser().getDisplayName());
     respondGroups(
         RestRequest.builder()
             .server(queryServer)
             .method(GET)
-            .url("/cloud/users/" + newUser.getUsername() + "/groups")
+            .url("/cloud/users/" + userModification.getNewUser().getUsername() + "/groups")
             .build(),
-        CollectionUtils.isEmpty(newUser.getGroups()) ? new String[] {} : newUser.getGroups().toArray(new String[] {}));
+        CollectionUtils.isEmpty(userModification.getNewUser().getGroups()) ? new String[] {} : userModification.getNewUser().getGroups().toArray(new String[] {}));
+  }
+
+  @Override
+  protected void prepareTestSaveUser_CreateUser_OK_WithGroups(OwncloudModificationUser newUser) throws Exception {
+    prepareModificationRestTest(
+        UserModification.builder()
+            .newUser(newUser)
+            .build());
   }
 
   @Override
   protected void prepareTestSaveUser_UpdateUser_OK_WithoutGroups(OwncloudModificationUser existingUser, OwncloudModificationUser updateUser) throws Exception {
-    prepareModificationRestTest(existingUser, updateUser);
+    prepareModificationRestTest(
+        UserModification.builder()
+            .existingUser(existingUser)
+            .newUser(updateUser)
+            .build());
   }
 
   @Override
   protected void prepareTestSaveUser_UpdateUser_OK_WithGroups(OwncloudModificationUser existingUser, OwncloudModificationUser updateUser) throws Exception {
-    prepareModificationRestTest(existingUser, updateUser);
+    prepareModificationRestTest(
+        UserModification.builder()
+            .existingUser(existingUser)
+            .newUser(updateUser)
+            .build());
   }
 
   @Test(expected = IllegalArgumentException.class)
   @WithOwncloudMockUser(username = "user1", password = "password")
   public void testSaveUser_CreateUser_NOK_IllegalArgument() throws Exception {
-    OwncloudModificationUser newUser = OwncloudModificationUser.builder()
+    OwncloudModificationUser user = OwncloudModificationUser.builder()
         .username("user5")
         .password("password")
         .enabled(true)
@@ -207,29 +277,19 @@ public abstract class AbstractOwncloudUserModificationServiceRestTest extends Ab
         .email("user5@example.com")
         .build();
 
-    respondFailure(
-        RestRequest.builder()
-            .method(GET)
-            .url("/cloud/users/" + newUser.getUsername())
-            .build(),
-        998,
-        "The requested user could not be found");
+    prepareModificationRestTest(
+        UserModification.builder()
+            .newUser(user)
+            .errorCodeCreateUser(101)
+            .build());
 
-    respondFailure(
-        RestRequest.builder()
-            .method(POST)
-            .url("/cloud/users")
-            .build(),
-        101,
-        "Invalid Argument");
-
-    userModificationService.saveUser(newUser);
+    userModificationService.saveUser(user);
   }
 
   @Test(expected = IllegalStateException.class)
   @WithOwncloudMockUser(username = "user1", password = "password")
   public void testSaveUser_CreateUser_NOK_IllegalStateExceptionByStatusCode103() throws Exception {
-    OwncloudModificationUser newUser = OwncloudModificationUser.builder()
+    OwncloudModificationUser user = OwncloudModificationUser.builder()
         .username("user5")
         .password("password")
         .enabled(true)
@@ -237,29 +297,19 @@ public abstract class AbstractOwncloudUserModificationServiceRestTest extends Ab
         .email("user5@example.com")
         .build();
 
-    respondFailure(
-        RestRequest.builder()
-            .method(GET)
-            .url("/cloud/users/" + newUser.getUsername())
-            .build(),
-        998,
-        "The requested user could not be found");
+    prepareModificationRestTest(
+        UserModification.builder()
+            .newUser(user)
+            .errorCodeCreateUser(103)
+            .build());
 
-    respondFailure(
-        RestRequest.builder()
-            .method(POST)
-            .url("/cloud/users")
-            .build(),
-        103,
-        "Illegal State");
-
-    userModificationService.saveUser(newUser);
+    userModificationService.saveUser(user);
   }
 
   @Test(expected = AccessDeniedException.class)
   @WithOwncloudMockUser(username = "user1", password = "password")
   public void testSaveUser_CreateUser_NOK_AccessDenied() throws Exception {
-    OwncloudModificationUser newUser = OwncloudModificationUser.builder()
+    OwncloudModificationUser user = OwncloudModificationUser.builder()
         .username("user5")
         .password("password")
         .enabled(true)
@@ -267,29 +317,19 @@ public abstract class AbstractOwncloudUserModificationServiceRestTest extends Ab
         .email("user5@example.com")
         .build();
 
-    respondFailure(
-        RestRequest.builder()
-            .method(GET)
-            .url("/cloud/users/" + newUser.getUsername())
-            .build(),
-        998,
-        "The requested user could not be found");
+    prepareModificationRestTest(
+        UserModification.builder()
+            .newUser(user)
+            .errorCodeCreateUser(997)
+            .build());
 
-    respondFailure(
-        RestRequest.builder()
-            .method(POST)
-            .url("/cloud/users")
-            .build(),
-        997,
-        "Access Denied");
-
-    userModificationService.saveUser(newUser);
+    userModificationService.saveUser(user);
   }
 
   @Test(expected = IllegalStateException.class)
   @WithOwncloudMockUser(username = "user1", password = "password")
   public void testSaveUser_CreateUser_NOK_UnknownError() throws Exception {
-    OwncloudModificationUser newUser = OwncloudModificationUser.builder()
+    OwncloudModificationUser user = OwncloudModificationUser.builder()
         .username("user5")
         .password("password")
         .enabled(true)
@@ -297,21 +337,147 @@ public abstract class AbstractOwncloudUserModificationServiceRestTest extends Ab
         .email("user5@example.com")
         .build();
 
-    respondFailure(
-        RestRequest.builder()
-            .method(GET)
-            .url("/cloud/users/" + newUser.getUsername())
-            .build(),
-        998,
-        "The requested user could not be found");
+    prepareModificationRestTest(
+        UserModification.builder()
+            .newUser(user)
+            .errorCodeCreateUser(999)
+            .build());
 
-    respondFailure(
-        RestRequest.builder()
-            .method(POST)
-            .url("/cloud/users")
-            .build(),
-        999);
-
-    userModificationService.saveUser(newUser);
+    userModificationService.saveUser(user);
   }
+
+  @Test(expected = IllegalStateException.class)
+  @WithOwncloudMockUser(username = "user1", password = "password")
+  public void testSaveUser_UpdateUser_NOK_UpdateDisplayName_IllegalStateException() throws Exception {
+    OwncloudModificationUser existingUser = OwncloudModificationUser.builder()
+        .username("user5")
+        .password("password")
+        .enabled(true)
+        .displayName("Mrs. User 5")
+        .email("user5@example.com")
+        .build();
+
+    OwncloudModificationUser updateUser = OwncloudModificationUser.builder()
+        .username("user5")
+        .password("password")
+        .enabled(false)
+        .displayName("changed Value")
+        .email("changed Value")
+        .build();
+
+    prepareModificationRestTest(
+        UserModification.builder()
+            .existingUser(existingUser)
+            .newUser(updateUser)
+            .errorCodeUpdateDisplayName(102)
+            .build());
+
+    userModificationService.saveUser(updateUser);
+  }
+
+  @Test(expected = AccessDeniedException.class)
+  @WithOwncloudMockUser(username = "user1", password = "password")
+  public void testSaveUser_UpdateUser_NOK_UpdateDisplayName_AccessDenied() throws Exception {
+    OwncloudModificationUser existingUser = OwncloudModificationUser.builder()
+        .username("user5")
+        .password("password")
+        .enabled(true)
+        .displayName("Mrs. User 5")
+        .email("user5@example.com")
+        .build();
+
+    OwncloudModificationUser updateUser = OwncloudModificationUser.builder()
+        .username("user5")
+        .password("password")
+        .enabled(false)
+        .displayName("changed Value")
+        .email("changed Value")
+        .build();
+
+    prepareModificationRestTest(
+        UserModification.builder()
+            .existingUser(existingUser)
+            .newUser(updateUser)
+            .errorCodeUpdateDisplayName(997)
+            .build());
+
+    userModificationService.saveUser(updateUser);
+  }
+
+  @Test(expected = IllegalStateException.class)
+  @WithOwncloudMockUser(username = "user1", password = "password")
+  public void testSaveUser_UpdateUser_NOK_UpdateDisplayName_UnknownError() throws Exception {
+    OwncloudModificationUser existingUser = OwncloudModificationUser.builder()
+        .username("user5")
+        .password("password")
+        .enabled(true)
+        .displayName("Mrs. User 5")
+        .email("user5@example.com")
+        .build();
+
+    OwncloudModificationUser updateUser = OwncloudModificationUser.builder()
+        .username("user5")
+        .password("password")
+        .enabled(false)
+        .displayName("changed Value")
+        .email("changed Value")
+        .build();
+
+    prepareModificationRestTest(
+        UserModification.builder()
+            .existingUser(existingUser)
+            .newUser(updateUser)
+            .errorCodeUpdateDisplayName(999)
+            .build());
+
+    userModificationService.saveUser(updateUser);
+  }
+
+  @Data
+  @Builder
+  private static class UserModification {
+    private final OwncloudModificationUser existingUser;
+    private final OwncloudModificationUser newUser;
+    private int errorCodeCreateUser = 0;
+    private int errorCodeUpdateDisplayName = 0;
+    private int errorCodeUpdateEmail = 0;
+    private int errorCodeEnableDisable = 0;
+    private int errorCodeAddGroup = 0;
+    private int errorCodeRemoveGroup = 0;
+
+    private static class UserModificationBuilder {
+      private int errorCodeCreateUser = 0;
+      private int errorCodeUpdateDisplayName = 0;
+      private int errorCodeUpdateEmail = 0;
+      private int errorCodeEnableDisable = 0;
+      private int errorCodeAddGroup = 0;
+      private int errorCodeRemoveGroup = 0;
+    }
+
+    public boolean isErrorCreateUser() {
+      return errorCodeCreateUser != 0;
+    }
+
+    public boolean isErrorUpdateDisplayName() {
+      return errorCodeUpdateDisplayName != 0;
+    }
+
+    public boolean isErrorUpdateEmail() {
+      return errorCodeUpdateEmail != 0;
+    }
+
+    public boolean isErrorEnableDisable() {
+      return errorCodeEnableDisable != 0;
+    }
+
+    public boolean isErrorAddGroup() {
+      return errorCodeAddGroup != 0;
+    }
+
+    public boolean isErrorRemoveGroup() {
+      return errorCodeRemoveGroup != 0;
+    }
+
+  }
+
 }
