@@ -14,6 +14,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -23,6 +24,7 @@ import com.google.common.collect.Lists;
 import lombok.Builder;
 import lombok.Data;
 import software.coolstuff.springframework.owncloud.config.WithOwncloudMockUser;
+import software.coolstuff.springframework.owncloud.exception.OwncloudGroupNotFoundException;
 import software.coolstuff.springframework.owncloud.model.OwncloudModificationUser;
 import software.coolstuff.springframework.owncloud.service.AbstractOwncloudUserModificationServiceTest;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudUserQueryService;
@@ -288,7 +290,7 @@ public abstract class AbstractOwncloudUserModificationServiceRestTest extends Ab
 
   @Test(expected = IllegalStateException.class)
   @WithOwncloudMockUser(username = "user1", password = "password")
-  public void testSaveUser_CreateUser_NOK_IllegalStateExceptionByStatusCode103() throws Exception {
+  public void testSaveUser_CreateUser_NOK_IllegalStateException() throws Exception {
     OwncloudModificationUser user = OwncloudModificationUser.builder()
         .username("user5")
         .password("password")
@@ -308,7 +310,7 @@ public abstract class AbstractOwncloudUserModificationServiceRestTest extends Ab
 
   @Test(expected = AccessDeniedException.class)
   @WithOwncloudMockUser(username = "user1", password = "password")
-  public void testSaveUser_CreateUser_NOK_AccessDenied() throws Exception {
+  public void testSaveUser_CreateUser_NOK_AccessDeniedException() throws Exception {
     OwncloudModificationUser user = OwncloudModificationUser.builder()
         .username("user5")
         .password("password")
@@ -344,6 +346,35 @@ public abstract class AbstractOwncloudUserModificationServiceRestTest extends Ab
             .build());
 
     userModificationService.saveUser(user);
+  }
+
+  @Test(expected = UsernameNotFoundException.class)
+  @WithOwncloudMockUser(username = "user1", password = "password")
+  public void testSaveUser_UpdateUser_NOK_UpdateDisplayName_UsernameNotFoundException() throws Exception {
+    OwncloudModificationUser existingUser = OwncloudModificationUser.builder()
+        .username("user5")
+        .password("password")
+        .enabled(true)
+        .displayName("Mrs. User 5")
+        .email("user5@example.com")
+        .build();
+
+    OwncloudModificationUser updateUser = OwncloudModificationUser.builder()
+        .username("user5")
+        .password("password")
+        .enabled(false)
+        .displayName("changed Value")
+        .email("changed Value")
+        .build();
+
+    prepareModificationRestTest(
+        UserModification.builder()
+            .existingUser(existingUser)
+            .newUser(updateUser)
+            .errorCodeUpdateDisplayName(101)
+            .build());
+
+    userModificationService.saveUser(updateUser);
   }
 
   @Test(expected = IllegalStateException.class)
@@ -428,6 +459,578 @@ public abstract class AbstractOwncloudUserModificationServiceRestTest extends Ab
             .existingUser(existingUser)
             .newUser(updateUser)
             .errorCodeUpdateDisplayName(999)
+            .build());
+
+    userModificationService.saveUser(updateUser);
+  }
+
+  @Test(expected = UsernameNotFoundException.class)
+  @WithOwncloudMockUser(username = "user1", password = "password")
+  public void testSaveUser_UpdateUser_NOK_UpdateEmail_UsernameNotFoundException() throws Exception {
+    OwncloudModificationUser existingUser = OwncloudModificationUser.builder()
+        .username("user5")
+        .password("password")
+        .enabled(true)
+        .displayName("Mrs. User 5")
+        .email("user5@example.com")
+        .build();
+
+    OwncloudModificationUser updateUser = OwncloudModificationUser.builder()
+        .username("user5")
+        .password("password")
+        .enabled(false)
+        .displayName("changed Value")
+        .email("changed Value")
+        .build();
+
+    prepareModificationRestTest(
+        UserModification.builder()
+            .existingUser(existingUser)
+            .newUser(updateUser)
+            .errorCodeUpdateEmail(101)
+            .build());
+
+    userModificationService.saveUser(updateUser);
+  }
+
+  @Test(expected = IllegalStateException.class)
+  @WithOwncloudMockUser(username = "user1", password = "password")
+  public void testSaveUser_UpdateUser_NOK_UpdateEmail_IllegalStateException() throws Exception {
+    OwncloudModificationUser existingUser = OwncloudModificationUser.builder()
+        .username("user5")
+        .password("password")
+        .enabled(true)
+        .displayName("Mrs. User 5")
+        .email("user5@example.com")
+        .build();
+
+    OwncloudModificationUser updateUser = OwncloudModificationUser.builder()
+        .username("user5")
+        .password("password")
+        .enabled(false)
+        .displayName("changed Value")
+        .email("changed Value")
+        .build();
+
+    prepareModificationRestTest(
+        UserModification.builder()
+            .existingUser(existingUser)
+            .newUser(updateUser)
+            .errorCodeUpdateEmail(102)
+            .build());
+
+    userModificationService.saveUser(updateUser);
+  }
+
+  @Test(expected = AccessDeniedException.class)
+  @WithOwncloudMockUser(username = "user1", password = "password")
+  public void testSaveUser_UpdateUser_NOK_UpdateEmail_AccessDenied() throws Exception {
+    OwncloudModificationUser existingUser = OwncloudModificationUser.builder()
+        .username("user5")
+        .password("password")
+        .enabled(true)
+        .displayName("Mrs. User 5")
+        .email("user5@example.com")
+        .build();
+
+    OwncloudModificationUser updateUser = OwncloudModificationUser.builder()
+        .username("user5")
+        .password("password")
+        .enabled(false)
+        .displayName("changed Value")
+        .email("changed Value")
+        .build();
+
+    prepareModificationRestTest(
+        UserModification.builder()
+            .existingUser(existingUser)
+            .newUser(updateUser)
+            .errorCodeUpdateEmail(997)
+            .build());
+
+    userModificationService.saveUser(updateUser);
+  }
+
+  @Test(expected = IllegalStateException.class)
+  @WithOwncloudMockUser(username = "user1", password = "password")
+  public void testSaveUser_UpdateUser_NOK_UpdateEmail_UnknownError() throws Exception {
+    OwncloudModificationUser existingUser = OwncloudModificationUser.builder()
+        .username("user5")
+        .password("password")
+        .enabled(true)
+        .displayName("Mrs. User 5")
+        .email("user5@example.com")
+        .build();
+
+    OwncloudModificationUser updateUser = OwncloudModificationUser.builder()
+        .username("user5")
+        .password("password")
+        .enabled(false)
+        .displayName("changed Value")
+        .email("changed Value")
+        .build();
+
+    prepareModificationRestTest(
+        UserModification.builder()
+            .existingUser(existingUser)
+            .newUser(updateUser)
+            .errorCodeUpdateEmail(999)
+            .build());
+
+    userModificationService.saveUser(updateUser);
+  }
+
+  @Test(expected = UsernameNotFoundException.class)
+  @WithOwncloudMockUser(username = "user1", password = "password")
+  public void testSaveUser_UpdateUser_NOK_Enable_UsernameNotFoundException() throws Exception {
+    OwncloudModificationUser existingUser = OwncloudModificationUser.builder()
+        .username("user5")
+        .password("password")
+        .enabled(false)
+        .displayName("Mrs. User 5")
+        .email("user5@example.com")
+        .build();
+
+    OwncloudModificationUser updateUser = OwncloudModificationUser.builder()
+        .username("user5")
+        .password("password")
+        .enabled(true)
+        .displayName("changed Value")
+        .email("changed Value")
+        .build();
+
+    prepareModificationRestTest(
+        UserModification.builder()
+            .existingUser(existingUser)
+            .newUser(updateUser)
+            .errorCodeEnableDisable(101)
+            .build());
+
+    userModificationService.saveUser(updateUser);
+  }
+
+  @Test(expected = IllegalStateException.class)
+  @WithOwncloudMockUser(username = "user1", password = "password")
+  public void testSaveUser_UpdateUser_NOK_Enable_IllegalStateException() throws Exception {
+    OwncloudModificationUser existingUser = OwncloudModificationUser.builder()
+        .username("user5")
+        .password("password")
+        .enabled(false)
+        .displayName("Mrs. User 5")
+        .email("user5@example.com")
+        .build();
+
+    OwncloudModificationUser updateUser = OwncloudModificationUser.builder()
+        .username("user5")
+        .password("password")
+        .enabled(true)
+        .displayName("changed Value")
+        .email("changed Value")
+        .build();
+
+    prepareModificationRestTest(
+        UserModification.builder()
+            .existingUser(existingUser)
+            .newUser(updateUser)
+            .errorCodeEnableDisable(102)
+            .build());
+
+    userModificationService.saveUser(updateUser);
+  }
+
+  @Test(expected = AccessDeniedException.class)
+  @WithOwncloudMockUser(username = "user1", password = "password")
+  public void testSaveUser_UpdateUser_NOK_Enable_AccessDenied() throws Exception {
+    OwncloudModificationUser existingUser = OwncloudModificationUser.builder()
+        .username("user5")
+        .password("password")
+        .enabled(false)
+        .displayName("Mrs. User 5")
+        .email("user5@example.com")
+        .build();
+
+    OwncloudModificationUser updateUser = OwncloudModificationUser.builder()
+        .username("user5")
+        .password("password")
+        .enabled(true)
+        .displayName("changed Value")
+        .email("changed Value")
+        .build();
+
+    prepareModificationRestTest(
+        UserModification.builder()
+            .existingUser(existingUser)
+            .newUser(updateUser)
+            .errorCodeEnableDisable(997)
+            .build());
+
+    userModificationService.saveUser(updateUser);
+  }
+
+  @Test(expected = IllegalStateException.class)
+  @WithOwncloudMockUser(username = "user1", password = "password")
+  public void testSaveUser_UpdateUser_NOK_Enable_UnknownError() throws Exception {
+    OwncloudModificationUser existingUser = OwncloudModificationUser.builder()
+        .username("user5")
+        .password("password")
+        .enabled(false)
+        .displayName("Mrs. User 5")
+        .email("user5@example.com")
+        .build();
+
+    OwncloudModificationUser updateUser = OwncloudModificationUser.builder()
+        .username("user5")
+        .password("password")
+        .enabled(true)
+        .displayName("changed Value")
+        .email("changed Value")
+        .build();
+
+    prepareModificationRestTest(
+        UserModification.builder()
+            .existingUser(existingUser)
+            .newUser(updateUser)
+            .errorCodeEnableDisable(999)
+            .build());
+
+    userModificationService.saveUser(updateUser);
+  }
+
+  @Test(expected = UsernameNotFoundException.class)
+  @WithOwncloudMockUser(username = "user1", password = "password")
+  public void testSaveUser_UpdateUser_NOK_Disable_UsernameNotFoundException() throws Exception {
+    OwncloudModificationUser existingUser = OwncloudModificationUser.builder()
+        .username("user5")
+        .password("password")
+        .enabled(true)
+        .displayName("Mrs. User 5")
+        .email("user5@example.com")
+        .build();
+
+    OwncloudModificationUser updateUser = OwncloudModificationUser.builder()
+        .username("user5")
+        .password("password")
+        .enabled(false)
+        .displayName("changed Value")
+        .email("changed Value")
+        .build();
+
+    prepareModificationRestTest(
+        UserModification.builder()
+            .existingUser(existingUser)
+            .newUser(updateUser)
+            .errorCodeEnableDisable(101)
+            .build());
+
+    userModificationService.saveUser(updateUser);
+  }
+
+  @Test(expected = IllegalStateException.class)
+  @WithOwncloudMockUser(username = "user1", password = "password")
+  public void testSaveUser_UpdateUser_NOK_Disable_IllegalStateException() throws Exception {
+    OwncloudModificationUser existingUser = OwncloudModificationUser.builder()
+        .username("user5")
+        .password("password")
+        .enabled(true)
+        .displayName("Mrs. User 5")
+        .email("user5@example.com")
+        .build();
+
+    OwncloudModificationUser updateUser = OwncloudModificationUser.builder()
+        .username("user5")
+        .password("password")
+        .enabled(false)
+        .displayName("changed Value")
+        .email("changed Value")
+        .build();
+
+    prepareModificationRestTest(
+        UserModification.builder()
+            .existingUser(existingUser)
+            .newUser(updateUser)
+            .errorCodeEnableDisable(102)
+            .build());
+
+    userModificationService.saveUser(updateUser);
+  }
+
+  @Test(expected = AccessDeniedException.class)
+  @WithOwncloudMockUser(username = "user1", password = "password")
+  public void testSaveUser_UpdateUser_NOK_Disable_AccessDenied() throws Exception {
+    OwncloudModificationUser existingUser = OwncloudModificationUser.builder()
+        .username("user5")
+        .password("password")
+        .enabled(true)
+        .displayName("Mrs. User 5")
+        .email("user5@example.com")
+        .build();
+
+    OwncloudModificationUser updateUser = OwncloudModificationUser.builder()
+        .username("user5")
+        .password("password")
+        .enabled(false)
+        .displayName("changed Value")
+        .email("changed Value")
+        .build();
+
+    prepareModificationRestTest(
+        UserModification.builder()
+            .existingUser(existingUser)
+            .newUser(updateUser)
+            .errorCodeEnableDisable(997)
+            .build());
+
+    userModificationService.saveUser(updateUser);
+  }
+
+  @Test(expected = IllegalStateException.class)
+  @WithOwncloudMockUser(username = "user1", password = "password")
+  public void testSaveUser_UpdateUser_NOK_Disable_UnknownError() throws Exception {
+    OwncloudModificationUser existingUser = OwncloudModificationUser.builder()
+        .username("user5")
+        .password("password")
+        .enabled(true)
+        .displayName("Mrs. User 5")
+        .email("user5@example.com")
+        .build();
+
+    OwncloudModificationUser updateUser = OwncloudModificationUser.builder()
+        .username("user5")
+        .password("password")
+        .enabled(false)
+        .displayName("changed Value")
+        .email("changed Value")
+        .build();
+
+    prepareModificationRestTest(
+        UserModification.builder()
+            .existingUser(existingUser)
+            .newUser(updateUser)
+            .errorCodeEnableDisable(999)
+            .build());
+
+    userModificationService.saveUser(updateUser);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  @WithOwncloudMockUser(username = "user1", password = "password")
+  public void testSaveUser_UpdateUser_NOK_AddGroup_IllegalArgumentException() throws Exception {
+    OwncloudModificationUser existingUser = OwncloudModificationUser.builder()
+        .username("user5")
+        .password("password")
+        .enabled(true)
+        .displayName("Mrs. User 5")
+        .email("user5@example.com")
+        .group("group1")
+        .build();
+
+    OwncloudModificationUser updateUser = OwncloudModificationUser.builder()
+        .username("user5")
+        .password("password")
+        .enabled(false)
+        .displayName("changed Value")
+        .email("changed Value")
+        .group("group1")
+        .group("group2")
+        .build();
+
+    prepareModificationRestTest(
+        UserModification.builder()
+            .existingUser(existingUser)
+            .newUser(updateUser)
+            .errorCodeAddGroup(101)
+            .build());
+
+    userModificationService.saveUser(updateUser);
+  }
+
+  @Test(expected = OwncloudGroupNotFoundException.class)
+  @WithOwncloudMockUser(username = "user1", password = "password")
+  public void testSaveUser_UpdateUser_NOK_AddGroup_OwncloudGroupNotFoundException() throws Exception {
+    OwncloudModificationUser existingUser = OwncloudModificationUser.builder()
+        .username("user5")
+        .password("password")
+        .enabled(true)
+        .displayName("Mrs. User 5")
+        .email("user5@example.com")
+        .group("group1")
+        .build();
+
+    OwncloudModificationUser updateUser = OwncloudModificationUser.builder()
+        .username("user5")
+        .password("password")
+        .enabled(false)
+        .displayName("changed Value")
+        .email("changed Value")
+        .group("group1")
+        .group("group2")
+        .build();
+
+    prepareModificationRestTest(
+        UserModification.builder()
+            .existingUser(existingUser)
+            .newUser(updateUser)
+            .errorCodeAddGroup(102)
+            .build());
+
+    userModificationService.saveUser(updateUser);
+  }
+
+  @Test(expected = UsernameNotFoundException.class)
+  @WithOwncloudMockUser(username = "user1", password = "password")
+  public void testSaveUser_UpdateUser_NOK_AddGroup_UsernameNotFoundException() throws Exception {
+    OwncloudModificationUser existingUser = OwncloudModificationUser.builder()
+        .username("user5")
+        .password("password")
+        .enabled(true)
+        .displayName("Mrs. User 5")
+        .email("user5@example.com")
+        .group("group1")
+        .build();
+
+    OwncloudModificationUser updateUser = OwncloudModificationUser.builder()
+        .username("user5")
+        .password("password")
+        .enabled(false)
+        .displayName("changed Value")
+        .email("changed Value")
+        .group("group1")
+        .group("group2")
+        .build();
+
+    prepareModificationRestTest(
+        UserModification.builder()
+            .existingUser(existingUser)
+            .newUser(updateUser)
+            .errorCodeAddGroup(103)
+            .build());
+
+    userModificationService.saveUser(updateUser);
+  }
+
+  @Test(expected = AccessDeniedException.class)
+  @WithOwncloudMockUser(username = "user1", password = "password")
+  public void testSaveUser_UpdateUser_NOK_AddGroup_AccessDeniedException_ByCode104() throws Exception {
+    OwncloudModificationUser existingUser = OwncloudModificationUser.builder()
+        .username("user5")
+        .password("password")
+        .enabled(true)
+        .displayName("Mrs. User 5")
+        .email("user5@example.com")
+        .group("group1")
+        .build();
+
+    OwncloudModificationUser updateUser = OwncloudModificationUser.builder()
+        .username("user5")
+        .password("password")
+        .enabled(false)
+        .displayName("changed Value")
+        .email("changed Value")
+        .group("group1")
+        .group("group2")
+        .build();
+
+    prepareModificationRestTest(
+        UserModification.builder()
+            .existingUser(existingUser)
+            .newUser(updateUser)
+            .errorCodeAddGroup(104)
+            .build());
+
+    userModificationService.saveUser(updateUser);
+  }
+
+  @Test(expected = IllegalStateException.class)
+  @WithOwncloudMockUser(username = "user1", password = "password")
+  public void testSaveUser_UpdateUser_NOK_AddGroup_IllegalStateException() throws Exception {
+    OwncloudModificationUser existingUser = OwncloudModificationUser.builder()
+        .username("user5")
+        .password("password")
+        .enabled(true)
+        .displayName("Mrs. User 5")
+        .email("user5@example.com")
+        .group("group1")
+        .build();
+
+    OwncloudModificationUser updateUser = OwncloudModificationUser.builder()
+        .username("user5")
+        .password("password")
+        .enabled(false)
+        .displayName("changed Value")
+        .email("changed Value")
+        .group("group1")
+        .group("group2")
+        .build();
+
+    prepareModificationRestTest(
+        UserModification.builder()
+            .existingUser(existingUser)
+            .newUser(updateUser)
+            .errorCodeAddGroup(105)
+            .build());
+
+    userModificationService.saveUser(updateUser);
+  }
+
+  @Test(expected = AccessDeniedException.class)
+  @WithOwncloudMockUser(username = "user1", password = "password")
+  public void testSaveUser_UpdateUser_NOK_AddGroup_AccessDeniedException_ByCode997() throws Exception {
+    OwncloudModificationUser existingUser = OwncloudModificationUser.builder()
+        .username("user5")
+        .password("password")
+        .enabled(true)
+        .displayName("Mrs. User 5")
+        .email("user5@example.com")
+        .group("group1")
+        .build();
+
+    OwncloudModificationUser updateUser = OwncloudModificationUser.builder()
+        .username("user5")
+        .password("password")
+        .enabled(false)
+        .displayName("changed Value")
+        .email("changed Value")
+        .group("group1")
+        .group("group2")
+        .build();
+
+    prepareModificationRestTest(
+        UserModification.builder()
+            .existingUser(existingUser)
+            .newUser(updateUser)
+            .errorCodeAddGroup(997)
+            .build());
+
+    userModificationService.saveUser(updateUser);
+  }
+
+  @Test(expected = IllegalStateException.class)
+  @WithOwncloudMockUser(username = "user1", password = "password")
+  public void testSaveUser_UpdateUser_NOK_AddGroup_UnknownError() throws Exception {
+    OwncloudModificationUser existingUser = OwncloudModificationUser.builder()
+        .username("user5")
+        .password("password")
+        .enabled(true)
+        .displayName("Mrs. User 5")
+        .email("user5@example.com")
+        .group("group1")
+        .build();
+
+    OwncloudModificationUser updateUser = OwncloudModificationUser.builder()
+        .username("user5")
+        .password("password")
+        .enabled(false)
+        .displayName("changed Value")
+        .email("changed Value")
+        .group("group1")
+        .group("group2")
+        .build();
+
+    prepareModificationRestTest(
+        UserModification.builder()
+            .existingUser(existingUser)
+            .newUser(updateUser)
+            .errorCodeAddGroup(999)
             .build());
 
     userModificationService.saveUser(updateUser);
