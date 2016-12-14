@@ -11,6 +11,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import com.google.common.collect.Lists;
 
 import software.coolstuff.springframework.owncloud.config.WithOwncloudMockUser;
+import software.coolstuff.springframework.owncloud.exception.OwncloudGroupAlreadyExistsException;
 import software.coolstuff.springframework.owncloud.model.OwncloudModificationUser;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudUserModificationService;
@@ -217,4 +218,24 @@ public abstract class AbstractOwncloudUserModificationServiceTest extends Abstra
   }
 
   protected void prepareTestDeleteUser_NOK_UsernameNotFoundException(String username) throws Exception {}
+
+  @Test
+  @WithOwncloudMockUser(username = "user1", password = "password")
+  public void testCreateGroup_OK() throws Exception {
+    prepareTestCreateGroup_OK("group4");
+
+    userModificationService.createGroup("group4");
+  }
+
+  protected void prepareTestCreateGroup_OK(String groupname) throws Exception {}
+
+  @Test(expected = OwncloudGroupAlreadyExistsException.class)
+  @WithOwncloudMockUser(username = "user1", password = "password")
+  public void testCreateGroup_NOK_OwncloudGroupAlreadyExists() throws Exception {
+    prepareTestCreateGroup_NOK_OwncloudGroupAlreadyExists("group1");
+
+    userModificationService.createGroup("group1");
+  }
+
+  protected void prepareTestCreateGroup_NOK_OwncloudGroupAlreadyExists(String groupname) throws Exception {}
 }

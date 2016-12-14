@@ -287,6 +287,25 @@ public abstract class AbstractOwncloudUserModificationServiceRestTest extends Ab
         101);
   }
 
+  @Override
+  protected void prepareTestCreateGroup_OK(String groupname) throws Exception {
+    respondSuccess(
+        RestRequest.builder()
+            .method(POST)
+            .url("/cloud/groups/" + groupname)
+            .build());
+  }
+
+  @Override
+  protected void prepareTestCreateGroup_NOK_OwncloudGroupAlreadyExists(String groupname) throws Exception {
+    respondFailure(
+        RestRequest.builder()
+            .method(POST)
+            .url("/cloud/groups/" + groupname)
+            .build(),
+        102);
+  }
+
   @Test(expected = IllegalArgumentException.class)
   @WithOwncloudMockUser(username = "user1", password = "password")
   public void testSaveUser_CreateUser_NOK_IllegalArgument() throws Exception {
@@ -1321,6 +1340,42 @@ public abstract class AbstractOwncloudUserModificationServiceRestTest extends Ab
             .build(),
         999);
     userModificationService.deleteUser("user1");
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  @WithOwncloudMockUser(username = "user1", password = "password")
+  public void testCreateGroup_NOK_IllegalArgumentException() throws Exception {
+    respondFailure(
+        RestRequest.builder()
+            .method(POST)
+            .url("/cloud/users/group4")
+            .build(),
+        101);
+    userModificationService.createGroup("group4");
+  }
+
+  @Test(expected = AccessDeniedException.class)
+  @WithOwncloudMockUser(username = "user1", password = "password")
+  public void testCreateGroup_NOK_AccessDeniedException() throws Exception {
+    respondFailure(
+        RestRequest.builder()
+            .method(POST)
+            .url("/cloud/users/group4")
+            .build(),
+        997);
+    userModificationService.createGroup("group4");
+  }
+
+  @Test(expected = IllegalStateException.class)
+  @WithOwncloudMockUser(username = "user1", password = "password")
+  public void testCreateGroup_NOK_UnknownError() throws Exception {
+    respondFailure(
+        RestRequest.builder()
+            .method(POST)
+            .url("/cloud/users/group4")
+            .build(),
+        999);
+    userModificationService.createGroup("group4");
   }
 
   @Data

@@ -407,14 +407,16 @@ class OwncloudResourceService implements InitializingBean, DisposableBean {
   }
 
   public void createGroup(String groupname) {
-    if (groups.contains(groupname)) {
+    Ocs.Groups.Data.Group group = new Ocs.Groups.Data.Group(groupname);
+    if (groups.contains(group)) {
       throw new OwncloudGroupAlreadyExistsException(groupname);
     }
     groups.add(new OwncloudResourceData.Group(groupname));
   }
 
   public void deleteGroup(String groupname) {
-    if (!groups.contains(groupname)) {
+    Ocs.Groups.Data.Group group = new Ocs.Groups.Data.Group(groupname);
+    if (!groups.contains(group)) {
       throw new OwncloudGroupNotFoundException(groupname);
     }
 
