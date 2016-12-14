@@ -1299,6 +1299,30 @@ public abstract class AbstractOwncloudUserModificationServiceRestTest extends Ab
     userModificationService.saveUser(updateUser);
   }
 
+  @Test(expected = AccessDeniedException.class)
+  @WithOwncloudMockUser(username = "user1", password = "password")
+  public void testDeleteUser_NOK_AccessDeniedException() throws Exception {
+    respondFailure(
+        RestRequest.builder()
+            .method(DELETE)
+            .url("/cloud/users/user1")
+            .build(),
+        997);
+    userModificationService.deleteUser("user1");
+  }
+
+  @Test(expected = IllegalStateException.class)
+  @WithOwncloudMockUser(username = "user1", password = "password")
+  public void testDeleteUser_NOK_UnknownError() throws Exception {
+    respondFailure(
+        RestRequest.builder()
+            .method(DELETE)
+            .url("/cloud/users/user1")
+            .build(),
+        999);
+    userModificationService.deleteUser("user1");
+  }
+
   @Data
   @Builder
   private static class UserModification {
