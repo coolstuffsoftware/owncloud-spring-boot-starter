@@ -268,6 +268,25 @@ public abstract class AbstractOwncloudUserModificationServiceRestTest extends Ab
             .build());
   }
 
+  @Override
+  protected void prepareTestDeleteUser_OK(String username) throws Exception {
+    respondSuccess(
+        RestRequest.builder()
+            .method(DELETE)
+            .url("/cloud/users/" + username)
+            .build());
+  }
+
+  @Override
+  protected void prepareTestDeleteUser_NOK_UsernameNotFoundException(String username) throws Exception {
+    respondFailure(
+        RestRequest.builder()
+            .method(DELETE)
+            .url("/cloud/users/" + username)
+            .build(),
+        101);
+  }
+
   @Test(expected = IllegalArgumentException.class)
   @WithOwncloudMockUser(username = "user1", password = "password")
   public void testSaveUser_CreateUser_NOK_IllegalArgument() throws Exception {

@@ -6,6 +6,7 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.client.RestClientTest;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import com.google.common.collect.Lists;
 
@@ -196,4 +197,24 @@ public abstract class AbstractOwncloudUserModificationServiceTest extends Abstra
   }
 
   protected void prepareTestSaveUser_UpdateUser_OK_WithGroups(OwncloudModificationUser existingUser, OwncloudModificationUser updateUser) throws Exception {}
+
+  @Test
+  @WithOwncloudMockUser(username = "user1", password = "password")
+  public void testDeleteUser_OK() throws Exception {
+    prepareTestDeleteUser_OK("user1");
+
+    userModificationService.deleteUser("user1");
+  }
+
+  protected void prepareTestDeleteUser_OK(String username) throws Exception {}
+
+  @Test(expected = UsernameNotFoundException.class)
+  @WithOwncloudMockUser(username = "user1", password = "password")
+  public void testDeleteUser_NOK_UsernameNotFoundException() throws Exception {
+    prepareTestDeleteUser_NOK_UsernameNotFoundException("user3");
+
+    userModificationService.deleteUser("user3");
+  }
+
+  protected void prepareTestDeleteUser_NOK_UsernameNotFoundException(String username) throws Exception {}
 }
