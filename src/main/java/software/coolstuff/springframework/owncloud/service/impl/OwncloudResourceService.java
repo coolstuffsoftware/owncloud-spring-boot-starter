@@ -32,7 +32,10 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlText;
 
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
+import lombok.Singular;
 import lombok.extern.slf4j.Slf4j;
 import software.coolstuff.springframework.owncloud.exception.OwncloudGroupAlreadyExistsException;
 import software.coolstuff.springframework.owncloud.exception.OwncloudGroupNotFoundException;
@@ -99,7 +102,7 @@ class OwncloudResourceService implements InitializingBean, DisposableBean {
   private MappingJackson2XmlHttpMessageConverter messageConverter;
 
   private Map<String, OwncloudResourceData.User> users = new HashMap<>();
-  private Collection<OwncloudResourceData.Group> groups = new ArrayList<>();
+  private Map<String, OwncloudResourceData.Group> groups = new HashMap<>();
 
   @Override
   public void afterPropertiesSet() throws Exception {
@@ -115,15 +118,18 @@ class OwncloudResourceService implements InitializingBean, DisposableBean {
     checkGroupReferences(resourceData);
 
     log.debug("Save the Users as a Map");
-    users = new HashMap<>();
+    users.clear();
     for (OwncloudResourceData.User user : resourceData.getUsers()) {
       users.put(user.getUsername(), user);
     }
     log.debug("Save the Groups as a List");
-    groups = new ArrayList<>(resourceData.getGroups());
+    groups.clear();
+    for (OwncloudResourceData.Group group : resourceData.getGroups()) {
+      groups.put(group.getGroup(), group);
+    }
   }
 
-  private void checkGroupReferences(OwncloudResourceData resourceData) {
+  protected void checkGroupReferences(OwncloudResourceData resourceData) {
     for (OwncloudResourceData.User user : resourceData.getUsers()) {
       if (CollectionUtils.isEmpty(user.getGroups())) {
         continue;
@@ -154,7 +160,7 @@ class OwncloudResourceService implements InitializingBean, DisposableBean {
     log.debug("Add Users to the Synchronization Structure {}", OwncloudResourceData.class.getName());
     resourceData.setUsers(users.values());
     log.debug("Add Gropus to the Synchronization Structure {}", OwncloudResourceData.class.getName());
-    resourceData.setGroups(groups);
+    resourceData.setGroups(groups.values());
 
     File file = resource.getFile();
     log.info("Save changed Data to Resource {}", resource.getFilename());
@@ -293,7 +299,7 @@ class OwncloudResourceService implements InitializingBean, DisposableBean {
    */
   public List<String> getAllGroups(String filter) {
     List<String> filteredGroups = new ArrayList<>();
-    for (OwncloudResourceData.Group group : groups) {
+    for (OwncloudResourceData.Group group : groups.values()) {
       if (StringUtils.isBlank(filter) || StringUtils.contains(group.getGroup(), filter)) {
         filteredGroups.add(group.getGroup());
       }
@@ -328,12 +334,7 @@ class OwncloudResourceService implements InitializingBean, DisposableBean {
   }
 
   private boolean existsGroup(String groupname) {
-    for (OwncloudResourceData.Group group : groups) {
-      if (StringUtils.equals(groupname, group.getGroup())) {
-        return true;
-      }
-    }
-    return false;
+    return groups.containsKey(groupname);
   }
 
   private void addWhenMemberOfGroup(String groupname, List<String> members, OwncloudResourceData.User user) {
@@ -407,28 +408,30 @@ class OwncloudResourceService implements InitializingBean, DisposableBean {
   }
 
   public void createGroup(String groupname) {
-    Ocs.Groups.Data.Group group = new Ocs.Groups.Data.Group(groupname);
-    if (groups.contains(group)) {
+    if (groups.containsKey(groupname)) {
       throw new OwncloudGroupAlreadyExistsException(groupname);
     }
-    groups.add(new OwncloudResourceData.Group(groupname));
+    groups.put(groupname, new OwncloudResourceData.Group(groupname));
   }
 
   public void deleteGroup(String groupname) {
-    Ocs.Groups.Data.Group group = new Ocs.Groups.Data.Group(groupname);
-    if (!groups.contains(group)) {
+    if (!groups.containsKey(groupname)) {
       throw new OwncloudGroupNotFoundException(groupname);
     }
-
     for (OwncloudResourceData.User user : users.values()) {
-      user.getGroups().remove(groupname);
+      if (user.getGroups() != null) {
+        user.getGroups().remove(groups.get(groupname));
+      }
     }
     groups.remove(groupname);
   }
 
   @lombok.Data
+  @NoArgsConstructor
+  @AllArgsConstructor(access = AccessLevel.PRIVATE)
+  @lombok.Builder
   @JacksonXmlRootElement(localName = "owncloud")
-  private static class OwncloudResourceData {
+  protected static class OwncloudResourceData {
 
     @lombok.Data
     @AllArgsConstructor
@@ -441,6 +444,9 @@ class OwncloudResourceService implements InitializingBean, DisposableBean {
     }
 
     @lombok.Data
+    @NoArgsConstructor
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    @lombok.Builder
     @JacksonXmlRootElement(localName = "user")
     public static class User {
 
@@ -460,15 +466,18 @@ class OwncloudResourceService implements InitializingBean, DisposableBean {
       @JacksonXmlProperty(localName = "email")
       private String email;
 
+      @Singular
       @JacksonXmlElementWrapper(localName = "groups", useWrapping = true)
       @JacksonXmlProperty(localName = "group")
       private List<Group> groups;
     }
 
+    @Singular
     @JacksonXmlElementWrapper(localName = "users", useWrapping = true)
     @JacksonXmlProperty(localName = "user")
     private Collection<User> users;
 
+    @Singular
     @JacksonXmlElementWrapper(localName = "groups", useWrapping = true)
     @JacksonXmlProperty(localName = "group")
     private Collection<Group> groups;

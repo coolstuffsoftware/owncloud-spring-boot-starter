@@ -71,7 +71,9 @@ import org.springframework.test.web.client.ResponseActions;
 import org.springframework.util.MultiValueMap;
 import org.xmlunit.builder.DiffBuilder;
 import org.xmlunit.builder.Input;
+import org.xmlunit.diff.DefaultNodeMatcher;
 import org.xmlunit.diff.Diff;
+import org.xmlunit.diff.ElementSelectors;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -420,10 +422,12 @@ public abstract class AbstractOwncloudServiceTest {
   }
 
   protected void compareResources(Resource source, Resource target) throws Exception {
-    try (InputStream isSource = new BufferedInputStream(source.getInputStream());
-        InputStream isTarget = new BufferedInputStream(target.getInputStream())) {
-      Diff diff = DiffBuilder.compare(Input.fromStream(isSource))
-          .withTest(Input.fromStream(isTarget))
+    try (InputStream inputSource = new BufferedInputStream(source.getInputStream());
+        InputStream inputTarget = new BufferedInputStream(target.getInputStream())) {
+      Diff diff = DiffBuilder.compare(Input.fromStream(inputSource))
+          .withTest(Input.fromStream(inputTarget))
+          .checkForSimilar()
+          .withNodeMatcher(new DefaultNodeMatcher(ElementSelectors.byNameAndText))
           .build();
       Assert.assertFalse(diff.toString(), diff.hasDifferences());
     }

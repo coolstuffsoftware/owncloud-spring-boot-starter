@@ -306,6 +306,25 @@ public abstract class AbstractOwncloudUserModificationServiceRestTest extends Ab
         102);
   }
 
+  @Override
+  protected void prepareTestDeleteGroup_OK(String groupname) throws Exception {
+    respondSuccess(
+        RestRequest.builder()
+            .method(DELETE)
+            .url("/cloud/groups/" + groupname)
+            .build());
+  }
+
+  @Override
+  protected void prepareTestDeleteGroup_NOK_GroupNotFound(String groupname) throws Exception {
+    respondFailure(
+        RestRequest.builder()
+            .method(DELETE)
+            .url("/cloud/groups/" + groupname)
+            .build(),
+        101);
+  }
+
   @Test(expected = IllegalArgumentException.class)
   @WithOwncloudMockUser(username = "user1", password = "password")
   public void testSaveUser_CreateUser_NOK_IllegalArgument() throws Exception {
@@ -1348,9 +1367,21 @@ public abstract class AbstractOwncloudUserModificationServiceRestTest extends Ab
     respondFailure(
         RestRequest.builder()
             .method(POST)
-            .url("/cloud/users/group4")
+            .url("/cloud/groups/group4")
             .build(),
         101);
+    userModificationService.createGroup("group4");
+  }
+
+  @Test(expected = IllegalStateException.class)
+  @WithOwncloudMockUser(username = "user1", password = "password")
+  public void testCreateGroup_NOK_CannotCreateGroup() throws Exception {
+    respondFailure(
+        RestRequest.builder()
+            .method(POST)
+            .url("/cloud/groups/group4")
+            .build(),
+        103);
     userModificationService.createGroup("group4");
   }
 
@@ -1360,7 +1391,7 @@ public abstract class AbstractOwncloudUserModificationServiceRestTest extends Ab
     respondFailure(
         RestRequest.builder()
             .method(POST)
-            .url("/cloud/users/group4")
+            .url("/cloud/groups/group4")
             .build(),
         997);
     userModificationService.createGroup("group4");
@@ -1372,10 +1403,46 @@ public abstract class AbstractOwncloudUserModificationServiceRestTest extends Ab
     respondFailure(
         RestRequest.builder()
             .method(POST)
-            .url("/cloud/users/group4")
+            .url("/cloud/groups/group4")
             .build(),
         999);
     userModificationService.createGroup("group4");
+  }
+
+  @Test(expected = IllegalStateException.class)
+  @WithOwncloudMockUser(username = "user1", password = "password")
+  public void testDeleteGroup_NOK_CannotDeleteGroup() throws Exception {
+    respondFailure(
+        RestRequest.builder()
+            .method(DELETE)
+            .url("/cloud/groups/group4")
+            .build(),
+        102);
+    userModificationService.deleteGroup("group4");
+  }
+
+  @Test(expected = AccessDeniedException.class)
+  @WithOwncloudMockUser(username = "user1", password = "password")
+  public void testDeleteGroup_NOK_AccessDeniedException() throws Exception {
+    respondFailure(
+        RestRequest.builder()
+            .method(DELETE)
+            .url("/cloud/groups/group4")
+            .build(),
+        997);
+    userModificationService.deleteGroup("group4");
+  }
+
+  @Test(expected = IllegalStateException.class)
+  @WithOwncloudMockUser(username = "user1", password = "password")
+  public void testDeleteGroup_NOK_UnknownError() throws Exception {
+    respondFailure(
+        RestRequest.builder()
+            .method(DELETE)
+            .url("/cloud/groups/group4")
+            .build(),
+        999);
+    userModificationService.deleteGroup("group4");
   }
 
   @Data
