@@ -1,3 +1,20 @@
+/*
+   Copyright (C) 2016 by the original Authors.
+
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 3 of the License, or
+   (at your option) any later version.
+
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to the Free Software Foundation,
+   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
+*/
 package software.coolstuff.springframework.owncloud.service.impl;
 
 import java.util.ArrayList;
@@ -109,7 +126,8 @@ class OwncloudUserQueryServiceImpl extends AbstractOwncloudServiceImpl implement
         case 998:
           throw new OwncloudGroupNotFoundException(groupname);
         default:
-          throw new IllegalStateException("Unknown Error Code " + meta.getStatuscode() + ". Reason: " + meta.getMessage());
+          throw new IllegalStateException(
+              "Unknown Error Code " + meta.getStatuscode() + ". Reason: " + meta.getMessage());
       }
     }, groupname);
     return convertUsers(users);
@@ -122,7 +140,8 @@ class OwncloudUserQueryServiceImpl extends AbstractOwncloudServiceImpl implement
       return resourceService.getGroupsOfUser(username);
     }
 
-    Ocs.Groups ocsGroups = exchange("/cloud/users/{user}/groups", HttpMethod.GET, emptyEntity(), Ocs.Groups.class, username);
+    Ocs.Groups ocsGroups = exchange("/cloud/users/{user}/groups", HttpMethod.GET, emptyEntity(), Ocs.Groups.class,
+        username);
     return convertGroups(ocsGroups);
   }
 
@@ -134,7 +153,8 @@ class OwncloudUserQueryServiceImpl extends AbstractOwncloudServiceImpl implement
     }
 
     Ocs.User user = exchange("/cloud/users/{user}", HttpMethod.GET, emptyEntity(), Ocs.User.class, username);
-    Ocs.Groups groups = exchange("/cloud/users/{user}/groups", HttpMethod.GET, emptyEntity(), Ocs.Groups.class, username);
+    Ocs.Groups groups = exchange("/cloud/users/{user}/groups", HttpMethod.GET, emptyEntity(), Ocs.Groups.class,
+        username);
     return createUserDetails(username, user, groups);
   }
 

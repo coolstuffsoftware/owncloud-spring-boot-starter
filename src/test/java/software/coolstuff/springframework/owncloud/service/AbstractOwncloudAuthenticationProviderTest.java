@@ -1,3 +1,20 @@
+/*
+   Copyright (C) 2016 by the original Authors.
+
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 3 of the License, or
+   (at your option) any later version.
+
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to the Free Software Foundation,
+   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
+*/
 package software.coolstuff.springframework.owncloud.service;
 
 import java.util.Base64;
@@ -40,14 +57,12 @@ public abstract class AbstractOwncloudAuthenticationProviderTest extends Abstrac
   @Test
   @WithOwncloudMockUser(username = "user1", password = "s3cr3t")
   public void testAuthenticate_OK() throws Exception {
-    Credentials credentials = Credentials.builder()
-        .username("user1")
-        .password("s3cr3t")
-        .build();
+    Credentials credentials = Credentials.builder().username("user1").password("s3cr3t").build();
 
     prepareTestAuthenticate_OK(credentials, true, "user1@example.com", "Mr. User 1", "group1", "group2");
 
-    Authentication authentication = authenticationProvider.authenticate(credentials.getUsernamePasswordAuthenticationToken());
+    Authentication authentication = authenticationProvider
+        .authenticate(credentials.getUsernamePasswordAuthenticationToken());
     verifyServer();
 
     Assert.assertNotNull(authentication);
@@ -66,14 +81,12 @@ public abstract class AbstractOwncloudAuthenticationProviderTest extends Abstrac
     Assert.assertEquals(2, principal.getAuthorities().size());
   }
 
-  protected void prepareTestAuthenticate_OK(Credentials credentials, boolean enabled, String email, String displayName, String... groups) throws Exception {};
+  protected void prepareTestAuthenticate_OK(Credentials credentials, boolean enabled, String email, String displayName,
+      String... groups) throws Exception {};
 
   @Test(expected = BadCredentialsException.class)
   public void testAuthenticate_NOK() throws Exception {
-    Credentials credentials = Credentials.builder()
-        .username("user1")
-        .password("wrongPassword")
-        .build();
+    Credentials credentials = Credentials.builder().username("user1").password("wrongPassword").build();
 
     prepareTestAuthenticate_NOK(credentials);
 
@@ -84,20 +97,14 @@ public abstract class AbstractOwncloudAuthenticationProviderTest extends Abstrac
 
   @Test(expected = BadCredentialsException.class)
   public void testAuthentication_NOK_NoUser() throws Exception {
-    Credentials credentials = Credentials.builder()
-        .username(null)
-        .password(null)
-        .build();
+    Credentials credentials = Credentials.builder().username(null).password(null).build();
 
     authenticationProvider.authenticate(credentials.getUsernamePasswordAuthenticationToken());
   }
 
   @Test(expected = BadCredentialsException.class)
   public void testAuthentication_NOK_NoPassword() throws Exception {
-    Credentials credentials = Credentials.builder()
-        .username("user1")
-        .password(null)
-        .build();
+    Credentials credentials = Credentials.builder().username("user1").password(null).build();
 
     authenticationProvider.authenticate(credentials.getUsernamePasswordAuthenticationToken());
   }

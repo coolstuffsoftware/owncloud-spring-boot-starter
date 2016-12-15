@@ -1,3 +1,20 @@
+/*
+   Copyright (C) 2016 by the original Authors.
+
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 3 of the License, or
+   (at your option) any later version.
+
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to the Free Software Foundation,
+   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
+*/
 package software.coolstuff.springframework.owncloud.service.impl;
 
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.content;
@@ -91,20 +108,11 @@ import software.coolstuff.springframework.owncloud.service.impl.resource.file.Ow
 import software.coolstuff.springframework.owncloud.service.impl.resource.file.OwncloudModifyingFileResourceTest;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(
-    webEnvironment = WebEnvironment.NONE,
-    classes = {
-        OwncloudAutoConfiguration.class,
-        VelocityConfiguration.class,
-        AuthorityAppenderConfiguration.class,
-        AuthorityMapperConfiguration.class
-    })
-@TestExecutionListeners({
-    SpringBootDependencyInjectionTestExecutionListener.class,
-    DependencyInjectionTestExecutionListener.class,
-    WithSecurityContextTestExecutionListener.class,
-    OwncloudFileResourceTestExecutionListener.class
-})
+@SpringBootTest(webEnvironment = WebEnvironment.NONE, classes = { OwncloudAutoConfiguration.class,
+    VelocityConfiguration.class, AuthorityAppenderConfiguration.class, AuthorityMapperConfiguration.class })
+@TestExecutionListeners({ SpringBootDependencyInjectionTestExecutionListener.class,
+    DependencyInjectionTestExecutionListener.class, WithSecurityContextTestExecutionListener.class,
+    OwncloudFileResourceTestExecutionListener.class })
 @Slf4j
 public abstract class AbstractOwncloudServiceTest {
 
@@ -163,7 +171,8 @@ public abstract class AbstractOwncloudServiceTest {
   private void copyClasspathResourceToFile() throws IOException, FileNotFoundException {
     Resource target = resourceLoader.getResource(properties.getLocation());
     if (!(target instanceof UrlResource)) {
-      throw new IllegalStateException(String.format("TestClass %s implements %s but the Resource-Location %s is not of Type %s", this.getClass().getName(),
+      throw new IllegalStateException(String.format(
+          "TestClass %s implements %s but the Resource-Location %s is not of Type %s", this.getClass().getName(),
           OwncloudFileResourceTest.class.getName(), properties.getLocation(), UrlResource.class.getName()));
     }
 
@@ -184,20 +193,24 @@ public abstract class AbstractOwncloudServiceTest {
       for (Method method : this.getClass().getMethods()) {
         // is this Method annotated by @CompareResourceAfter
         CompareResourceAfter compareResourceAfter = AnnotationUtils.findAnnotation(method, CompareResourceAfter.class);
-        if (compareResourceAfter == null || !StringUtils.equals(compareResourceAfter.value(), testName.getMethodName())) {
+        if (compareResourceAfter == null
+            || !StringUtils.equals(compareResourceAfter.value(), testName.getMethodName())) {
           continue;
         }
 
-        // a Method annotated by @Test cannot also be annotated by @CompareResourceAfter
+        // a Method annotated by @Test cannot also be annotated by
+        // @CompareResourceAfter
         if (AnnotationUtils.findAnnotation(method, Test.class) != null) {
-          log.warn("Method {} of Class {} cannot be annotated by {} and {}", method.getName(), this.getClass().getName(), CompareResourceAfter.class, Test.class);
+          log.warn("Method {} of Class {} cannot be annotated by {} and {}", method.getName(),
+              this.getClass().getName(), CompareResourceAfter.class, Test.class);
           continue;
         }
 
-        // the @CompareResourceAfter annotated Method must have exactly 2 Parameters of Type org.springframework.core.io.Resource
+        // the @CompareResourceAfter annotated Method must have exactly 2
+        // Parameters of Type org.springframework.core.io.Resource
         if (method.getParameterCount() != 1) {
-          log.warn("Method {} of Class {} is annotated by {} but has {} Parameters instead of 1",
-              method.getName(), this.getClass().getName(), CompareResourceAfter.class.getName(), method.getParameterCount());
+          log.warn("Method {} of Class {} is annotated by {} but has {} Parameters instead of 1", method.getName(),
+              this.getClass().getName(), CompareResourceAfter.class.getName(), method.getParameterCount());
           continue;
         }
         boolean correctParameterTypes = true;
@@ -205,8 +218,8 @@ public abstract class AbstractOwncloudServiceTest {
           correctParameterTypes = correctParameterTypes && Resource.class.isAssignableFrom(parameterClass);
         }
         if (!correctParameterTypes) {
-          log.warn("Method {} of Class {} (annotated by {}) must have 1 Parameter of Type {}",
-              method.getName(), this.getClass(), CompareResourceAfter.class.getName(), Resource.class.getName());
+          log.warn("Method {} of Class {} (annotated by {}) must have 1 Parameter of Type {}", method.getName(),
+              this.getClass(), CompareResourceAfter.class.getName(), Resource.class.getName());
           continue;
         }
 
@@ -235,8 +248,7 @@ public abstract class AbstractOwncloudServiceTest {
     setSuccessMetaInformation(context);
     context.put("users", Arrays.asList(users));
 
-    preparedRequest
-        .andRespond(withSuccess(merge("users.vm", context), MediaType.TEXT_XML));
+    preparedRequest.andRespond(withSuccess(merge("users.vm", context), MediaType.TEXT_XML));
   }
 
   private boolean isNoRestTestClass() {
@@ -249,8 +261,7 @@ public abstract class AbstractOwncloudServiceTest {
     if (request.getServer() != null) {
       server = request.getServer();
     }
-    ResponseActions responseActions = server
-        .expect(requestToWithPrefix(request.getUrl()))
+    ResponseActions responseActions = server.expect(requestToWithPrefix(request.getUrl()))
         .andExpect(method(request.getMethod()));
     if (StringUtils.isNotBlank(request.getBasicAuthentication())) {
       responseActions.andExpect(header(HttpHeaders.AUTHORIZATION, request.getBasicAuthentication()));
@@ -303,8 +314,7 @@ public abstract class AbstractOwncloudServiceTest {
     setSuccessMetaInformation(context);
     context.put("groups", Arrays.asList(groups));
 
-    preparedRequest
-        .andRespond(withSuccess(merge("groups.vm", context), request.getResponseType()));
+    preparedRequest.andRespond(withSuccess(merge("groups.vm", context), request.getResponseType()));
   }
 
   protected void respondFailure(RestRequest request, int statuscode) throws IOException {
@@ -320,8 +330,7 @@ public abstract class AbstractOwncloudServiceTest {
     Context context = new VelocityContext();
     setFailureMetaInformation(context, statuscode, message);
 
-    preparedRequest
-        .andRespond(withSuccess(merge("void.vm", context), request.getResponseType()));
+    preparedRequest.andRespond(withSuccess(merge("void.vm", context), request.getResponseType()));
   }
 
   protected void respondHttpStatus(RestRequest request, HttpStatus httpStatus) throws MalformedURLException {
@@ -347,8 +356,7 @@ public abstract class AbstractOwncloudServiceTest {
     if (requestBody != null) {
       preparedRequest = preparedRequest.andExpect(content().formData(requestBody));
     }
-    preparedRequest
-        .andRespond(withSuccess(merge("void.vm", context), MediaType.TEXT_XML));
+    preparedRequest.andRespond(withSuccess(merge("void.vm", context), MediaType.TEXT_XML));
   }
 
   private void setFailureMetaInformation(Context context, int statuscode, String message) {
@@ -357,7 +365,8 @@ public abstract class AbstractOwncloudServiceTest {
     context.put("message", "message");
   }
 
-  protected void respondUser(RestRequest request, boolean enabled, String email, String displayName) throws IOException {
+  protected void respondUser(RestRequest request, boolean enabled, String email, String displayName)
+      throws IOException {
     if (isNoRestTestClass()) {
       return;
     }
@@ -369,8 +378,7 @@ public abstract class AbstractOwncloudServiceTest {
     context.put("email", email);
     context.put("displayName", displayName);
 
-    preparedRequest
-        .andRespond(withSuccess(merge("user.vm", context), MediaType.TEXT_XML));
+    preparedRequest.andRespond(withSuccess(merge("user.vm", context), MediaType.TEXT_XML));
   }
 
   protected Resource getResourceOf(String testCase) {
@@ -401,9 +409,11 @@ public abstract class AbstractOwncloudServiceTest {
       }
     }
     if (owncloudGrantedAuthoritiesMapper != null) {
-      Assert.assertTrue(CollectionUtils.isEqualCollection(actual, owncloudGrantedAuthoritiesMapper.mapAuthorities(username, authorities)));
+      Assert.assertTrue(CollectionUtils.isEqualCollection(actual,
+          owncloudGrantedAuthoritiesMapper.mapAuthorities(username, authorities)));
     } else if (grantedAuthoritiesMapper != null) {
-      Assert.assertTrue(CollectionUtils.isEqualCollection(actual, grantedAuthoritiesMapper.mapAuthorities(authorities)));
+      Assert
+          .assertTrue(CollectionUtils.isEqualCollection(actual, grantedAuthoritiesMapper.mapAuthorities(authorities)));
     } else {
       Assert.assertTrue(CollectionUtils.isEqualCollection(actual, authorities));
     }
@@ -424,11 +434,8 @@ public abstract class AbstractOwncloudServiceTest {
   protected void compareResources(Resource source, Resource target) throws Exception {
     try (InputStream inputSource = new BufferedInputStream(source.getInputStream());
         InputStream inputTarget = new BufferedInputStream(target.getInputStream())) {
-      Diff diff = DiffBuilder.compare(Input.fromStream(inputSource))
-          .withTest(Input.fromStream(inputTarget))
-          .checkForSimilar()
-          .withNodeMatcher(new DefaultNodeMatcher(ElementSelectors.byNameAndText))
-          .build();
+      Diff diff = DiffBuilder.compare(Input.fromStream(inputSource)).withTest(Input.fromStream(inputTarget))
+          .checkForSimilar().withNodeMatcher(new DefaultNodeMatcher(ElementSelectors.byNameAndText)).build();
       Assert.assertFalse(diff.toString(), diff.hasDifferences());
     }
   }
@@ -448,6 +455,7 @@ public abstract class AbstractOwncloudServiceTest {
   @AllArgsConstructor(access = AccessLevel.PRIVATE)
   @Builder
   protected static class RestRequest {
+
     private MockRestServiceServer server;
     @NotNull
     private final HttpMethod method;
@@ -457,6 +465,7 @@ public abstract class AbstractOwncloudServiceTest {
     private MediaType responseType = MediaType.TEXT_XML;
 
     public static class RestRequestBuilder {
+
       private MediaType responseType = MediaType.TEXT_XML;
     }
   }

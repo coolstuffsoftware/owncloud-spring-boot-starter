@@ -1,3 +1,20 @@
+/*
+   Copyright (C) 2016 by the original Authors.
+
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 3 of the License, or
+   (at your option) any later version.
+
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to the Free Software Foundation,
+   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
+*/
 package software.coolstuff.springframework.owncloud.service.impl;
 
 import java.util.ArrayList;
@@ -21,6 +38,7 @@ abstract class Ocs {
   @AllArgsConstructor(access = AccessLevel.PRIVATE)
   @Builder
   static class Meta {
+
     private String status;
     private int statuscode;
     private String message;
@@ -34,6 +52,7 @@ abstract class Ocs {
   @NoArgsConstructor
   @XmlRootElement(name = "ocs")
   static class Void extends Ocs {
+
     private String data;
 
     @Builder
@@ -57,6 +76,7 @@ abstract class Ocs {
       @NoArgsConstructor
       @AllArgsConstructor(access = AccessLevel.PACKAGE)
       static class Element {
+
         private String element;
       }
 
@@ -99,6 +119,7 @@ abstract class Ocs {
       @AllArgsConstructor(access = AccessLevel.PRIVATE)
       @Builder
       static class Quota {
+
         private Long free;
         private Long used;
         private Long total;
@@ -136,6 +157,7 @@ abstract class Ocs {
       @AllArgsConstructor(access = AccessLevel.PACKAGE)
       @Builder
       static class Group {
+
         private String group;
       }
 
