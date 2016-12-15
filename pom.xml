@@ -187,41 +187,33 @@
   <build>
     <pluginManagement>
       <plugins>
-        <!-- Cobertura -->
+        <!-- JaCoCo -->
         <plugin>
-          <groupId>org.codehaus.mojo</groupId>
-          <artifactId>cobertura-maven-plugin</artifactId>
-          <version>2.7</version>
-          <dependencies>
-            <dependency>
-              <groupId>net.sourceforge.cobertura</groupId>
-              <artifactId>cobertura</artifactId>
-              <version>2.1.1</version>
-              <exclusions>
-                <exclusion>
-                  <groupId>ch.qos.logback</groupId>
-                  <artifactId>logback-classic</artifactId>
-                </exclusion>
-              </exclusions>
-            </dependency>
-          </dependencies>
+          <groupId>org.jacoco</groupId>
+          <artifactId>jacoco-maven-plugin</artifactId>
+          <version>0.7.8</version>
           <configuration>
-            <instrumentation>
-              <ignoreTrivial>true</ignoreTrivial>
-              <ignores>
-                <ignore>software.coolstuff.springframework.owncloud.service.api.*</ignore>
-              </ignores>
-              <excludes>
-                <exclude>software/coolstuff/springframework/owncloud/service/impl/OwncloudResourceService$OwncloudResourceData*.class</exclude>
-                <exclude>software/coolstuff/springframework/owncloud/service/impl/Ocs*.class</exclude>
-                <exclude>software/coolstuff/springframework/owncloud/properties/OwncloudProperties.class</exclude>
-              </excludes>
-            </instrumentation>
-            <formats>
-              <format>html</format>
-              <format>xml</format>
-            </formats>
+            <excludes>
+              <exclude>software/coolstuff/springframework/owncloud/service/impl/OwncloudResourceService$OwncloudResourceData*.class</exclude>
+              <exclude>software/coolstuff/springframework/owncloud/service/impl/Ocs*.class</exclude>
+              <exclude>software/coolstuff/springframework/owncloud/properties/OwncloudProperties.class</exclude>
+            </excludes>
           </configuration>
+          <executions>
+            <execution>
+              <id>pre-unit-test</id>
+              <goals>
+                <goal>prepare-agent</goal>
+              </goals>
+            </execution>
+            <execution>
+              <id>post-unit-test</id>
+              <phase>test</phase>
+              <goals>
+                <goal>report</goal>
+              </goals>
+            </execution>
+          </executions>
         </plugin>
       </plugins>
     </pluginManagement>
@@ -271,10 +263,10 @@
         </configuration>
       </plugin>
 
-      <!-- Cobertura -->
+      <!-- JaCoCo -->
       <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>cobertura-maven-plugin</artifactId>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
       </plugin>
 
       <!-- Atlassian Plugins -->
