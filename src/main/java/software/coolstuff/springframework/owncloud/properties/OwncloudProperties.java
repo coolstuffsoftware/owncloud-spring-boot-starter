@@ -33,51 +33,48 @@ import software.coolstuff.springframework.owncloud.service.api.OwncloudUserModif
 public class OwncloudProperties {
 
   /**
+   * -- SETTER --
    * Location of the Owncloud Server.
-   * 
-   * @param The
-   *          following Locations are allowed:
-   *          <ul>
-   *          <li>Address of an Owncloud Server (starts either with <code>http://</code> or <code>https://</code></li>
-   *          <li>Classpath Resource (starts with <code>classpath:</code></li>
-   *          <li>File Resource outside of the Classpath (start with <code>file:</code></li>
-   *          </ul>
+   * <p>
+   * The following Locations are allowed:
+   * <ul>
+   *   <li>Address of an Owncloud Server (starts either with <code>http://</code> or <code>https://</code></li>
+   *   <li>Classpath Resource (starts with <code>classpath:</code></li>
+   *   <li>File Resource outside of the Classpath (start with <code>file:</code></li>
+   * </ul>
+   * @param Location of the Owncloud Server
+   * -- GETTER --
+   * Location of the Owncloud Server.
    * @return Location of the Owncloud Server
    */
   private String location;
 
   /**
    * optional Username of the Owncloud Administrator
-   * 
-   * @param Username
-   *          of the Owncloud Administrator
+   * @param Username of the Owncloud Administrator
    * @return Username of the Owncloud Administrator
    */
   private String username;
 
   /**
    * Password of the Owncloud Administrator.
-   * <p/>
+   * <p>
    * <i>Setting this Property is only neccessary if {@link #username} is used</i>
-   * 
-   * @param Password
-   *          of the Owncloud Administrator
+   * @param Password of the Owncloud Administrator
    * @return Password of the Owncloud Administrator
    */
   private String password;
 
   /**
    * Should User Modifications be allowed by the {@link OwncloudUserModificationService}.
-   * <p/>
+   * <p>
    * Defaults to <code>false</code>
-   * 
-   * @param enable
-   *          or disable User Modifications
+   * @param enable or disable User Modifications
    * @return
-   *         <ul>
-   *         <li>true ... User Modifications are allowed</li>
-   *         <li>false ... User Modifications are disallowed (Exception {@link AccessDeniedException} will be thrown)</li>
-   *         <ul>
+   * <ul>
+   *   <li>true ... User Modifications are allowed</li>
+   *   <li>false ... User Modifications are disallowed (Exception {@link AccessDeniedException} will be thrown)</li>
+   * <ul>
    */
   private boolean enableModifications = false;
 
