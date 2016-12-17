@@ -70,8 +70,7 @@ class OwncloudUserModificationServiceImpl extends AbstractOwncloudServiceImpl
 
     try {
       // First check, if the User already exists within the Owncloud
-      Ocs.User existingUser = exchange("/cloud/users/{user}", HttpMethod.GET, emptyEntity(), Ocs.User.class,
-          user.getUsername());
+      Ocs.User existingUser = exchange("/cloud/users/{user}", HttpMethod.GET, emptyEntity(), Ocs.User.class, user.getUsername());
 
       // User exists --> update User
       updateUser(user, existingUser.getData());
@@ -128,8 +127,7 @@ class OwncloudUserModificationServiceImpl extends AbstractOwncloudServiceImpl
         case 997:
           throw new AccessDeniedException("Not Authorized to access Resource " + uri);
         default:
-          throw new IllegalStateException(
-              "Unknown Error Code " + meta.getStatuscode() + ". Reason: " + meta.getMessage());
+          throw new IllegalStateException("Unknown Error Code " + meta.getStatuscode() + ". Reason: " + meta.getMessage());
       }
     }, username);
   }
@@ -148,15 +146,13 @@ class OwncloudUserModificationServiceImpl extends AbstractOwncloudServiceImpl
         case 997:
           throw new AccessDeniedException("Not Authorized to access Resource " + uri);
         default:
-          throw new IllegalStateException(
-              "Unknown Error Code " + meta.getStatuscode() + ". Reason: " + meta.getMessage());
+          throw new IllegalStateException("Unknown Error Code " + meta.getStatuscode() + ". Reason: " + meta.getMessage());
       }
     }, username, status ? "enable" : "disable");
   }
 
   private void manageGroupMemberships(String username, List<String> expectedGroups) {
-    Ocs.Groups ocsGroups = exchange("/cloud/users/{user}/groups", HttpMethod.GET, emptyEntity(), Ocs.Groups.class,
-        username);
+    Ocs.Groups ocsGroups = exchange("/cloud/users/{user}/groups", HttpMethod.GET, emptyEntity(), Ocs.Groups.class, username);
     List<String> actualGroups = OwncloudUserQueryServiceImpl.convertGroups(ocsGroups);
 
     // add new Group Memberships
@@ -170,31 +166,28 @@ class OwncloudUserModificationServiceImpl extends AbstractOwncloudServiceImpl
         Map<String, List<String>> data = new HashMap<>();
         data.put("groupid", Lists.newArrayList(group));
 
-        exchange("/cloud/users/{user}/groups", HttpMethod.POST, multiValuedEntity(data), Ocs.Void.class,
-            (uri, meta) -> {
-              if ("ok".equals(meta.getStatus())) {
-                return;
-              }
+        exchange("/cloud/users/{user}/groups", HttpMethod.POST, multiValuedEntity(data), Ocs.Void.class, (uri, meta) -> {
+          if ("ok".equals(meta.getStatus())) {
+            return;
+          }
 
-              switch (meta.getStatuscode()) {
-                case 101:
-                  throw new IllegalArgumentException(meta.getMessage());
-                case 102:
-                  throw new OwncloudGroupNotFoundException(group);
-                case 103:
-                  throw new IllegalStateException("Username " + username + " not found");
-                case 104:
-                  throw new AccessDeniedException("Not authorized to add a Group " + group + " to User " + username);
-                case 105:
-                  throw new IllegalStateException(
-                      "Error while adding Group " + group + " to User " + username + ". Reason: " + meta.getMessage());
-                case 997:
-                  throw new AccessDeniedException("Not Authorized to access Resource " + uri);
-                default:
-                  throw new IllegalStateException(
-                      "Unknown Error Code " + meta.getStatuscode() + ". Reason: " + meta.getMessage());
-              }
-            }, username);
+          switch (meta.getStatuscode()) {
+            case 101:
+              throw new IllegalArgumentException(meta.getMessage());
+            case 102:
+              throw new OwncloudGroupNotFoundException(group);
+            case 103:
+              throw new IllegalStateException("Username " + username + " not found");
+            case 104:
+              throw new AccessDeniedException("Not authorized to add a Group " + group + " to User " + username);
+            case 105:
+              throw new IllegalStateException("Error while adding Group " + group + " to User " + username + ". Reason: " + meta.getMessage());
+            case 997:
+              throw new AccessDeniedException("Not Authorized to access Resource " + uri);
+            default:
+              throw new IllegalStateException("Unknown Error Code " + meta.getStatuscode() + ". Reason: " + meta.getMessage());
+          }
+        }, username);
       }
     }
 
@@ -204,32 +197,29 @@ class OwncloudUserModificationServiceImpl extends AbstractOwncloudServiceImpl
         Map<String, List<String>> data = new HashMap<>();
         data.put("groupid", Lists.newArrayList(removableGroup));
 
-        exchange("/cloud/users/{user}/groups", HttpMethod.DELETE, multiValuedEntity(data), Ocs.Void.class,
-            (uri, meta) -> {
-              if ("ok".equals(meta.getStatus())) {
-                return;
-              }
+        exchange("/cloud/users/{user}/groups", HttpMethod.DELETE, multiValuedEntity(data), Ocs.Void.class, (uri, meta) -> {
+          if ("ok".equals(meta.getStatus())) {
+            return;
+          }
 
-              switch (meta.getStatuscode()) {
-                case 101:
-                  throw new IllegalArgumentException(meta.getMessage());
-                case 102:
-                  throw new OwncloudGroupNotFoundException(removableGroup);
-                case 103:
-                  throw new IllegalStateException("Username " + username + " not found");
-                case 104:
-                  throw new AccessDeniedException(
-                      "Not authorized to remove Group " + removableGroup + " from User " + username);
-                case 105:
-                  throw new IllegalStateException("Error while removing Group " + removableGroup + " from User "
-                      + username + ". Reason: " + meta.getMessage());
-                case 997:
-                  throw new AccessDeniedException("Not Authorized to access Resource " + uri);
-                default:
-                  throw new IllegalStateException(
-                      "Unknown Error Code " + meta.getStatuscode() + ". Reason: " + meta.getMessage());
-              }
-            }, username);
+          switch (meta.getStatuscode()) {
+            case 101:
+              throw new IllegalArgumentException(meta.getMessage());
+            case 102:
+              throw new OwncloudGroupNotFoundException(removableGroup);
+            case 103:
+              throw new IllegalStateException("Username " + username + " not found");
+            case 104:
+              throw new AccessDeniedException("Not authorized to remove Group " + removableGroup + " from User " + username);
+            case 105:
+              throw new IllegalStateException("Error while removing Group " + removableGroup + " from User "
+                  + username + ". Reason: " + meta.getMessage());
+            case 997:
+              throw new AccessDeniedException("Not Authorized to access Resource " + uri);
+            default:
+              throw new IllegalStateException("Unknown Error Code " + meta.getStatuscode() + ". Reason: " + meta.getMessage());
+          }
+        }, username);
       }
     }
   }
@@ -256,13 +246,11 @@ class OwncloudUserModificationServiceImpl extends AbstractOwncloudServiceImpl
         case 997:
           throw new AccessDeniedException("Not Authorized to access Resource " + uri);
         default:
-          throw new IllegalStateException(
-              "Unknown Error Code " + meta.getStatuscode() + ". Reason: " + meta.getMessage());
+          throw new IllegalStateException("Unknown Error Code " + meta.getStatuscode() + ". Reason: " + meta.getMessage());
       }
     });
 
-    Ocs.User existingUser = exchange("/cloud/users/{user}", HttpMethod.GET, emptyEntity(), Ocs.User.class,
-        user.getUsername());
+    Ocs.User existingUser = exchange("/cloud/users/{user}", HttpMethod.GET, emptyEntity(), Ocs.User.class, user.getUsername());
     updateUser(user, existingUser.getData());
   }
 
@@ -288,8 +276,7 @@ class OwncloudUserModificationServiceImpl extends AbstractOwncloudServiceImpl
         case 997:
           throw new AccessDeniedException("Not Authorized to access Resource " + uri);
         default:
-          throw new IllegalStateException(
-              "Unknown Error Code " + meta.getStatuscode() + ". Reason: " + meta.getMessage());
+          throw new IllegalStateException("Unknown Error Code " + meta.getStatuscode() + ". Reason: " + meta.getMessage());
       }
     }, username);
   }
@@ -323,8 +310,7 @@ class OwncloudUserModificationServiceImpl extends AbstractOwncloudServiceImpl
         case 997:
           throw new AccessDeniedException("Not Authorized to access Resource " + uri);
         default:
-          throw new IllegalStateException(
-              "Unknown Error Code " + meta.getStatuscode() + ". Reason: " + meta.getMessage());
+          throw new IllegalStateException("Unknown Error Code " + meta.getStatuscode() + ". Reason: " + meta.getMessage());
       }
     }, groupname);
   }
@@ -356,8 +342,7 @@ class OwncloudUserModificationServiceImpl extends AbstractOwncloudServiceImpl
         case 997:
           throw new AccessDeniedException("Not Authorized to access Resource " + uri);
         default:
-          throw new IllegalStateException(
-              "Unknown Error Code " + meta.getStatuscode() + ". Reason: " + meta.getMessage());
+          throw new IllegalStateException("Unknown Error Code " + meta.getStatuscode() + ". Reason: " + meta.getMessage());
       }
     }, groupname);
   }

@@ -45,7 +45,13 @@ public class OwncloudUserDetailsServiceAuthenticatedUserRestTest extends Abstrac
   @Test(expected = OwncloudInvalidAuthenticationObjectException.class)
   @WithAnonymousUser
   public void testUserDetails_WrongAuthenticationObject() throws MalformedURLException, IOException {
-    respondUser(RestRequest.builder().method(GET).url("/cloud/user/user1").build(), true, "user1@example.com",
+    respondUser(
+        RestRequest.builder()
+            .method(GET)
+            .url("/cloud/user/user1")
+            .build(),
+        true,
+        "user1@example.com",
         "Mr. User 1");
 
     userDetailsService.loadUserByUsername("user1");

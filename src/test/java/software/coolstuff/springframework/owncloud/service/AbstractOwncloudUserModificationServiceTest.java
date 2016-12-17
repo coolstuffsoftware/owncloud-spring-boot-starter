@@ -43,9 +43,15 @@ public abstract class AbstractOwncloudUserModificationServiceTest extends Abstra
 
   @Test
   public void testOwncloudModificationUserBuilderWithGroups() throws Exception {
-    OwncloudUserDetails userDetails = OwncloudUserDetails.builder().username("user1").password("password").enabled(true)
-        .displayName("Mr. User 1").email("user1@example.com")
-        .authorities(Lists.newArrayList(new SimpleGrantedAuthority("group1"), new SimpleGrantedAuthority("group2")))
+    OwncloudUserDetails userDetails = OwncloudUserDetails.builder()
+        .username("user1")
+        .password("password")
+        .enabled(true)
+        .displayName("Mr. User 1")
+        .email("user1@example.com")
+        .authorities(Lists.newArrayList(
+            new SimpleGrantedAuthority("group1"),
+            new SimpleGrantedAuthority("group2")))
         .build();
 
     OwncloudModificationUser modificationUser = new OwncloudModificationUser(userDetails);
@@ -57,14 +63,18 @@ public abstract class AbstractOwncloudUserModificationServiceTest extends Abstra
     Assert.assertEquals(userDetails.isEnabled(), modificationUser.isEnabled());
     Assert.assertEquals(userDetails.getDisplayName(), modificationUser.getDisplayName());
     Assert.assertEquals(userDetails.getEmail(), modificationUser.getEmail());
-    Assert.assertTrue(
-        CollectionUtils.isEqualCollection(modificationUser.getGroups(), Lists.newArrayList("group1", "group2")));
+    Assert.assertTrue(CollectionUtils.isEqualCollection(modificationUser.getGroups(), Lists.newArrayList("group1", "group2")));
   }
 
   @Test
   public void testOwncloudModificationUserBuilderWithoutGroups() throws Exception {
-    OwncloudUserDetails userDetails = OwncloudUserDetails.builder().username("user1").password("password").enabled(true)
-        .displayName("Mr. User 1").email("user1@example.com").build();
+    OwncloudUserDetails userDetails = OwncloudUserDetails.builder()
+        .username("user1")
+        .password("password")
+        .enabled(true)
+        .displayName("Mr. User 1")
+        .email("user1@example.com")
+        .build();
 
     OwncloudModificationUser modificationUser = new OwncloudModificationUser(userDetails);
     verifyServer();
@@ -81,8 +91,13 @@ public abstract class AbstractOwncloudUserModificationServiceTest extends Abstra
   @Test
   @WithOwncloudMockUser(username = "user1", password = "password")
   public void testSaveUser_CreateUser_OK_WithoutGroups() throws Exception {
-    OwncloudModificationUser newUser = OwncloudModificationUser.builder().username("user3").password("password")
-        .enabled(true).displayName("Mr. User 3").email("user3@example.com").build();
+    OwncloudModificationUser newUser = OwncloudModificationUser.builder()
+        .username("user3")
+        .password("password")
+        .enabled(true)
+        .displayName("Mr. User 3")
+        .email("user3@example.com")
+        .build();
 
     prepareTestSaveUser_CreateUser_OK_WithoutGroups(newUser);
 
@@ -104,9 +119,14 @@ public abstract class AbstractOwncloudUserModificationServiceTest extends Abstra
   @Test
   @WithOwncloudMockUser(username = "user1", password = "password")
   public void testSaveUser_CreateUser_OK_WithGroups() throws Exception {
-    OwncloudModificationUser newUser = OwncloudModificationUser.builder().username("user4").password("password")
-        .enabled(true).displayName("Mrs. User 4").email("user4@example.com")
-        .groups(Lists.newArrayList("group1", "group2")).build();
+    OwncloudModificationUser newUser = OwncloudModificationUser.builder()
+        .username("user4")
+        .password("password")
+        .enabled(true)
+        .displayName("Mrs. User 4")
+        .email("user4@example.com")
+        .groups(Lists.newArrayList("group1", "group2"))
+        .build();
 
     prepareTestSaveUser_CreateUser_OK_WithGroups(newUser);
 
@@ -128,11 +148,21 @@ public abstract class AbstractOwncloudUserModificationServiceTest extends Abstra
   @Test
   @WithOwncloudMockUser(username = "user1", password = "password")
   public void testSaveUser_UpdateUser_OK_WithoutGroups() throws Exception {
-    OwncloudModificationUser existingUser = OwncloudModificationUser.builder().username("user2").password("password")
-        .enabled(true).displayName("Mrs. User 1").email("user2@example.com").build();
+    OwncloudModificationUser existingUser = OwncloudModificationUser.builder()
+        .username("user2")
+        .password("password")
+        .enabled(true)
+        .displayName("Mrs. User 1")
+        .email("user2@example.com")
+        .build();
 
-    OwncloudModificationUser updateUser = OwncloudModificationUser.builder().username("user2").password("password")
-        .enabled(true).displayName("Mrs. User 2 in Subdomain").email("user2@subdomain.example.com").build();
+    OwncloudModificationUser updateUser = OwncloudModificationUser.builder()
+        .username("user2")
+        .password("password")
+        .enabled(true)
+        .displayName("Mrs. User 2 in Subdomain")
+        .email("user2@subdomain.example.com")
+        .build();
 
     prepareTestSaveUser_UpdateUser_OK_WithoutGroups(existingUser, updateUser);
 
@@ -148,21 +178,29 @@ public abstract class AbstractOwncloudUserModificationServiceTest extends Abstra
     Assert.assertTrue(CollectionUtils.isEmpty(updatedUser.getAuthorities()));
   }
 
-  protected void prepareTestSaveUser_UpdateUser_OK_WithoutGroups(OwncloudModificationUser existingUser,
-      OwncloudModificationUser updateUser) throws Exception {}
+  protected void prepareTestSaveUser_UpdateUser_OK_WithoutGroups(OwncloudModificationUser existingUser, OwncloudModificationUser updateUser) throws Exception {}
 
   @Test
   @WithOwncloudMockUser(username = "user1", password = "password")
   public void testSaveUser_UpdateUser_OK_WithGroups() throws Exception {
-    OwncloudModificationUser existingUser = OwncloudModificationUser.builder().username("user1").password("s3cr3t")
-        .enabled(true).displayName("Mr. User 1").email("user1@example.com").group("group1").group("group2").build();
+    OwncloudModificationUser existingUser = OwncloudModificationUser.builder()
+        .username("user1")
+        .password("s3cr3t")
+        .enabled(true)
+        .displayName("Mr. User 1")
+        .email("user1@example.com")
+        .group("group1")
+        .group("group2")
+        .build();
 
-    OwncloudModificationUser updateUser = OwncloudModificationUser.builder().username("user1").password("s3cr3t")
+    OwncloudModificationUser updateUser = OwncloudModificationUser.builder()
+        .username("user1")
+        .password("s3cr3t")
         .enabled(false) // disabled instead of enabled
-        .displayName("Mr. User 1").email("user1@example.com").group("group1").group("group3") // group3
-                                                                                              // instead
-                                                                                              // of
-                                                                                              // group2
+        .displayName("Mr. User 1")
+        .email("user1@example.com")
+        .group("group1")
+        .group("group3") // group3 instead of group2
         .build();
 
     prepareTestSaveUser_UpdateUser_OK_WithGroups(existingUser, updateUser);
@@ -176,12 +214,10 @@ public abstract class AbstractOwncloudUserModificationServiceTest extends Abstra
     Assert.assertEquals(updateUser.isEnabled(), updatedUser.isEnabled());
     Assert.assertEquals(updateUser.getDisplayName(), updatedUser.getDisplayName());
     Assert.assertEquals(updateUser.getEmail(), updatedUser.getEmail());
-    checkAuthorities(updatedUser.getUsername(), updatedUser.getAuthorities(),
-        updateUser.getGroups().toArray(new String[] {}));
+    checkAuthorities(updatedUser.getUsername(), updatedUser.getAuthorities(), updateUser.getGroups().toArray(new String[] {}));
   }
 
-  protected void prepareTestSaveUser_UpdateUser_OK_WithGroups(OwncloudModificationUser existingUser,
-      OwncloudModificationUser updateUser) throws Exception {}
+  protected void prepareTestSaveUser_UpdateUser_OK_WithGroups(OwncloudModificationUser existingUser, OwncloudModificationUser updateUser) throws Exception {}
 
   @Test
   @WithOwncloudMockUser(username = "user1", password = "password")

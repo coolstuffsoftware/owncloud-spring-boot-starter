@@ -61,8 +61,7 @@ public abstract class AbstractOwncloudAuthenticationProviderTest extends Abstrac
 
     prepareTestAuthenticate_OK(credentials, true, "user1@example.com", "Mr. User 1", "group1", "group2");
 
-    Authentication authentication = authenticationProvider
-        .authenticate(credentials.getUsernamePasswordAuthenticationToken());
+    Authentication authentication = authenticationProvider.authenticate(credentials.getUsernamePasswordAuthenticationToken());
     verifyServer();
 
     Assert.assertNotNull(authentication);
@@ -81,8 +80,7 @@ public abstract class AbstractOwncloudAuthenticationProviderTest extends Abstrac
     Assert.assertEquals(2, principal.getAuthorities().size());
   }
 
-  protected void prepareTestAuthenticate_OK(Credentials credentials, boolean enabled, String email, String displayName,
-      String... groups) throws Exception {};
+  protected void prepareTestAuthenticate_OK(Credentials credentials, boolean enabled, String email, String displayName, String... groups) throws Exception {};
 
   @Test(expected = BadCredentialsException.class)
   public void testAuthenticate_NOK() throws Exception {
@@ -97,14 +95,20 @@ public abstract class AbstractOwncloudAuthenticationProviderTest extends Abstrac
 
   @Test(expected = BadCredentialsException.class)
   public void testAuthentication_NOK_NoUser() throws Exception {
-    Credentials credentials = Credentials.builder().username(null).password(null).build();
+    Credentials credentials = Credentials.builder()
+        .username(null)
+        .password(null)
+        .build();
 
     authenticationProvider.authenticate(credentials.getUsernamePasswordAuthenticationToken());
   }
 
   @Test(expected = BadCredentialsException.class)
   public void testAuthentication_NOK_NoPassword() throws Exception {
-    Credentials credentials = Credentials.builder().username("user1").password(null).build();
+    Credentials credentials = Credentials.builder()
+        .username("user1")
+        .password(null)
+        .build();
 
     authenticationProvider.authenticate(credentials.getUsernamePasswordAuthenticationToken());
   }

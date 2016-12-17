@@ -45,9 +45,8 @@ import software.coolstuff.springframework.owncloud.properties.OwncloudProperties
 import software.coolstuff.springframework.owncloud.service.impl.resource.file.OwncloudFileResourceTest;
 
 /**
- * This Test-Execution Listener prepares the Tests for Resources prefixed with
- * <code>file:</code> because these Resources will also be written on Disk just
- * before the Bean <code>OwncloudResourceService</code> will be destroyed.
+ * This Test-Execution Listener prepares the Tests for Resources prefixed with <code>file:</code> because these Resources will also be written on Disk just before the Bean
+ * <code>OwncloudResourceService</code> will be destroyed.
  *
  * @author mufasa1976
  */

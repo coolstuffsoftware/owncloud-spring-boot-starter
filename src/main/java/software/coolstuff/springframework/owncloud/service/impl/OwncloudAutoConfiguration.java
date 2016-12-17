@@ -33,8 +33,11 @@ import software.coolstuff.springframework.owncloud.service.api.OwncloudUserModif
 import software.coolstuff.springframework.owncloud.service.api.OwncloudUserQueryService;
 
 @Configuration
-@ConditionalOnClass({ RestTemplateBuilder.class, MappingJackson2XmlHttpMessageConverter.class,
-    FormHttpMessageConverter.class })
+@ConditionalOnClass({
+    RestTemplateBuilder.class,
+    MappingJackson2XmlHttpMessageConverter.class,
+    FormHttpMessageConverter.class
+})
 @ConditionalOnProperty(prefix = "owncloud", name = "location")
 @EnableConfigurationProperties(OwncloudProperties.class)
 public class OwncloudAutoConfiguration {

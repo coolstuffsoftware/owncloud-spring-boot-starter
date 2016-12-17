@@ -57,7 +57,6 @@ public abstract class AbstractOwncloudUserDetailsServiceWithAuthorityAppenderTes
     checkAuthorities(userDetails.getUsername(), userDetails.getAuthorities(), "group1", "group2", "group98", "group99");
   }
 
-  protected void prepareTestAppendedGroups(String username, boolean enable, String email, String displayName,
-      String... groups) throws Exception {}
+  protected void prepareTestAppendedGroups(String username, boolean enable, String email, String displayName, String... groups) throws Exception {}
 
 }

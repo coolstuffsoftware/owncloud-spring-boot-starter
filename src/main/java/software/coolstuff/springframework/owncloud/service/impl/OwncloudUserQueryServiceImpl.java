@@ -126,8 +126,7 @@ class OwncloudUserQueryServiceImpl extends AbstractOwncloudServiceImpl implement
         case 998:
           throw new OwncloudGroupNotFoundException(groupname);
         default:
-          throw new IllegalStateException(
-              "Unknown Error Code " + meta.getStatuscode() + ". Reason: " + meta.getMessage());
+          throw new IllegalStateException("Unknown Error Code " + meta.getStatuscode() + ". Reason: " + meta.getMessage());
       }
     }, groupname);
     return convertUsers(users);
@@ -140,8 +139,7 @@ class OwncloudUserQueryServiceImpl extends AbstractOwncloudServiceImpl implement
       return resourceService.getGroupsOfUser(username);
     }
 
-    Ocs.Groups ocsGroups = exchange("/cloud/users/{user}/groups", HttpMethod.GET, emptyEntity(), Ocs.Groups.class,
-        username);
+    Ocs.Groups ocsGroups = exchange("/cloud/users/{user}/groups", HttpMethod.GET, emptyEntity(), Ocs.Groups.class, username);
     return convertGroups(ocsGroups);
   }
 
@@ -153,8 +151,7 @@ class OwncloudUserQueryServiceImpl extends AbstractOwncloudServiceImpl implement
     }
 
     Ocs.User user = exchange("/cloud/users/{user}", HttpMethod.GET, emptyEntity(), Ocs.User.class, username);
-    Ocs.Groups groups = exchange("/cloud/users/{user}/groups", HttpMethod.GET, emptyEntity(), Ocs.Groups.class,
-        username);
+    Ocs.Groups groups = exchange("/cloud/users/{user}/groups", HttpMethod.GET, emptyEntity(), Ocs.Groups.class, username);
     return createUserDetails(username, user, groups);
   }
 

@@ -93,8 +93,7 @@ abstract class AbstractOwncloudServiceImpl implements InitializingBean {
     this(builder, addBasicAuthentication, new DefaultOwncloudResponseErrorHandler());
   }
 
-  protected AbstractOwncloudServiceImpl(RestTemplateBuilder builder, boolean addBasicAuthentication,
-      ResponseErrorHandler responseErrorHandler) {
+  protected AbstractOwncloudServiceImpl(RestTemplateBuilder builder, boolean addBasicAuthentication, ResponseErrorHandler responseErrorHandler) {
     this.restTemplateBuilder = builder;
     this.addBasicAuthentication = addBasicAuthentication;
     this.responseErrorHandler = responseErrorHandler;
@@ -120,13 +119,19 @@ abstract class AbstractOwncloudServiceImpl implements InitializingBean {
     }
 
     if (addBasicAuthentication && StringUtils.isNotBlank(properties.getUsername())) {
-      restTemplate = restTemplateBuilder.basicAuthorization(properties.getUsername(), properties.getPassword())
+      restTemplate = restTemplateBuilder
+          .basicAuthorization(properties.getUsername(), properties.getPassword())
           .messageConverters(mappingJackson2XmlHttpMessageConverter)
-          .additionalMessageConverters(formHttpMessageConverter).errorHandler(responseErrorHandler).rootUri(rootURI)
+          .additionalMessageConverters(formHttpMessageConverter)
+          .errorHandler(responseErrorHandler)
+          .rootUri(rootURI)
           .build();
     } else {
-      restTemplate = restTemplateBuilder.messageConverters(mappingJackson2XmlHttpMessageConverter)
-          .additionalMessageConverters(formHttpMessageConverter).errorHandler(responseErrorHandler).rootUri(rootURI)
+      restTemplate = restTemplateBuilder
+          .messageConverters(mappingJackson2XmlHttpMessageConverter)
+          .additionalMessageConverters(formHttpMessageConverter)
+          .errorHandler(responseErrorHandler)
+          .rootUri(rootURI)
           .build();
     }
 
@@ -162,8 +167,7 @@ abstract class AbstractOwncloudServiceImpl implements InitializingBean {
   protected HttpHeaders prepareHeadersWithBasicAuthorization() {
     if (isUseAdministratorCredentials()) {
       if (addBasicAuthentication) {
-        // Authentication Header will be added by
-        // RestTemplate.basicAuthorization()
+        // Authentication Header will be added by RestTemplate.basicAuthorization()
         // so we don't need to add any Authentication Headers
         return new HttpHeaders();
       }
@@ -171,8 +175,7 @@ abstract class AbstractOwncloudServiceImpl implements InitializingBean {
     }
 
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-    if (!(authentication instanceof OwncloudAuthentication)
-        && !(authentication instanceof UsernamePasswordAuthenticationToken)) {
+    if (!(authentication instanceof OwncloudAuthentication) && !(authentication instanceof UsernamePasswordAuthenticationToken)) {
       throw new OwncloudInvalidAuthenticationObjectException(authentication);
     }
 
@@ -193,13 +196,22 @@ abstract class AbstractOwncloudServiceImpl implements InitializingBean {
     return new HttpEntity<>(new LinkedMultiValueMap<>(data), headers);
   }
 
-  protected <T extends Ocs, ENTITY> T exchange(String url, HttpMethod method, HttpEntity<ENTITY> httpEntity,
-      Class<T> clazz, Object... urlVariables) throws OwncloudStatusException {
+  protected <T extends Ocs, ENTITY> T exchange(
+      String url,
+      HttpMethod method,
+      HttpEntity<ENTITY> httpEntity,
+      Class<T> clazz,
+      Object... urlVariables) throws OwncloudStatusException {
     return exchange(url, method, httpEntity, clazz, this::checkFailure, urlVariables);
   }
 
-  protected <T extends Ocs, ENTITY> T exchange(String url, HttpMethod method, HttpEntity<ENTITY> httpEntity,
-      Class<T> clazz, OwncloudResponseStatusChecker statusChecker, Object... urlVariables)
+  protected <T extends Ocs, ENTITY> T exchange(
+      String url,
+      HttpMethod method,
+      HttpEntity<ENTITY> httpEntity,
+      Class<T> clazz,
+      OwncloudResponseStatusChecker statusChecker,
+      Object... urlVariables)
       throws OwncloudStatusException {
     ResponseEntity<T> response = restTemplate.exchange(url, method, httpEntity, clazz, urlVariables);
     T result = response.getBody();
@@ -218,8 +230,7 @@ abstract class AbstractOwncloudServiceImpl implements InitializingBean {
       case 998:
         throw new UsernameNotFoundException(meta.getMessage());
       default:
-        throw new IllegalStateException(
-            "Unknown Error Code " + meta.getStatuscode() + ". Reason: " + meta.getMessage());
+        throw new IllegalStateException("Unknown Error Code " + meta.getStatuscode() + ". Reason: " + meta.getMessage());
     }
   }
 
@@ -233,13 +244,19 @@ abstract class AbstractOwncloudServiceImpl implements InitializingBean {
       }
     }
 
-    OwncloudUserDetails userDetails = OwncloudUserDetails.builder().username(username)
-        .enabled(user.getData().isEnabled()).displayName(user.getData().getDisplayname())
-        .email(user.getData().getEmail()).groups(groups).authorities(authorities).accountNonExpired(true)
-        .accountNonLocked(true).credentialsNonExpired(true).build();
+    OwncloudUserDetails userDetails = OwncloudUserDetails.builder()
+        .username(username)
+        .enabled(user.getData().isEnabled())
+        .displayName(user.getData().getDisplayname())
+        .email(user.getData().getEmail())
+        .groups(groups)
+        .authorities(authorities)
+        .accountNonExpired(true)
+        .accountNonLocked(true)
+        .credentialsNonExpired(true)
+        .build();
     if (owncloudGrantedAuthoritiesMapper != null) {
-      userDetails
-          .setAuthorities(owncloudGrantedAuthoritiesMapper.mapAuthorities(userDetails.getUsername(), authorities));
+      userDetails.setAuthorities(owncloudGrantedAuthoritiesMapper.mapAuthorities(userDetails.getUsername(), authorities));
     } else if (grantedAuthoritiesMapper != null) {
       userDetails.setAuthorities(grantedAuthoritiesMapper.mapAuthorities(authorities));
     }

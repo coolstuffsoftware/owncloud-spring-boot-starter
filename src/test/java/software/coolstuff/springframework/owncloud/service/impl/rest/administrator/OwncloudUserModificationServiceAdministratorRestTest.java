@@ -22,8 +22,7 @@ import org.springframework.test.context.ActiveProfiles;
 import software.coolstuff.springframework.owncloud.service.impl.AbstractOwncloudUserModificationServiceRestTest;
 
 @ActiveProfiles("ADMINISTRATOR-URL")
-public class OwncloudUserModificationServiceAdministratorRestTest
-    extends AbstractOwncloudUserModificationServiceRestTest {
+public class OwncloudUserModificationServiceAdministratorRestTest extends AbstractOwncloudUserModificationServiceRestTest {
 
   @Override
   public String getBasicAuthorizationHeader() {

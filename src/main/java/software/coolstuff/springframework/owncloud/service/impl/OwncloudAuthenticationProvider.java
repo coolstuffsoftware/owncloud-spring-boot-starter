@@ -65,8 +65,7 @@ public class OwncloudAuthenticationProvider extends AbstractOwncloudServiceImpl 
 
     OwncloudUserDetails owncloudUserDetails = null;
     if (isRestAvailable()) {
-      Ocs.User user = exchange("/cloud/users/{user}", HttpMethod.GET, emptyEntity(username, password), Ocs.User.class,
-          username);
+      Ocs.User user = exchange("/cloud/users/{user}", HttpMethod.GET, emptyEntity(username, password), Ocs.User.class, username);
       SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(username, password));
       owncloudUserDetails = userDetailsService.loadPreloadedUserByUsername(username, user);
     } else {
@@ -90,8 +89,7 @@ public class OwncloudAuthenticationProvider extends AbstractOwncloudServiceImpl 
 
   @Override
   public boolean supports(Class<?> authentication) {
-    return UsernamePasswordAuthenticationToken.class.isAssignableFrom(authentication)
-        || OwncloudAuthentication.class.isAssignableFrom(authentication);
+    return UsernamePasswordAuthenticationToken.class.isAssignableFrom(authentication) || OwncloudAuthentication.class.isAssignableFrom(authentication);
   }
 
   @NoArgsConstructor

@@ -27,11 +27,17 @@ public class OwncloudResourceServiceTest {
 
       @Override
       public void afterPropertiesSet() throws Exception {
-        checkGroupReferences(OwncloudResourceData.builder()
-            .user(OwncloudResourceData.User.builder().group(new OwncloudResourceData.Group("group1"))
-                .group(new OwncloudResourceData.Group("group2")).build())
-            .group(new OwncloudResourceData.Group("group1")).build());
+        checkGroupReferences(
+            OwncloudResourceData.builder()
+                .user(
+                    OwncloudResourceData.User.builder()
+                        .group(new OwncloudResourceData.Group("group1"))
+                        .group(new OwncloudResourceData.Group("group2"))
+                        .build())
+                .group(new OwncloudResourceData.Group("group1"))
+                .build());
       }
+
     };
     resourceService.afterPropertiesSet();
   }

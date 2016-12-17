@@ -27,8 +27,7 @@ import software.coolstuff.springframework.owncloud.service.impl.OwncloudServiceR
 import software.coolstuff.springframework.owncloud.service.impl.OwncloudUserDetailsService;
 
 @ActiveProfiles("AUTHORITY-MAPPER-URL")
-public class OwncloudUserDetailsServiceWithAuthorityMapperRestTest
-    extends AbstractOwncloudUserDetailsServiceWithAuthorityMapperTest implements OwncloudServiceRestTest {
+public class OwncloudUserDetailsServiceWithAuthorityMapperRestTest extends AbstractOwncloudUserDetailsServiceWithAuthorityMapperTest implements OwncloudServiceRestTest {
 
   @Autowired
   private OwncloudUserDetailsService userDetailsService;
@@ -44,9 +43,20 @@ public class OwncloudUserDetailsServiceWithAuthorityMapperRestTest
   }
 
   @Override
-  protected void prepareTestMappedGroups(String username, boolean enabled, String email, String displayName,
-      String... groups) throws Exception {
-    respondUser(RestRequest.builder().method(GET).url("/cloud/users/" + username).build(), enabled, email, displayName);
-    respondGroups(RestRequest.builder().method(GET).url("/cloud/users/" + username + "/groups").build(), groups);
+  protected void prepareTestMappedGroups(String username, boolean enabled, String email, String displayName, String... groups) throws Exception {
+    respondUser(
+        RestRequest.builder()
+            .method(GET)
+            .url("/cloud/users/" + username)
+            .build(),
+        enabled,
+        email,
+        displayName);
+    respondGroups(
+        RestRequest.builder()
+            .method(GET)
+            .url("/cloud/users/" + username + "/groups")
+            .build(),
+        groups);
   }
 }

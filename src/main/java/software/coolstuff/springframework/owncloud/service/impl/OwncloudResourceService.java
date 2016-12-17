@@ -62,12 +62,9 @@ import software.coolstuff.springframework.owncloud.properties.OwncloudProperties
 import software.coolstuff.springframework.owncloud.service.api.OwncloudGrantedAuthoritiesMapper;
 
 /**
- * If you define a URL prefixed with either <code>file:</code> or
- * <code>classpath:</code> this Class will be available as a Service.
+ * If you define a URL prefixed with either <code>file:</code> or <code>classpath:</code> this Class will be available as a Service.
  *
- * By instantiating this Class as a Bean the defined Resource will be parsed by
- * the Jackson XML Mapper and will be available in a Java-Structure of Type
- * {@link OwncloudResourceData}.
+ * By instantiating this Class as a Bean the defined Resource will be parsed by the Jackson XML Mapper and will be available in a Java-Structure of Type {@link OwncloudResourceData}.
  *
  * The defined Resource-File must have the following Structure:
  *
@@ -94,10 +91,8 @@ import software.coolstuff.springframework.owncloud.service.api.OwncloudGrantedAu
  * &lt;/owncloud&gt;
  * </pre>
  *
- * All Groups referenced by a User have to be defined in the
- * <code>groups</code>-Section. There will be an {@link IllegalStateException}
- * if there are any Groups referenced by a User which is not defined in the
- * <code>groups</code>-Section.
+ * All Groups referenced by a User have to be defined in the <code>groups</code>-Section. There will be an {@link IllegalStateException} if there are any Groups referenced by a User which is not
+ * defined in the <code>groups</code>-Section.
  *
  * Only for internal Usage.
  *
@@ -194,16 +189,14 @@ class OwncloudResourceService implements InitializingBean, DisposableBean {
   /**
    * Checks, if the defined Location is a Resource.
    * <p/>
-   * This will be done by checking, if the Location starts either with
-   * <code>file:</code> or <code>classpath</code>
+   * This will be done by checking, if the Location starts either with <code>file:</code> or <code>classpath</code>
    *
-   * @param location
-   *          Location to be checked
+   * @param location Location to be checked
    * @return
-   *         <ul>
-   *         <li>true ... Location is a Resource</li>
-   *         <li>false ... Location is possible a URL</li>
-   *         </ul>
+   * <ul>
+   *   <li>true ... Location is a Resource</li>
+   *   <li>false ... Location is possible a URL</li>
+   * </ul>
    */
   public static boolean isResourceInsteadOfUrl(String location) {
     return StringUtils.startsWith(location, "file:") || StringUtils.startsWith(location, "classpath:");
@@ -212,16 +205,14 @@ class OwncloudResourceService implements InitializingBean, DisposableBean {
   /**
    * Checks, if the defined Location is not a Resource.
    * <p/>
-   * This will be done by checking, if the Location starts either with
-   * <code>file:</code> or <code>classpath</code>
+   * This will be done by checking, if the Location starts either with <code>file:</code> or <code>classpath</code>
    *
-   * @param location
-   *          Location to be checked
+   * @param location Location to be checked
    * @return
-   *         <ul>
-   *         <li>true ... Location is possible a URL</li>
-   *         <li>false ... Location is a Resource</li>
-   *         </ul>
+   * <ul>
+   *   <li>true ... Location is possible a URL</li>
+   *   <li>false ... Location is a Resource</li>
+   * </ul>
    */
   public static boolean isNoResource(String location) {
     return !isResourceInsteadOfUrl(location);
@@ -230,19 +221,15 @@ class OwncloudResourceService implements InitializingBean, DisposableBean {
   /**
    * Checks, if the given Credentials are available in the Resource.
    * <p/>
-   * If either the User hasn't been found or an invalid Password has been given
-   * then the authentication is negative (returns <code>false</code>)
+   * If either the User hasn't been found or an invalid Password has been given then the authentication is negative (returns <code>false</code>)
    *
-   * @param username
-   *          Username
-   * @param password
-   *          Password
+   * @param username Username
+   * @param password Password
    * @return
-   *         <ul>
-   *         <li>true ... User found and the Password is correct</li>
-   *         <li>false ... either the User doesn&apos;t exist or the Password is
-   *         wrong</li>
-   *         </ul>
+   * <ul>
+   *   <li>true ... User found and the Password is correct</li>
+   *   <li>false ... either the User doesn&apos;t exist or the Password is wrong</li>
+   * </ul>
    */
   public boolean authenticate(String username, String password) {
     OwncloudResourceData.User user = users.get(username);
@@ -254,8 +241,7 @@ class OwncloudResourceService implements InitializingBean, DisposableBean {
    * <p/>
    * The Details will <strong>always</strong> be returned without a Password.
    *
-   * @param username
-   *          Username
+   * @param username Username
    * @return Details of the User
    */
   public OwncloudUserDetails getUser(String username) {
@@ -276,12 +262,16 @@ class OwncloudResourceService implements InitializingBean, DisposableBean {
       }
     }
 
-    OwncloudUserDetails userDetails = OwncloudUserDetails.builder().username(user.getUsername())
-        .enabled(user.isEnabled()).displayName(user.getDisplayName()).email(user.getEmail()).groups(groups)
-        .authorities(authorities).accountNonExpired(true).accountNonLocked(true).credentialsNonExpired(true).build();
+    OwncloudUserDetails userDetails = OwncloudUserDetails.builder()
+        .username(user.getUsername())
+        .enabled(user.isEnabled())
+        .displayName(user.getDisplayName())
+        .email(user.getEmail())
+        .groups(groups)
+        .authorities(authorities)
+        .build();
     if (owncloudGrantedAuthoritiesMapper != null) {
-      userDetails.setAuthorities(
-          owncloudGrantedAuthoritiesMapper.mapAuthorities(userDetails.getUsername(), userDetails.getAuthorities()));
+      userDetails.setAuthorities(owncloudGrantedAuthoritiesMapper.mapAuthorities(userDetails.getUsername(), userDetails.getAuthorities()));
     } else if (grantedAuthoritiesMapper != null) {
       userDetails.setAuthorities(grantedAuthoritiesMapper.mapAuthorities(authorities));
     }
@@ -293,8 +283,7 @@ class OwncloudResourceService implements InitializingBean, DisposableBean {
    * <p/>
    * The Search can be filtered
    *
-   * @param filter
-   *          Filter Criteria
+   * @param filter Filter Criteria
    * @return List of Users
    */
   public List<String> getAllUsers(String filter) {
@@ -312,8 +301,7 @@ class OwncloudResourceService implements InitializingBean, DisposableBean {
    * <p/>
    * The Search can be filtered.
    *
-   * @param filter
-   *          Filter Criteria
+   * @param filter Filter Criteria
    * @return List of Groups
    */
   public List<String> getAllGroups(String filter) {
@@ -329,8 +317,7 @@ class OwncloudResourceService implements InitializingBean, DisposableBean {
   /**
    * Get all Users which are member of a Group
    *
-   * @param groupname
-   *          Name of the Group
+   * @param groupname Name of the Group
    * @return List of Users
    */
   public List<String> getAllMembersOfGroup(String groupname) {
@@ -370,8 +357,7 @@ class OwncloudResourceService implements InitializingBean, DisposableBean {
   /**
    * Get all Groups of a User
    *
-   * @param username
-   *          Name of the User
+   * @param username Name of the User
    * @return List of Groups
    */
   public List<String> getGroupsOfUser(String username) {

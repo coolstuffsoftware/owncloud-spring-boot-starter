@@ -38,7 +38,6 @@ abstract class Ocs {
   @AllArgsConstructor(access = AccessLevel.PRIVATE)
   @Builder
   static class Meta {
-
     private String status;
     private int statuscode;
     private String message;
@@ -52,7 +51,6 @@ abstract class Ocs {
   @NoArgsConstructor
   @XmlRootElement(name = "ocs")
   static class Void extends Ocs {
-
     private String data;
 
     @Builder
@@ -76,7 +74,6 @@ abstract class Ocs {
       @NoArgsConstructor
       @AllArgsConstructor(access = AccessLevel.PACKAGE)
       static class Element {
-
         private String element;
       }
 
@@ -119,7 +116,6 @@ abstract class Ocs {
       @AllArgsConstructor(access = AccessLevel.PRIVATE)
       @Builder
       static class Quota {
-
         private Long free;
         private Long used;
         private Long total;
@@ -157,7 +153,6 @@ abstract class Ocs {
       @AllArgsConstructor(access = AccessLevel.PACKAGE)
       @Builder
       static class Group {
-
         private String group;
       }
 

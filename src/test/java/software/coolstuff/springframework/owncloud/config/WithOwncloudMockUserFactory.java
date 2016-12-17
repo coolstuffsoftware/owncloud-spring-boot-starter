@@ -30,12 +30,13 @@ public class WithOwncloudMockUserFactory implements WithSecurityContextFactory<W
 
   @Override
   public SecurityContext createSecurityContext(WithOwncloudMockUser withMockOwncloudUser) {
-    String username = StringUtils.isNotBlank(withMockOwncloudUser.username()) ? withMockOwncloudUser.username()
-        : withMockOwncloudUser.value();
+    String username = StringUtils.isNotBlank(withMockOwncloudUser.username()) ? withMockOwncloudUser.username() : withMockOwncloudUser.value();
     Validate.notBlank(username);
 
-    OwncloudUserDetails owncloudUserDetails = OwncloudUserDetails.builder().username(username)
-        .password(withMockOwncloudUser.password()).build();
+    OwncloudUserDetails owncloudUserDetails = OwncloudUserDetails.builder()
+        .username(username)
+        .password(withMockOwncloudUser.password())
+        .build();
 
     SecurityContext context = SecurityContextHolder.createEmptyContext();
     context.setAuthentication(new OwncloudAuthentication(owncloudUserDetails));

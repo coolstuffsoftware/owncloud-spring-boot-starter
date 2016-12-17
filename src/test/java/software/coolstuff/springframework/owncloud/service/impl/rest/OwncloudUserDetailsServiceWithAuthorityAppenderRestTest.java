@@ -27,8 +27,7 @@ import software.coolstuff.springframework.owncloud.service.impl.OwncloudServiceR
 import software.coolstuff.springframework.owncloud.service.impl.OwncloudUserDetailsService;
 
 @ActiveProfiles("AUTHORITY-APPENDER-URL")
-public class OwncloudUserDetailsServiceWithAuthorityAppenderRestTest
-    extends AbstractOwncloudUserDetailsServiceWithAuthorityAppenderTest implements OwncloudServiceRestTest {
+public class OwncloudUserDetailsServiceWithAuthorityAppenderRestTest extends AbstractOwncloudUserDetailsServiceWithAuthorityAppenderTest implements OwncloudServiceRestTest {
 
   @Autowired
   private OwncloudUserDetailsService userDetailsService;
@@ -44,9 +43,20 @@ public class OwncloudUserDetailsServiceWithAuthorityAppenderRestTest
   }
 
   @Override
-  protected void prepareTestAppendedGroups(String username, boolean enabled, String email, String displayName,
-      String... groups) throws Exception {
-    respondUser(RestRequest.builder().method(GET).url("/cloud/users/" + username).build(), enabled, email, displayName);
-    respondGroups(RestRequest.builder().method(GET).url("/cloud/users/" + username + "/groups").build(), groups);
+  protected void prepareTestAppendedGroups(String username, boolean enabled, String email, String displayName, String... groups) throws Exception {
+    respondUser(
+        RestRequest.builder()
+            .method(GET)
+            .url("/cloud/users/" + username)
+            .build(),
+        enabled,
+        email,
+        displayName);
+    respondGroups(
+        RestRequest.builder()
+            .method(GET)
+            .url("/cloud/users/" + username + "/groups")
+            .build(),
+        groups);
   }
 }

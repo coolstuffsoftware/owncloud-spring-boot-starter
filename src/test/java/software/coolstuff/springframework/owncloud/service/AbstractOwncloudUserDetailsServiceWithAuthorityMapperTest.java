@@ -57,7 +57,6 @@ public abstract class AbstractOwncloudUserDetailsServiceWithAuthorityMapperTest 
     checkAuthorities(userDetails.getUsername(), userDetails.getAuthorities(), "group1", "group2");
   }
 
-  protected void prepareTestMappedGroups(String username, boolean enable, String email, String displayName,
-      String... groups) throws Exception {}
+  protected void prepareTestMappedGroups(String username, boolean enable, String email, String displayName, String... groups) throws Exception {}
 
 }

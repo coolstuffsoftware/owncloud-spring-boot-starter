@@ -161,8 +161,12 @@ public abstract class AbstractOwncloudUserQueryServiceTest extends AbstractOwncl
   @Test
   @WithOwncloudMockUser(username = "user1", password = "password")
   public void testFindOneUser_OK() throws Exception {
-    OwncloudUserDetails expectedUser = OwncloudUserDetails.builder().username("user1").enabled(true)
-        .email("user1@example.com").displayName("Mr. User 1").build();
+    OwncloudUserDetails expectedUser = OwncloudUserDetails.builder()
+        .username("user1")
+        .enabled(true)
+        .email("user1@example.com")
+        .displayName("Mr. User 1")
+        .build();
     prepareTestFindOneUser_OK(expectedUser, "group1", "group2");
 
     OwncloudUserDetails actualUser = userQueryService.findOneUser("user1");

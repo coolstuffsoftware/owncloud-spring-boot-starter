@@ -60,8 +60,7 @@ public abstract class AbstractOwncloudUserDetailsServiceTest extends AbstractOwn
     Assert.assertEquals("user1@example.com", owncloudUserDetails.getEmail());
   }
 
-  protected void prepareTestUserDetails_OK(String user, boolean enabled, String email, String displayName,
-      String... groups) throws Exception {}
+  protected void prepareTestUserDetails_OK(String user, boolean enabled, String email, String displayName, String... groups) throws Exception {}
 
   @Test(expected = UsernameNotFoundException.class)
   @WithOwncloudMockUser(username = "user1", password = "password")

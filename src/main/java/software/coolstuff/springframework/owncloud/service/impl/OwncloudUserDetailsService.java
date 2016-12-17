@@ -48,10 +48,8 @@ public class OwncloudUserDetailsService extends AbstractOwncloudServiceImpl impl
     return loadUserByUsernameFromResourceService(username);
   }
 
-  OwncloudUserDetails loadPreloadedUserByUsername(String username, Ocs.User preloadedUser)
-      throws UsernameNotFoundException {
-    Ocs.Groups groups = exchange("/cloud/users/{user}/groups", HttpMethod.GET, emptyEntity(), Ocs.Groups.class,
-        username);
+  OwncloudUserDetails loadPreloadedUserByUsername(String username, Ocs.User preloadedUser) throws UsernameNotFoundException {
+    Ocs.Groups groups = exchange("/cloud/users/{user}/groups", HttpMethod.GET, emptyEntity(), Ocs.Groups.class, username);
     return createUserDetails(username, preloadedUser, groups);
   }
 
