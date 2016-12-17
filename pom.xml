@@ -24,6 +24,7 @@
     <commons-collections4.version>4.1</commons-collections4.version>
     <commons-vfs.version>2.1</commons-vfs.version>
     <xmlunit.version>2.3.0</xmlunit.version>
+    <lombok-plugin.version>1.16.12.0</lombok-plugin.version>
   </properties>
 
   <scm>
@@ -187,6 +188,21 @@
   <build>
     <pluginManagement>
       <plugins>
+        <plugin>
+          <artifactId>maven-javadoc-plugin</artifactId>
+          <version>2.10.4</version>
+          <configuration>
+            <author>false</author>
+          </configuration>
+        </plugin>
+
+        <!-- Lombok -->
+        <plugin>
+          <groupId>org.projectlombok</groupId>
+          <artifactId>lombok-maven-plugin</artifactId>
+          <version>${lombok-plugin.version}</version>
+        </plugin>
+
         <!-- JaCoCo -->
         <plugin>
           <groupId>org.jacoco</groupId>
@@ -250,7 +266,6 @@
 
       <plugin>
         <artifactId>maven-javadoc-plugin</artifactId>
-        <version>2.10.4</version>
       </plugin>
 
       <plugin>
@@ -261,6 +276,21 @@
           <downloadSources>true</downloadSources>
           <downloadJavadocs>true</downloadJavadocs>
         </configuration>
+      </plugin>
+
+      <!-- Lombok -->
+      <plugin>
+        <groupId>org.projectlombok</groupId>
+        <artifactId>lombok-maven-plugin</artifactId>
+<!--         <executions> -->
+<!--           <execution> -->
+<!--             <id>delombok</id> -->
+<!--             <phase>generate-sources</phase> -->
+<!--             <goals> -->
+<!--               <goal>delombok</goal> -->
+<!--             </goals> -->
+<!--           </execution> -->
+<!--         </executions> -->
       </plugin>
 
       <!-- JaCoCo -->
@@ -291,8 +321,7 @@
   <reporting>
     <plugins>
       <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>cobertura-maven-plugin</artifactId>
+        <artifactId>maven-javadoc-plugin</artifactId>
       </plugin>
     </plugins>
   </reporting>

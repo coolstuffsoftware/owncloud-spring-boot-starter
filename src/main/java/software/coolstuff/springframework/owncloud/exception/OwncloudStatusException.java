@@ -17,9 +17,6 @@
 */
 package software.coolstuff.springframework.owncloud.exception;
 
-import lombok.NoArgsConstructor;
-
-@NoArgsConstructor
 public abstract class OwncloudStatusException extends RuntimeException {
 
   private static final long serialVersionUID = -3354624827447206574L;

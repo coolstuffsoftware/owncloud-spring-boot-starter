@@ -28,7 +28,7 @@ import software.coolstuff.springframework.owncloud.service.impl.resource.file.Ow
 
 /**
  * By setting this Annotation on a Method it will be invoked by
- * {@link AbstractOwncloudResourceTest#tearDown()} right after the TestMethod
+ * <code>AbstractOwncloudResourceTest.tearDown()</code> right after the TestMethod
  * configured by {@link #value()} and after the changed Resource has been
  * written to the Disk.
  *
@@ -36,7 +36,6 @@ import software.coolstuff.springframework.owncloud.service.impl.resource.file.Ow
  * {@link OwncloudFileResourceTest}
  *
  * @author mufasa1976@coolstuff.software
- * @see AbstractOwncloudResourceTest#tearDown()
  * @see OwncloudFileResourceTest
  *
  */
@@ -47,8 +46,7 @@ import software.coolstuff.springframework.owncloud.service.impl.resource.file.Ow
 public @interface CompareResourceAfter {
 
   /**
-   * Method Name after this Comparsion of the Input Resource with the written
-   * Resource should be started
+   * @return Method Name after this Comparsion of the Input Resource with the written Resource should be started
    */
   String value() default "";
 

@@ -30,8 +30,11 @@ public class OwncloudInvalidAuthenticationObjectException extends Authentication
   private static final long serialVersionUID = -3421422373807935754L;
 
   public OwncloudInvalidAuthenticationObjectException(Authentication authentication) {
-    super("Authentication is not of type " + OwncloudAuthentication.class.getSimpleName() + ". Instead it is of Type "
-        + (authentication == null ? "null" : authentication.getClass().getSimpleName()));
+    super(
+        "Authentication is not of type " +
+            OwncloudAuthentication.class.getSimpleName() +
+            ". Instead it is of Type " +
+            (authentication == null ? "null" : authentication.getClass().getSimpleName()));
   }
 
 }

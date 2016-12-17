@@ -47,13 +47,9 @@ import software.coolstuff.springframework.owncloud.service.impl.resource.file.Ow
 /**
  * This Test-Execution Listener prepares the Tests for Resources prefixed with
  * <code>file:</code> because these Resources will also be written on Disk just
- * before the Bean
- * {@link software.coolstuff.springframework.owncloud.service.impl.OwncloudResourceService}
- * will be destroyed.
+ * before the Bean <code>OwncloudResourceService</code> will be destroyed.
  *
- * @author mufasa1976@coolstuff.software
- * @see software.coolstuff.springframework.owncloud.service.impl.OwncloudResourceService
- *
+ * @author mufasa1976
  */
 @Slf4j
 public class OwncloudFileResourceTestExecutionListener extends AbstractTestExecutionListener {
