@@ -1,7 +1,8 @@
 # owncloud-spring-boot-starter
 Spring Owncloud Services and AuthenticationProvider (with UserDetailsService)
 
-[![Build Status](https://travis-ci.org/coolstuffsoftware/owncloud-spring-boot-starter.svg?branch=master)](https://travis-ci.org/coolstuffsoftware/owncloud-spring-boot-starter)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/software.coolstuff/owncloud-spring-boot-starter/badge.png)]https://maven-badges.herokuapp.com/maven-central/software.coolstuff/owncloud-spring-boot-starter)
+[![Travis](https://travis-ci.org/coolstuffsoftware/owncloud-spring-boot-starter.svg?branch=master)](https://travis-ci.org/coolstuffsoftware/owncloud-spring-boot-starter)
 
 ## Audience
 This Project aims at Developers who wants to enable their SpringBoot Application to be authenticated against an Owncloud Instance and use the Owncloud Provisioning API and the Share API.
