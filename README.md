@@ -1,7 +1,7 @@
 # owncloud-spring-boot-starter
 Spring Owncloud Services and AuthenticationProvider (with UserDetailsService)
 
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/software.coolstuff/owncloud-spring-boot-starter/badge.png)]https://maven-badges.herokuapp.com/maven-central/software.coolstuff/owncloud-spring-boot-starter)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/software.coolstuff/owncloud-spring-boot-starter/badge.png)](https://maven-badges.herokuapp.com/maven-central/software.coolstuff/owncloud-spring-boot-starter)
 [![Travis](https://travis-ci.org/coolstuffsoftware/owncloud-spring-boot-starter.svg?branch=master)](https://travis-ci.org/coolstuffsoftware/owncloud-spring-boot-starter)
 
 ## Audience
