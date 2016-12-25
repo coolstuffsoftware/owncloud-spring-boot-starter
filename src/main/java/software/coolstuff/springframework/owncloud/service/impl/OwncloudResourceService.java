@@ -35,11 +35,14 @@ import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.converter.xml.MappingJackson2XmlHttpMessageConverter;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.SpringSecurityMessageSource;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -117,6 +120,8 @@ class OwncloudResourceService implements InitializingBean, DisposableBean {
 
   @Autowired
   private MappingJackson2XmlHttpMessageConverter messageConverter;
+
+  private MessageSourceAccessor messages = SpringSecurityMessageSource.getAccessor();
 
   private Map<String, OwncloudResourceData.User> users = new HashMap<>();
   private Map<String, OwncloudResourceData.Group> groups = new HashMap<>();
@@ -233,6 +238,9 @@ class OwncloudResourceService implements InitializingBean, DisposableBean {
    */
   public boolean authenticate(String username, String password) {
     OwncloudResourceData.User user = users.get(username);
+    if (user == null) {
+      throw new BadCredentialsException(messages.getMessage("AbstractUserDetailsAuthenticationProvider.badCredentials", "Bad Credentials"));
+    }
     return StringUtils.equals(password, user.getPassword());
   }
 

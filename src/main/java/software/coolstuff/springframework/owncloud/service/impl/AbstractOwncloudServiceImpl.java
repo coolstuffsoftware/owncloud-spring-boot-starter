@@ -31,6 +31,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -42,6 +43,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.SpringSecurityMessageSource;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -65,6 +67,8 @@ abstract class AbstractOwncloudServiceImpl {
   private final RestTemplateBuilder restTemplateBuilder;
   private final boolean addBasicAuthentication;
   private final ResponseErrorHandler responseErrorHandler;
+
+  protected MessageSourceAccessor messages = SpringSecurityMessageSource.getAccessor();
 
   private RestTemplate restTemplate;
 
@@ -91,7 +95,7 @@ abstract class AbstractOwncloudServiceImpl {
   }
 
   protected AbstractOwncloudServiceImpl(RestTemplateBuilder builder, boolean addBasicAuthentication) {
-    this(builder, addBasicAuthentication, new DefaultOwncloudResponseErrorHandler());
+    this(builder, addBasicAuthentication, new DefaultOwncloudResponseErrorHandler(SpringSecurityMessageSource.getAccessor()));
   }
 
   protected AbstractOwncloudServiceImpl(RestTemplateBuilder builder, boolean addBasicAuthentication, ResponseErrorHandler responseErrorHandler) {

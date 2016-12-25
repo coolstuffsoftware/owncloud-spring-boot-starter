@@ -33,7 +33,6 @@ import lombok.Data;
 import software.coolstuff.springframework.owncloud.config.WithOwncloudMockUser;
 import software.coolstuff.springframework.owncloud.model.OwncloudAuthentication;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
-import software.coolstuff.springframework.owncloud.service.impl.OwncloudAuthenticationProvider;
 
 @RestClientTest(OwncloudAuthenticationProvider.class)
 public abstract class AbstractOwncloudAuthenticationProviderTest extends AbstractOwncloudServiceTest {
@@ -111,6 +110,20 @@ public abstract class AbstractOwncloudAuthenticationProviderTest extends Abstrac
 
     authenticationProvider.authenticate(credentials.getUsernamePasswordAuthenticationToken());
   }
+
+  @Test(expected = BadCredentialsException.class)
+  public void testAuthentication_NOK_UsernameNotFoundException() throws Exception {
+    Credentials credentials = Credentials.builder()
+        .username("unknown")
+        .password("s3cr3t")
+        .build();
+
+    prepareTestAuthentication_NOK_UsernameNotFoundException(credentials);
+
+    authenticationProvider.authenticate(credentials.getUsernamePasswordAuthenticationToken());
+  }
+
+  protected void prepareTestAuthentication_NOK_UsernameNotFoundException(Credentials credentials) throws Exception {}
 
   @Data
   @Builder

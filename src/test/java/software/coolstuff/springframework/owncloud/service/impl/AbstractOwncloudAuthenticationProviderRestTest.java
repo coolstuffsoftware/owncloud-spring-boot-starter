@@ -73,6 +73,17 @@ public abstract class AbstractOwncloudAuthenticationProviderRestTest extends Abs
         HttpStatus.UNAUTHORIZED);
   }
 
+  @Override
+  protected void prepareTestAuthentication_NOK_UsernameNotFoundException(Credentials credentials) throws Exception {
+    respondFailure(
+        RestRequest.builder()
+            .method(GET)
+            .url("/cloud/users/" + credentials.getUsername())
+            .basicAuthentication(credentials.getBasicAuthorizationHeader())
+            .build(),
+        998);
+  }
+
   @Test(expected = HttpStatusCodeException.class)
   public void test404NotFound() throws Exception {
     Credentials credentials = Credentials.builder()

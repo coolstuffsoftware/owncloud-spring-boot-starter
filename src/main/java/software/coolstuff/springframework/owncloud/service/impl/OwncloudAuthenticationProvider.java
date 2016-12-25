@@ -22,6 +22,7 @@ import java.io.IOException;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.client.ClientHttpResponse;
@@ -30,9 +31,9 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.SpringSecurityMessageSource;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-import lombok.NoArgsConstructor;
 import software.coolstuff.springframework.owncloud.exception.OwncloudStatusException;
 import software.coolstuff.springframework.owncloud.model.OwncloudAuthentication;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
@@ -46,18 +47,18 @@ class OwncloudAuthenticationProvider extends AbstractOwncloudServiceImpl impleme
   private OwncloudResourceService resourceService;
 
   public OwncloudAuthenticationProvider(RestTemplateBuilder builder) {
-    super(builder, false, new OwncloudAuthenticationProviderResponseErrorHandler());
+    super(builder, false, new OwncloudAuthenticationProviderResponseErrorHandler(SpringSecurityMessageSource.getAccessor()));
   }
 
   @Override
   public Authentication authenticate(Authentication authentication) throws AuthenticationException {
 
     if (StringUtils.isBlank(authentication.getName())) {
-      throw new BadCredentialsException("empty username");
+      throw new BadCredentialsException(messages.getMessage("AbstractUserDetailsAuthenticationProvider.badCredentials", "Bad Credentials"));
     }
 
     if (authentication.getCredentials() == null) {
-      throw new BadCredentialsException("empty password");
+      throw new BadCredentialsException(messages.getMessage("AbstractUserDetailsAuthenticationProvider.badCredentials", "Bad Credentials"));
     }
 
     String username = authentication.getName();
@@ -70,7 +71,7 @@ class OwncloudAuthenticationProvider extends AbstractOwncloudServiceImpl impleme
       owncloudUserDetails = userDetailsService.loadPreloadedUserByUsername(username, user);
     } else {
       if (!resourceService.authenticate(username, password)) {
-        throw new BadCredentialsException("wrong password or user not found");
+        throw new BadCredentialsException(messages.getMessage("AbstractUserDetailsAuthenticationProvider.badCredentials", "Bad Credentials"));
       }
       owncloudUserDetails = userDetailsService.loadUserByUsernameFromResourceService(username);
     }
@@ -84,7 +85,7 @@ class OwncloudAuthenticationProvider extends AbstractOwncloudServiceImpl impleme
     if ("ok".equals(metaInformation.getStatus())) {
       return;
     }
-    throw new BadCredentialsException(metaInformation.getMessage());
+    throw new BadCredentialsException(messages.getMessage("AbstractUserDetailsAuthenticationProvider.badCredentials", "Bad Credentials"));
   }
 
   @Override
@@ -92,14 +93,17 @@ class OwncloudAuthenticationProvider extends AbstractOwncloudServiceImpl impleme
     return UsernamePasswordAuthenticationToken.class.isAssignableFrom(authentication) || OwncloudAuthentication.class.isAssignableFrom(authentication);
   }
 
-  @NoArgsConstructor
   private static class OwncloudAuthenticationProviderResponseErrorHandler extends DefaultOwncloudResponseErrorHandler {
+
+    public OwncloudAuthenticationProviderResponseErrorHandler(MessageSourceAccessor messages) {
+      super(messages);
+    }
 
     @Override
     public void handleError(ClientHttpResponse response) throws IOException {
       HttpStatus statusCode = response.getStatusCode();
       if (HttpStatus.UNAUTHORIZED.compareTo(statusCode) == 0) {
-        throw new BadCredentialsException("User not found or wrong password");
+        throw new BadCredentialsException(messages.getMessage("AbstractUserDetailsAuthenticationProvider.badCredentials", "Bad Credentials"));
       }
       super.handleError(response);
     }

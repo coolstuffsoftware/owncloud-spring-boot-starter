@@ -19,24 +19,28 @@ package software.coolstuff.springframework.owncloud.service.impl;
 
 import java.io.IOException;
 
+import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.client.DefaultResponseErrorHandler;
 
-import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-@NoArgsConstructor
+@RequiredArgsConstructor
 @Slf4j
 class DefaultOwncloudResponseErrorHandler extends DefaultResponseErrorHandler {
+
+  protected final MessageSourceAccessor messages;
 
   @Override
   public void handleError(ClientHttpResponse response) throws IOException {
     try {
       HttpStatus statusCode = response.getStatusCode();
       if (HttpStatus.UNAUTHORIZED.compareTo(statusCode) == 0) {
-        throw new BadCredentialsException(statusCode.getReasonPhrase());
+        log.warn(response.getStatusText());
+        throw new BadCredentialsException(messages.getMessage("AbstractUserDetailsAuthenticationProvider.badCredentials", "Bad Credentials"));
       }
       super.handleError(response);
     } catch (BadCredentialsException notLogged) {
