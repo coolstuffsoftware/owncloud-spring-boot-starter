@@ -8,7 +8,7 @@ Spring Owncloud Services and AuthenticationProvider (with UserDetailsService)
 ## Audience
 This Project aims at Developers who wants to enable their SpringBoot Application to be authenticated against an Owncloud Instance and use the Owncloud Provisioning API and the Share API.
 
-## Usage
+## Short Usage
 ### Maven
 Add the following Dependency to your ``pom.xml``:
 ```xml
@@ -47,12 +47,5 @@ public class MyWebSecurityConfigurerAdapter extends WebSecurityConfigurerAdapter
 }
 ```
 
-## Services
-### OwncloudAuthenticationProvider
-This autoconfigured Service implements the ``AuthenticationProvider`` Interface.
-It is used to authenticate a User against an Owncloud Instance.
-An successfully authenticated Owncloud User will be saved as an ``Authentication`` Object within the ``SecurityContext``.
-### OwncloudUserDetailsService
-This autoconfigured Service implements the ``UserDetailsService`` Interface.
-It is used to retrieve the ``UserDetails`` (Display-Name, eMail, Groups) from the Owncloud Instance.
-This Information is then saved as the ``Principal`` Information within the ``Authentication`` Object.
+## Documentation
+Further Documentation can be found [here](https://coolstuffsoftware.github.io/owncloud-spring-boot-starter)
