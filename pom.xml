@@ -28,6 +28,10 @@
     <commons-vfs.version>2.1</commons-vfs.version>
     <xmlunit.version>2.3.0</xmlunit.version>
     <lombok-plugin.version>1.16.12.0</lombok-plugin.version>
+    
+    <!-- Javadoc Properties -->
+    <author>false</author>
+    <show>public</show>
   </properties>
 
   <scm>
@@ -238,11 +242,6 @@
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.6.0</version>
-        <configuration>
-          <source>${maven.compiler.source}</source>
-          <target>${maven.compiler.target}</target>
-          <encoding>${project.build.sourceEncoding}</encoding>
-        </configuration>
       </plugin>
 
       <plugin>
@@ -267,7 +266,6 @@
         <artifactId>maven-javadoc-plugin</artifactId>
         <version>2.10.4</version>
         <configuration>
-          <author>false</author>
           <sourcepath>${project.build.directory}/generated-sources/delombok</sourcepath>
         </configuration>
       </plugin>
