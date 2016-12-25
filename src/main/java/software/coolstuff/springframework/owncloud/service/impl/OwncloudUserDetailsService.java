@@ -27,7 +27,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
 
-public class OwncloudUserDetailsService extends AbstractOwncloudServiceImpl implements UserDetailsService {
+class OwncloudUserDetailsService extends AbstractOwncloudServiceImpl implements UserDetailsService {
 
   @Autowired(required = false)
   private OwncloudResourceService resourceService;

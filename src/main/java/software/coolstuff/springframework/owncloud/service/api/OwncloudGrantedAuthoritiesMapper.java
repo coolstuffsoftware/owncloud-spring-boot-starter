@@ -23,7 +23,6 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
 
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
-import software.coolstuff.springframework.owncloud.service.impl.OwncloudUserDetailsService;
 
 /**
  * An Implementation of this Interface can be seen as an Alternative to {@link GrantedAuthoritiesMapper}.
@@ -63,8 +62,6 @@ import software.coolstuff.springframework.owncloud.service.impl.OwncloudUserDeta
  * {@link OwncloudUserDetails} Object returned by the {@link OwncloudUserDetailsService#loadUserByUsername(String)}
  *
  * @author mufasa1976
- * @see OwncloudUserDetailsService#loadUserByUsername(String)
- * @see OwncloudUserDetails
  * @see GrantedAuthoritiesMapper
  */
 @FunctionalInterface

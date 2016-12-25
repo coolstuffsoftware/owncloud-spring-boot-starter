@@ -17,17 +17,55 @@
 */
 package software.coolstuff.springframework.owncloud.service.api;
 
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+
+import software.coolstuff.springframework.owncloud.exception.OwncloudGroupAlreadyExistsException;
+import software.coolstuff.springframework.owncloud.exception.OwncloudGroupNotFoundException;
+import software.coolstuff.springframework.owncloud.exception.OwncloudUsernameAlreadyExistsException;
 import software.coolstuff.springframework.owncloud.model.OwncloudModificationUser;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
+import software.coolstuff.springframework.owncloud.properties.OwncloudProperties;
 
+/**
+ * Modify Information of Users and Groups on the Owncloud Server.
+ *
+ * @author mufasa1976
+ */
 public interface OwncloudUserModificationService {
 
+  /**
+   * Create a new User or Update User Details.
+   * @param userDetails User Details to be saved
+   * @return saved User Details
+   * @throws AccessDeniedException either Modifications are not allowed {@link OwncloudProperties#isEnableModifications()} or neither an Administrator nor the Owner
+   * @throws OwncloudUsernameAlreadyExistsException the User already exists (minimal chance to get this Exception)
+   * @throws OwncloudGroupNotFoundException referenced Group doesn&apos;t exist (either while adding or removing Membership)
+   */
   OwncloudUserDetails saveUser(OwncloudModificationUser userDetails);
 
+  /**
+   * Remove a User.
+   * @param username Name of the User to be removed
+   * @throws AccessDeniedException either Modifications are not allowed {@link OwncloudProperties#isEnableModifications()} or neither an Administrator nor the Owner
+   * @throws UsernameNotFoundException the User doesn&apos;t exist anymore
+   */
   void deleteUser(String username);
 
+  /**
+   * Create a new Group.
+   * @param groupname Name of the new Group
+   * @throws AccessDeniedException either Modifications are not allowed {@link OwncloudProperties#isEnableModifications()} or not an Administrator
+   * @throws OwncloudGroupAlreadyExistsException Group already exists
+   */
   void createGroup(String groupname);
 
+  /**
+   * Remove an existing Group.
+   * @param groupname Name of the Group to be removed
+   * @throws AccessDeniedException either Modifications are not allowed {@link OwncloudProperties#isEnableModifications()} or not an Administrator
+   * @throws OwncloudGroupNotFoundException Group doesn&apos;t exist anymore
+   */
   void deleteGroup(String groupname);
 
 }

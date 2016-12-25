@@ -15,48 +15,45 @@
    along with this program; if not, write to the Free Software Foundation,
    Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 */
-package software.coolstuff.springframework.owncloud.service.impl.rest;
+package software.coolstuff.springframework.owncloud.service.impl;
 
 import static org.springframework.http.HttpMethod.GET;
 
+import java.io.IOException;
+import java.net.MalformedURLException;
+
+import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.test.context.ActiveProfiles;
 
-import software.coolstuff.springframework.owncloud.service.AbstractOwncloudUserDetailsServiceWithAuthorityMapperTest;
-import software.coolstuff.springframework.owncloud.service.impl.OwncloudServiceRestTest;
+import software.coolstuff.springframework.owncloud.exception.OwncloudInvalidAuthenticationObjectException;
 import software.coolstuff.springframework.owncloud.service.impl.OwncloudUserDetailsService;
 
-@ActiveProfiles("AUTHORITY-MAPPER-URL")
-public class OwncloudUserDetailsServiceWithAuthorityMapperRestTest extends AbstractOwncloudUserDetailsServiceWithAuthorityMapperTest implements OwncloudServiceRestTest {
+@ActiveProfiles("AUTHENTICATED-USER-URL")
+public class OwncloudUserDetailsServiceAuthenticatedUserRestTest extends AbstractOwncloudUserDetailsServiceRestTest {
 
   @Autowired
   private OwncloudUserDetailsService userDetailsService;
 
   @Override
-  public OwncloudUserDetailsService owncloudService() {
-    return userDetailsService;
-  }
-
-  @Override
-  public String getBasicAuthorizationHeader() {
+  public final String getBasicAuthorizationHeader() {
     return getSecurityContextBasicAuthorizationHeader();
   }
 
-  @Override
-  protected void prepareTestMappedGroups(String username, boolean enabled, String email, String displayName, String... groups) throws Exception {
+  @Test(expected = OwncloudInvalidAuthenticationObjectException.class)
+  @WithAnonymousUser
+  public void testUserDetails_WrongAuthenticationObject() throws MalformedURLException, IOException {
     respondUser(
         RestRequest.builder()
             .method(GET)
-            .url("/cloud/users/" + username)
+            .url("/cloud/user/user1")
             .build(),
-        enabled,
-        email,
-        displayName);
-    respondGroups(
-        RestRequest.builder()
-            .method(GET)
-            .url("/cloud/users/" + username + "/groups")
-            .build(),
-        groups);
+        true,
+        "user1@example.com",
+        "Mr. User 1");
+
+    userDetailsService.loadUserByUsername("user1");
   }
+
 }

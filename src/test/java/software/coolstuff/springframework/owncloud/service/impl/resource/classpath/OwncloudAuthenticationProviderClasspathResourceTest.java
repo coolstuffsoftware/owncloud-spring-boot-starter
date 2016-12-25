@@ -19,7 +19,7 @@ package software.coolstuff.springframework.owncloud.service.impl.resource.classp
 
 import org.springframework.test.context.ActiveProfiles;
 
-import software.coolstuff.springframework.owncloud.service.AbstractOwncloudAuthenticationProviderTest;
+import software.coolstuff.springframework.owncloud.service.impl.AbstractOwncloudAuthenticationProviderTest;
 
 @ActiveProfiles("CLASSPATH-RESOURCE")
 public class OwncloudAuthenticationProviderClasspathResourceTest extends AbstractOwncloudAuthenticationProviderTest {

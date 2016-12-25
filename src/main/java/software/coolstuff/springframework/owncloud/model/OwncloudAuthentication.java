@@ -25,10 +25,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 
 import lombok.RequiredArgsConstructor;
-import software.coolstuff.springframework.owncloud.service.impl.OwncloudAuthenticationProvider;
 
 /**
- * Authentication Object which will be returned by {@link OwncloudAuthenticationProvider#authenticate(Authentication)}.
+ * Authentication Object which will be returned by <code>OwncloudAuthenticationProvider.authenticate(Authentication)</code>.
  *
  * @author mufasa1976
  */

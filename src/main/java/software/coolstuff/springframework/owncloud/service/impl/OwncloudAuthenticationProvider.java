@@ -37,7 +37,7 @@ import software.coolstuff.springframework.owncloud.exception.OwncloudStatusExcep
 import software.coolstuff.springframework.owncloud.model.OwncloudAuthentication;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
 
-public class OwncloudAuthenticationProvider extends AbstractOwncloudServiceImpl implements AuthenticationProvider {
+class OwncloudAuthenticationProvider extends AbstractOwncloudServiceImpl implements AuthenticationProvider {
 
   @Autowired
   private OwncloudUserDetailsService userDetailsService;

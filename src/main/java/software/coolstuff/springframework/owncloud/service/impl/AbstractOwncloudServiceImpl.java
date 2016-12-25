@@ -25,9 +25,10 @@ import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.PostConstruct;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
@@ -57,7 +58,7 @@ import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
 import software.coolstuff.springframework.owncloud.properties.OwncloudProperties;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudGrantedAuthoritiesMapper;
 
-abstract class AbstractOwncloudServiceImpl implements InitializingBean {
+abstract class AbstractOwncloudServiceImpl {
 
   final static String DEFAULT_PATH = "/ocs/v1.php";
 
@@ -99,8 +100,8 @@ abstract class AbstractOwncloudServiceImpl implements InitializingBean {
     this.responseErrorHandler = responseErrorHandler;
   }
 
-  @Override
-  public void afterPropertiesSet() throws Exception {
+  @PostConstruct
+  protected void afterPropertiesSet() throws Exception {
     Validate.notBlank(properties.getLocation());
 
     if (OwncloudResourceService.isNoResource(properties.getLocation())) {

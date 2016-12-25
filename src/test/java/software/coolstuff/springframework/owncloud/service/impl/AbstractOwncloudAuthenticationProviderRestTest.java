@@ -28,8 +28,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.client.HttpStatusCodeException;
 
-import software.coolstuff.springframework.owncloud.service.AbstractOwncloudAuthenticationProviderTest;
-
 public abstract class AbstractOwncloudAuthenticationProviderRestTest extends AbstractOwncloudAuthenticationProviderTest
     implements OwncloudServiceRestTest {
 

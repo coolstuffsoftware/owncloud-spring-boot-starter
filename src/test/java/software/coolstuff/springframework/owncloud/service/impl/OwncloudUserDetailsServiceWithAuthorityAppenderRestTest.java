@@ -15,46 +15,46 @@
    along with this program; if not, write to the Free Software Foundation,
    Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 */
-package software.coolstuff.springframework.owncloud.service.impl.rest.authenticateduser;
+package software.coolstuff.springframework.owncloud.service.impl;
 
 import static org.springframework.http.HttpMethod.GET;
 
-import java.io.IOException;
-import java.net.MalformedURLException;
-
-import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.test.context.ActiveProfiles;
 
-import software.coolstuff.springframework.owncloud.exception.OwncloudInvalidAuthenticationObjectException;
-import software.coolstuff.springframework.owncloud.service.impl.AbstractOwncloudUserDetailsServiceRestTest;
 import software.coolstuff.springframework.owncloud.service.impl.OwncloudUserDetailsService;
 
-@ActiveProfiles("AUTHENTICATED-USER-URL")
-public class OwncloudUserDetailsServiceAuthenticatedUserRestTest extends AbstractOwncloudUserDetailsServiceRestTest {
+@ActiveProfiles("AUTHORITY-APPENDER-URL")
+public class OwncloudUserDetailsServiceWithAuthorityAppenderRestTest extends AbstractOwncloudUserDetailsServiceWithAuthorityAppenderTest implements OwncloudServiceRestTest {
 
   @Autowired
   private OwncloudUserDetailsService userDetailsService;
 
   @Override
-  public final String getBasicAuthorizationHeader() {
+  public OwncloudUserDetailsService owncloudService() {
+    return userDetailsService;
+  }
+
+  @Override
+  public String getBasicAuthorizationHeader() {
     return getSecurityContextBasicAuthorizationHeader();
   }
 
-  @Test(expected = OwncloudInvalidAuthenticationObjectException.class)
-  @WithAnonymousUser
-  public void testUserDetails_WrongAuthenticationObject() throws MalformedURLException, IOException {
+  @Override
+  protected void prepareTestAppendedGroups(String username, boolean enabled, String email, String displayName, String... groups) throws Exception {
     respondUser(
         RestRequest.builder()
             .method(GET)
-            .url("/cloud/user/user1")
+            .url("/cloud/users/" + username)
             .build(),
-        true,
-        "user1@example.com",
-        "Mr. User 1");
-
-    userDetailsService.loadUserByUsername("user1");
+        enabled,
+        email,
+        displayName);
+    respondGroups(
+        RestRequest.builder()
+            .method(GET)
+            .url("/cloud/users/" + username + "/groups")
+            .build(),
+        groups);
   }
-
 }

@@ -40,7 +40,7 @@ import software.coolstuff.springframework.owncloud.service.api.OwncloudUserQuery
 })
 @ConditionalOnProperty(prefix = "owncloud", name = "location")
 @EnableConfigurationProperties(OwncloudProperties.class)
-public class OwncloudAutoConfiguration {
+class OwncloudAutoConfiguration {
 
   @Bean
   @ConditionalOnMissingBean(FormHttpMessageConverter.class)

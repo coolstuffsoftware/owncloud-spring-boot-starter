@@ -24,7 +24,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
 
 import software.coolstuff.springframework.owncloud.config.WithOwncloudMockUser;
-import software.coolstuff.springframework.owncloud.service.AbstractOwncloudUserDetailsServiceTest;
 
 public abstract class AbstractOwncloudUserDetailsServiceRestTest extends AbstractOwncloudUserDetailsServiceTest implements OwncloudServiceRestTest {
 

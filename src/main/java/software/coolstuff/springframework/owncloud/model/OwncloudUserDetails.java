@@ -34,12 +34,11 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudGrantedAuthoritiesMapper;
-import software.coolstuff.springframework.owncloud.service.impl.OwncloudUserDetailsService;
 
 /**
  * Implementation of the {@link UserDetails} Specification of Spring Security.
  * <p/>
- * An Instance of this Class will be returned by {@link OwncloudUserDetailsService#loadUserByUsername(String)}.
+ * An Instance of this Class will be returned by <code>OwncloudUserDetailsService#loadUserByUsername(String)</code>.
  *
  * @author mufasa1976
  * @see UserDetails

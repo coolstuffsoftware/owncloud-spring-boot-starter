@@ -31,15 +31,11 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.Singular;
-import software.coolstuff.springframework.owncloud.service.api.OwncloudUserModificationService;
-import software.coolstuff.springframework.owncloud.service.impl.OwncloudAuthenticationProvider;
-import software.coolstuff.springframework.owncloud.service.impl.OwncloudUserDetailsService;
 
 /**
- * This Class wil be used for any User Modifications by {@link OwncloudUserModificationService#saveUser(OwncloudModificationUser)}
+ * This Class will be used for any User Modifications by <code>OwncloudUserModificationService.saveUser(OwncloudModificationUser)</code>
  *
  * @author mufasa1976
- * @see OwncloudUserDetailsService#loadUserByUsername(String)
  */
 @Data
 @NoArgsConstructor
@@ -99,8 +95,8 @@ public class OwncloudModificationUser {
   /**
    * Constructor by any existing {@link OwncloudUserDetails} Object.
    * <p/>
-   * A {@link OwncloudUserDetails} Object will be returned by the {@link OwncloudUserDetailsService#loadUserByUsername(String)}
-   * during the Authentication Process of the {@link OwncloudAuthenticationProvider#authenticate(org.springframework.security.core.Authentication)}
+   * A {@link OwncloudUserDetails} Object will be returned by the <code>OwncloudUserDetailsService.loadUserByUsername(String)</code>
+   * during the Authentication Process of the <code>OwncloudAuthenticationProvider.authenticate(org.springframework.security.core.Authentication)</code>
    * and resist as a {@link Principal} within the {@link OwncloudAuthentication} Object (returned by {@link OwncloudAuthentication#getPrincipal()}
    * @param userDetails existing {@link OwncloudUserDetails} Object
    */
