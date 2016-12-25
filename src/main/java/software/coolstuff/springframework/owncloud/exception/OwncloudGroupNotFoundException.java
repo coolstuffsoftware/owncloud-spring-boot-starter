@@ -20,6 +20,12 @@ package software.coolstuff.springframework.owncloud.exception;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
+/**
+ * Thrown when a Owncloud Group doesn&apos;t exist. This is most because of the Membership Maintenance or
+ * when a non-existing Group will be removed.
+ *
+ * @author mufasa1976
+ */
 @ResponseStatus(code = HttpStatus.NOT_FOUND, reason = "Group not found")
 public class OwncloudGroupNotFoundException extends OwncloudStatusException {
 

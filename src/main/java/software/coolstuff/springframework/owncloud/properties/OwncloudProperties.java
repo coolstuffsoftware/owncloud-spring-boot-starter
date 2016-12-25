@@ -34,46 +34,68 @@ public class OwncloudProperties {
 
   /**
    * -- SETTER --
-   * Location of the Owncloud Server.
-   * <p>
+   * Set the Location of the Owncloud Server.
+   * <p/>
    * The following Locations are allowed:
    * <ul>
-   *   <li>Address of an Owncloud Server (starts either with <code>http://</code> or <code>https://</code></li>
-   *   <li>Classpath Resource (starts with <code>classpath:</code></li>
-   *   <li>File Resource outside of the Classpath (start with <code>file:</code></li>
+   *   <li>Address of an Owncloud Server (starts either with <code>http://</code> or <code>https://</code>)</li>
+   *   <li>Classpath Resource (starts with <code>classpath:</code>)</li>
+   *   <li>File Resource outside of the Classpath (start with <code>file:</code>)</li>
    * </ul>
-   * @param Location of the Owncloud Server
+   * @param location Location of the Owncloud Server
    * -- GETTER --
-   * Location of the Owncloud Server.
+   * Get the Location of the Owncloud Server.
    * @return Location of the Owncloud Server
    */
   private String location;
 
   /**
-   * optional Username of the Owncloud Administrator
-   * @param Username of the Owncloud Administrator
+   * -- SETTER --
+   * Set the Username of the Owncloud Administrator.
+   * <p/>
+   * <i>This is an optional Parameter</i>
+   * <br/>
+   * If you set this Parameter then every Interaction with
+   * Owncloud will be done with this Administrator (except the
+   * Authentication-Process).
+   * <br/>
+   * By leaving this Parameter the Interaction with
+   * Owncloud will be done with the authenticated User.
+   * @param username Username of the Owncloud Administrator
+   * -- GETTER --
+   * Get the Username of the Owncloud Administrator.
+   * <p/>
+   * Default: <code>null</code>
    * @return Username of the Owncloud Administrator
    */
   private String username;
 
   /**
-   * Password of the Owncloud Administrator.
-   * <p>
-   * <i>Setting this Property is only neccessary if {@link #username} is used</i>
-   * @param Password of the Owncloud Administrator
+   * -- SETTER --
+   * Set the Password of the Owncloud Administrator.
+   * <p/>
+   * <i>Setting this Property is only neccessary if {@link #setUsername(String)} is used</i>
+   * @param password Password of the Owncloud Administrator
+   * -- GETTER --
+   * Get the Password of the Owncloud Administrator.
+   * <p/>
+   * Default: <code>null</code>
    * @return Password of the Owncloud Administrator
    */
   private String password;
 
   /**
+   * -- SETTER --
    * Should User Modifications be allowed by the {@link OwncloudUserModificationService}.
-   * <p>
-   * Defaults to <code>false</code>
-   * @param enable or disable User Modifications
+   * @param enableModifications enable (<code>true</code>) or disable (<code>false</code>) User Modifications
+   * -- GETTER --
+   * Should User Modifications be allowed by the {@link OwncloudUserModificationService}.
+   * <p/>
+   * Default: <code>false</code>
    * @return
    * <ul>
-   *   <li>true ... User Modifications are allowed</li>
-   *   <li>false ... User Modifications are disallowed (Exception {@link AccessDeniedException} will be thrown)</li>
+   *   <li><code>true</code> ... User Modifications are allowed</li>
+   *   <li><code>false</code> ... User Modifications are disallowed (Exception {@link AccessDeniedException} will be thrown)</li>
    * <ul>
    */
   private boolean enableModifications = false;

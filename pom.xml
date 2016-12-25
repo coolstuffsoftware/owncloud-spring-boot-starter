@@ -191,15 +191,6 @@
   <build>
     <pluginManagement>
       <plugins>
-        <plugin>
-          <artifactId>maven-javadoc-plugin</artifactId>
-          <version>2.10.4</version>
-          <configuration>
-            <sourcepath>${project.build.directory}/generated-sources/delombok</sourcepath>
-            <failOnError>false</failOnError>
-          </configuration>
-        </plugin>
-
         <!-- Lombok -->
         <plugin>
           <groupId>org.projectlombok</groupId>
@@ -274,6 +265,11 @@
 
       <plugin>
         <artifactId>maven-javadoc-plugin</artifactId>
+        <version>2.10.4</version>
+        <configuration>
+          <author>false</author>
+          <sourcepath>${project.build.directory}/generated-sources/delombok</sourcepath>
+        </configuration>
       </plugin>
 
       <plugin>
@@ -345,6 +341,16 @@
   </distributionManagement>
 
   <profiles>
+    <profile>
+      <id>disable-java8-doclint</id>
+      <activation>
+        <jdk>[1.8,)</jdk>
+      </activation>
+      <properties>
+        <additionalparam>-Xdoclint:none</additionalparam>
+      </properties>
+    </profile>
+
     <profile>
       <id>release-profile</id>
 

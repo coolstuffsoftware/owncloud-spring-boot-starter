@@ -251,9 +251,6 @@ abstract class AbstractOwncloudServiceImpl implements InitializingBean {
         .email(user.getData().getEmail())
         .groups(groups)
         .authorities(authorities)
-        .accountNonExpired(true)
-        .accountNonLocked(true)
-        .credentialsNonExpired(true)
         .build();
     if (owncloudGrantedAuthoritiesMapper != null) {
       userDetails.setAuthorities(owncloudGrantedAuthoritiesMapper.mapAuthorities(userDetails.getUsername(), authorities));

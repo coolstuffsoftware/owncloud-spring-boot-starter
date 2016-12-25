@@ -17,6 +17,12 @@
 */
 package software.coolstuff.springframework.owncloud.exception;
 
+/**
+ * This is the abstract Exception for the mapping between an Owncloud User Provisioning API Response Status
+ * and any concrete Java Exception
+ *
+ * @author mufasa1976
+ */
 public abstract class OwncloudStatusException extends RuntimeException {
 
   private static final long serialVersionUID = -3354624827447206574L;

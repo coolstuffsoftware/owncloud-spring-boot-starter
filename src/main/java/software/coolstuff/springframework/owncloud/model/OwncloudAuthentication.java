@@ -24,9 +24,15 @@ import javax.validation.constraints.NotNull;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 
-import lombok.Data;
+import lombok.RequiredArgsConstructor;
+import software.coolstuff.springframework.owncloud.service.impl.OwncloudAuthenticationProvider;
 
-@Data
+/**
+ * Authentication Object which will be returned by {@link OwncloudAuthenticationProvider#authenticate(Authentication)}.
+ *
+ * @author mufasa1976
+ */
+@RequiredArgsConstructor
 public class OwncloudAuthentication implements Authentication {
 
   private static final long serialVersionUID = -7867915541247069469L;

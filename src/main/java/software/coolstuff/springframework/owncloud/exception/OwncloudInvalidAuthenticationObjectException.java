@@ -18,12 +18,18 @@
 package software.coolstuff.springframework.owncloud.exception;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 import software.coolstuff.springframework.owncloud.model.OwncloudAuthentication;
 
+/**
+ * Thrown when trying to authenticate neither with {@link OwncloudAuthentication} nor with {@link UsernamePasswordAuthenticationToken}
+ *
+ * @author mufasa1976
+ */
 @ResponseStatus(code = HttpStatus.UNAUTHORIZED, reason = "Invalid Authentication Object")
 public class OwncloudInvalidAuthenticationObjectException extends AuthenticationException {
 

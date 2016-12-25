@@ -24,6 +24,7 @@ import java.util.List;
 import javax.validation.constraints.NotNull;
 
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import lombok.AllArgsConstructor;
@@ -32,7 +33,17 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import software.coolstuff.springframework.owncloud.service.api.OwncloudGrantedAuthoritiesMapper;
+import software.coolstuff.springframework.owncloud.service.impl.OwncloudUserDetailsService;
 
+/**
+ * Implementation of the {@link UserDetails} Specification of Spring Security.
+ * <p/>
+ * An Instance of this Class will be returned by {@link OwncloudUserDetailsService#loadUserByUsername(String)}.
+ *
+ * @author mufasa1976
+ * @see UserDetails
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -43,26 +54,77 @@ public class OwncloudUserDetails implements UserDetails {
 
   private static final long serialVersionUID = 7384295040126418671L;
 
+  /**
+   * Username of the authenticated User.
+   * @param username Username of the authenticated User
+   * @return Username of the authenticated User
+   */
   @NotNull
   private String username;
+
+  /**
+   * Password of the authenticated User.
+   * <p/>
+   * <u>Note:</u> The Password will be hidden when calling {@link #toString()}
+   * @param password Password of the authenticated User
+   * @return Password of the authenticated User
+   */
   private String password;
 
+  /**
+   * State of the authenticated User (enabled/disabled)
+   * @param enabled enable or disable the authenticated User
+   * @return is the authenticated User enabled (<code>true</code>) or disabled (<code>false</code>)
+   */
   private boolean enabled = true;
-  private boolean accountNonExpired = true;
-  private boolean accountNonLocked = true;
-  private boolean credentialsNonExpired = true;
 
+  /**
+   * Granted Authorities of the authenticated User.
+   * @param authorities granted Authorities of the authenticated User
+   * @return granted Authorities of the authenticated User
+   */
   private Collection<? extends GrantedAuthority> authorities;
 
+  /**
+   * Owncloud Groups of the authenticated User.
+   * <p/>
+   * If neither {@link OwncloudGrantedAuthoritiesMapper} nor {@link GrantedAuthoritiesMapper} will be used then
+   * this is the same as {@link #getAuthorities()}
+   * @param groups Owncloud Groups of the authenticated User
+   * @return Owncloud Groups of the authenticated User
+   */
   private List<String> groups = new ArrayList<>();
+
+  /**
+   * Display Name of the authenticated User.
+   * @param displayName Display Name of the authenticated User
+   * @return Display Name of the authenticated User
+   */
   private String displayName;
+
+  /**
+   * Email of the authenticated User.
+   * @param email Email of the authenticated User
+   * @return Email of the authenticated User
+   */
   private String email;
 
   public static class OwncloudUserDetailsBuilder {
-
     private boolean enabled = true;
-    private boolean accountNonExpired = true;
-    private boolean accountNonLocked = true;
-    private boolean credentialsNonExpired = true;
+  }
+
+  @Override
+  public boolean isAccountNonExpired() {
+    return true;
+  }
+
+  @Override
+  public boolean isAccountNonLocked() {
+    return true;
+  }
+
+  @Override
+  public boolean isCredentialsNonExpired() {
+    return true;
   }
 }
