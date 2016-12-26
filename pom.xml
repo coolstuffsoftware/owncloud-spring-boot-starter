@@ -513,7 +513,7 @@
                 </goals>
                 <configuration>
                   <message>[maven-scm-plugin] added generated documentation</message>
-                  <includes>${project.basedir}/docs/**/*</includes>
+                  <includes>${project.basedir}/docs/*</includes>
                 </configuration>
               </execution>
             </executions>
