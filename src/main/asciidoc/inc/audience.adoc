@@ -1,0 +1,9 @@
+== Audience
+This Project aims at Developers who wants to enable their SpringBoot Application to be authenticated against an Owncloud Instance and use the Owncloud Provisioning API.
+
+It's planned to implement the following additional API's of Owncloud:
+
+* Subadmins (via https://doc.owncloud.org/server/latest/admin_manual/configuration_user/user_provisioning_api.html[User Provisioning API])
+* App Management (via https://doc.owncloud.org/server/latest/admin_manual/configuration_user/user_provisioning_api.html[User Provisioning API])
+* WebDAV (via https://commons.apache.org/proper/commons-vfs[Apache Commons VFS])
+* https://doc.owncloud.org/server/latest/developer_manual/core/ocs-share-api.html[OCS Share API]

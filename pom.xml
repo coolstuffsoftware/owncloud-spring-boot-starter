@@ -12,6 +12,36 @@
   <description>Spring Boot Owncloud Service and Authentication Provider</description>
   <url>https://github.com/coolstuffsoftware/springOwncloud</url>
 
+  <organization>
+    <name>coolstuff.software</name>
+    <url>https://coolstuff.software</url>
+  </organization>
+
+  <developers>
+    <developer>
+      <id>mufasa1976</id>
+      <name>Mufasa1976</name>
+      <url>https://mufasa1976.github.io</url>
+      <organization>coolstuff.software</organization>
+      <roles>
+        <role>Developer</role>
+      </roles>
+    </developer>
+  </developers>
+
+  <licenses>
+    <license>
+      <name>GNU General Public License (GPL)</name>
+      <url>http://www.gnu.org/licenses/gpl.txt</url>
+    </license>
+  </licenses>
+
+  <scm>
+    <url>https://github.com/coolstuffsoftware/springOwncloud</url>
+    <connection>scm:git:git://github.com/coolstuffsoftware/springOwncloud.git</connection>
+    <developerConnection>scm:git:git@github.com:coolstuffsoftware/springOwncloud.git</developerConnection>
+  </scm>
+
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <java.version>1.8</java.version>
@@ -28,24 +58,16 @@
     <commons-vfs.version>2.1</commons-vfs.version>
     <xmlunit.version>2.3.0</xmlunit.version>
     <lombok-plugin.version>1.16.12.0</lombok-plugin.version>
-    
+
     <!-- Javadoc Properties -->
     <author>false</author>
     <show>public</show>
+
+    <!-- AsciiDoctor Properties -->
+    <asciidoctor.backend>html</asciidoctor.backend>
+    <asciidoctor.sourceHighlighter>coderay</asciidoctor.sourceHighlighter>
+    <asciidoctor.preserveDirectories>true</asciidoctor.preserveDirectories>
   </properties>
-
-  <scm>
-    <url>https://github.com/coolstuffsoftware/springOwncloud</url>
-    <connection>scm:git:git://github.com/coolstuffsoftware/springOwncloud.git</connection>
-    <developerConnection>scm:git:git@github.com:coolstuffsoftware/springOwncloud.git</developerConnection>
-  </scm>
-
-  <licenses>
-    <license>
-      <name>GNU General Public License (GPL)</name>
-      <url>http://www.gnu.org/licenses/gpl.txt</url>
-    </license>
-  </licenses>
 
   <dependencyManagement>
     <dependencies>
@@ -234,6 +256,45 @@
             </execution>
           </executions>
         </plugin>
+
+        <!-- AsciiDoctor -->
+        <plugin>
+          <groupId>org.asciidoctor</groupId>
+          <artifactId>asciidoctor-maven-plugin</artifactId>
+          <version>1.5.3</version>
+          <configuration>
+            <attributes>
+              <revnumber>${project.version}</revnumber>
+              <organization>${project.organization.name}</organization>
+            </attributes>
+          </configuration>
+        </plugin>
+
+        <!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself. -->
+        <plugin>
+          <groupId>org.eclipse.m2e</groupId>
+          <artifactId>lifecycle-mapping</artifactId>
+          <version>1.0.0</version>
+          <configuration>
+            <lifecycleMappingMetadata>
+              <pluginExecutions>
+                <pluginExecution>
+                  <pluginExecutionFilter>
+                    <groupId>org.asciidoctor</groupId>
+                    <artifactId>asciidoctor-maven-plugin</artifactId>
+                    <versionRange>[1.5.3,)</versionRange>
+                    <goals>
+                      <goal>process-asciidoc</goal>
+                    </goals>
+                  </pluginExecutionFilter>
+                  <action>
+                    <ignore></ignore>
+                  </action>
+                </pluginExecution>
+              </pluginExecutions>
+            </lifecycleMappingMetadata>
+          </configuration>
+        </plugin>
       </plugins>
     </pluginManagement>
 
@@ -381,9 +442,22 @@
               </execution>
             </executions>
           </plugin>
+
+          <plugin>
+            <groupId>org.asciidoctor</groupId>
+            <artifactId>asciidoctor-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>asciidoctor</id>
+                <phase>generate-resources</phase>
+                <goals>
+                  <goal>process-asciidoc</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
         </plugins>
       </build>
-
     </profile>
   </profiles>
 </project>

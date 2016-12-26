@@ -1,0 +1,54 @@
+== Quick Start
+
+=== Maven Dependency
+Add the following Maven Dependency:
+[source,xml,subs="verbatim,attributes"]
+.pom.xml
+----
+<dependency>
+  <groupId>software.coolstuff</groupId>
+  <artifactId>owncloud-spring-boot-starter</artifactId>
+  <version>{revnumber}</version>
+</dependency>
+----
+
+=== Application Properties
+Add the following Property:
+[source,properties]
+.application.properties
+----
+owncloud.location=https://www.example.com/owncloud
+----
+
+=== WebSecurityConfigurerAdapter
+Configure the `WebSecurityConfigurerAdapter` the following Way:
+[source,java]
+.MyWebSecurityConfigurerAdapter.java
+----
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.web.builders.WebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+
+@Configuration
+@EnableWebSecurity
+public class MyWebSecurityConfigurerAdapter extends WebSecurityConfigurerAdapter {
+
+  @Autowired
+  private AuthenticationProvider authenticationProvider;
+
+  @Override
+  protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+    auth.authenticationProvider(authenticationProvider);
+  }
+
+}
+----
+
+=== Test your Application
+When you now run your Spring-Boot Application the following Login-Screen appears:
+
+image::standard_basic_login_screen.png[Login Screen]
+
+Provide your Owncloud User Credentials and you are now able to work with your Application.
