@@ -6,7 +6,7 @@ Spring Owncloud Services and AuthenticationProvider (with UserDetailsService)
 [![Test Coverage](https://codeclimate.com/github/coolstuffsoftware/owncloud-spring-boot-starter/badges/coverage.svg)](https://codeclimate.com/github/coolstuffsoftware/owncloud-spring-boot-starter/coverage)
 
 ## Audience
-This Project aims at Developers who wants to enable their SpringBoot Application to be authenticated against an Owncloud Instance and use the Owncloud Provisioning API and the Share API.
+This Project aims at Developers who wants to enable their SpringBoot Application to be authenticated against an Owncloud Instance and use the Owncloud Provisioning API.
 
 ## Short Usage
 ### Maven
