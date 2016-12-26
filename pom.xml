@@ -523,6 +523,7 @@
                 </goals>
                 <configuration>
                   <message>[maven-scm-plugin] added generated documentation</message>
+                  <pushChanges>false</pushChanges>
                 </configuration>
               </execution>
             </executions>
