@@ -512,7 +512,7 @@
                   <goal>add</goal>
                 </goals>
                 <configuration>
-                  <includes>docs/*</includes>
+                  <includes>docs/**/*</includes>
                 </configuration>
               </execution>
               <execution>
