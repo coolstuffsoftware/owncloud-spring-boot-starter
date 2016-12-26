@@ -506,6 +506,16 @@
             <version>1.9.5</version>
             <executions>
               <execution>
+                <id>add-generated-docs</id>
+                <phase>generate-resources</phase>
+                <goals>
+                  <goal>add</goal>
+                </goals>
+                <configuration>
+                  <includes>docs/*</includes>
+                </configuration>
+              </execution>
+              <execution>
                 <id>checkin-docs</id>
                 <phase>process-resources</phase>
                 <goals>
@@ -513,7 +523,6 @@
                 </goals>
                 <configuration>
                   <message>[maven-scm-plugin] added generated documentation</message>
-                  <includes>${project.basedir}/docs</includes>
                 </configuration>
               </execution>
             </executions>
