@@ -63,3 +63,6 @@ local.properties
 # Code Recommenders
 .recommenders/
 /.apt_generated/
+
+# Mac specific
+.DS_Store
