@@ -10,6 +10,12 @@ include::{includedir}/audience.adoc[]
 
 include::{includedir}/quickstart.adoc[]
 
+include::{includedir}/whatsIncluded.adoc[]
+
+include::{includedir}/configuration.adoc[]
+
+include::{includedir}/authentication.adoc[]
+
 include::{includedir}/legal.adoc[]
 
 ++++

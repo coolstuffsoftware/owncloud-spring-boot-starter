@@ -1,0 +1,3 @@
+== Authentication
+The Authentication has been implemented as a Spring Security http://docs.spring.io/spring-security/site/docs/4.2.1.RELEASE/apidocs/org/springframework/security/authentication/AuthenticationProvider.html[`AutheticationProvider`]. +
+Due to the http://docs.spring.io/spring-boot/docs/1.4.3.RELEASE/reference/htmlsingle/#using-boot-auto-configuration[`AutoConfiguration`] Feature this AuthenticationProvider will be automatically loaded and configured when the Configuration Parameter `owncloud.location` has been provided.
