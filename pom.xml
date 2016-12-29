@@ -50,10 +50,10 @@
     <maven.compiler.target>${java.version}</maven.compiler.target>
 
     <!-- Dependency Versions -->
-    <spring-boot.version>1.4.2.RELEASE</spring-boot.version>
+    <spring-boot.version>1.4.3.RELEASE</spring-boot.version>
     <commons-lang3.version>3.5</commons-lang3.version>
-    <guava.version>14.0.1</guava.version>
-    <commons-io.version>2.4</commons-io.version>
+    <guava.version>20.0</guava.version>
+    <commons-io.version>2.5</commons-io.version>
     <commons-collections4.version>4.1</commons-collections4.version>
     <commons-vfs.version>2.1</commons-vfs.version>
     <xmlunit.version>2.3.0</xmlunit.version>
