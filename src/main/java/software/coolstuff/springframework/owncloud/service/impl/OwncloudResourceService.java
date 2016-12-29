@@ -64,45 +64,6 @@ import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
 import software.coolstuff.springframework.owncloud.properties.OwncloudProperties;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudGrantedAuthoritiesMapper;
 
-/**
- * If you define a URL prefixed with either <code>file:</code> or <code>classpath:</code> this Class will be available as a Service.
- *
- * By instantiating this Class as a Bean the defined Resource will be parsed by the Jackson XML Mapper and will be available in a Java-Structure of Type {@link OwncloudResourceData}.
- *
- * The defined Resource-File must have the following Structure:
- *
- * <pre>
- * &lt;owncloud&gt;
- *   &lt;users&gt;
- *     &lt;user&gt;
- *       &lt;username&gt;user1&lt;/username&gt;
- *       &lt;password&gt;password&lt;/s3cr3t&gt;
- *       &lt;enabled&gt;true&lt;/enabled&gt;
- *       &lt;displayName&gt;Mrs. User 1&lt;/displayName&gt;
- *       &lt;email&gt;user1@example.com&lt;/email&gt;
- *       &lt;groups&gt;
- *         &lt;group&gt;group1&lt;/group&gt;
- *         ...
- *       &lt;/groups&gt;
- *     &lt;/user&gt;
- *     ...
- *   &lt;/users&gt;
- *   &lt;groups&gt;
- *     &lt;group&gt;group1&lt;/group&gt;
- *     ...
- *   &lt;/groups&gt;
- * &lt;/owncloud&gt;
- * </pre>
- *
- * All Groups referenced by a User have to be defined in the <code>groups</code>-Section. There will be an {@link IllegalStateException} if there are any Groups referenced by a User which is not
- * defined in the <code>groups</code>-Section.
- *
- * Only for internal Usage.
- *
- * @see OwncloudResourceData
- * @author mufasa1976@coolstuff.software
- *
- */
 @Slf4j
 class OwncloudResourceService implements InitializingBean, DisposableBean {
 
@@ -196,12 +157,13 @@ class OwncloudResourceService implements InitializingBean, DisposableBean {
    * <p/>
    * This will be done by checking, if the Location starts either with <code>file:</code> or <code>classpath</code>
    *
-   * @param location Location to be checked
+   * @param location
+   *          Location to be checked
    * @return
-   * <ul>
-   *   <li>true ... Location is a Resource</li>
-   *   <li>false ... Location is possible a URL</li>
-   * </ul>
+   *         <ul>
+   *         <li>true ... Location is a Resource</li>
+   *         <li>false ... Location is possible a URL</li>
+   *         </ul>
    */
   public static boolean isResourceInsteadOfUrl(String location) {
     return StringUtils.startsWith(location, "file:") || StringUtils.startsWith(location, "classpath:");
@@ -212,30 +174,18 @@ class OwncloudResourceService implements InitializingBean, DisposableBean {
    * <p/>
    * This will be done by checking, if the Location starts either with <code>file:</code> or <code>classpath</code>
    *
-   * @param location Location to be checked
+   * @param location
+   *          Location to be checked
    * @return
-   * <ul>
-   *   <li>true ... Location is possible a URL</li>
-   *   <li>false ... Location is a Resource</li>
-   * </ul>
+   *         <ul>
+   *         <li>true ... Location is possible a URL</li>
+   *         <li>false ... Location is a Resource</li>
+   *         </ul>
    */
   public static boolean isNoResource(String location) {
     return !isResourceInsteadOfUrl(location);
   }
 
-  /**
-   * Checks, if the given Credentials are available in the Resource.
-   * <p/>
-   * If either the User hasn't been found or an invalid Password has been given then the authentication is negative (returns <code>false</code>)
-   *
-   * @param username Username
-   * @param password Password
-   * @return
-   * <ul>
-   *   <li>true ... User found and the Password is correct</li>
-   *   <li>false ... either the User doesn&apos;t exist or the Password is wrong</li>
-   * </ul>
-   */
   public boolean authenticate(String username, String password) {
     OwncloudResourceData.User user = users.get(username);
     if (user == null) {
@@ -244,14 +194,6 @@ class OwncloudResourceService implements InitializingBean, DisposableBean {
     return StringUtils.equals(password, user.getPassword());
   }
 
-  /**
-   * Get the Details of the User.
-   * <p/>
-   * The Details will <strong>always</strong> be returned without a Password.
-   *
-   * @param username Username
-   * @return Details of the User
-   */
   public OwncloudUserDetails getUser(String username) {
     OwncloudResourceData.User user = users.get(username);
     if (user == null) {
@@ -286,14 +228,6 @@ class OwncloudResourceService implements InitializingBean, DisposableBean {
     return userDetails;
   }
 
-  /**
-   * Get all Users.
-   * <p/>
-   * The Search can be filtered
-   *
-   * @param filter Filter Criteria
-   * @return List of Users
-   */
   public List<String> getAllUsers(String filter) {
     List<String> filteredUsers = new ArrayList<>();
     for (OwncloudResourceData.User user : users.values()) {
@@ -304,14 +238,6 @@ class OwncloudResourceService implements InitializingBean, DisposableBean {
     return filteredUsers;
   }
 
-  /**
-   * Get all Groups.
-   * <p/>
-   * The Search can be filtered.
-   *
-   * @param filter Filter Criteria
-   * @return List of Groups
-   */
   public List<String> getAllGroups(String filter) {
     List<String> filteredGroups = new ArrayList<>();
     for (OwncloudResourceData.Group group : groups.values()) {
@@ -322,12 +248,6 @@ class OwncloudResourceService implements InitializingBean, DisposableBean {
     return filteredGroups;
   }
 
-  /**
-   * Get all Users which are member of a Group
-   *
-   * @param groupname Name of the Group
-   * @return List of Users
-   */
   public List<String> getAllMembersOfGroup(String groupname) {
     checkGroupExistence(groupname);
     List<String> members = new ArrayList<>();
@@ -362,12 +282,6 @@ class OwncloudResourceService implements InitializingBean, DisposableBean {
     }
   }
 
-  /**
-   * Get all Groups of a User
-   *
-   * @param username Name of the User
-   * @return List of Groups
-   */
   public List<String> getGroupsOfUser(String username) {
     OwncloudResourceData.User user = users.get(username);
     List<String> groups = new ArrayList<>();
