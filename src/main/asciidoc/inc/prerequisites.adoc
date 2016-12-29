@@ -1,0 +1,8 @@
+== Prerequisites
+The following Prerequisites must be met in Order to work with this Spring-Boot Starter:
+
+* Owncloud Instance must be installed, configured and running.
+* The Owncloud Instance must have at least Version 8
+* You must be able to connect to this Owncloud Instance (i.E. Firewall-Settings, Network, ...)
+* The https://doc.owncloud.org/server/9.1/admin_manual/configuration_user/user_provisioning_api.html[Provisioning API]
+  must be enabled
