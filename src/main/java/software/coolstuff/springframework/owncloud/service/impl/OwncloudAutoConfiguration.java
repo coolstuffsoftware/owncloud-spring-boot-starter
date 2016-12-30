@@ -29,6 +29,7 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.http.converter.FormHttpMessageConverter;
 import org.springframework.http.converter.xml.MappingJackson2XmlHttpMessageConverter;
 
+import software.coolstuff.springframework.owncloud.service.api.OwncloudFileService;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudUserModificationService;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudUserQueryService;
 
@@ -52,6 +53,11 @@ class OwncloudAutoConfiguration {
   @Bean
   public OwncloudUserModificationChecker owncloudUserModificationChecker(OwncloudProperties owncloudProperties) {
     return new OwncloudUserModificationChecker(owncloudProperties);
+  }
+
+  @Bean
+  public OwncloudFileService owncloudFileService() {
+    return new OwncloudFileServiceImpl();
   }
 
   @Bean

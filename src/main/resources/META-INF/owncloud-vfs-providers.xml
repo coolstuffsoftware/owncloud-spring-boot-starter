@@ -1,0 +1,15 @@
+<providers>
+  <default-provider class-name="org.apache.commons.vfs2.provider.ram.RamFileProvider" />
+
+  <provider class-name="org.apache.commons.vfs2.provider.ram.RamFileProvider">
+    <scheme name="ram" />
+  </provider>
+  <provider class-name="org.apache.commons.vfs2.provider.local.DefaultLocalFileProvider">
+    <scheme name="file" />
+  </provider>
+  <provider class-name="org.apache.commons.vfs2.provider.webdav.WebdavFileProvider">
+    <scheme name="webdav" />
+    <if-available class-name="org.apache.commons.httpclient.HttpClient" />
+    <if-available class-name="org.apache.jackrabbit.webdav.client.methods.DavMethod" />
+  </provider>
+</providers>

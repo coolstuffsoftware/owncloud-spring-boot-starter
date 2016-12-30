@@ -1,7 +1,4 @@
-<project
-  xmlns="http://maven.apache.org/POM/4.0.0"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>software.coolstuff</groupId>
@@ -56,6 +53,8 @@
     <commons-io.version>2.5</commons-io.version>
     <commons-collections4.version>4.1</commons-collections4.version>
     <commons-vfs.version>2.1</commons-vfs.version>
+    <httpclient.version>4.5.2</httpclient.version>
+    <jackrabbit.version>2.13.7</jackrabbit.version>
     <xmlunit.version>2.3.0</xmlunit.version>
     <lombok-plugin.version>1.16.12.0</lombok-plugin.version>
 
@@ -102,6 +101,20 @@
         <version>${commons-vfs.version}</version>
       </dependency>
 
+      <!-- Apache HttpClient -->
+      <dependency>
+        <groupId>org.apache.httpcomponents</groupId>
+        <artifactId>httpclient</artifactId>
+        <version>${httpclient.version}</version>
+      </dependency>
+
+      <!-- Apache Jackrabbit -->
+      <dependency>
+        <groupId>org.apache.jackrabbit</groupId>
+        <artifactId>jackrabbit-webdav</artifactId>
+        <version>${jackrabbit.version}</version>
+      </dependency>
+
       <!-- Google Guava -->
       <dependency>
         <groupId>com.google.guava</groupId>
@@ -139,7 +152,7 @@
       <artifactId>spring-boot-configuration-processor</artifactId>
       <optional>true</optional>
     </dependency>
-    
+
     <!-- Apache Commons -->
     <dependency>
       <groupId>org.apache.commons</groupId>
@@ -173,6 +186,22 @@
       <groupId>org.projectlombok</groupId>
       <artifactId>lombok</artifactId>
       <scope>provided</scope>
+    </dependency>
+
+    <!-- Runtime Dependencies -->
+
+    <!-- Apache HttpClient -->
+    <dependency>
+      <groupId>org.apache.httpcomponents</groupId>
+      <artifactId>httpclient</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+
+    <!-- Apache Jackrabbit -->
+    <dependency>
+      <groupId>org.apache.jackrabbit</groupId>
+      <artifactId>jackrabbit-webdav</artifactId>
+      <scope>runtime</scope>
     </dependency>
 
     <!-- Test Dependencies -->

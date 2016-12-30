@@ -21,6 +21,10 @@ final class OwncloudUtils {
     return StringUtils.startsWith(location, "file:") || StringUtils.startsWith(location, "classpath:");
   }
 
+  static boolean isFileResourceLocation(String location) {
+    return StringUtils.startsWith(location, "file:");
+  }
+
   static boolean isAuthenticationClassSupported(Class<?> authentication) {
     return UsernamePasswordAuthenticationToken.class.isAssignableFrom(authentication) ||
         OwncloudAuthentication.class.isAssignableFrom(authentication);
