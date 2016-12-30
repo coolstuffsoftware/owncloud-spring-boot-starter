@@ -22,6 +22,7 @@ import static org.springframework.http.HttpMethod.GET;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.userdetails.UserDetailsService;
 
 import software.coolstuff.springframework.owncloud.config.WithOwncloudMockUser;
 
@@ -33,6 +34,11 @@ public abstract class AbstractOwncloudUserDetailsServiceRestTest extends Abstrac
   @Override
   public final OwncloudUserDetailsService owncloudService() {
     return userDetailsService;
+  }
+
+  @Override
+  protected Class<? extends UserDetailsService> getUserDetailsServiceClass() {
+    return OwncloudUserDetailsService.class;
   }
 
   @Override

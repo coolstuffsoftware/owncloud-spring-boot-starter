@@ -15,7 +15,7 @@
    along with this program; if not, write to the Free Software Foundation,
    Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 */
-package software.coolstuff.springframework.owncloud.config;
+package software.coolstuff.springframework.owncloud.service.impl;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -41,7 +41,7 @@ import org.yaml.snakeyaml.Yaml;
 
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import software.coolstuff.springframework.owncloud.properties.OwncloudProperties;
+import software.coolstuff.springframework.owncloud.service.impl.OwncloudProperties;
 import software.coolstuff.springframework.owncloud.service.impl.resource.file.OwncloudFileResourceTest;
 
 /**

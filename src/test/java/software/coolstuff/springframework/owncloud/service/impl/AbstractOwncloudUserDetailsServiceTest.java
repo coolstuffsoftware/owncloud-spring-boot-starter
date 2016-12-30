@@ -22,22 +22,24 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.client.RestClientTest;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import software.coolstuff.springframework.owncloud.config.WithOwncloudMockUser;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
-import software.coolstuff.springframework.owncloud.service.impl.OwncloudUserDetailsService;
 
 @RestClientTest(OwncloudUserDetailsService.class)
 public abstract class AbstractOwncloudUserDetailsServiceTest extends AbstractOwncloudServiceTest {
 
   @Autowired
-  private OwncloudUserDetailsService userDetailsService;
+  private UserDetailsService userDetailsService;
 
   @Test
   public void testCorrectClass() {
-    Assert.assertEquals(OwncloudUserDetailsService.class, userDetailsService.getClass());
+    Assert.assertEquals(getUserDetailsServiceClass(), userDetailsService.getClass());
   }
+
+  protected abstract Class<? extends UserDetailsService> getUserDetailsServiceClass();
 
   @Test
   @WithOwncloudMockUser(username = "user1", password = "password")

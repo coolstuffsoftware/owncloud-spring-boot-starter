@@ -25,6 +25,7 @@ import java.net.MalformedURLException;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.client.HttpStatusCodeException;
 
@@ -40,6 +41,11 @@ public abstract class AbstractOwncloudAuthenticationProviderRestTest extends Abs
   @Override
   public final OwncloudAuthenticationProvider owncloudService() {
     return authenticationProvider;
+  }
+
+  @Override
+  protected Class<? extends AuthenticationProvider> getAuthenticationProviderClass() {
+    return OwncloudAuthenticationProvider.class;
   }
 
   @Override

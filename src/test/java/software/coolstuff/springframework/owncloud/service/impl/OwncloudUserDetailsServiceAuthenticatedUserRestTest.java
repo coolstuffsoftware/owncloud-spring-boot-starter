@@ -24,21 +24,26 @@ import java.net.MalformedURLException;
 
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.test.context.ActiveProfiles;
 
 import software.coolstuff.springframework.owncloud.exception.OwncloudInvalidAuthenticationObjectException;
-import software.coolstuff.springframework.owncloud.service.impl.OwncloudUserDetailsService;
 
 @ActiveProfiles("AUTHENTICATED-USER-URL")
 public class OwncloudUserDetailsServiceAuthenticatedUserRestTest extends AbstractOwncloudUserDetailsServiceRestTest {
 
   @Autowired
-  private OwncloudUserDetailsService userDetailsService;
+  private UserDetailsService userDetailsService;
 
   @Override
   public final String getBasicAuthorizationHeader() {
     return getSecurityContextBasicAuthorizationHeader();
+  }
+
+  @Override
+  protected Class<? extends UserDetailsService> getUserDetailsServiceClass() {
+    return OwncloudUserDetailsService.class;
   }
 
   @Test(expected = OwncloudInvalidAuthenticationObjectException.class)

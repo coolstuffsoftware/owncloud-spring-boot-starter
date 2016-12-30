@@ -18,7 +18,7 @@
 package software.coolstuff.springframework.owncloud.service.impl.resource.file;
 
 import software.coolstuff.springframework.owncloud.config.CompareResourceAfter;
-import software.coolstuff.springframework.owncloud.config.OwncloudFileResourceTestExecutionListener;
+import software.coolstuff.springframework.owncloud.service.impl.OwncloudFileResourceTestExecutionListener;
 
 /**
  * A markup Interface to inform the Method {@link OwncloudFileResourceTestExecutionListener#beforeTestClass(org.springframework.test.context.TestContext)} to copy the Classpath Resource

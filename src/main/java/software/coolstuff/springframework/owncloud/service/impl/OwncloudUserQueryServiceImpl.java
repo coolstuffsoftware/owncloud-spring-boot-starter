@@ -147,7 +147,7 @@ class OwncloudUserQueryServiceImpl extends AbstractOwncloudServiceImpl implement
   public OwncloudUserDetails findOneUser(String username) {
     Validate.notBlank(username);
     if (isRestNotAvailable()) {
-      return resourceService.getUser(username);
+      return (OwncloudUserDetails) resourceService.loadUserByUsername(username);
     }
 
     Ocs.User user = exchange("/cloud/users/{user}", HttpMethod.GET, emptyEntity(), Ocs.User.class, username);

@@ -43,9 +43,6 @@ class OwncloudAuthenticationProvider extends AbstractOwncloudServiceImpl impleme
   @Autowired
   private OwncloudUserDetailsService userDetailsService;
 
-  @Autowired(required = false)
-  private OwncloudResourceService resourceService;
-
   public OwncloudAuthenticationProvider(RestTemplateBuilder builder) {
     super(builder, false, new OwncloudAuthenticationProviderResponseErrorHandler(SpringSecurityMessageSource.getAccessor()));
   }
@@ -64,17 +61,10 @@ class OwncloudAuthenticationProvider extends AbstractOwncloudServiceImpl impleme
     String username = authentication.getName();
     String password = authentication.getCredentials().toString();
 
-    OwncloudUserDetails owncloudUserDetails = null;
-    if (isRestAvailable()) {
-      Ocs.User user = exchange("/cloud/users/{user}", HttpMethod.GET, emptyEntity(username, password), Ocs.User.class, username);
-      SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(username, password));
-      owncloudUserDetails = userDetailsService.loadPreloadedUserByUsername(username, user);
-    } else {
-      if (!resourceService.authenticate(username, password)) {
-        throw new BadCredentialsException(messages.getMessage("AbstractUserDetailsAuthenticationProvider.badCredentials", "Bad Credentials"));
-      }
-      owncloudUserDetails = userDetailsService.loadUserByUsernameFromResourceService(username);
-    }
+    Ocs.User user = exchange("/cloud/users/{user}", HttpMethod.GET, emptyEntity(username, password), Ocs.User.class, username);
+    SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(username, password));
+
+    OwncloudUserDetails owncloudUserDetails = userDetailsService.loadPreloadedUserByUsername(username, user);
     owncloudUserDetails.setPassword(password);
 
     return new OwncloudAuthentication(owncloudUserDetails);
@@ -90,7 +80,7 @@ class OwncloudAuthenticationProvider extends AbstractOwncloudServiceImpl impleme
 
   @Override
   public boolean supports(Class<?> authentication) {
-    return UsernamePasswordAuthenticationToken.class.isAssignableFrom(authentication) || OwncloudAuthentication.class.isAssignableFrom(authentication);
+    return OwncloudUtils.isAuthenticationClassSupported(authentication);
   }
 
   private static class OwncloudAuthenticationProviderResponseErrorHandler extends DefaultOwncloudResponseErrorHandler {

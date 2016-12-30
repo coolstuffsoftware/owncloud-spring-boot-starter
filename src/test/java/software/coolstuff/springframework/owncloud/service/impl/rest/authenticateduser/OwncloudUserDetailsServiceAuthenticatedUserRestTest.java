@@ -15,13 +15,18 @@
    along with this program; if not, write to the Free Software Foundation,
    Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 */
-package software.coolstuff.springframework.owncloud.service.impl.resource.file;
+package software.coolstuff.springframework.owncloud.service.impl.rest.authenticateduser;
 
 import org.springframework.test.context.ActiveProfiles;
 
-import software.coolstuff.springframework.owncloud.service.impl.AbstractOwncloudUserDetailsServiceResourceTest;
+import software.coolstuff.springframework.owncloud.service.impl.AbstractOwncloudUserDetailsServiceRestTest;
 
-@ActiveProfiles("FILE-RESOURCE")
-public class OwncloudUserDetailsServiceFileResourceTest extends AbstractOwncloudUserDetailsServiceResourceTest implements OwncloudFileResourceTest {
+@ActiveProfiles("AUTHENTICATED-USER-URL")
+public class OwncloudUserDetailsServiceAuthenticatedUserRestTest extends AbstractOwncloudUserDetailsServiceRestTest {
+
+  @Override
+  public final String getBasicAuthorizationHeader() {
+    return getSecurityContextBasicAuthorizationHeader();
+  }
 
 }

@@ -57,7 +57,6 @@ import software.coolstuff.springframework.owncloud.exception.OwncloudInvalidAuth
 import software.coolstuff.springframework.owncloud.exception.OwncloudStatusException;
 import software.coolstuff.springframework.owncloud.model.OwncloudAuthentication;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
-import software.coolstuff.springframework.owncloud.properties.OwncloudProperties;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudGrantedAuthoritiesMapper;
 
 abstract class AbstractOwncloudServiceImpl {
@@ -108,7 +107,7 @@ abstract class AbstractOwncloudServiceImpl {
   protected void afterPropertiesSet() throws Exception {
     Validate.notBlank(properties.getLocation());
 
-    if (OwncloudResourceService.isNoResource(properties.getLocation())) {
+    if (OwncloudUtils.isNoResource(properties.getLocation())) {
       configureRestTemplate();
     } else {
       Validate.notNull(resourceService);

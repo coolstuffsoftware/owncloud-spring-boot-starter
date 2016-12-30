@@ -18,7 +18,6 @@
 package software.coolstuff.springframework.owncloud.service.impl;
 
 import org.apache.commons.lang3.Validate;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -29,9 +28,6 @@ import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
 
 class OwncloudUserDetailsService extends AbstractOwncloudServiceImpl implements UserDetailsService {
 
-  @Autowired(required = false)
-  private OwncloudResourceService resourceService;
-
   public OwncloudUserDetailsService(RestTemplateBuilder builder) {
     super(builder);
   }
@@ -40,12 +36,8 @@ class OwncloudUserDetailsService extends AbstractOwncloudServiceImpl implements 
   public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
     Validate.notBlank(username);
 
-    if (isRestAvailable()) {
-      Ocs.User user = exchange("/cloud/users/{user}", HttpMethod.GET, emptyEntity(), Ocs.User.class, username);
-      return loadPreloadedUserByUsername(username, user);
-    }
-
-    return loadUserByUsernameFromResourceService(username);
+    Ocs.User user = exchange("/cloud/users/{user}", HttpMethod.GET, emptyEntity(), Ocs.User.class, username);
+    return loadPreloadedUserByUsername(username, user);
   }
 
   OwncloudUserDetails loadPreloadedUserByUsername(String username, Ocs.User preloadedUser) throws UsernameNotFoundException {
@@ -53,7 +45,4 @@ class OwncloudUserDetailsService extends AbstractOwncloudServiceImpl implements 
     return createUserDetails(username, preloadedUser, groups);
   }
 
-  OwncloudUserDetails loadUserByUsernameFromResourceService(String username) {
-    return resourceService.getUser(username);
-  }
 }

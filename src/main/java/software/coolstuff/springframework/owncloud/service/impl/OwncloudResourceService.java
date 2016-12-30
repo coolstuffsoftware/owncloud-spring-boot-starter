@@ -40,11 +40,18 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.converter.xml.MappingJackson2XmlHttpMessageConverter;
+import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.SpringSecurityMessageSource;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
@@ -59,13 +66,13 @@ import lombok.Singular;
 import lombok.extern.slf4j.Slf4j;
 import software.coolstuff.springframework.owncloud.exception.OwncloudGroupAlreadyExistsException;
 import software.coolstuff.springframework.owncloud.exception.OwncloudGroupNotFoundException;
+import software.coolstuff.springframework.owncloud.model.OwncloudAuthentication;
 import software.coolstuff.springframework.owncloud.model.OwncloudModificationUser;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
-import software.coolstuff.springframework.owncloud.properties.OwncloudProperties;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudGrantedAuthoritiesMapper;
 
 @Slf4j
-class OwncloudResourceService implements InitializingBean, DisposableBean {
+class OwncloudResourceService implements InitializingBean, DisposableBean, AuthenticationProvider, UserDetailsService {
 
   @Autowired
   private ResourceLoader resourceLoader;
@@ -152,49 +159,43 @@ class OwncloudResourceService implements InitializingBean, DisposableBean {
     }
   }
 
-  /**
-   * Checks, if the defined Location is a Resource.
-   * <p/>
-   * This will be done by checking, if the Location starts either with <code>file:</code> or <code>classpath</code>
-   *
-   * @param location
-   *          Location to be checked
-   * @return
-   *         <ul>
-   *         <li>true ... Location is a Resource</li>
-   *         <li>false ... Location is possible a URL</li>
-   *         </ul>
-   */
-  public static boolean isResourceInsteadOfUrl(String location) {
-    return StringUtils.startsWith(location, "file:") || StringUtils.startsWith(location, "classpath:");
+  @Override
+  public boolean supports(Class<?> authentication) {
+    return OwncloudUtils.isAuthenticationClassSupported(authentication);
   }
 
-  /**
-   * Checks, if the defined Location is not a Resource.
-   * <p/>
-   * This will be done by checking, if the Location starts either with <code>file:</code> or <code>classpath</code>
-   *
-   * @param location
-   *          Location to be checked
-   * @return
-   *         <ul>
-   *         <li>true ... Location is possible a URL</li>
-   *         <li>false ... Location is a Resource</li>
-   *         </ul>
-   */
-  public static boolean isNoResource(String location) {
-    return !isResourceInsteadOfUrl(location);
-  }
+  @Override
+  public Authentication authenticate(Authentication authentication) throws AuthenticationException {
+    if (StringUtils.isBlank(authentication.getName())) {
+      throw new BadCredentialsException(messages.getMessage("AbstractUserDetailsAuthenticationProvider.badCredentials", "Bad Credentials"));
+    }
 
-  public boolean authenticate(String username, String password) {
+    if (authentication.getCredentials() == null) {
+      throw new BadCredentialsException(messages.getMessage("AbstractUserDetailsAuthenticationProvider.badCredentials", "Bad Credentials"));
+    }
+
+    String username = authentication.getName();
+    String password = authentication.getCredentials().toString();
+
     OwncloudResourceData.User user = users.get(username);
     if (user == null) {
       throw new BadCredentialsException(messages.getMessage("AbstractUserDetailsAuthenticationProvider.badCredentials", "Bad Credentials"));
     }
-    return StringUtils.equals(password, user.getPassword());
+
+    if (!StringUtils.equals(password, user.getPassword())) {
+      throw new BadCredentialsException(messages.getMessage("AbstractUserDetailsAuthenticationProvider.badCredentials", "Bad Credentials"));
+    }
+
+    SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(username, password));
+
+    OwncloudUserDetails owncloudUserDetails = (OwncloudUserDetails) loadUserByUsername(username);
+    owncloudUserDetails.setPassword(password);
+
+    return new OwncloudAuthentication(owncloudUserDetails);
   }
 
-  public OwncloudUserDetails getUser(String username) {
+  @Override
+  public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
     OwncloudResourceData.User user = users.get(username);
     if (user == null) {
       throw new UsernameNotFoundException(username);

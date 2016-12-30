@@ -23,6 +23,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.client.RestClientTest;
+import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.RememberMeAuthenticationToken;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -38,12 +39,14 @@ import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
 public abstract class AbstractOwncloudAuthenticationProviderTest extends AbstractOwncloudServiceTest {
 
   @Autowired
-  private OwncloudAuthenticationProvider authenticationProvider;
+  private AuthenticationProvider authenticationProvider;
 
   @Test
   public void testCorrectClass() {
-    Assert.assertEquals(OwncloudAuthenticationProvider.class, authenticationProvider.getClass());
+    Assert.assertEquals(getAuthenticationProviderClass(), authenticationProvider.getClass());
   }
+
+  protected abstract Class<? extends AuthenticationProvider> getAuthenticationProviderClass();
 
   @Test
   public void testSupportedAuthenticationTokens() {

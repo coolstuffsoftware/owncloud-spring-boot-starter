@@ -28,7 +28,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.converter.FormHttpMessageConverter;
 import org.springframework.http.converter.xml.MappingJackson2XmlHttpMessageConverter;
 
-import software.coolstuff.springframework.owncloud.properties.OwncloudProperties;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudUserModificationService;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudUserQueryService;
 
@@ -60,12 +59,14 @@ class OwncloudAutoConfiguration {
 
   @Bean
   @ConditionalOnMissingBean(OwncloudAuthenticationProvider.class)
+  @ConditionalOnExpression("#{!('${owncloud.location}' matches 'file:.*') and !('${owncloud.location}' matches 'classpath:.*')}")
   public OwncloudAuthenticationProvider owncloudAuthenticationProvider(RestTemplateBuilder builder) {
     return new OwncloudAuthenticationProvider(builder);
   }
 
   @Bean
   @ConditionalOnMissingBean(OwncloudUserDetailsService.class)
+  @ConditionalOnExpression("#{!('${owncloud.location}' matches 'file:.*') and !('${owncloud.location}' matches 'classpath:.*')}")
   public OwncloudUserDetailsService owncloudUserDetailsService(RestTemplateBuilder builder) {
     return new OwncloudUserDetailsService(builder);
   }

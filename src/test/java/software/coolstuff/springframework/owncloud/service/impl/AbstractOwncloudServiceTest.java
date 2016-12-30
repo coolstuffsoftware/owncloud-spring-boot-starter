@@ -100,9 +100,7 @@ import lombok.extern.slf4j.Slf4j;
 import software.coolstuff.springframework.owncloud.config.AuthorityAppenderConfiguration;
 import software.coolstuff.springframework.owncloud.config.AuthorityMapperConfiguration;
 import software.coolstuff.springframework.owncloud.config.CompareResourceAfter;
-import software.coolstuff.springframework.owncloud.config.OwncloudFileResourceTestExecutionListener;
 import software.coolstuff.springframework.owncloud.config.VelocityConfiguration;
-import software.coolstuff.springframework.owncloud.properties.OwncloudProperties;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudGrantedAuthoritiesMapper;
 import software.coolstuff.springframework.owncloud.service.impl.resource.file.OwncloudFileResourceTest;
 import software.coolstuff.springframework.owncloud.service.impl.resource.file.OwncloudModifyingFileResourceTest;
@@ -290,7 +288,7 @@ public abstract class AbstractOwncloudServiceTest {
 
   private RequestMatcher requestToWithPrefix(String uri) throws MalformedURLException {
     String rootURI = null;
-    if (OwncloudResourceService.isNoResource(properties.getLocation())) {
+    if (OwncloudUtils.isNoResource(properties.getLocation())) {
       URL url = new URL(properties.getLocation());
       rootURI = properties.getLocation();
       if (StringUtils.isBlank(url.getPath()) || "/".equals(url.getPath())) {
