@@ -98,12 +98,25 @@ abstract class AbstractOwncloudRestServiceImpl implements OwncloudRestService {
   }
 
   @PostConstruct
-  protected void afterPropertiesSet() throws Exception {
+  public void afterPropertiesSet() throws Exception {
     Validate.notBlank(properties.getLocation());
+
+    checkLocation(properties.getLocation());
 
     if (OwncloudUtils.isNoResourceLocation(properties.getLocation())) {
       configureRestTemplate();
     }
+  }
+
+  protected void checkLocation(String location) throws MalformedURLException {
+    URL url = new URL(location);
+    if (isNotValidProtocol(url)) {
+      throw new IllegalArgumentException("Invalid Protocol " + url.getProtocol() + ". Only http or https are allowed");
+    }
+  }
+
+  private boolean isNotValidProtocol(URL url) {
+    return !StringUtils.equals(url.getProtocol(), "http") && !StringUtils.equals(url.getProtocol(), "https");
   }
 
   private void configureRestTemplate() throws MalformedURLException {
