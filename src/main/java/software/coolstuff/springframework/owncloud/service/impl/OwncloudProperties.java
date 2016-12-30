@@ -29,6 +29,5 @@ class OwncloudProperties {
   private String username;
   private String password;
   private boolean enableModifications = false;
-  private String fileResourceRoot = OwncloudFileServiceImpl.DEFAULT_ROOT;
 
 }
