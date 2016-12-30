@@ -19,9 +19,9 @@ package software.coolstuff.springframework.owncloud.service.impl.resource.classp
 
 import org.springframework.test.context.ActiveProfiles;
 
-import software.coolstuff.springframework.owncloud.service.AbstractOwncloudUserModificationServiceTest;
+import software.coolstuff.springframework.owncloud.service.impl.AbstractOwncloudUserModificationServiceResourceTest;
 
 @ActiveProfiles("CLASSPATH-RESOURCE")
-public class OwncloudUserModificationServiceClasspathResourceTest extends AbstractOwncloudUserModificationServiceTest {
+public class OwncloudUserModificationServiceClasspathResourceTest extends AbstractOwncloudUserModificationServiceResourceTest {
 
 }

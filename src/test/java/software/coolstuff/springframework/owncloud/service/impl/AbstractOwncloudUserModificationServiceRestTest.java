@@ -44,20 +44,21 @@ import software.coolstuff.springframework.owncloud.exception.OwncloudGroupNotFou
 import software.coolstuff.springframework.owncloud.exception.OwncloudUsernameAlreadyExistsException;
 import software.coolstuff.springframework.owncloud.model.OwncloudModificationUser;
 import software.coolstuff.springframework.owncloud.service.AbstractOwncloudUserModificationServiceTest;
+import software.coolstuff.springframework.owncloud.service.api.OwncloudUserModificationService;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudUserQueryService;
 
 public abstract class AbstractOwncloudUserModificationServiceRestTest
     extends AbstractOwncloudUserModificationServiceTest implements OwncloudServiceRestTest {
 
   @Autowired
-  private OwncloudUserModificationServiceImpl userModificationService;
+  private OwncloudUserModificationService userModificationService;
 
   @Autowired
   private OwncloudUserQueryService userQueryService;
 
   @Override
-  public final AbstractOwncloudServiceImpl owncloudService() {
-    return userModificationService;
+  public final OwncloudRestService owncloudService() {
+    return (OwncloudRestService) userModificationService;
   }
 
   @Override
@@ -232,7 +233,7 @@ public abstract class AbstractOwncloudUserModificationServiceRestTest
       }
     }
 
-    MockRestServiceServer queryServer = createServer((OwncloudUserQueryServiceImpl) userQueryService);
+    MockRestServiceServer queryServer = createServer((OwncloudUserQueryRestServiceImpl) userQueryService);
     respondUser(
         RestRequest.builder()
             .server(queryServer)

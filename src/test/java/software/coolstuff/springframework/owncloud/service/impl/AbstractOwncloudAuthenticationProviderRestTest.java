@@ -29,23 +29,25 @@ import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.client.HttpStatusCodeException;
 
+import software.coolstuff.springframework.owncloud.service.AbstractOwncloudAuthenticationProviderTest;
+
 public abstract class AbstractOwncloudAuthenticationProviderRestTest extends AbstractOwncloudAuthenticationProviderTest
     implements OwncloudServiceRestTest {
 
   @Autowired
-  private OwncloudAuthenticationProvider authenticationProvider;
+  private AuthenticationProvider authenticationProvider;
 
   @Autowired
-  private OwncloudUserDetailsService userDetailsService;
+  private OwncloudUserDetailsRestService userDetailsService;
 
   @Override
-  public final OwncloudAuthenticationProvider owncloudService() {
-    return authenticationProvider;
+  public final OwncloudRestService owncloudService() {
+    return (OwncloudRestService) authenticationProvider;
   }
 
   @Override
   protected Class<? extends AuthenticationProvider> getAuthenticationProviderClass() {
-    return OwncloudAuthenticationProvider.class;
+    return OwncloudRestAuthenticationProvider.class;
   }
 
   @Override

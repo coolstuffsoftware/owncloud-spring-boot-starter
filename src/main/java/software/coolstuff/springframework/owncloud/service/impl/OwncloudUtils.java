@@ -2,51 +2,40 @@ package software.coolstuff.springframework.owncloud.service.impl;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import software.coolstuff.springframework.owncloud.exception.OwncloudGroupNotFoundException;
 import software.coolstuff.springframework.owncloud.model.OwncloudAuthentication;
+import software.coolstuff.springframework.owncloud.service.impl.OwncloudResourceService.OwncloudResourceData;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 final class OwncloudUtils {
 
-  /**
-   * Checks, if the defined Location is a Resource.
-   * <p/>
-   * This will be done by checking, if the Location starts either with <code>file:</code> or <code>classpath</code>
-   *
-   * @param location
-   *          Location to be checked
-   * @return
-   *         <ul>
-   *         <li>true ... Location is a Resource</li>
-   *         <li>false ... Location is possible a URL</li>
-   *         </ul>
-   */
-  public static boolean isResourceInsteadOfUrl(String location) {
+  static boolean isNoResourceLocation(String location) {
+    return !isResourceLocation(location);
+  }
+
+  static boolean isResourceLocation(String location) {
     return StringUtils.startsWith(location, "file:") || StringUtils.startsWith(location, "classpath:");
   }
 
-  /**
-   * Checks, if the defined Location is not a Resource.
-   * <p/>
-   * This will be done by checking, if the Location starts either with <code>file:</code> or <code>classpath</code>
-   *
-   * @param location
-   *          Location to be checked
-   * @return
-   *         <ul>
-   *         <li>true ... Location is possible a URL</li>
-   *         <li>false ... Location is a Resource</li>
-   *         </ul>
-   */
-  public static boolean isNoResource(String location) {
-    return !isResourceInsteadOfUrl(location);
-  }
-
-  public static boolean isAuthenticationClassSupported(Class<?> authentication) {
+  static boolean isAuthenticationClassSupported(Class<?> authentication) {
     return UsernamePasswordAuthenticationToken.class.isAssignableFrom(authentication) ||
         OwncloudAuthentication.class.isAssignableFrom(authentication);
+  }
+
+  static void validateUserNotNull(OwncloudResourceData.User user, String username) {
+    if (user == null) {
+      throw new UsernameNotFoundException(username);
+    }
+  }
+
+  static void validateGroupNotNull(OwncloudResourceData.Group group, String groupname) {
+    if (group == null) {
+      throw new OwncloudGroupNotFoundException(groupname);
+    }
   }
 
 }

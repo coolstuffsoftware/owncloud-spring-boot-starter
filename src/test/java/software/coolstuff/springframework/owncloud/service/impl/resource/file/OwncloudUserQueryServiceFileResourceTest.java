@@ -19,9 +19,9 @@ package software.coolstuff.springframework.owncloud.service.impl.resource.file;
 
 import org.springframework.test.context.ActiveProfiles;
 
-import software.coolstuff.springframework.owncloud.service.AbstractOwncloudUserQueryServiceTest;
+import software.coolstuff.springframework.owncloud.service.impl.AbstractOwncloudUserQueryServiceResourceTest;
 
 @ActiveProfiles("FILE-RESOURCE")
-public class OwncloudUserQueryServiceFileResourceTest extends AbstractOwncloudUserQueryServiceTest implements OwncloudFileResourceTest {
+public class OwncloudUserQueryServiceFileResourceTest extends AbstractOwncloudUserQueryServiceResourceTest implements OwncloudFileResourceTest {
 
 }

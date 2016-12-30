@@ -40,11 +40,8 @@ import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudUserModificationService;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudUserQueryService;
 
-class OwncloudUserModificationServiceImpl extends AbstractOwncloudServiceImpl
+class OwncloudUserModificationRestServiceImpl extends AbstractOwncloudRestServiceImpl
     implements OwncloudUserModificationService {
-
-  @Autowired(required = false)
-  private OwncloudResourceService resourceService;
 
   @Autowired
   private OwncloudProperties owncloudProperties;
@@ -52,20 +49,14 @@ class OwncloudUserModificationServiceImpl extends AbstractOwncloudServiceImpl
   @Autowired
   private OwncloudUserQueryService userQueryService;
 
-  OwncloudUserModificationServiceImpl(RestTemplateBuilder builder) {
+  OwncloudUserModificationRestServiceImpl(RestTemplateBuilder builder) {
     super(builder);
   }
 
   @Override
   public OwncloudUserDetails saveUser(OwncloudModificationUser user) {
-    checkModificationsEnabled();
-
     Validate.notNull(user);
     Validate.notBlank(user.getUsername());
-
-    if (isRestNotAvailable()) {
-      return resourceService.saveUser(user);
-    }
 
     try {
       // First check, if the User already exists within the Owncloud
@@ -81,12 +72,6 @@ class OwncloudUserModificationServiceImpl extends AbstractOwncloudServiceImpl
     OwncloudUserDetails foundUserDetails = userQueryService.findOneUser(user.getUsername());
     foundUserDetails.setPassword(user.getPassword());
     return foundUserDetails;
-  }
-
-  private void checkModificationsEnabled() {
-    if (!owncloudProperties.isEnableModifications()) {
-      throw new AccessDeniedException("no modifications allowed");
-    }
   }
 
   private void updateUser(OwncloudModificationUser user, Ocs.User.Data existingUser) {
@@ -152,7 +137,7 @@ class OwncloudUserModificationServiceImpl extends AbstractOwncloudServiceImpl
 
   private void manageGroupMemberships(String username, List<String> expectedGroups) {
     Ocs.Groups ocsGroups = exchange("/cloud/users/{user}/groups", HttpMethod.GET, emptyEntity(), Ocs.Groups.class, username);
-    List<String> actualGroups = OwncloudUserQueryServiceImpl.convertGroups(ocsGroups);
+    List<String> actualGroups = OwncloudUserQueryRestServiceImpl.convertGroups(ocsGroups);
 
     // add new Group Memberships
     if (CollectionUtils.isNotEmpty(expectedGroups)) {
@@ -255,14 +240,7 @@ class OwncloudUserModificationServiceImpl extends AbstractOwncloudServiceImpl
 
   @Override
   public void deleteUser(String username) {
-    checkModificationsEnabled();
-
     Validate.notBlank(username);
-
-    if (isRestNotAvailable()) {
-      resourceService.deleteUser(username);
-      return;
-    }
 
     exchange("/cloud/users/{user}", HttpMethod.DELETE, emptyEntity(), Ocs.Void.class, (uri, meta) -> {
       if ("ok".equals(meta.getStatus())) {
@@ -282,14 +260,7 @@ class OwncloudUserModificationServiceImpl extends AbstractOwncloudServiceImpl
 
   @Override
   public void createGroup(String groupname) {
-    checkModificationsEnabled();
-
     Validate.notBlank(groupname);
-
-    if (isRestNotAvailable()) {
-      resourceService.createGroup(groupname);
-      return;
-    }
 
     Map<String, List<String>> data = new HashMap<>();
     data.put("groupid", Lists.newArrayList(groupname));
@@ -316,14 +287,7 @@ class OwncloudUserModificationServiceImpl extends AbstractOwncloudServiceImpl
 
   @Override
   public void deleteGroup(String groupname) {
-    checkModificationsEnabled();
-
     Validate.notBlank(groupname);
-
-    if (isRestNotAvailable()) {
-      resourceService.deleteGroup(groupname);
-      return;
-    }
 
     Map<String, List<String>> data = new HashMap<>();
     data.put("groupid", Lists.newArrayList(groupname));

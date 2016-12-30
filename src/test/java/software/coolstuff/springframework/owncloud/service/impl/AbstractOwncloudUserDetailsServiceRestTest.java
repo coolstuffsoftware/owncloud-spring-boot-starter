@@ -25,20 +25,21 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
 import software.coolstuff.springframework.owncloud.config.WithOwncloudMockUser;
+import software.coolstuff.springframework.owncloud.service.AbstractOwncloudUserDetailsServiceTest;
 
 public abstract class AbstractOwncloudUserDetailsServiceRestTest extends AbstractOwncloudUserDetailsServiceTest implements OwncloudServiceRestTest {
 
   @Autowired
-  private OwncloudUserDetailsService userDetailsService;
+  private UserDetailsService userDetailsService;
 
   @Override
-  public final OwncloudUserDetailsService owncloudService() {
-    return userDetailsService;
+  public final OwncloudRestService owncloudService() {
+    return (OwncloudRestService) userDetailsService;
   }
 
   @Override
   protected Class<? extends UserDetailsService> getUserDetailsServiceClass() {
-    return OwncloudUserDetailsService.class;
+    return OwncloudUserDetailsRestService.class;
   }
 
   @Override

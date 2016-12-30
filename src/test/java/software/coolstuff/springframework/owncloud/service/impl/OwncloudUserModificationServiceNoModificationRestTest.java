@@ -34,8 +34,8 @@ public class OwncloudUserModificationServiceNoModificationRestTest extends Abstr
   private OwncloudUserModificationService userModificationService;
 
   @Override
-  public final AbstractOwncloudServiceImpl owncloudService() {
-    return (OwncloudUserModificationServiceImpl) userModificationService;
+  public final OwncloudRestService owncloudService() {
+    return (OwncloudRestService) userModificationService;
   }
 
   @Override

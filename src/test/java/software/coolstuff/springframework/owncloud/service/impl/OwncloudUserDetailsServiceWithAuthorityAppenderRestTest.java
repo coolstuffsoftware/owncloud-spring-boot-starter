@@ -20,19 +20,18 @@ package software.coolstuff.springframework.owncloud.service.impl;
 import static org.springframework.http.HttpMethod.GET;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.test.context.ActiveProfiles;
-
-import software.coolstuff.springframework.owncloud.service.impl.OwncloudUserDetailsService;
 
 @ActiveProfiles("AUTHORITY-APPENDER-URL")
 public class OwncloudUserDetailsServiceWithAuthorityAppenderRestTest extends AbstractOwncloudUserDetailsServiceWithAuthorityAppenderTest implements OwncloudServiceRestTest {
 
   @Autowired
-  private OwncloudUserDetailsService userDetailsService;
+  private UserDetailsService userDetailsService;
 
   @Override
-  public OwncloudUserDetailsService owncloudService() {
-    return userDetailsService;
+  public OwncloudRestService owncloudService() {
+    return (OwncloudRestService) userDetailsService;
   }
 
   @Override

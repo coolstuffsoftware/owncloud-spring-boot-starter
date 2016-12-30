@@ -22,7 +22,6 @@ import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.access.AccessDeniedException;
@@ -31,12 +30,9 @@ import software.coolstuff.springframework.owncloud.exception.OwncloudGroupNotFou
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudUserQueryService;
 
-class OwncloudUserQueryServiceImpl extends AbstractOwncloudServiceImpl implements OwncloudUserQueryService {
+class OwncloudUserQueryRestServiceImpl extends AbstractOwncloudRestServiceImpl implements OwncloudUserQueryService {
 
-  @Autowired(required = false)
-  private OwncloudResourceService resourceService;
-
-  OwncloudUserQueryServiceImpl(RestTemplateBuilder builder) {
+  OwncloudUserQueryRestServiceImpl(RestTemplateBuilder builder) {
     super(builder);
   }
 
@@ -47,10 +43,6 @@ class OwncloudUserQueryServiceImpl extends AbstractOwncloudServiceImpl implement
 
   @Override
   public List<String> findAllUsers(String filter) {
-    if (isRestNotAvailable()) {
-      return resourceService.getAllUsers(filter);
-    }
-
     Ocs.Users users = null;
     if (StringUtils.isBlank(filter)) {
       users = exchange("/cloud/users", HttpMethod.GET, emptyEntity(), Ocs.Users.class);
@@ -81,10 +73,6 @@ class OwncloudUserQueryServiceImpl extends AbstractOwncloudServiceImpl implement
 
   @Override
   public List<String> findAllGroups(String filter) {
-    if (isRestNotAvailable()) {
-      return resourceService.getAllGroups(filter);
-    }
-
     Ocs.Groups ocsGroups = null;
     if (StringUtils.isBlank(filter)) {
       ocsGroups = exchange("/cloud/groups", HttpMethod.GET, emptyEntity(), Ocs.Groups.class);
@@ -111,10 +99,6 @@ class OwncloudUserQueryServiceImpl extends AbstractOwncloudServiceImpl implement
   @Override
   public List<String> findAllMembersOfGroup(String groupname) {
     Validate.notBlank(groupname);
-    if (isRestNotAvailable()) {
-      return resourceService.getAllMembersOfGroup(groupname);
-    }
-
     Ocs.Users users = exchange("/cloud/groups/{group}", HttpMethod.GET, emptyEntity(), Ocs.Users.class, (uri, meta) -> {
       if ("ok".equals(meta.getStatus())) {
         return;
@@ -135,10 +119,6 @@ class OwncloudUserQueryServiceImpl extends AbstractOwncloudServiceImpl implement
   @Override
   public List<String> findAllGroupsOfUser(String username) {
     Validate.notBlank(username);
-    if (isRestNotAvailable()) {
-      return resourceService.getGroupsOfUser(username);
-    }
-
     Ocs.Groups ocsGroups = exchange("/cloud/users/{user}/groups", HttpMethod.GET, emptyEntity(), Ocs.Groups.class, username);
     return convertGroups(ocsGroups);
   }
@@ -146,10 +126,6 @@ class OwncloudUserQueryServiceImpl extends AbstractOwncloudServiceImpl implement
   @Override
   public OwncloudUserDetails findOneUser(String username) {
     Validate.notBlank(username);
-    if (isRestNotAvailable()) {
-      return (OwncloudUserDetails) resourceService.loadUserByUsername(username);
-    }
-
     Ocs.User user = exchange("/cloud/users/{user}", HttpMethod.GET, emptyEntity(), Ocs.User.class, username);
     Ocs.Groups groups = exchange("/cloud/users/{user}/groups", HttpMethod.GET, emptyEntity(), Ocs.Groups.class, username);
     return createUserDetails(username, user, groups);

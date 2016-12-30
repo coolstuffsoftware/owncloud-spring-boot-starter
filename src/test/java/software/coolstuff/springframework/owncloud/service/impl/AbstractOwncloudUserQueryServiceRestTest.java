@@ -30,15 +30,21 @@ import org.springframework.web.util.UriUtils;
 import software.coolstuff.springframework.owncloud.config.WithOwncloudMockUser;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
 import software.coolstuff.springframework.owncloud.service.AbstractOwncloudUserQueryServiceTest;
+import software.coolstuff.springframework.owncloud.service.api.OwncloudUserQueryService;
 
 public abstract class AbstractOwncloudUserQueryServiceRestTest extends AbstractOwncloudUserQueryServiceTest implements OwncloudServiceRestTest {
 
   @Autowired
-  private OwncloudUserQueryServiceImpl userQueryService;
+  private OwncloudUserQueryService userQueryService;
 
   @Override
-  public final AbstractOwncloudServiceImpl owncloudService() {
-    return userQueryService;
+  public final OwncloudRestService owncloudService() {
+    return (OwncloudRestService) userQueryService;
+  }
+
+  @Override
+  protected Class<? extends OwncloudUserQueryService> getUserQueryServiceClass() {
+    return OwncloudUserQueryRestServiceImpl.class;
   }
 
   @Override

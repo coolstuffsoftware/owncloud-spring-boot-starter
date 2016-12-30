@@ -69,7 +69,7 @@ public interface OwncloudUserQueryService {
    * @throws AccessDeniedException Not an Administrator
    * @throws OwncloudGroupNotFoundException Group doesn&apos;t exist
    */
-  List<String> findAllMembersOfGroup(String group);
+  List<String> findAllMembersOfGroup(String groupname);
 
   /**
    * Find all Groups of a User

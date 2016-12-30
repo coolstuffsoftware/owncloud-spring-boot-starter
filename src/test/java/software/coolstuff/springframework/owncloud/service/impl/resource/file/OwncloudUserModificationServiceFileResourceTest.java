@@ -21,10 +21,10 @@ import org.springframework.core.io.Resource;
 import org.springframework.test.context.ActiveProfiles;
 
 import software.coolstuff.springframework.owncloud.config.CompareResourceAfter;
-import software.coolstuff.springframework.owncloud.service.AbstractOwncloudUserModificationServiceTest;
+import software.coolstuff.springframework.owncloud.service.impl.AbstractOwncloudUserModificationServiceResourceTest;
 
 @ActiveProfiles("FILE-RESOURCE")
-public class OwncloudUserModificationServiceFileResourceTest extends AbstractOwncloudUserModificationServiceTest implements OwncloudModifyingFileResourceTest {
+public class OwncloudUserModificationServiceFileResourceTest extends AbstractOwncloudUserModificationServiceResourceTest implements OwncloudModifyingFileResourceTest {
 
   @Override
   public String getResourcePrefix() {

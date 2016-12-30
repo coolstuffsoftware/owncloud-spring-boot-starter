@@ -161,7 +161,7 @@ public abstract class AbstractOwncloudServiceTest {
     }
   }
 
-  protected final MockRestServiceServer createServer(AbstractOwncloudServiceImpl owncloudService) {
+  protected final MockRestServiceServer createServer(OwncloudRestService owncloudService) {
     return MockRestServiceServer.createServer(owncloudService.getRestTemplate());
   }
 
@@ -288,11 +288,11 @@ public abstract class AbstractOwncloudServiceTest {
 
   private RequestMatcher requestToWithPrefix(String uri) throws MalformedURLException {
     String rootURI = null;
-    if (OwncloudUtils.isNoResource(properties.getLocation())) {
+    if (OwncloudUtils.isNoResourceLocation(properties.getLocation())) {
       URL url = new URL(properties.getLocation());
       rootURI = properties.getLocation();
       if (StringUtils.isBlank(url.getPath()) || "/".equals(url.getPath())) {
-        rootURI = URI.create(url.toString() + AbstractOwncloudServiceImpl.DEFAULT_PATH).toString();
+        rootURI = URI.create(url.toString() + AbstractOwncloudRestServiceImpl.DEFAULT_PATH).toString();
       }
     }
     return requestTo(rootURI + uri);

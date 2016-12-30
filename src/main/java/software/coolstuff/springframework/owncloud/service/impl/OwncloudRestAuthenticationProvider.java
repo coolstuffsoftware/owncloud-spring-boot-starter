@@ -38,12 +38,12 @@ import software.coolstuff.springframework.owncloud.exception.OwncloudStatusExcep
 import software.coolstuff.springframework.owncloud.model.OwncloudAuthentication;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
 
-class OwncloudAuthenticationProvider extends AbstractOwncloudServiceImpl implements AuthenticationProvider {
+class OwncloudRestAuthenticationProvider extends AbstractOwncloudRestServiceImpl implements AuthenticationProvider {
 
   @Autowired
-  private OwncloudUserDetailsService userDetailsService;
+  private OwncloudUserDetailsRestService userDetailsService;
 
-  public OwncloudAuthenticationProvider(RestTemplateBuilder builder) {
+  public OwncloudRestAuthenticationProvider(RestTemplateBuilder builder) {
     super(builder, false, new OwncloudAuthenticationProviderResponseErrorHandler(SpringSecurityMessageSource.getAccessor()));
   }
 

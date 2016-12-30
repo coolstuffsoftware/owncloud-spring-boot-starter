@@ -15,7 +15,7 @@
    along with this program; if not, write to the Free Software Foundation,
    Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 */
-package software.coolstuff.springframework.owncloud.service.impl;
+package software.coolstuff.springframework.owncloud.service;
 
 import java.util.Base64;
 
@@ -34,8 +34,9 @@ import lombok.Data;
 import software.coolstuff.springframework.owncloud.config.WithOwncloudMockUser;
 import software.coolstuff.springframework.owncloud.model.OwncloudAuthentication;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
+import software.coolstuff.springframework.owncloud.service.impl.AbstractOwncloudServiceTest;
 
-@RestClientTest(OwncloudAuthenticationProvider.class)
+@RestClientTest(AuthenticationProvider.class)
 public abstract class AbstractOwncloudAuthenticationProviderTest extends AbstractOwncloudServiceTest {
 
   @Autowired

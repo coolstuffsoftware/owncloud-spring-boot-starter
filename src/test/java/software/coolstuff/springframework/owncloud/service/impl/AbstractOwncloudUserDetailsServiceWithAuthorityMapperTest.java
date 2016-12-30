@@ -28,7 +28,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 
 import software.coolstuff.springframework.owncloud.config.WithOwncloudMockUser;
 
-@RestClientTest(OwncloudUserDetailsService.class)
+@RestClientTest(OwncloudUserDetailsRestService.class)
 public abstract class AbstractOwncloudUserDetailsServiceWithAuthorityMapperTest extends AbstractOwncloudServiceTest {
 
   @Autowired

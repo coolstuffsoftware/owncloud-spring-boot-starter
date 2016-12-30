@@ -25,6 +25,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.http.converter.FormHttpMessageConverter;
 import org.springframework.http.converter.xml.MappingJackson2XmlHttpMessageConverter;
 
@@ -39,6 +40,7 @@ import software.coolstuff.springframework.owncloud.service.api.OwncloudUserQuery
 })
 @ConditionalOnProperty(prefix = "owncloud", name = "location")
 @EnableConfigurationProperties(OwncloudProperties.class)
+@EnableAspectJAutoProxy
 class OwncloudAutoConfiguration {
 
   @Bean
@@ -48,32 +50,51 @@ class OwncloudAutoConfiguration {
   }
 
   @Bean
-  public OwncloudUserQueryService owncloudUserQueryService(RestTemplateBuilder builder) {
-    return new OwncloudUserQueryServiceImpl(builder);
+  public OwncloudUserModificationChecker owncloudUserModificationChecker(OwncloudProperties owncloudProperties) {
+    return new OwncloudUserModificationChecker(owncloudProperties);
   }
 
   @Bean
-  public OwncloudUserModificationService owncloudUserModificationService(RestTemplateBuilder builder) {
-    return new OwncloudUserModificationServiceImpl(builder);
-  }
-
-  @Bean
-  @ConditionalOnMissingBean(OwncloudAuthenticationProvider.class)
   @ConditionalOnExpression("#{!('${owncloud.location}' matches 'file:.*') and !('${owncloud.location}' matches 'classpath:.*')}")
-  public OwncloudAuthenticationProvider owncloudAuthenticationProvider(RestTemplateBuilder builder) {
-    return new OwncloudAuthenticationProvider(builder);
-  }
-
-  @Bean
-  @ConditionalOnMissingBean(OwncloudUserDetailsService.class)
-  @ConditionalOnExpression("#{!('${owncloud.location}' matches 'file:.*') and !('${owncloud.location}' matches 'classpath:.*')}")
-  public OwncloudUserDetailsService owncloudUserDetailsService(RestTemplateBuilder builder) {
-    return new OwncloudUserDetailsService(builder);
+  public OwncloudUserQueryService owncloudUserQueryRestService(RestTemplateBuilder builder) {
+    return new OwncloudUserQueryRestServiceImpl(builder);
   }
 
   @Bean
   @ConditionalOnExpression("#{'${owncloud.location}' matches 'file:.*' or '${owncloud.location}' matches 'classpath:.*'}")
+  public OwncloudUserQueryService owncloudUserQueryResourceService() {
+    return new OwncloudUserQueryResourceServiceImpl(owncloudResourceService());
+  }
+
+  @Bean
+  @ConditionalOnExpression("#{!('${owncloud.location}' matches 'file:.*') and !('${owncloud.location}' matches 'classpath:.*')}")
+  public OwncloudUserModificationService owncloudUserModificationRestService(RestTemplateBuilder builder) {
+    return new OwncloudUserModificationRestServiceImpl(builder);
+  }
+
+  @Bean
+  @ConditionalOnExpression("#{'${owncloud.location}' matches 'file:.*' or '${owncloud.location}' matches 'classpath:.*'}")
+  public OwncloudUserModificationService owncloudUserModificationResourceService() {
+    return new OwncloudUserModificationResourceService(owncloudResourceService());
+  }
+
+  @Bean
+  @ConditionalOnMissingBean(OwncloudRestAuthenticationProvider.class)
+  @ConditionalOnExpression("#{!('${owncloud.location}' matches 'file:.*') and !('${owncloud.location}' matches 'classpath:.*')}")
+  public OwncloudRestAuthenticationProvider owncloudAuthenticationProvider(RestTemplateBuilder builder) {
+    return new OwncloudRestAuthenticationProvider(builder);
+  }
+
+  @Bean
+  @ConditionalOnMissingBean(OwncloudUserDetailsRestService.class)
+  @ConditionalOnExpression("#{!('${owncloud.location}' matches 'file:.*') and !('${owncloud.location}' matches 'classpath:.*')}")
+  public OwncloudUserDetailsRestService owncloudUserDetailsService(RestTemplateBuilder builder) {
+    return new OwncloudUserDetailsRestService(builder);
+  }
+
+  @Bean
   @ConditionalOnMissingBean(OwncloudResourceService.class)
+  @ConditionalOnExpression("#{'${owncloud.location}' matches 'file:.*' or '${owncloud.location}' matches 'classpath:.*'}")
   public OwncloudResourceService owncloudResourceService() {
     return new OwncloudResourceService();
   }

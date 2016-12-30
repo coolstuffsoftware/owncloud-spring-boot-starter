@@ -15,7 +15,7 @@
    along with this program; if not, write to the Free Software Foundation,
    Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 */
-package software.coolstuff.springframework.owncloud.service.impl;
+package software.coolstuff.springframework.owncloud.service;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -27,8 +27,9 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import software.coolstuff.springframework.owncloud.config.WithOwncloudMockUser;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
+import software.coolstuff.springframework.owncloud.service.impl.AbstractOwncloudServiceTest;
 
-@RestClientTest(OwncloudUserDetailsService.class)
+@RestClientTest(UserDetailsService.class)
 public abstract class AbstractOwncloudUserDetailsServiceTest extends AbstractOwncloudServiceTest {
 
   @Autowired

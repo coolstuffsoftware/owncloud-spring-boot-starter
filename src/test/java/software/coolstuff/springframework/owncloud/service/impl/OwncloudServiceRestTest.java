@@ -19,7 +19,7 @@ package software.coolstuff.springframework.owncloud.service.impl;
 
 public interface OwncloudServiceRestTest {
 
-  AbstractOwncloudServiceImpl owncloudService();
+  OwncloudRestService owncloudService();
 
   String getBasicAuthorizationHeader();
 

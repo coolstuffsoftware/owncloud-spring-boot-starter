@@ -53,13 +53,16 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.ResponseErrorHandler;
 import org.springframework.web.client.RestTemplate;
 
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
 import software.coolstuff.springframework.owncloud.exception.OwncloudInvalidAuthenticationObjectException;
 import software.coolstuff.springframework.owncloud.exception.OwncloudStatusException;
 import software.coolstuff.springframework.owncloud.model.OwncloudAuthentication;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudGrantedAuthoritiesMapper;
 
-abstract class AbstractOwncloudServiceImpl {
+@RequiredArgsConstructor(access = AccessLevel.PROTECTED)
+abstract class AbstractOwncloudRestServiceImpl implements OwncloudRestService {
 
   final static String DEFAULT_PATH = "/ocs/v1.php";
 
@@ -86,31 +89,20 @@ abstract class AbstractOwncloudServiceImpl {
   @Autowired(required = false)
   private GrantedAuthoritiesMapper grantedAuthoritiesMapper;
 
-  @Autowired(required = false)
-  private OwncloudResourceService resourceService;
-
-  protected AbstractOwncloudServiceImpl(RestTemplateBuilder builder) {
+  protected AbstractOwncloudRestServiceImpl(RestTemplateBuilder builder) {
     this(builder, true);
   }
 
-  protected AbstractOwncloudServiceImpl(RestTemplateBuilder builder, boolean addBasicAuthentication) {
+  protected AbstractOwncloudRestServiceImpl(RestTemplateBuilder builder, boolean addBasicAuthentication) {
     this(builder, addBasicAuthentication, new DefaultOwncloudResponseErrorHandler(SpringSecurityMessageSource.getAccessor()));
-  }
-
-  protected AbstractOwncloudServiceImpl(RestTemplateBuilder builder, boolean addBasicAuthentication, ResponseErrorHandler responseErrorHandler) {
-    this.restTemplateBuilder = builder;
-    this.addBasicAuthentication = addBasicAuthentication;
-    this.responseErrorHandler = responseErrorHandler;
   }
 
   @PostConstruct
   protected void afterPropertiesSet() throws Exception {
     Validate.notBlank(properties.getLocation());
 
-    if (OwncloudUtils.isNoResource(properties.getLocation())) {
+    if (OwncloudUtils.isNoResourceLocation(properties.getLocation())) {
       configureRestTemplate();
-    } else {
-      Validate.notNull(resourceService);
     }
   }
 
@@ -142,16 +134,9 @@ abstract class AbstractOwncloudServiceImpl {
     Validate.notNull(restTemplate);
   }
 
-  final RestTemplate getRestTemplate() {
+  @Override
+  final public RestTemplate getRestTemplate() {
     return restTemplate;
-  }
-
-  protected final boolean isRestAvailable() {
-    return restTemplate != null;
-  }
-
-  protected final boolean isRestNotAvailable() {
-    return !isRestAvailable();
   }
 
   protected boolean isUseAdministratorCredentials() {
