@@ -288,7 +288,7 @@ public abstract class AbstractOwncloudServiceTest {
 
   private RequestMatcher requestToWithPrefix(String uri) throws MalformedURLException {
     String rootURI = null;
-    if (OwncloudUtils.isNoResourceLocation(properties.getLocation())) {
+    if (isNoResourceLocation()) {
       URL url = new URL(properties.getLocation());
       rootURI = properties.getLocation();
       if (StringUtils.isBlank(url.getPath()) || "/".equals(url.getPath())) {
@@ -296,6 +296,10 @@ public abstract class AbstractOwncloudServiceTest {
       }
     }
     return requestTo(rootURI + uri);
+  }
+
+  private boolean isNoResourceLocation() {
+    return !StringUtils.startsWith(properties.getLocation(), "file:") && !StringUtils.startsWith(properties.getLocation(), "classpath:");
   }
 
   private void setSuccessMetaInformation(Context context) {
