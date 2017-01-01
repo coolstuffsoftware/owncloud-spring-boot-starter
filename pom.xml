@@ -95,18 +95,6 @@
         <artifactId>commons-collections4</artifactId>
         <version>${commons-collections4.version}</version>
       </dependency>
-      <dependency>
-        <groupId>org.apache.commons</groupId>
-        <artifactId>commons-vfs2</artifactId>
-        <version>${commons-vfs.version}</version>
-      </dependency>
-
-      <!-- Apache HttpClient -->
-      <dependency>
-        <groupId>org.apache.httpcomponents</groupId>
-        <artifactId>httpclient</artifactId>
-        <version>${httpclient.version}</version>
-      </dependency>
 
       <!-- Apache Jackrabbit -->
       <dependency>
@@ -162,9 +150,11 @@
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-collections4</artifactId>
     </dependency>
+
+    <!-- Apache Jackrabbit -->
     <dependency>
-      <groupId>org.apache.commons</groupId>
-      <artifactId>commons-vfs2</artifactId>
+      <groupId>org.apache.jackrabbit</groupId>
+      <artifactId>jackrabbit-webdav</artifactId>
     </dependency>
 
     <!-- Google Guava -->
@@ -186,22 +176,6 @@
       <groupId>org.projectlombok</groupId>
       <artifactId>lombok</artifactId>
       <scope>provided</scope>
-    </dependency>
-
-    <!-- Runtime Dependencies -->
-
-    <!-- Apache HttpClient -->
-    <dependency>
-      <groupId>org.apache.httpcomponents</groupId>
-      <artifactId>httpclient</artifactId>
-      <scope>runtime</scope>
-    </dependency>
-
-    <!-- Apache Jackrabbit -->
-    <dependency>
-      <groupId>org.apache.jackrabbit</groupId>
-      <artifactId>jackrabbit-webdav</artifactId>
-      <scope>runtime</scope>
     </dependency>
 
     <!-- Test Dependencies -->
