@@ -44,8 +44,8 @@ import lombok.Singular;
 public class OwncloudModificationUser {
 
   /**
-   * Username of the User to be modified.
-   * @return Username of the User to be modified
+   * Username of the User to be saved
+   * @return Username of the User to be saved
    */
   private final String username;
 
