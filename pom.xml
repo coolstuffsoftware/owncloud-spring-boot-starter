@@ -269,7 +269,17 @@
           <groupId>org.asciidoctor</groupId>
           <artifactId>asciidoctor-maven-plugin</artifactId>
           <version>1.5.3</version>
+          <dependencies>
+            <dependency>
+              <groupId>org.asciidoctor</groupId>
+              <artifactId>asciidoctorj-diagram</artifactId>
+              <version>1.5.0</version>
+            </dependency>
+          </dependencies>
           <configuration>
+            <requires>
+              <require>asciidoctor-diagram</require>
+            </requires>
             <attributes>
               <revnumber>${project.version}</revnumber>
               <organization>${project.organization.name}</organization>

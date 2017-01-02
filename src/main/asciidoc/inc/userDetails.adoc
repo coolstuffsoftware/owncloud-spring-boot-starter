@@ -1,0 +1,143 @@
+== UserDetails Service
+Like the Authentication Provider the `OwncloudUserDetailsService` will be autoconfigured by including `owncloud-spring-boot-starter` into your Classpath.
+
+The `OwncloudUserDetailsService` will be used by `OwncloudAuthenticationProvider` to load the UserDetails of the authenticated User. This is necessary to identify the Enabled/Disabled Status of the authenticated User.
+
+Therefor the `OwncloudUserDetails` Object will be included into the `OwncloudAuthentication` Object and will be returned by calling `getPrincipal()`.
+
+Because Owncloud only serves the Enabled/Disabled Status of the User the following Method will always return `true`:
+
+* `isAccountNonExpired()`
+* `isAccountNonLocked()`
+* `isCredentialsNonExpired()`
+
+Beside the normal Attributes of the Spring Security http://docs.spring.io/spring-security/site/docs/4.2.1.RELEASE/apidocs/org/springframework/security/core/userdetails/UserDetails.html[`UserDetails`] Object the `OwncloudUserDetails` Object provides the following, additional Fields:
+
+* `getDisplayName()` ... The full Name of the User
+* `getEmail()` ... The Email of the User
+* `getGroups()` ... A List of Groups the User is a Member
+
+=== Groups vs. Authorities
+In Spring Security you will get Authorities to handle with them the Privileges (i.E. with `@Secured`). To work with Authorities you have to convert them to Roles. The simplest Way is to prepend the Prefix `ROLE_` just before an Authority.
+
+But what is an Authority. The `OwncloudUserDetailsService` get all the Groups of a User and put it as Authorities into the `UserDetails` Object. The same `OwncloudUserDetailsService` will get the same Groups and put it as a List of Groups into the same `UserDetails` Object. In the End you have 2 Collections with the same Content.
+
+Why? Because you can modify the Authorities during the Login-Process by instantiating a http://docs.spring.io/spring-security/site/docs/4.2.1.RELEASE/apidocs/org/springframework/security/core/authority/mapping/GrantedAuthoritiesMapper.html[`GrantedAuthoritiesMapper`] or `OwncloudGrantedAuthoritiesMapper`.
+
+=== GrantedAuthoritiesMapper
+With the help of a `GrantedAuthoritiesMapper` you can map the Owncloud Groups of the User to Authorities you can use within your Application. The simplest of them is the http://docs.spring.io/spring-security/site/docs/4.2.1.RELEASE/apidocs/org/springframework/security/core/authority/mapping/SimpleAuthorityMapper.html[`SimpleAuthorityMapper`] which prepends a Prefix `ROLE_` to the Owncloud Group Name.
+
+You simply add the `GrantedAuthoritiesMapper` as a Spring Bean:
+[source,java]
+----
+@Configuration
+public class MyConfiguration {
+
+  @Bean
+  public GrantedAuthoritiesMapper grantedAuthoritiesMapper() {
+    return new SimpleGrantedAuthoritiesMapper();
+  }
+  
+}
+----
+Up now all Groups of the User will be added with the Prefix `ROLE_` and added as an Authority to the List of Authorities of the User.
+
+=== OwncloudGrantedAuthoritiesMapper
+Because a Group in Owncloud is mostly a Summary of Privileges the User has been granted (Shares, Calendars, Addressbooks, ...) this Group wont represent a simple Authority instead a Group of Authorities.
+
+In Spring Security there exists a good http://docs.spring.io/spring-security/site/docs/current/reference/html/appendix-schema.html[Database Schema] for the Relationship between Users, Groups and Authorities:
+[plantuml, diagram-classes, png]
+....
+class User
+class Group
+class UserGroup
+class Authority
+class UserAuthority
+class GroupAuthority
+
+UserGroup "many" *-- "1" User
+UserGroup "many" *-- "1" Group
+UserAuthority "many" *-- "1" User
+UserAuthority "many" *-- "1" Authority
+GroupAuthority "many" *-- "1" Group
+GroupAuthority "many" *-- "1" Authority
+....
+
+Following this Schema there are 2 Systems involved of the Classes
+
+. `User`, `Group` & `UserGroup` are managed by Owncloud
+. `Authority`, `UserAuthority` & `GroupAuthority` are managed by your Application
+
+An Spring Bean of `OwncloudGrantedAuthoritiesMapper` matches your Authorities to the authenticated User during the Authentication Process.
+[source,java]
+.MyOwncloudGrantedAuthoritiesMapper.java
+----
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.stereotype.Service;
+
+import software.coolstuff.springframework.owncloud.service.api.OwncloudGrantedAuthoritiesMapper;
+
+@Service
+public class MyOwncloudGrantedAuthoritiesMapper implements OwncloudGrantedAuthoritiesMapper {
+
+  private final static String ROLE_PREFIX = "ROLE_";
+
+  @Autowired
+  private UserAuthorityRepository userAuthorityRepository;
+
+  @Autowired
+  private GroupAuthorityRepository groupAuthorityRepository;
+
+  @Override
+  public Collection<? extends GrantedAuthority> mapAuthorities(
+      String username,
+      Collection<? extends GrantedAuthority> grantedAuthorities) {
+    Set<GrantedAuthority> authorities = new HashSet<>();
+
+    addAllAuthorities(userAuthorityRepository.getAuthorities(username), authorities);
+
+    if (CollectionUtils.isNotEmpty(grantedAuthorities)) {
+      for (GrantedAuthority grantedAuthority : grantedAuthorities) {
+        List<ApplicationAuthority> groupAuthorities =
+          groupAuthorityRepository.getAuthorities(grantedAuthority.getAuthority());
+        addAllAuthorities(groupAuthorities, authorities);
+      }
+    }
+
+    return authorities;
+  }
+
+  private void addAllAuthorities(
+      Collection<ApplicationAuthority> applicationAuthorities,
+      Set<GrantedAuthority> springSecurityAuthorities) {
+    if (CollectionUtils.isEmpty(applicationAuthorities)) {
+      return;
+    }
+
+    for (ApplicationAuthority applicationAuthority : applicationAuthorities) {
+      GrantedAuthority springSecurityAuthority = new SimpleGrantedAuthority(applicationAuthority.getName());
+      if (!StringUtils.startsWith(applicationAuthority.getName(), ROLE_PREFIX)) {
+        springSecurityAuthority = new SimpleGrantedAuthority(ROLE_PREFIX + applicationAuthority.getName());
+      }
+      springSecurityAuthorities.add(springSecurityAuthority);
+    }
+  }
+
+}
+----
+By the assumption that
+
+* Class `ApplicationAuthority` simply returns the Authority by Method `getName()`
+* Class `UserAuthorityRepository` returns a List of `ApplicationAuthority` by Method `getAuthorities(String username)`
+* Class `GroupAuthorityRepository` returns a List of `ApplicationAuthority` by Method `getAuthorities(String groupname)`
+
+this Class returns all Authorities for the Owncloud User `username` and its associated Groups (`authorities`).

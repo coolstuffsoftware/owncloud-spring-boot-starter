@@ -126,7 +126,8 @@ Here are some Pros and Contras for every of the 2 Approaches:
   * Privileges will be managed by the Application
   * Predictable Usage of the Services
 | * unencrypted Password in the Configuration File
-    (could be encrypted by using a [Configuration Service])
+    (could be encrypted by using
+    http://cloud.spring.io/spring-cloud-static/Camden.SR3/#_security[Spring Cloud Configuration Service])
   * Principle of the least Privilege will be broken +
     -> Owncloud possibly could be broken by the Application
 |===

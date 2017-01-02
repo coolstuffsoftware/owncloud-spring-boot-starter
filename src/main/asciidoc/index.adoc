@@ -18,6 +18,8 @@ include::{includedir}/configuration.adoc[]
 
 include::{includedir}/authentication.adoc[]
 
+include::{includedir}/userDetails.adoc[]
+
 include::{includedir}/legal.adoc[]
 
 ++++
