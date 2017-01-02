@@ -36,7 +36,7 @@ public class OwncloudUserModificationServiceNoModificationResourceTest extends A
 
   @Test(expected = AccessDeniedException.class)
   public void testSaveUser() {
-    userModificationService.saveUser(new OwncloudModificationUser());
+    userModificationService.saveUser(new OwncloudModificationUser("user99"));
   }
 
   @Test(expected = AccessDeniedException.class)

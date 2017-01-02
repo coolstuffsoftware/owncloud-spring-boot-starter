@@ -29,7 +29,7 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.Singular;
 
 /**
@@ -38,17 +38,16 @@ import lombok.Singular;
  * @author mufasa1976
  */
 @Data
-@NoArgsConstructor
+@RequiredArgsConstructor
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Builder
 public class OwncloudModificationUser {
 
   /**
    * Username of the User to be modified.
-   * @param username Username of the User to be modified
    * @return Username of the User to be modified
    */
-  private String username;
+  private final String username;
 
   /**
    * Password of the new User.
@@ -103,7 +102,7 @@ public class OwncloudModificationUser {
   public OwncloudModificationUser(OwncloudUserDetails userDetails) {
     Validate.notNull(userDetails);
 
-    setUsername(userDetails.getUsername());
+    this.username = userDetails.getUsername();
     setPassword(userDetails.getPassword());
 
     setEnabled(userDetails.isEnabled());
