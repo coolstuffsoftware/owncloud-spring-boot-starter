@@ -11,7 +11,7 @@ public class OwncloudRestServiceTest {
     AbstractOwncloudRestServiceImpl restService = new AbstractOwncloudRestServiceImpl(null) {
       @Override
       public void afterPropertiesSet() throws Exception {
-        checkLocation("totally wrong URL");
+        checkAndConvertLocation("totally wrong URL");
       }
     };
     restService.afterPropertiesSet();
@@ -22,7 +22,7 @@ public class OwncloudRestServiceTest {
     AbstractOwncloudRestServiceImpl restService = new AbstractOwncloudRestServiceImpl(null) {
       @Override
       public void afterPropertiesSet() throws Exception {
-        checkLocation("ftp://illegal.protocol.com");
+        checkAndConvertLocation("ftp://illegal.protocol.com");
       }
     };
     restService.afterPropertiesSet();

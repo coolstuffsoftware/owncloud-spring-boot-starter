@@ -26,18 +26,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import javax.validation.constraints.NotNull;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
-import org.springframework.beans.factory.DisposableBean;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.converter.xml.MappingJackson2XmlHttpMessageConverter;
-import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
 
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
@@ -49,10 +48,9 @@ import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.Singular;
 import lombok.extern.slf4j.Slf4j;
-import software.coolstuff.springframework.owncloud.service.api.OwncloudGrantedAuthoritiesMapper;
 
 @Slf4j
-class OwncloudResourceService implements InitializingBean, DisposableBean {
+class OwncloudResourceService {
 
   @Autowired
   private ResourceLoader resourceLoader;
@@ -60,19 +58,13 @@ class OwncloudResourceService implements InitializingBean, DisposableBean {
   @Autowired
   private OwncloudProperties properties;
 
-  @Autowired(required = false)
-  private OwncloudGrantedAuthoritiesMapper owncloudGrantedAuthoritiesMapper;
-
-  @Autowired(required = false)
-  private GrantedAuthoritiesMapper grantedAuthoritiesMapper;
-
   @Autowired
   private MappingJackson2XmlHttpMessageConverter messageConverter;
 
   private Map<String, OwncloudResourceData.User> users = new HashMap<>();
   private Map<String, OwncloudResourceData.Group> groups = new HashMap<>();
 
-  @Override
+  @PostConstruct
   public void afterPropertiesSet() throws Exception {
     log.debug("Load Resource from Location {}", properties.getLocation());
     Resource resource = resourceLoader.getResource(properties.getLocation());
@@ -115,7 +107,7 @@ class OwncloudResourceService implements InitializingBean, DisposableBean {
     }
   }
 
-  @Override
+  @PreDestroy
   public void destroy() throws Exception {
     log.debug("Load Resource from Location {}", properties.getLocation());
     Resource resource = resourceLoader.getResource(properties.getLocation());

@@ -51,11 +51,13 @@ import org.springframework.web.client.RestTemplate;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import software.coolstuff.springframework.owncloud.exception.OwncloudInvalidAuthenticationObjectException;
 import software.coolstuff.springframework.owncloud.exception.OwncloudStatusException;
 import software.coolstuff.springframework.owncloud.model.OwncloudAuthentication;
 
 @RequiredArgsConstructor(access = AccessLevel.PROTECTED)
+@Slf4j
 abstract class AbstractOwncloudRestServiceImpl implements OwncloudRestService {
 
   final static String DEFAULT_PATH = "/ocs/v1.php";
@@ -87,31 +89,36 @@ abstract class AbstractOwncloudRestServiceImpl implements OwncloudRestService {
 
   @PostConstruct
   public void afterPropertiesSet() throws Exception {
-    checkLocation(properties.getLocation());
-    configureRestTemplate();
+    URL locationURL = checkAndConvertLocation(properties.getLocation());
+    configureRestTemplate(locationURL);
   }
 
-  protected void checkLocation(String location) throws MalformedURLException {
+  protected URL checkAndConvertLocation(String location) throws MalformedURLException {
     Validate.notBlank(location);
+    log.debug("Check if the Location {} is a valid URL", location);
     URL url = new URL(location);
+    log.debug("Check if the Location {} either start with http or https", location);
     if (isNotValidProtocol(url)) {
-      throw new IllegalArgumentException("Invalid Protocol " + url.getProtocol() + ". Only http or https are allowed");
+      final String exceptionMessage = "Invalid Protocol " + url.getProtocol() + ". Only http or https are allowed";
+      log.error(exceptionMessage);
+      throw new IllegalArgumentException(exceptionMessage);
     }
+    return url;
   }
 
   private boolean isNotValidProtocol(URL url) {
     return !StringUtils.equals(url.getProtocol(), "http") && !StringUtils.equals(url.getProtocol(), "https");
   }
 
-  private void configureRestTemplate() throws MalformedURLException {
-    URL url = new URL(properties.getLocation());
-
-    String rootURI = url.toString();
-    if (StringUtils.isBlank(url.getPath()) || "/".equals(url.getPath())) {
-      rootURI = URI.create(url.toString() + DEFAULT_PATH).toString();
+  private void configureRestTemplate(URL locationURL) throws MalformedURLException {
+    log.debug("Extract the Root-URI from URL {}", locationURL);
+    String rootURI = locationURL.toString();
+    if (StringUtils.isBlank(locationURL.getPath()) || "/".equals(locationURL.getPath())) {
+      rootURI = URI.create(locationURL.toString() + DEFAULT_PATH).toString();
     }
 
     if (addBasicAuthentication && StringUtils.isNotBlank(properties.getUsername())) {
+      log.debug("Create the REST-Template to URI {} with the administrative User {}", rootURI, properties.getUsername());
       restTemplate = restTemplateBuilder
           .basicAuthorization(properties.getUsername(), properties.getPassword())
           .messageConverters(mappingJackson2XmlHttpMessageConverter)
@@ -120,6 +127,7 @@ abstract class AbstractOwncloudRestServiceImpl implements OwncloudRestService {
           .rootUri(rootURI)
           .build();
     } else {
+      log.debug("Create the REST-Template to URI {} to be used with the authenticated User", rootURI);
       restTemplate = restTemplateBuilder
           .messageConverters(mappingJackson2XmlHttpMessageConverter)
           .additionalMessageConverters(formHttpMessageConverter)
@@ -134,10 +142,6 @@ abstract class AbstractOwncloudRestServiceImpl implements OwncloudRestService {
   @Override
   final public RestTemplate getRestTemplate() {
     return restTemplate;
-  }
-
-  protected boolean isUseAdministratorCredentials() {
-    return StringUtils.isNotBlank(properties.getUsername());
   }
 
   protected HttpHeaders prepareHeaderWithBasicAuthorization(String username, String password) {
@@ -166,6 +170,10 @@ abstract class AbstractOwncloudRestServiceImpl implements OwncloudRestService {
     }
 
     return prepareHeaderWithBasicAuthorization(authentication.getName(), (String) authentication.getCredentials());
+  }
+
+  protected boolean isUseAdministratorCredentials() {
+    return StringUtils.isNotBlank(properties.getUsername());
   }
 
   protected HttpEntity<String> emptyEntity(String username, String password) {
