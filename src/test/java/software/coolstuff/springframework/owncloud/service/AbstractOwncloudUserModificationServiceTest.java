@@ -106,7 +106,7 @@ public abstract class AbstractOwncloudUserModificationServiceTest extends Abstra
 
     Assert.assertNotNull(createdUser);
     Assert.assertEquals(newUser.getUsername(), createdUser.getUsername());
-    Assert.assertEquals(newUser.getPassword(), createdUser.getPassword());
+    Assert.assertNull(createdUser.getPassword());
     Assert.assertEquals(newUser.isEnabled(), createdUser.isEnabled());
     Assert.assertEquals(newUser.getDisplayName(), createdUser.getDisplayName());
     Assert.assertEquals(newUser.getEmail(), createdUser.getEmail());
@@ -135,7 +135,7 @@ public abstract class AbstractOwncloudUserModificationServiceTest extends Abstra
 
     Assert.assertNotNull(createdUser);
     Assert.assertEquals(newUser.getUsername(), createdUser.getUsername());
-    Assert.assertEquals(newUser.getPassword(), createdUser.getPassword());
+    Assert.assertNull(createdUser.getPassword());
     Assert.assertEquals(newUser.isEnabled(), createdUser.isEnabled());
     Assert.assertEquals(newUser.getDisplayName(), createdUser.getDisplayName());
     Assert.assertEquals(newUser.getEmail(), createdUser.getEmail());
@@ -171,7 +171,7 @@ public abstract class AbstractOwncloudUserModificationServiceTest extends Abstra
 
     Assert.assertNotNull(updatedUser);
     Assert.assertEquals(updateUser.getUsername(), updatedUser.getUsername());
-    Assert.assertEquals(updateUser.getPassword(), updatedUser.getPassword());
+    Assert.assertNull(updatedUser.getPassword());
     Assert.assertEquals(updateUser.isEnabled(), updatedUser.isEnabled());
     Assert.assertEquals(updateUser.getDisplayName(), updatedUser.getDisplayName());
     Assert.assertEquals(updateUser.getEmail(), updatedUser.getEmail());
@@ -210,7 +210,7 @@ public abstract class AbstractOwncloudUserModificationServiceTest extends Abstra
 
     Assert.assertNotNull(updatedUser);
     Assert.assertEquals(updateUser.getUsername(), updatedUser.getUsername());
-    Assert.assertEquals(updateUser.getPassword(), updatedUser.getPassword());
+    Assert.assertNull(updatedUser.getPassword());
     Assert.assertEquals(updateUser.isEnabled(), updatedUser.isEnabled());
     Assert.assertEquals(updateUser.getDisplayName(), updatedUser.getDisplayName());
     Assert.assertEquals(updateUser.getEmail(), updatedUser.getEmail());
