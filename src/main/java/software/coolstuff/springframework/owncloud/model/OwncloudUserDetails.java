@@ -23,14 +23,18 @@ import java.util.List;
 
 import javax.validation.constraints.NotNull;
 
+import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudGrantedAuthoritiesMapper;
@@ -48,7 +52,6 @@ import software.coolstuff.springframework.owncloud.service.api.OwncloudGrantedAu
 @AllArgsConstructor
 @EqualsAndHashCode(of = "username")
 @ToString(exclude = "password")
-@Builder
 public class OwncloudUserDetails implements UserDetails {
 
   private static final long serialVersionUID = 7384295040126418671L;
@@ -68,7 +71,8 @@ public class OwncloudUserDetails implements UserDetails {
    * @param password Password of the authenticated User
    * @return Password of the authenticated User
    */
-  private String password;
+  @Getter(AccessLevel.NONE)
+  private char[] password;
 
   /**
    * State of the authenticated User (enabled/disabled)
@@ -110,6 +114,40 @@ public class OwncloudUserDetails implements UserDetails {
 
   public static class OwncloudUserDetailsBuilder {
     private boolean enabled = true;
+  }
+
+  @Builder
+  public OwncloudUserDetails(
+      String username,
+      String password,
+      boolean enabled,
+      Collection<? extends GrantedAuthority> authorities,
+      List<String> groups,
+      String displayName,
+      String email) {
+    setUsername(username);
+    setPassword(password);
+    setEnabled(enabled);
+    setAuthorities(authorities);
+    setGroups(groups);
+    setDisplayName(displayName);
+    setEmail(email);
+  }
+
+  @Override
+  public String getPassword() {
+    if (ArrayUtils.isEmpty(password)) {
+      return null;
+    }
+    return new String(password);
+  }
+
+  public void setPassword(String password) {
+    if (StringUtils.isBlank(password)) {
+      this.password = null;
+      return;
+    }
+    this.password = password.toCharArray();
   }
 
   @Override

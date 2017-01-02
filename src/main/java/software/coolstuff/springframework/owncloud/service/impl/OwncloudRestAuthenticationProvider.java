@@ -28,6 +28,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -62,6 +63,9 @@ class OwncloudRestAuthenticationProvider extends AbstractOwncloudRestServiceImpl
     String password = authentication.getCredentials().toString();
 
     Ocs.User user = exchange("/cloud/users/{user}", HttpMethod.GET, emptyEntity(username, password), Ocs.User.class, username);
+    if (!user.getData().isEnabled()) {
+      throw new DisabledException(messages.getMessage("AbstractUserDetailsAuthenticationProvider.disabled", "Disabled"));
+    }
     SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(username, password));
 
     OwncloudUserDetails owncloudUserDetails = userDetailsService.loadPreloadedUserByUsername(username, user);

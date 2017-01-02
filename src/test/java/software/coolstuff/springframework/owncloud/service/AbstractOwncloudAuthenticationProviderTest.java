@@ -25,6 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.client.RestClientTest;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.RememberMeAuthenticationToken;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -128,6 +129,21 @@ public abstract class AbstractOwncloudAuthenticationProviderTest extends Abstrac
   }
 
   protected void prepareTestAuthentication_NOK_UsernameNotFoundException(Credentials credentials) throws Exception {}
+
+  @Test(expected = DisabledException.class)
+  public void testAuthentication_NOK_DisabledUser() throws Exception {
+    Credentials credentials = Credentials.builder()
+        .username("user2")
+        .password("s3cr3t")
+        .build();
+
+    prepareTestAuthentication_NOK_DisabledUser(credentials);
+
+    authenticationProvider.authenticate(credentials.getUsernamePasswordAuthenticationToken());
+    verifyServer();
+  }
+
+  protected void prepareTestAuthentication_NOK_DisabledUser(Credentials credentials) throws Exception {}
 
   @Data
   @Builder

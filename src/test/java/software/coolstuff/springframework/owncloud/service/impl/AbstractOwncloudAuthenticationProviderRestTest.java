@@ -92,6 +92,19 @@ public abstract class AbstractOwncloudAuthenticationProviderRestTest extends Abs
         998);
   }
 
+  @Override
+  protected void prepareTestAuthentication_NOK_DisabledUser(Credentials credentials) throws Exception {
+    respondUser(
+        RestRequest.builder()
+            .method(GET)
+            .url("/cloud/users/" + credentials.getUsername())
+            .basicAuthentication(credentials.getBasicAuthorizationHeader())
+            .build(),
+        false,
+        "user2@example.com",
+        "Mrs. User 2");
+  }
+
   @Test(expected = HttpStatusCodeException.class)
   public void test404NotFound() throws Exception {
     Credentials credentials = Credentials.builder()
