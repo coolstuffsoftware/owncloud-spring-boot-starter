@@ -131,14 +131,3 @@ Here are some Pros and Contras for every of the 2 Approaches:
   * Principle of the least Privilege will be broken +
     -> Owncloud possibly could be broken by the Application
 |===
-
-=== owncloud.enable-modifications
-Because User Modifications by `OwncloudUserModificationService` need administrative Privileges of the
-the User (either by the authenticated User or by a configured Administrator Account) there is the Danger,
-that the Application will remove Users and/or Groups accidentilly.
-
-To protect the Usage of `OwncloudUserModificationService` can be restricted.
-This Restriction is enabled by default. +
-To allow Modifications by `OwncloudUserModificationService` this Flag must be explictly turned on by
-
- owncloud.enable-modifications=true
