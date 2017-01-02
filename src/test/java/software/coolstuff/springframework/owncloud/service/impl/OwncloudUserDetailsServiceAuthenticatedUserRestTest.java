@@ -43,7 +43,7 @@ public class OwncloudUserDetailsServiceAuthenticatedUserRestTest extends Abstrac
 
   @Override
   protected Class<? extends UserDetailsService> getUserDetailsServiceClass() {
-    return OwncloudUserDetailsRestService.class;
+    return OwncloudRestUserDetailsService.class;
   }
 
   @Test(expected = OwncloudInvalidAuthenticationObjectException.class)

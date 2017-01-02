@@ -59,7 +59,7 @@ import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
  * Whereas the Tables <code>Users</code>, <code>Groups</code> and <code>Memberships</code> are implemented by Owncloud.
  * <p/>
  * So, in simple Words, by implementing this Interface as a Service you can put the Authorities of your own Application into the
- * {@link OwncloudUserDetails} Object returned by the {@link OwncloudUserDetailsRestService#loadUserByUsername(String)}
+ * {@link OwncloudUserDetails} Object returned by the {@link OwncloudRestUserDetailsService#loadUserByUsername(String)}
  *
  * @author mufasa1976
  * @see GrantedAuthoritiesMapper

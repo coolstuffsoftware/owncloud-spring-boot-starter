@@ -8,7 +8,7 @@ public abstract class AbstractOwncloudUserDetailsServiceResourceTest extends Abs
 
   @Override
   protected Class<? extends UserDetailsService> getUserDetailsServiceClass() {
-    return OwncloudResourceService.class;
+    return OwncloudResourceUserDetailsService.class;
   }
 
 }

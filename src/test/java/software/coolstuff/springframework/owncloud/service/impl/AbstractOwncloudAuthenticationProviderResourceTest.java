@@ -8,7 +8,7 @@ public abstract class AbstractOwncloudAuthenticationProviderResourceTest extends
 
   @Override
   protected Class<? extends AuthenticationProvider> getAuthenticationProviderClass() {
-    return OwncloudResourceService.class;
+    return OwncloudResourceAuthenticationProvider.class;
   }
 
 }

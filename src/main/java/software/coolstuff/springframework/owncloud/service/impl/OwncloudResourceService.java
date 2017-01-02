@@ -21,7 +21,6 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -30,29 +29,15 @@ import java.util.Map;
 import javax.validation.constraints.NotNull;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.converter.xml.MappingJackson2XmlHttpMessageConverter;
-import org.springframework.security.authentication.AuthenticationProvider;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.SpringSecurityMessageSource;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
@@ -64,12 +49,10 @@ import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.Singular;
 import lombok.extern.slf4j.Slf4j;
-import software.coolstuff.springframework.owncloud.model.OwncloudAuthentication;
-import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudGrantedAuthoritiesMapper;
 
 @Slf4j
-class OwncloudResourceService implements InitializingBean, DisposableBean, AuthenticationProvider, UserDetailsService {
+class OwncloudResourceService implements InitializingBean, DisposableBean {
 
   @Autowired
   private ResourceLoader resourceLoader;
@@ -85,8 +68,6 @@ class OwncloudResourceService implements InitializingBean, DisposableBean, Authe
 
   @Autowired
   private MappingJackson2XmlHttpMessageConverter messageConverter;
-
-  private MessageSourceAccessor messages = SpringSecurityMessageSource.getAccessor();
 
   private Map<String, OwncloudResourceData.User> users = new HashMap<>();
   private Map<String, OwncloudResourceData.Group> groups = new HashMap<>();
@@ -157,50 +138,6 @@ class OwncloudResourceService implements InitializingBean, DisposableBean, Authe
     }
   }
 
-  @Override
-  public boolean supports(Class<?> authentication) {
-    return OwncloudUtils.isAuthenticationClassSupported(authentication);
-  }
-
-  @Override
-  public Authentication authenticate(Authentication authentication) throws AuthenticationException {
-    if (StringUtils.isBlank(authentication.getName())) {
-      throw new BadCredentialsException(messages.getMessage("AbstractUserDetailsAuthenticationProvider.badCredentials", "Bad Credentials"));
-    }
-
-    if (authentication.getCredentials() == null) {
-      throw new BadCredentialsException(messages.getMessage("AbstractUserDetailsAuthenticationProvider.badCredentials", "Bad Credentials"));
-    }
-
-    String username = authentication.getName();
-    String password = authentication.getCredentials().toString();
-
-    OwncloudResourceData.User user = users.get(username);
-    if (user == null) {
-      throw new BadCredentialsException(messages.getMessage("AbstractUserDetailsAuthenticationProvider.badCredentials", "Bad Credentials"));
-    }
-
-    if (!StringUtils.equals(password, user.getPassword())) {
-      throw new BadCredentialsException(messages.getMessage("AbstractUserDetailsAuthenticationProvider.badCredentials", "Bad Credentials"));
-    }
-
-    SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(username, password));
-
-    OwncloudUserDetails owncloudUserDetails = (OwncloudUserDetails) loadUserByUsername(username);
-    owncloudUserDetails.setPassword(password);
-
-    return new OwncloudAuthentication(owncloudUserDetails);
-  }
-
-  @Override
-  public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-    OwncloudResourceData.User user = users.get(username);
-    if (user == null) {
-      throw new UsernameNotFoundException(username);
-    }
-    return convert(user);
-  }
-
   public boolean userNotExists(String username) {
     return !userExists(username);
   }
@@ -247,32 +184,6 @@ class OwncloudResourceService implements InitializingBean, DisposableBean, Authe
 
   public void removeGroup(String groupname) {
     groups.remove(groupname);
-  }
-
-  public OwncloudUserDetails convert(OwncloudResourceData.User user) {
-    List<GrantedAuthority> authorities = new ArrayList<>();
-    List<String> groups = new ArrayList<>();
-    if (CollectionUtils.isNotEmpty(user.getGroups())) {
-      for (OwncloudResourceData.Group group : user.getGroups()) {
-        authorities.add(new SimpleGrantedAuthority(group.getGroup()));
-        groups.add(group.getGroup());
-      }
-    }
-
-    OwncloudUserDetails userDetails = OwncloudUserDetails.builder()
-        .username(user.getUsername())
-        .enabled(user.isEnabled())
-        .displayName(user.getDisplayName())
-        .email(user.getEmail())
-        .groups(groups)
-        .authorities(authorities)
-        .build();
-    if (owncloudGrantedAuthoritiesMapper != null) {
-      userDetails.setAuthorities(owncloudGrantedAuthoritiesMapper.mapAuthorities(userDetails.getUsername(), userDetails.getAuthorities()));
-    } else if (grantedAuthoritiesMapper != null) {
-      userDetails.setAuthorities(grantedAuthoritiesMapper.mapAuthorities(authorities));
-    }
-    return userDetails;
   }
 
   @lombok.Data

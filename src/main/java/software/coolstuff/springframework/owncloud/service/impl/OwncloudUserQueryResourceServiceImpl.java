@@ -6,6 +6,7 @@ import java.util.List;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import lombok.RequiredArgsConstructor;
 import software.coolstuff.springframework.owncloud.exception.OwncloudGroupNotFoundException;
@@ -19,6 +20,9 @@ import software.coolstuff.springframework.owncloud.service.impl.OwncloudResource
 class OwncloudUserQueryResourceServiceImpl implements OwncloudUserQueryService {
 
   private final OwncloudResourceService resourceService;
+
+  @Autowired
+  private OwncloudUserDetailsConversionService conversionService;
 
   @Override
   public List<String> findAllUsers() {
@@ -99,7 +103,7 @@ class OwncloudUserQueryResourceServiceImpl implements OwncloudUserQueryService {
   @Override
   public OwncloudUserDetails findOneUser(String username) {
     User user = getCheckedUser(username);
-    return resourceService.convert(user);
+    return conversionService.convert(user);
   }
 
 }

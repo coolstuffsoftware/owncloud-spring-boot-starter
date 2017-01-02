@@ -18,6 +18,7 @@
 package software.coolstuff.springframework.owncloud.service.impl;
 
 import org.apache.commons.lang3.Validate;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -26,9 +27,12 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
 
-class OwncloudUserDetailsRestService extends AbstractOwncloudRestServiceImpl implements UserDetailsService {
+class OwncloudRestUserDetailsService extends AbstractOwncloudRestServiceImpl implements UserDetailsService {
 
-  public OwncloudUserDetailsRestService(RestTemplateBuilder builder) {
+  @Autowired
+  private OwncloudUserDetailsConversionService conversionService;
+
+  public OwncloudRestUserDetailsService(RestTemplateBuilder builder) {
     super(builder);
   }
 
@@ -42,7 +46,7 @@ class OwncloudUserDetailsRestService extends AbstractOwncloudRestServiceImpl imp
 
   OwncloudUserDetails loadPreloadedUserByUsername(String username, Ocs.User preloadedUser) throws UsernameNotFoundException {
     Ocs.Groups groups = exchange("/cloud/users/{user}/groups", HttpMethod.GET, emptyEntity(), Ocs.Groups.class, username);
-    return createUserDetails(username, preloadedUser, groups);
+    return conversionService.convert(username, preloadedUser, groups);
   }
 
 }

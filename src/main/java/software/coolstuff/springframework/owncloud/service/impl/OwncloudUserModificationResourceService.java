@@ -23,7 +23,7 @@ class OwncloudUserModificationResourceService implements OwncloudUserModificatio
   private final OwncloudResourceService resourceService;
 
   @Autowired
-  private OwncloudProperties owncloudProperties;
+  private OwncloudUserDetailsConversionService conversionService;
 
   @Override
   public OwncloudUserDetails saveUser(OwncloudModificationUser modificationUser) {
@@ -47,7 +47,7 @@ class OwncloudUserModificationResourceService implements OwncloudUserModificatio
 
     manageGroups(existingUser, modificationUser);
 
-    OwncloudUserDetails changedUserDetails = resourceService.convert(existingUser);
+    OwncloudUserDetails changedUserDetails = conversionService.convert(existingUser);
     changedUserDetails.setPassword(modificationUser.getPassword());
     return changedUserDetails;
   }

@@ -22,6 +22,7 @@ import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.access.AccessDeniedException;
@@ -31,6 +32,9 @@ import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudUserQueryService;
 
 class OwncloudUserQueryRestServiceImpl extends AbstractOwncloudRestServiceImpl implements OwncloudUserQueryService {
+
+  @Autowired
+  private OwncloudUserDetailsConversionService conversionService;
 
   OwncloudUserQueryRestServiceImpl(RestTemplateBuilder builder) {
     super(builder);
@@ -128,7 +132,7 @@ class OwncloudUserQueryRestServiceImpl extends AbstractOwncloudRestServiceImpl i
     Validate.notBlank(username);
     Ocs.User user = exchange("/cloud/users/{user}", HttpMethod.GET, emptyEntity(), Ocs.User.class, username);
     Ocs.Groups groups = exchange("/cloud/users/{user}/groups", HttpMethod.GET, emptyEntity(), Ocs.Groups.class, username);
-    return createUserDetails(username, user, groups);
+    return conversionService.convert(username, user, groups);
   }
 
 }

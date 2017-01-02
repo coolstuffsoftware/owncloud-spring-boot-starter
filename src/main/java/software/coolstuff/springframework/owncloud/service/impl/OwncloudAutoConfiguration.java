@@ -17,6 +17,7 @@
 */
 package software.coolstuff.springframework.owncloud.service.impl;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -55,41 +56,64 @@ class OwncloudAutoConfiguration {
   }
 
   @Bean
+  public OwncloudUserDetailsConversionService owncloudUserDetailsConversionService() {
+    return new OwncloudUserDetailsConversionService();
+  }
+
+  @Bean("owncloudUserQueryService")
   @ConditionalOnExpression("#{!('${owncloud.location}' matches 'file:.*') and !('${owncloud.location}' matches 'classpath:.*')}")
   public OwncloudUserQueryService owncloudUserQueryRestService(RestTemplateBuilder builder) {
     return new OwncloudUserQueryRestServiceImpl(builder);
   }
 
-  @Bean
+  @Bean("owncloudUserQueryService")
   @ConditionalOnExpression("#{'${owncloud.location}' matches 'file:.*' or '${owncloud.location}' matches 'classpath:.*'}")
   public OwncloudUserQueryService owncloudUserQueryResourceService() {
     return new OwncloudUserQueryResourceServiceImpl(owncloudResourceService());
   }
 
-  @Bean
+  @Bean("owncloudUserModificationService")
   @ConditionalOnExpression("#{!('${owncloud.location}' matches 'file:.*') and !('${owncloud.location}' matches 'classpath:.*')}")
   public OwncloudUserModificationService owncloudUserModificationRestService(RestTemplateBuilder builder) {
     return new OwncloudUserModificationRestServiceImpl(builder);
   }
 
-  @Bean
+  @Bean("owncloudUserModificationService")
   @ConditionalOnExpression("#{'${owncloud.location}' matches 'file:.*' or '${owncloud.location}' matches 'classpath:.*'}")
   public OwncloudUserModificationService owncloudUserModificationResourceService() {
     return new OwncloudUserModificationResourceService(owncloudResourceService());
   }
 
-  @Bean
+  @Bean("owncloudAuthenticationProvider")
+  @Qualifier("owncloudAuthenticationProvider")
   @ConditionalOnMissingBean(OwncloudRestAuthenticationProvider.class)
   @ConditionalOnExpression("#{!('${owncloud.location}' matches 'file:.*') and !('${owncloud.location}' matches 'classpath:.*')}")
-  public OwncloudRestAuthenticationProvider owncloudAuthenticationProvider(RestTemplateBuilder builder) {
+  public OwncloudRestAuthenticationProvider owncloudRestAuthenticationProvider(RestTemplateBuilder builder) {
     return new OwncloudRestAuthenticationProvider(builder);
   }
 
+  @Bean("owncloudAuthenticationProvider")
+  @Qualifier("owncloudAuthenticationProvider")
+  @ConditionalOnMissingBean(OwncloudResourceAuthenticationProvider.class)
+  @ConditionalOnExpression("#{'${owncloud.location}' matches 'file:.*' or '${owncloud.location}' matches 'classpath:.*'}")
+  public OwncloudResourceAuthenticationProvider owncloudResourceAuthenticationProvider() {
+    return new OwncloudResourceAuthenticationProvider(owncloudResourceService());
+  }
+
   @Bean
-  @ConditionalOnMissingBean(OwncloudUserDetailsRestService.class)
+  @Qualifier("owncloudUserDetailsService")
+  @ConditionalOnMissingBean(OwncloudRestUserDetailsService.class)
   @ConditionalOnExpression("#{!('${owncloud.location}' matches 'file:.*') and !('${owncloud.location}' matches 'classpath:.*')}")
-  public OwncloudUserDetailsRestService owncloudUserDetailsService(RestTemplateBuilder builder) {
-    return new OwncloudUserDetailsRestService(builder);
+  public OwncloudRestUserDetailsService owncloudRestUserDetailsService(RestTemplateBuilder builder) {
+    return new OwncloudRestUserDetailsService(builder);
+  }
+
+  @Bean
+  @Qualifier("owncloudUserDetailsService")
+  @ConditionalOnMissingBean(OwncloudResourceUserDetailsService.class)
+  @ConditionalOnExpression("#{'${owncloud.location}' matches 'file:.*' or '${owncloud.location}' matches 'classpath:.*'}")
+  public OwncloudResourceUserDetailsService owncloudResourceUserDetailsService() {
+    return new OwncloudResourceUserDetailsService(owncloudResourceService());
   }
 
   @Bean

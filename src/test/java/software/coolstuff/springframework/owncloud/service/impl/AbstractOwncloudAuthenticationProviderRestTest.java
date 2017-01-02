@@ -38,7 +38,7 @@ public abstract class AbstractOwncloudAuthenticationProviderRestTest extends Abs
   private AuthenticationProvider authenticationProvider;
 
   @Autowired
-  private OwncloudUserDetailsRestService userDetailsService;
+  private OwncloudRestUserDetailsService userDetailsService;
 
   @Override
   public final OwncloudRestService owncloudService() {

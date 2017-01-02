@@ -39,7 +39,7 @@ public abstract class AbstractOwncloudUserDetailsServiceRestTest extends Abstrac
 
   @Override
   protected Class<? extends UserDetailsService> getUserDetailsServiceClass() {
-    return OwncloudUserDetailsRestService.class;
+    return OwncloudRestUserDetailsService.class;
   }
 
   @Override

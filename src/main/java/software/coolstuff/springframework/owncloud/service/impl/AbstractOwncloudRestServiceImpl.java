@@ -20,7 +20,6 @@ package software.coolstuff.springframework.owncloud.service.impl;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
@@ -42,10 +41,7 @@ import org.springframework.http.converter.xml.MappingJackson2XmlHttpMessageConve
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.SpringSecurityMessageSource;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.util.LinkedMultiValueMap;
@@ -58,8 +54,6 @@ import lombok.RequiredArgsConstructor;
 import software.coolstuff.springframework.owncloud.exception.OwncloudInvalidAuthenticationObjectException;
 import software.coolstuff.springframework.owncloud.exception.OwncloudStatusException;
 import software.coolstuff.springframework.owncloud.model.OwncloudAuthentication;
-import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
-import software.coolstuff.springframework.owncloud.service.api.OwncloudGrantedAuthoritiesMapper;
 
 @RequiredArgsConstructor(access = AccessLevel.PROTECTED)
 abstract class AbstractOwncloudRestServiceImpl implements OwncloudRestService {
@@ -82,12 +76,6 @@ abstract class AbstractOwncloudRestServiceImpl implements OwncloudRestService {
 
   @Autowired
   private FormHttpMessageConverter formHttpMessageConverter;
-
-  @Autowired(required = false)
-  private OwncloudGrantedAuthoritiesMapper owncloudGrantedAuthoritiesMapper;
-
-  @Autowired(required = false)
-  private GrantedAuthoritiesMapper grantedAuthoritiesMapper;
 
   protected AbstractOwncloudRestServiceImpl(RestTemplateBuilder builder) {
     this(builder, true);
@@ -232,34 +220,4 @@ abstract class AbstractOwncloudRestServiceImpl implements OwncloudRestService {
     }
   }
 
-  protected OwncloudUserDetails createUserDetails(String username, Ocs.User user, Ocs.Groups groupsFromBackend) {
-    List<GrantedAuthority> authorities = new ArrayList<>();
-    List<String> groups = new ArrayList<>();
-    if (isGroupAvailable(groupsFromBackend)) {
-      for (Ocs.Groups.Data.Group group : groupsFromBackend.getData().getGroups()) {
-        authorities.add(new SimpleGrantedAuthority(group.getGroup()));
-        groups.add(group.getGroup());
-      }
-    }
-
-    OwncloudUserDetails userDetails = OwncloudUserDetails.builder()
-        .username(username)
-        .enabled(user.getData().isEnabled())
-        .displayName(user.getData().getDisplayname())
-        .email(user.getData().getEmail())
-        .groups(groups)
-        .authorities(authorities)
-        .build();
-    if (owncloudGrantedAuthoritiesMapper != null) {
-      userDetails.setAuthorities(owncloudGrantedAuthoritiesMapper.mapAuthorities(userDetails.getUsername(), authorities));
-    } else if (grantedAuthoritiesMapper != null) {
-      userDetails.setAuthorities(grantedAuthoritiesMapper.mapAuthorities(authorities));
-    }
-
-    return userDetails;
-  }
-
-  private boolean isGroupAvailable(Ocs.Groups groups) {
-    return groups != null && groups.getData() != null && groups.getData().getGroups() != null;
-  }
 }

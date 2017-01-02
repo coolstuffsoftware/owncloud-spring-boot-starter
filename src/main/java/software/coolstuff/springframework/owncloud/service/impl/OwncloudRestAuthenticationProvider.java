@@ -41,7 +41,7 @@ import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
 class OwncloudRestAuthenticationProvider extends AbstractOwncloudRestServiceImpl implements AuthenticationProvider {
 
   @Autowired
-  private OwncloudUserDetailsRestService userDetailsService;
+  private OwncloudRestUserDetailsService userDetailsService;
 
   public OwncloudRestAuthenticationProvider(RestTemplateBuilder builder) {
     super(builder, false, new OwncloudAuthenticationProviderResponseErrorHandler(SpringSecurityMessageSource.getAccessor()));
