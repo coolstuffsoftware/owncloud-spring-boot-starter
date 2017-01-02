@@ -48,7 +48,6 @@ class OwncloudUserModificationResourceService implements OwncloudUserModificatio
     manageGroups(existingUser, modificationUser);
 
     OwncloudUserDetails changedUserDetails = conversionService.convert(existingUser);
-    changedUserDetails.setPassword(modificationUser.getPassword());
     return changedUserDetails;
   }
 

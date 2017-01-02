@@ -70,7 +70,6 @@ class OwncloudUserModificationRestServiceImpl extends AbstractOwncloudRestServic
     }
 
     OwncloudUserDetails foundUserDetails = userQueryService.findOneUser(user.getUsername());
-    foundUserDetails.setPassword(user.getPassword());
     return foundUserDetails;
   }
 
