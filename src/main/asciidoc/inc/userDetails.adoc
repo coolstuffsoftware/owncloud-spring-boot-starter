@@ -68,7 +68,7 @@ Following this Schema there are 2 Systems involved of the Classes
 . `User`, `Group` & `UserGroup` are managed by Owncloud
 . `Authority`, `UserAuthority` & `GroupAuthority` are managed by your Application
 
-An Spring Bean of `OwncloudGrantedAuthoritiesMapper` matches your Authorities to the authenticated User during the Authentication Process.
+A Spring Bean of `OwncloudGrantedAuthoritiesMapper` matches your Authorities to the authenticated User during the Authentication Process.
 [source,java]
 .MyOwncloudGrantedAuthoritiesMapper.java
 ----
@@ -124,9 +124,11 @@ public class MyOwncloudGrantedAuthoritiesMapper implements OwncloudGrantedAuthor
     }
 
     for (ApplicationAuthority applicationAuthority : applicationAuthorities) {
-      GrantedAuthority springSecurityAuthority = new SimpleGrantedAuthority(applicationAuthority.getName());
+      GrantedAuthority springSecurityAuthority =
+        new SimpleGrantedAuthority(applicationAuthority.getName());
       if (!StringUtils.startsWith(applicationAuthority.getName(), ROLE_PREFIX)) {
-        springSecurityAuthority = new SimpleGrantedAuthority(ROLE_PREFIX + applicationAuthority.getName());
+        springSecurityAuthority =
+          new SimpleGrantedAuthority(ROLE_PREFIX + applicationAuthority.getName());
       }
       springSecurityAuthorities.add(springSecurityAuthority);
     }
