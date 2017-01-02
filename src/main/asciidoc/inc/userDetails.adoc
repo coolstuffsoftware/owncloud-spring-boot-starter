@@ -55,12 +55,12 @@ class Authority
 class UserAuthority
 class GroupAuthority
 
-UserGroup "many" *-- "1" User
-UserGroup "many" *-- "1" Group
-UserAuthority "many" *-- "1" User
-UserAuthority "many" *-- "1" Authority
-GroupAuthority "many" *-- "1" Group
-GroupAuthority "many" *-- "1" Authority
+User "1" *-- "1..*" UserGroup
+User "1" *-- "1..*" UserAuthority
+Group "1" *-- "1..*" UserGroup
+Group "1" *-- "1..*" GroupAuthority
+Authority "1" *-- "1..*" UserAuthority
+Authority "1" *-- "1..*" GroupAuthority
 ....
 
 Following this Schema there are 2 Systems involved of the Classes
