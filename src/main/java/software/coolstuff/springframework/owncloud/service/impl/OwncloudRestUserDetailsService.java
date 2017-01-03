@@ -25,8 +25,10 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
+import lombok.extern.slf4j.Slf4j;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
 
+@Slf4j
 class OwncloudRestUserDetailsService extends AbstractOwncloudRestServiceImpl implements UserDetailsService {
 
   @Autowired
@@ -40,11 +42,13 @@ class OwncloudRestUserDetailsService extends AbstractOwncloudRestServiceImpl imp
   public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
     Validate.notBlank(username);
 
+    log.debug("Get Information about User {} from the Location {}", username, getLocation());
     Ocs.User user = exchange("/cloud/users/{user}", HttpMethod.GET, emptyEntity(), Ocs.User.class, username);
     return loadPreloadedUserByUsername(username, user);
   }
 
   OwncloudUserDetails loadPreloadedUserByUsername(String username, Ocs.User preloadedUser) throws UsernameNotFoundException {
+    log.debug("Get Information about the Group Memberships of User {} from the Location {}", username, getLocation());
     Ocs.Groups groups = exchange("/cloud/users/{user}/groups", HttpMethod.GET, emptyEntity(), Ocs.Groups.class, username);
     return conversionService.convert(username, preloadedUser, groups);
   }

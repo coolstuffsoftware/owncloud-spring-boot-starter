@@ -17,68 +17,72 @@
 */
 package software.coolstuff.springframework.owncloud.service.impl;
 
-import java.io.IOException;
-
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.SpringSecurityMessageSource;
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import lombok.extern.slf4j.Slf4j;
 import software.coolstuff.springframework.owncloud.exception.OwncloudStatusException;
 import software.coolstuff.springframework.owncloud.model.OwncloudAuthentication;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
 
+@Slf4j
 class OwncloudRestAuthenticationProvider extends AbstractOwncloudRestServiceImpl implements AuthenticationProvider {
 
   @Autowired
   private OwncloudRestUserDetailsService userDetailsService;
 
   public OwncloudRestAuthenticationProvider(RestTemplateBuilder builder) {
-    super(builder, false, new OwncloudAuthenticationProviderResponseErrorHandler(SpringSecurityMessageSource.getAccessor()));
+    super(builder, false);
   }
 
   @Override
   public Authentication authenticate(Authentication authentication) throws AuthenticationException {
-
-    if (StringUtils.isBlank(authentication.getName())) {
-      throw new BadCredentialsException(messages.getMessage("AbstractUserDetailsAuthenticationProvider.badCredentials", "Bad Credentials"));
-    }
-
-    if (authentication.getCredentials() == null) {
-      throw new BadCredentialsException(messages.getMessage("AbstractUserDetailsAuthenticationProvider.badCredentials", "Bad Credentials"));
-    }
-
     String username = authentication.getName();
-    String password = authentication.getCredentials().toString();
+    if (StringUtils.isBlank(username)) {
+      log.warn("Username is null or empty");
+      throw new BadCredentialsException(messages.getMessage("AbstractUserDetailsAuthenticationProvider.badCredentials", "Bad Credentials"));
+    }
 
+    String password = authentication.getCredentials() != null ? authentication.getCredentials().toString() : null;
+    if (StringUtils.isBlank(password)) {
+      log.warn("Password is null or empty");
+      throw new BadCredentialsException(messages.getMessage("AbstractUserDetailsAuthenticationProvider.badCredentials", "Bad Credentials"));
+    }
+
+    log.debug("Try to get Information about User {} from Location {}", username, getLocation());
     Ocs.User user = exchange("/cloud/users/{user}", HttpMethod.GET, emptyEntity(username, password), Ocs.User.class, username);
     if (!user.getData().isEnabled()) {
+      log.error("User {} is disabled", username);
       throw new DisabledException(messages.getMessage("AbstractUserDetailsAuthenticationProvider.disabled", "Disabled"));
     }
+
+    log.debug("Set a new UsernamePasswordAuthenticationToken with User {} to the SecurityContextHolder", username);
     SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(username, password));
 
+    log.info("User {} has been successfully authenticated. Get Information from UserDetailsService", username);
     OwncloudUserDetails owncloudUserDetails = userDetailsService.loadPreloadedUserByUsername(username, user);
+    log.trace("Set the Password of User {} to the Authentication Object", username);
     owncloudUserDetails.setPassword(password);
 
     return new OwncloudAuthentication(owncloudUserDetails);
   }
 
   @Override
-  protected void checkFailure(String uri, Ocs.Meta metaInformation) throws OwncloudStatusException {
+  protected void checkFailure(String username, String uri, Ocs.Meta metaInformation) throws OwncloudStatusException {
     if ("ok".equals(metaInformation.getStatus())) {
       return;
     }
+    log.warn("Authentication Failure with Authorization User {} and Code {} from Backend. Returned Failure-Message: {}",
+        username, metaInformation.getStatuscode(), metaInformation.getMessage());
     throw new BadCredentialsException(messages.getMessage("AbstractUserDetailsAuthenticationProvider.badCredentials", "Bad Credentials"));
   }
 
@@ -87,20 +91,4 @@ class OwncloudRestAuthenticationProvider extends AbstractOwncloudRestServiceImpl
     return OwncloudUtils.isAuthenticationClassSupported(authentication);
   }
 
-  private static class OwncloudAuthenticationProviderResponseErrorHandler extends DefaultOwncloudResponseErrorHandler {
-
-    public OwncloudAuthenticationProviderResponseErrorHandler(MessageSourceAccessor messages) {
-      super(messages);
-    }
-
-    @Override
-    public void handleError(ClientHttpResponse response) throws IOException {
-      HttpStatus statusCode = response.getStatusCode();
-      if (HttpStatus.UNAUTHORIZED.compareTo(statusCode) == 0) {
-        throw new BadCredentialsException(messages.getMessage("AbstractUserDetailsAuthenticationProvider.badCredentials", "Bad Credentials"));
-      }
-      super.handleError(response);
-    }
-
-  }
 }

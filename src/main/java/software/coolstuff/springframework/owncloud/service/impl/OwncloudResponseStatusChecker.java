@@ -22,6 +22,6 @@ import software.coolstuff.springframework.owncloud.exception.OwncloudStatusExcep
 @FunctionalInterface
 interface OwncloudResponseStatusChecker {
 
-  void checkForFailure(String uri, Ocs.Meta meta) throws OwncloudStatusException;
+  void checkForFailure(String username, String uri, Ocs.Meta meta) throws OwncloudStatusException;
 
 }

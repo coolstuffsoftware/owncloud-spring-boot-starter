@@ -77,17 +77,23 @@ class OwncloudResourceService {
         OwncloudResourceData.class);
     checkGroupReferences(resourceData);
 
-    log.debug("Save the Users as a Map");
+    log.trace("Clear the Users Map");
     users.clear();
+
+    log.debug("Read the Users as a Map");
     for (OwncloudResourceData.User user : resourceData.getUsers()) {
       users.put(user.getUsername(), user);
     }
 
-    log.debug("Save the Groups as a List");
+    log.trace("Clear the Groups Map");
     groups.clear();
+
+    log.debug("Read the Groups as a Map");
     for (OwncloudResourceData.Group group : resourceData.getGroups()) {
       groups.put(group.getGroup(), group);
     }
+
+    log.info("User Information from Resource Location {} successfully loaded", properties.getLocation());
   }
 
   protected void checkGroupReferences(OwncloudResourceData resourceData) {
@@ -96,13 +102,15 @@ class OwncloudResourceService {
         continue;
       }
 
-      log.debug("Check, if the Groups of User {} are registered within the general Group Definitions",
-          user.getUsername());
+      log.debug("Check, if the Groups of User {} are registered within the general Group Definitions", user.getUsername());
       if (!CollectionUtils.isSubCollection(user.getGroups(), resourceData.getGroups())) {
-        Collection<OwncloudResourceData.Group> unknownGroups = CollectionUtils.subtract(user.getGroups(),
-            resourceData.getGroups());
-        throw new IllegalStateException("User " + user.getUsername() + " has unknown Groups defined: " + unknownGroups
-            + " Please define these Groups within <groups> or remove these Groups from the User");
+        Collection<OwncloudResourceData.Group> unknownGroups = CollectionUtils.subtract(user.getGroups(), resourceData.getGroups());
+        final String exceptionMessage = String.format(
+            "User %s has unknown Groups defined: %s. Please define these Groups within <groups> or remove it from the User",
+            user.getUsername(),
+            unknownGroups);
+        log.error(exceptionMessage);
+        throw new IllegalStateException(exceptionMessage);
       }
     }
   }
@@ -112,8 +120,7 @@ class OwncloudResourceService {
     log.debug("Load Resource from Location {}", properties.getLocation());
     Resource resource = resourceLoader.getResource(properties.getLocation());
     if (!(resource instanceof UrlResource)) {
-      log.debug("Resource {} is not of Type {}. Can't synchronize changed Data", resource.getFilename(),
-          UrlResource.class.getName());
+      log.debug("Resource {} is not of Type {}. Can't synchronize changed Data", resource.getFilename(), UrlResource.class.getName());
       return;
     }
 

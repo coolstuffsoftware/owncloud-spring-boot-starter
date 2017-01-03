@@ -9,10 +9,12 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
 
+import lombok.extern.slf4j.Slf4j;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudGrantedAuthoritiesMapper;
 import software.coolstuff.springframework.owncloud.service.impl.OwncloudResourceService.OwncloudResourceData;
 
+@Slf4j
 class OwncloudUserDetailsConversionService {
 
   @Autowired(required = false)
@@ -21,16 +23,18 @@ class OwncloudUserDetailsConversionService {
   @Autowired(required = false)
   private GrantedAuthoritiesMapper grantedAuthoritiesMapper;
 
-  protected OwncloudUserDetails convert(String username, Ocs.User user, Ocs.Groups groupsFromBackend) {
+  OwncloudUserDetails convert(String username, Ocs.User user, Ocs.Groups groupsFromBackend) {
     List<GrantedAuthority> authorities = new ArrayList<>();
     List<String> groups = new ArrayList<>();
-    if (isGroupAvailable(groupsFromBackend)) {
-      for (Ocs.Groups.Data.Group group : groupsFromBackend.getData().getGroups()) {
-        authorities.add(new SimpleGrantedAuthority(group.getGroup()));
-        groups.add(group.getGroup());
+    if (isAnyOwncloudGroupAvailable(groupsFromBackend)) {
+      log.trace("Put {} Owncloud-Group(s) into the Authorities- and Group-List");
+      for (Ocs.Groups.Data.Group owncloudGroup : groupsFromBackend.getData().getGroups()) {
+        authorities.add(new SimpleGrantedAuthority(owncloudGroup.getGroup()));
+        groups.add(owncloudGroup.getGroup());
       }
     }
 
+    log.debug("Convert User {} from {} to {}", username, user.getClass(), OwncloudUserDetails.class);
     OwncloudUserDetails userDetails = OwncloudUserDetails.builder()
         .username(username)
         .enabled(user.getData().isEnabled())
@@ -45,26 +49,30 @@ class OwncloudUserDetailsConversionService {
 
   private void mapGrantedAuthorities(OwncloudUserDetails userDetails) {
     if (owncloudGrantedAuthoritiesMapper != null) {
+      log.debug("Map the Authorities of User {} by {} ({})", userDetails.getUsername(), OwncloudGrantedAuthoritiesMapper.class, owncloudGrantedAuthoritiesMapper.getClass());
       userDetails.setAuthorities(owncloudGrantedAuthoritiesMapper.mapAuthorities(userDetails.getUsername(), userDetails.getAuthorities()));
     } else if (grantedAuthoritiesMapper != null) {
+      log.debug("Map the Authorities of User {} by {} ({})", userDetails.getUsername(), GrantedAuthoritiesMapper.class, grantedAuthoritiesMapper.getClass());
       userDetails.setAuthorities(grantedAuthoritiesMapper.mapAuthorities(userDetails.getAuthorities()));
     }
   }
 
-  private boolean isGroupAvailable(Ocs.Groups groups) {
+  private boolean isAnyOwncloudGroupAvailable(Ocs.Groups groups) {
     return groups != null && groups.getData() != null && groups.getData().getGroups() != null;
   }
 
-  public OwncloudUserDetails convert(OwncloudResourceData.User user) {
+  OwncloudUserDetails convert(OwncloudResourceData.User user) {
     List<GrantedAuthority> authorities = new ArrayList<>();
     List<String> groups = new ArrayList<>();
     if (CollectionUtils.isNotEmpty(user.getGroups())) {
-      for (OwncloudResourceData.Group group : user.getGroups()) {
-        authorities.add(new SimpleGrantedAuthority(group.getGroup()));
-        groups.add(group.getGroup());
+      log.trace("Put {} Owncloud-Group(s) into the Authorities- and Group-List");
+      for (OwncloudResourceData.Group ownclougGroup : user.getGroups()) {
+        authorities.add(new SimpleGrantedAuthority(ownclougGroup.getGroup()));
+        groups.add(ownclougGroup.getGroup());
       }
     }
 
+    log.debug("Convert User {} from {} to {}", user.getUsername(), user.getClass(), OwncloudUserDetails.class);
     OwncloudUserDetails userDetails = OwncloudUserDetails.builder()
         .username(user.getUsername())
         .enabled(user.isEnabled())

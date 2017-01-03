@@ -381,7 +381,7 @@ public abstract class AbstractOwncloudServiceTest {
   private void setFailureMetaInformation(Context context, int statuscode, String message) {
     context.put("status", "failure");
     context.put("statuscode", statuscode);
-    context.put("message", "message");
+    context.put("message", message != null ? message : "");
   }
 
   protected void respondUser(RestRequest request, boolean enabled, String email, String displayName)
