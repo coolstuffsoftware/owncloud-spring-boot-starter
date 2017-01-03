@@ -3,7 +3,7 @@
 
   <groupId>software.coolstuff</groupId>
   <artifactId>owncloud-spring-boot-starter</artifactId>
-  <version>1.0.0</version>
+  <version>1.0.1</version>
 
   <name>owncloud-spring-boot-starter</name>
   <description>Spring Boot Owncloud Service and Authentication Provider</description>
@@ -399,7 +399,6 @@
             <versionTagPrefix>release-</versionTagPrefix>
           </flowInitContext>
           <scmCommentPrefix>[jgitflow plugin]</scmCommentPrefix>
-          <noDeploy>true</noDeploy>
           <pushReleases>true</pushReleases>
           <pushFeatures>true</pushFeatures>
           <pushHotfixes>true</pushHotfixes>
