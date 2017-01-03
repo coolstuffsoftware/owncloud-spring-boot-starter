@@ -24,6 +24,8 @@ include::{includedir}/userQueryService.adoc[]
 
 include::{includedir}/userModificationService.adoc[]
 
+include::{includedir}/logging.adoc[]
+
 include::{includedir}/legal.adoc[]
 
 ++++
