@@ -5,7 +5,7 @@
 <!--[if IE]><meta http-equiv="X-UA-Compatible" content="IE=edge"><![endif]-->
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="generator" content="Asciidoctor 1.5.4">
-<title>Quick Start</title>
+<title>What&#8217;s included</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700">
 <style>
 /* Asciidoctor default stylesheet | MIT License | http://asciidoctor.org */
@@ -513,49 +513,106 @@ table.CodeRay td.code>pre{padding:0}
 </div>
 <div id="content">
 <div class="sect1">
-<h2 id="_quick_start">Quick Start</h2>
+<h2 id="_what_s_included">What&#8217;s included</h2>
 <div class="sectionbody">
-<div class="sect2">
-<h3 id="_maven_dependency">Maven Dependency</h3>
 <div class="paragraph">
-<p>Add the following Maven Dependency:</p>
+<p>This Spring-Boot Starter provides the following Functionalities:</p>
 </div>
-<div class="listingblock">
-<div class="title">pom.xml</div>
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="xml"><span class="tag">&lt;dependency&gt;</span>
-  <span class="tag">&lt;groupId&gt;</span>software.coolstuff<span class="tag">&lt;/groupId&gt;</span>
-  <span class="tag">&lt;artifactId&gt;</span>owncloud-spring-boot-starter<span class="tag">&lt;/artifactId&gt;</span>
-  <span class="tag">&lt;version&gt;</span>1.0.0<span class="tag">&lt;/version&gt;</span>
-<span class="tag">&lt;/dependency&gt;</span></code></pre>
+<div class="ulist">
+<ul>
+<li>
+<p>simple Auto-Configuration</p>
+<div class="ulist">
+<ul>
+<li>
+<p>add it as a Maven Dependency</p>
+</li>
+<li>
+<p>configure the Server-Address as a Spring-Boot Application-Property</p>
+</li>
+</ul>
 </div>
+</li>
+<li>
+<p>Authenticate against one Owncloud Instance by
+using the Spring Security Authentication Mechanism</p>
+</li>
+<li>
+<p>Get Information about the authenticated User</p>
+</li>
+<li>
+<p>Modify the granted Authorities during the Authentication Process</p>
+</li>
+<li>
+<p>Get User Information (Display-Name, eMail) of the authenticated User</p>
+</li>
+<li>
+<p>Modify the User Information (Display-Name, eMail) of the authenticated User</p>
+</li>
+<li>
+<p>Get the assigned Groups of the authenticated User</p>
+</li>
+<li>
+<p>as an Administrator:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Query Users of the Owncloud Instance (optional with Filter by DisplayName)</p>
+</li>
+<li>
+<p>Query Groups of the Owncloud Instance (optional with Filter by Group Name)</p>
+</li>
+<li>
+<p>Get detailed Information about one User by its Username</p>
+</li>
+<li>
+<p>Modify the User Information of any User</p>
+</li>
+<li>
+<p>Create new Users</p>
+</li>
+<li>
+<p>Delete Users</p>
+</li>
+<li>
+<p>Get the Group Memberships of any User</p>
+</li>
+<li>
+<p>Modify the Group Memberships of any User</p>
+</li>
+<li>
+<p>Get the User Memberships of any Group</p>
+</li>
+</ul>
 </div>
+</li>
+<li>
+<p>InMemory Owncloud Instance</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Read Data as XML from</p>
+<div class="ulist">
+<ul>
+<li>
+<p>a Classpath Resource (read only) or</p>
+</li>
+<li>
+<p>an external File Resource (read write)</p>
+</li>
+</ul>
 </div>
-<div class="sect2">
-<h3 id="_application_properties">Application Properties</h3>
-<div class="paragraph">
-<p>Add the following Property:</p>
+</li>
+<li>
+<p>Useful for local Development</p>
+</li>
+<li>
+<p>Useful for Unit Tests / Integration Tests</p>
+</li>
+</ul>
 </div>
-<div class="listingblock">
-<div class="title">application.properties</div>
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="properties">owncloud.location=https://www.example.com/owncloud</code></pre>
-</div>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_test_your_application">Test your Application</h3>
-<div class="paragraph">
-<p>When you now run your Spring-Boot Application the following Login-Screen appears:</p>
-</div>
-<div class="imageblock">
-<div class="content">
-<img src="images/standard_basic_login_screen.png" alt="Login Screen">
-</div>
-</div>
-<div class="paragraph">
-<p>Provide your Owncloud User Credentials and you are now able to work with your Application.</p>
-</div>
+</li>
+</ul>
 </div>
 </div>
 </div>

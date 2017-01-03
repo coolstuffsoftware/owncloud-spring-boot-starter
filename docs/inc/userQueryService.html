@@ -5,7 +5,7 @@
 <!--[if IE]><meta http-equiv="X-UA-Compatible" content="IE=edge"><![endif]-->
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="generator" content="Asciidoctor 1.5.4">
-<title>Quick Start</title>
+<title>OwncloudUserQueryService</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700">
 <style>
 /* Asciidoctor default stylesheet | MIT License | http://asciidoctor.org */
@@ -513,50 +513,128 @@ table.CodeRay td.code>pre{padding:0}
 </div>
 <div id="content">
 <div class="sect1">
-<h2 id="_quick_start">Quick Start</h2>
+<h2 id="_ownclouduserqueryservice">OwncloudUserQueryService</h2>
 <div class="sectionbody">
-<div class="sect2">
-<h3 id="_maven_dependency">Maven Dependency</h3>
 <div class="paragraph">
-<p>Add the following Maven Dependency:</p>
-</div>
-<div class="listingblock">
-<div class="title">pom.xml</div>
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="xml"><span class="tag">&lt;dependency&gt;</span>
-  <span class="tag">&lt;groupId&gt;</span>software.coolstuff<span class="tag">&lt;/groupId&gt;</span>
-  <span class="tag">&lt;artifactId&gt;</span>owncloud-spring-boot-starter<span class="tag">&lt;/artifactId&gt;</span>
-  <span class="tag">&lt;version&gt;</span>1.0.0<span class="tag">&lt;/version&gt;</span>
-<span class="tag">&lt;/dependency&gt;</span></code></pre>
-</div>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_application_properties">Application Properties</h3>
-<div class="paragraph">
-<p>Add the following Property:</p>
-</div>
-<div class="listingblock">
-<div class="title">application.properties</div>
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="properties">owncloud.location=https://www.example.com/owncloud</code></pre>
-</div>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_test_your_application">Test your Application</h3>
-<div class="paragraph">
-<p>When you now run your Spring-Boot Application the following Login-Screen appears:</p>
-</div>
-<div class="imageblock">
-<div class="content">
-<img src="images/standard_basic_login_screen.png" alt="Login Screen">
-</div>
+<p>Autoconfigured out of the Box (by simply adding <code>owncloud-spring-boot-starter</code> to your Classpath) this Service provides Query Methods to get Information about Users and Groups of your Owncloud Instance.</p>
 </div>
 <div class="paragraph">
-<p>Provide your Owncloud User Credentials and you are now able to work with your Application.</p>
+<p>For more Details about the Owncloud REST-Calls please look at the <a href="https://doc.owncloud.org/server/latest/admin_manual/configuration_user/user_provisioning_api.html">Owncloud User provisioning API</a>.<br>
+All Calls to the Owncloud REST-API of the Table below will be prefixed with <code>/ocs/v1.php</code>.</p>
 </div>
+<div class="paragraph">
+<p>The following Methods will be available:</p>
 </div>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Method</th>
+<th class="tableblock halign-left valign-top">Owncloud REST Call</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p><code>List&lt;String&gt; findAllUsers()</code></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p><code>GET cloud/users</code></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p>All Users</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p><code>List&lt;String&gt; findAllUsers(String filter)</code></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p><code>GET cloud/users?search={filter}</code></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p>All Users whose Display Name matches the Search criteria</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p><code>List&lt;String&gt; findAllGroups()</code></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p><code>GET cloud/groups</code></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p>All Groups</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p><code>List&lt;String&gt; findAllGroups(String filter)</code></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p><code>GET cloud/groups?search={filter}</code></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p>All Groups whose Name matches the Search criteria</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p><code>List&lt;String&gt; findAllMembersOfGroup(String groupname)</code></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p><code>GET cloud/groups/{groupname}</code></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p>All Users associated to the Group</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p><code>List&lt;String&gt; findAllGroupsOfUser(String username)</code></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p><code>GET cloud/users/{username}/groups</code></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p>All Groups associated to the User</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p><code>OwncloudUserDetails findOneUser(String username)</code></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p><code>GET cloud/users/{username}</code><br>
+  <code>GET cloud/users/{username}/groups</code></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p>Information about one User</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Full Name</p>
+</li>
+<li>
+<p>Email</p>
+</li>
+<li>
+<p>enabled / disabled</p>
+</li>
+<li>
+<p>all Groups associated to the User</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
 </div>
 </div>
 </div>

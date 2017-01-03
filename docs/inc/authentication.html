@@ -5,7 +5,7 @@
 <!--[if IE]><meta http-equiv="X-UA-Compatible" content="IE=edge"><![endif]-->
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="generator" content="Asciidoctor 1.5.4">
-<title>Quick Start</title>
+<title>Authentication</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700">
 <style>
 /* Asciidoctor default stylesheet | MIT License | http://asciidoctor.org */
@@ -513,48 +513,59 @@ table.CodeRay td.code>pre{padding:0}
 </div>
 <div id="content">
 <div class="sect1">
-<h2 id="_quick_start">Quick Start</h2>
+<h2 id="_authentication">Authentication</h2>
 <div class="sectionbody">
-<div class="sect2">
-<h3 id="_maven_dependency">Maven Dependency</h3>
 <div class="paragraph">
-<p>Add the following Maven Dependency:</p>
+<p>The Authentication has been implemented as a Spring Security <a href="http://docs.spring.io/spring-security/site/docs/4.2.1.RELEASE/apidocs/org/springframework/security/authentication/AuthenticationProvider.html"><code>AutheticationProvider</code></a>.<br>
+Due to the <a href="http://docs.spring.io/spring-boot/docs/1.4.3.RELEASE/reference/htmlsingle/#using-boot-auto-configuration"><code>AutoConfiguration</code></a> Feature this AuthenticationProvider will be automatically loaded and configured when the Configuration Parameter <code>owncloud.location</code> has been provided.</p>
+</div>
+<div class="sect2">
+<h3 id="_configuration">Configuration</h3>
+<div class="paragraph">
+<p>By including <code>owncloud-spring-boot-starter</code> into the Classpath this Authentication-Provider is autoconfigured unless you decide to Overwrite it (by instantiating you own Child of <code>OwncloudAuthenticationProvider</code>).</p>
+</div>
+<div class="paragraph">
+<p>If this is the only Authentication-Provider existing then Spring-Boot will use this Authentication-Provider.</p>
+</div>
+<div class="paragraph">
+<p>When you have several Authentication-Provider instantiated then you have to configure its Usage by a <a href="http://docs.spring.io/spring-security/site/docs/4.2.1.RELEASE/apidocs/org/springframework/security/config/annotation/web/configuration/WebSecurityConfigurerAdapter.html"><code>WebSecurityConfigurerAdapter</code></a></p>
 </div>
 <div class="listingblock">
-<div class="title">pom.xml</div>
+<div class="title">WebSecurityConfigurerAdapter</div>
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="xml"><span class="tag">&lt;dependency&gt;</span>
-  <span class="tag">&lt;groupId&gt;</span>software.coolstuff<span class="tag">&lt;/groupId&gt;</span>
-  <span class="tag">&lt;artifactId&gt;</span>owncloud-spring-boot-starter<span class="tag">&lt;/artifactId&gt;</span>
-  <span class="tag">&lt;version&gt;</span>1.0.0<span class="tag">&lt;/version&gt;</span>
-<span class="tag">&lt;/dependency&gt;</span></code></pre>
+<pre class="CodeRay highlight"><code data-lang="java"><span class="keyword">import</span> <span class="include">org.springframework.beans.factory.annotation.Autowired</span>;
+<span class="keyword">import</span> <span class="include">org.springframework.beans.factory.annotation.Qualifier</span>;
+<span class="keyword">import</span> <span class="include">org.springframework.security.authentication.AuthenticationProvider</span>;
+<span class="keyword">import</span> <span class="include">org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder</span>;
+<span class="keyword">import</span> <span class="include">org.springframework.security.config.annotation.web.configuration.EnableWebSecurity</span>;
+<span class="keyword">import</span> <span class="include">org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter</span>;
+
+<span class="annotation">@EnableWebSecurity</span>
+<span class="directive">public</span> <span class="type">class</span> <span class="class">MyWebSecurityConfigurerAdapter</span> <span class="directive">extends</span> WebSecurityConfigurerAdapter {
+
+  <span class="annotation">@Autowired</span>
+  <span class="annotation">@Qualifier</span>(<span class="string"><span class="delimiter">&quot;</span><span class="content">owncloudAuthenticationProvider</span><span class="delimiter">&quot;</span></span>)
+  <span class="directive">private</span> AuthenticationProvider authenticationProvider;
+
+  <span class="annotation">@Override</span>
+  <span class="directive">protected</span> <span class="type">void</span> configure(AuthenticationManagerBuilder auth) <span class="directive">throws</span> <span class="exception">Exception</span> {
+    auth.authenticationProvider(authenticationProvider);
+  }
+
+}</code></pre>
 </div>
+</div>
+<div class="paragraph">
+<p>By the Qualifier <code>owncloudAuthenticationProvider</code> you can inject the Owncloud Authentication Provider directly into the <code>WebSecurityConfigurerAdapter</code> and use this AuthenticationProvider for Authentication.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_application_properties">Application Properties</h3>
+<h3 id="_rememberme_services">RememberMe Services</h3>
 <div class="paragraph">
-<p>Add the following Property:</p>
-</div>
-<div class="listingblock">
-<div class="title">application.properties</div>
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="properties">owncloud.location=https://www.example.com/owncloud</code></pre>
-</div>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_test_your_application">Test your Application</h3>
-<div class="paragraph">
-<p>When you now run your Spring-Boot Application the following Login-Screen appears:</p>
-</div>
-<div class="imageblock">
-<div class="content">
-<img src="images/standard_basic_login_screen.png" alt="Login Screen">
-</div>
+<p>Unfortunatly RememberMe Service is not available for Owncloud Authentication. Like Microsoft ActiveDirectory the Owncloud Instance doesn&#8217;t provide the Password of a User which is necessary for InMemory RememberMe Services.</p>
 </div>
 <div class="paragraph">
-<p>Provide your Owncloud User Credentials and you are now able to work with your Application.</p>
+<p>It is planned that the Owncloud Authentication Provider provides RememberMe Services for persistent RememberMe Tokens. But not at this Moment.</p>
 </div>
 </div>
 </div>
