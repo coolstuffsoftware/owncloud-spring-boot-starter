@@ -1,0 +1,3 @@
+owncloud:
+  location: file:target/owncloud.xml
+  enable-modifications: true

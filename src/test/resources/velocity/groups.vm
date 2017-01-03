@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<ocs>
+  <meta>
+    <status>${status}</status>
+    <statuscode>${statuscode}</statuscode>
+    <message>$!{message}</message>
+  </meta>
+#if ( ! ${groups.isEmpty()} )
+  <data>
+    <groups>
+#foreach ( $group in ${groups} )
+      <element>${group}</element>
+#end
+    </groups>
+  </data>
+#else
+  <data/>
+#end
+</ocs>

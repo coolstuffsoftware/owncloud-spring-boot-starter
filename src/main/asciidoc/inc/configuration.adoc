@@ -1,0 +1,133 @@
+== Configuration
+All Services of this Spring-Boot Starter will be managed by the following http://docs.spring.io/spring-boot/docs/1.4.3.RELEASE/reference/htmlsingle/#boot-features-external-config[Configuration Parameters].
+[cols="3,1*^,2,1*^,5", options="header"]
+|===
+| Name | mandatory | Data Type |Default | Description
+| owncloud.location | true | String | - | The Location of the Owncloud Instance
+| owncloud.username | false | String | `null` | Username of the Owncloud Administrator
+| owncloud.password | false | String | `null`| Password of the Owncloud Administrator
+| owncloud.enable-modifications | false | boolean | `false`
+  | Modifications through `OwncloudUserModificationService` are allowed/disallowed
+|===
+
+=== owncloud.location
+The Configuration Parameter `owncloud.location` defines, what Backend will be used.
+
+It can have one of the following Values:
+[cols="1,1*^,10", options="header"]
+|===
+| starts with | modifiable | Description
+| `http://` +
+  `https://`   | true  | The Authentication uses the Owncloud of this Web-Address +
+                         i.E.: `\https://www.example.com/owncloud`
+| `classpath:` | false | Get Data of an In-Memory Owncloud Instance from a Classpath Resource
+| `file:`      | true  | Get Data of an In-Memory Owncloud Instance from an external File Resource
+|===
+
+Normally you would provide the Web-Address of the Owncloud-Instance.
+
+But for local Development or Tests it could be useful, to have an Owncloud Instance which
+always behaves the same (returns the same Users, the same Groups, ...).
+
+There you can define a XML-Resource with either `classpath:` or `file:`. +
+This XML-Resource should have the following Format:
+[source,xml]
+.owncloud.xml
+----
+<owncloud>
+  <users> <1>
+    <user> <2>
+      <username>user1</username> <3>
+      <password>s3cr3t</password> <4>
+      <enabled>true</enabled>
+      
+      <displayName>Mr. User 1</displayName> <5>
+      <email>user1@example.com</email>
+      
+      <groups> <6>
+        <group>group1</group>
+        <group>group2</group>
+      </groups>
+    </user>
+    <user>
+      <username>user2</username>
+      <password>s3cr3t</password>
+      <enabled>false</enabled>
+      <displayName>Mrs. User 2</displayName>
+      <email>user2@example.com</email>
+    </user>
+  </users>
+  
+  <groups> <7>
+    <group>group1</group>
+    <group>group2</group>
+    <group>group3</group>
+  </groups>
+</owncloud>
+----
+<1> List of all existing Users
+<2> The Definition of a single User
+<3> Username, Password and Availability-Stats (`<enabled>`) are mandatory.
+<4> unencrypted Password (because you're in local Development or Test Environment)
+<5> optional Parameters
+<6> Group Memberships of the User.
+<7> All available Groups of the InMemory Owncloud Instance
+
+NOTE: All Groups, which are referenced as a User-Membership will be checked
+      when the Service starts. +
+      If there are any Groups, which are not defined at the `<groups>` Section
+      the Service will *fail on Startup* with an `IllegalStateException`.
+
+So if you define the Configuration Parameter `owncloud.location` either as
+
+* `classpath:/path/to/owncloud.xml` or
+* `file:/path/to/owncloud.xml`
+
+the Data of the provided XML-File will be read on Application Startup and resist as a
+InMemory Representation used by the Services of this Spring-Boot Starter
+(Authentication, UserQuery, UserModification, ...).
+
+When you use a `file:` Resource the changed Data will be written to this Resource on a normal Shutdown
+of the Application. This is useful for incremental Integration Tests.
+
+When you use a `classpath:` Resource the changed Data will not be written. Therefor this type should be used
+for local Development and/or Unit Tests.
+
+=== owncloud.username, owncloud.password
+Working with this Spring-Boot Starter can be established by 2 different Approaches:
+
+* either by the User which has been successfully authenticated using
+  `OwncloudAuthenticationProvider` and `OwncloudUserDetailsService` or
+* by specifying an Owncloud Administrator
+
+Here are some Pros and Contras for every of the 2 Approaches:
+[cols="2, 5a, 5a", options="header"]
+|===
+| Authentication Type | Pros | Contras
+
+| authenticated User
+| * Principle of the least Privilege
+  * Privileges will be managed by Owncloud
+  * no Password needed in Configuration Files
+| * Functionality depends on the Privileges of
+    the authenticated User +
+    -> Behaviour of the following
+    Services are not predictable
+  ** `OwncloudUserModificationService`
+  *** `saveUser()` cannot change the
+      Group Memberships
+  *** `deleteUser()` may not work
+  *** `createGroup` & `deleteGroup` may not work
+  ** `OwncloudUserQueryService`
+  *** all `findAll*` Methods may not work
+
+| Administrator
+| * No restriction to any Services
+  * Privileges will be managed by the Application
+  * Predictable Usage of the Services
+| * unencrypted Password in the Configuration File
+    (could be encrypted by using
+    http://cloud.spring.io/spring-cloud-static/Camden.SR3/#_security[Spring Cloud Configuration Service])
+  * Principle of the least Privilege will be broken +
+    -> Owncloud possibly could be broken by the Application
+|===

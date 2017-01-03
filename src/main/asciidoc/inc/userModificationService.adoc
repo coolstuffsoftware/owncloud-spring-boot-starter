@@ -1,0 +1,81 @@
+== OwncloudUserModificationService
+This Service provides Modifications of Users and/or Groups of the Owncloud Instance.
+
+=== enable/disable User Modifications
+Because User Modifications by `OwncloudUserModificationService` need administrative Privileges of the
+the User (either by the authenticated User or by a configured Administrator Account) there is the Danger,
+that the Application will remove Users and/or Groups accidentilly.
+
+To protect the Usage of `OwncloudUserModificationService` can be restricted.
+This Restriction is enabled by default. +
+To allow Modifications by `OwncloudUserModificationService` this Flag must be explictly turned on by
+
+ owncloud.enable-modifications=true
+
+=== creating a new User
+If you want to create a new User you create a new `OwncloudModificationUser` Object
+[source,java]
+----
+OwncloudModificationUser newUser = OwncloudModificationUser.builder()
+  .username("username")
+  .password("s3cr3t")
+  .displayName("Display Name of the new User")
+  .email("user@example.com")
+  .group("group1")
+  .group("group2")
+  .build();
+OwncloudUserDetails createdUser =
+  owncloudUserModificationService.saveUser(newUser);
+----
+
+=== modifying a User
+If you want to modify the Information about a User this User has to be read just before by
+`OwncloudUserQueryService.findOneUser(String username)`. With the `OwncloudUserDetails` Object
+in Hands you can create a new `OwncloudModificationUser`.
+[source,java]
+----
+OwncloudUserDetails existingUser =
+  owncloudUserQueryService.findOneUser("user1");
+OwncloudModificationUser modificationUser =
+  new OwncloudModificationUser(existingUser);
+modificationUser.setDisplayName("new Display Name of the User");
+existingUser = owncloudUserModificationService.saveUser(modificationUser);
+----
+
+=== Methods
+All Owncloud REST-Calls of the List below will be prefixed by `/ocs/v1.php`.
+
+[cols="2a, 5a, 5a", options="header"]
+|===
+| Method | Owncloud REST-Call | Description
+| `OwncloudUserDetails saveUser(OwncloudModificationUser userDetails)`
+| additional (when creating a new User): +
+`POST users -d userid="{username}" -d password="{password}"` +
+
+modifying User: +
+`PUT users -d key="display" -d value="{displayName}"`
+
+`PUT users -d key="email" -d value="{email}"`
+
+when Groups will be modified: +
+`POST users/{username}/groups -d groupid="{groupname}"`
+
+`DELETE users/{username}/groups -d groupid="{groupname}"`
+| * creates a new User
+* modifies the Information of an existing User
+
+NOTE: due to Security Reasons the Password of a User will not be modified nor will it be returned.
+| `void deleteUser(String username)`
+| `DELETE users/{username}`
+| Removes a User from Owncloud
+
+NOTE: all Objects of this User (Files, Calendars, Addressbooks, ...) will also be removed.
+| `void createGroup(String groupname)`
+| `POST groups -d groupid="{groupname}"`
+| Create a new Group
+| `void deleteGroup(String groupname)``
+| `DELETE groups/{groupname}``
+| Removes a Group from Owncloud
+
+NOTE: all Memberships to this Group will also be removed. Also all Shares (Files, Calendars, Addressbooks, ...)
+|===

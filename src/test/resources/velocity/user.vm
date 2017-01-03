@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<ocs>
+  <meta>
+    <status>${status}</status>
+    <statuscode>${statuscode}</statuscode>
+    <message>$!{message}</message>
+  </meta>
+  <data>
+    <enabled>${enabled}</enabled>
+    <quota>
+      <free>817928385</free>
+      <used>255813439</used>
+      <total>1073741824</total>
+      <relative>23.82</relative>
+    </quota>
+#if ( ${email} )
+    <email>${email}</email>
+#end
+    <displayname>${displayName}</displayname>
+    <two_factor_auth_enabled>false</two_factor_auth_enabled>
+  </data>
+</ocs>

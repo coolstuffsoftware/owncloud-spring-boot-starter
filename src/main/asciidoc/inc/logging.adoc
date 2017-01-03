@@ -1,0 +1,10 @@
+== Logging
+This Project uses http://www.slf4j.org[SLF4J] to produce the Logs.
+
+You can disable the Logging by setting the Log-Level of the Package `software.coolstuff.springframework.owncloud` to `off`.
+
+ logging.level.software.coolstuff.springframework.owncloud=off
+
+As an alternative you can set the Log-Level to `trace` if you would like to get all Rest-Requests:
+
+ logging.level.software.coolstuff.springframework.owncloud=trace

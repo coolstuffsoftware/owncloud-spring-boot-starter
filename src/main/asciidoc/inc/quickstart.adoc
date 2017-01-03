@@ -1,0 +1,28 @@
+== Quick Start
+
+=== Maven Dependency
+Add the following Maven Dependency:
+[source,xml,subs="verbatim,attributes"]
+.pom.xml
+----
+<dependency>
+  <groupId>software.coolstuff</groupId>
+  <artifactId>owncloud-spring-boot-starter</artifactId>
+  <version>{revnumber}</version>
+</dependency>
+----
+
+=== Application Properties
+Add the following Property:
+[source,properties]
+.application.properties
+----
+owncloud.location=https://www.example.com/owncloud
+----
+
+=== Test your Application
+When you now run your Spring-Boot Application the following Login-Screen appears:
+
+image::standard_basic_login_screen.png[Login Screen]
+
+Provide your Owncloud User Credentials and you are now able to work with your Application.

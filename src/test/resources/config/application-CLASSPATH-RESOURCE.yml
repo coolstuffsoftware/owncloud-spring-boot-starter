@@ -1,0 +1,3 @@
+owncloud:
+  location: classpath:/owncloud.xml
+  enable-modifications: true

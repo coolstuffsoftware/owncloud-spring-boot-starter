@@ -1,0 +1,5 @@
+== Contributions
+You can fork this Project on https://github.com/coolstuffsoftware/owncloud-spring-boot-starter[Github] and create a Pull Request.
+
+== License
+This Project is licensed under the https://www.gnu.org/licenses/gpl-3.0.en.html[GPL 3.0 License].

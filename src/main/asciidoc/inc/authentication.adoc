@@ -1,0 +1,40 @@
+== Authentication
+The Authentication has been implemented as a Spring Security http://docs.spring.io/spring-security/site/docs/4.2.1.RELEASE/apidocs/org/springframework/security/authentication/AuthenticationProvider.html[`AutheticationProvider`]. +
+Due to the http://docs.spring.io/spring-boot/docs/1.4.3.RELEASE/reference/htmlsingle/#using-boot-auto-configuration[`AutoConfiguration`] Feature this AuthenticationProvider will be automatically loaded and configured when the Configuration Parameter `owncloud.location` has been provided.
+
+=== Configuration
+By including `owncloud-spring-boot-starter` into the Classpath this Authentication-Provider is autoconfigured unless you decide to Overwrite it (by instantiating you own Child of `OwncloudAuthenticationProvider`).
+
+If this is the only Authentication-Provider existing then Spring-Boot will use this Authentication-Provider.
+
+When you have several Authentication-Provider instantiated then you have to configure its Usage by a http://docs.spring.io/spring-security/site/docs/4.2.1.RELEASE/apidocs/org/springframework/security/config/annotation/web/configuration/WebSecurityConfigurerAdapter.html[`WebSecurityConfigurerAdapter`]
+[source,java]
+.WebSecurityConfigurerAdapter
+----
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+
+@EnableWebSecurity
+public class MyWebSecurityConfigurerAdapter extends WebSecurityConfigurerAdapter {
+
+  @Autowired
+  @Qualifier("owncloudAuthenticationProvider")
+  private AuthenticationProvider authenticationProvider;
+
+  @Override
+  protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+    auth.authenticationProvider(authenticationProvider);
+  }
+
+}
+----
+By the Qualifier `owncloudAuthenticationProvider` you can inject the Owncloud Authentication Provider directly into the `WebSecurityConfigurerAdapter` and use this AuthenticationProvider for Authentication.
+
+=== RememberMe Services
+Unfortunatly RememberMe Service is not available for Owncloud Authentication. Like Microsoft ActiveDirectory the Owncloud Instance doesn't provide the Password of a User which is necessary for InMemory RememberMe Services.
+
+It is planned that the Owncloud Authentication Provider provides RememberMe Services for persistent RememberMe Tokens. But not at this Moment.

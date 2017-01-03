@@ -1,0 +1,38 @@
+== OwncloudUserQueryService
+Autoconfigured out of the Box (by simply adding `owncloud-spring-boot-starter` to your Classpath) this Service provides Query Methods to get Information about Users and Groups of your Owncloud Instance.
+
+For more Details about the Owncloud REST-Calls please look at the https://doc.owncloud.org/server/latest/admin_manual/configuration_user/user_provisioning_api.html[Owncloud User provisioning API]. +
+All Calls to the Owncloud REST-API of the Table below will be prefixed with `/ocs/v1.php`.
+
+The following Methods will be available:
+[cols="4a, 4a, 4a", options="header"]
+|===
+| Method | Owncloud REST Call| Description
+| `List<String> findAllUsers()`
+| `GET cloud/users`
+| All Users
+| `List<String> findAllUsers(String filter)`
+| `GET cloud/users?search={filter}`
+| All Users whose Display Name matches the Search criteria
+| `List<String> findAllGroups()`
+| `GET cloud/groups`
+| All Groups
+| `List<String> findAllGroups(String filter)`
+| `GET cloud/groups?search={filter}`
+| All Groups whose Name matches the Search criteria
+| `List<String> findAllMembersOfGroup(String groupname)`
+| `GET cloud/groups/{groupname}`
+| All Users associated to the Group
+| `List<String> findAllGroupsOfUser(String username)`
+| `GET cloud/users/{username}/groups`
+| All Groups associated to the User
+| `OwncloudUserDetails findOneUser(String username)`
+| `GET cloud/users/{username}` +
+  `GET cloud/users/{username}/groups`
+| Information about one User
+
+* Full Name
+* Email
+* enabled / disabled
+* all Groups associated to the User
+|===

@@ -1,0 +1,16 @@
+<owncloud>
+  <users>
+    <user>
+      <username>user2</username>
+      <password>s3cr3t</password>
+      <enabled>false</enabled>
+      <displayName>Mrs. User 2</displayName>
+      <email>user2@example.com</email>
+    </user>
+  </users>
+  <groups>
+    <group>group1</group>
+    <group>group2</group>
+    <group>group3</group>
+  </groups>
+</owncloud>

@@ -1,0 +1,29 @@
+== What's included
+This Spring-Boot Starter provides the following Functionalities:
+
+* simple Auto-Configuration
+** add it as a Maven Dependency
+** configure the Server-Address as a Spring-Boot Application-Property
+* Authenticate against one Owncloud Instance by
+  using the Spring Security Authentication Mechanism
+* Get Information about the authenticated User
+* Modify the granted Authorities during the Authentication Process
+* Get User Information (Display-Name, eMail) of the authenticated User
+* Modify the User Information (Display-Name, eMail) of the authenticated User
+* Get the assigned Groups of the authenticated User
+* as an Administrator:
+** Query Users of the Owncloud Instance (optional with Filter by DisplayName)
+** Query Groups of the Owncloud Instance (optional with Filter by Group Name)
+** Get detailed Information about one User by its Username
+** Modify the User Information of any User
+** Create new Users
+** Delete Users
+** Get the Group Memberships of any User
+** Modify the Group Memberships of any User
+** Get the User Memberships of any Group
+* InMemory Owncloud Instance
+** Read Data as XML from
+*** a Classpath Resource (read only) or
+*** an external File Resource (read write)
+** Useful for local Development
+** Useful for Unit Tests / Integration Tests
