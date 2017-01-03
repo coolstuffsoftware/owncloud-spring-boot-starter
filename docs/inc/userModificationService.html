@@ -5,7 +5,7 @@
 <!--[if IE]><meta http-equiv="X-UA-Compatible" content="IE=edge"><![endif]-->
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="generator" content="Asciidoctor 1.5.4">
-<title>Quick Start</title>
+<title>OwncloudUserModificationService</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700">
 <style>
 /* Asciidoctor default stylesheet | MIT License | http://asciidoctor.org */
@@ -513,49 +513,190 @@ table.CodeRay td.code>pre{padding:0}
 </div>
 <div id="content">
 <div class="sect1">
-<h2 id="_quick_start">Quick Start</h2>
+<h2 id="_owncloudusermodificationservice">OwncloudUserModificationService</h2>
 <div class="sectionbody">
-<div class="sect2">
-<h3 id="_maven_dependency">Maven Dependency</h3>
 <div class="paragraph">
-<p>Add the following Maven Dependency:</p>
+<p>This Service provides Modifications of Users and/or Groups of the Owncloud Instance.</p>
+</div>
+<div class="sect2">
+<h3 id="_enable_disable_user_modifications">enable/disable User Modifications</h3>
+<div class="paragraph">
+<p>Because User Modifications by <code>OwncloudUserModificationService</code> need administrative Privileges of the
+the User (either by the authenticated User or by a configured Administrator Account) there is the Danger,
+that the Application will remove Users and/or Groups accidentilly.</p>
+</div>
+<div class="paragraph">
+<p>To protect the Usage of <code>OwncloudUserModificationService</code> can be restricted.
+This Restriction is enabled by default.<br>
+To allow Modifications by <code>OwncloudUserModificationService</code> this Flag must be explictly turned on by</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>owncloud.enable-modifications=true</pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_creating_a_new_user">creating a new User</h3>
+<div class="paragraph">
+<p>If you want to create a new User you create a new <code>OwncloudModificationUser</code> Object</p>
 </div>
 <div class="listingblock">
-<div class="title">pom.xml</div>
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="xml"><span class="tag">&lt;dependency&gt;</span>
-  <span class="tag">&lt;groupId&gt;</span>software.coolstuff<span class="tag">&lt;/groupId&gt;</span>
-  <span class="tag">&lt;artifactId&gt;</span>owncloud-spring-boot-starter<span class="tag">&lt;/artifactId&gt;</span>
-  <span class="tag">&lt;version&gt;</span>1.0.0<span class="tag">&lt;/version&gt;</span>
-<span class="tag">&lt;/dependency&gt;</span></code></pre>
+<pre class="CodeRay highlight"><code data-lang="java">OwncloudModificationUser newUser = OwncloudModificationUser.builder()
+  .username(<span class="string"><span class="delimiter">&quot;</span><span class="content">username</span><span class="delimiter">&quot;</span></span>)
+  .password(<span class="string"><span class="delimiter">&quot;</span><span class="content">s3cr3t</span><span class="delimiter">&quot;</span></span>)
+  .displayName(<span class="string"><span class="delimiter">&quot;</span><span class="content">Display Name of the new User</span><span class="delimiter">&quot;</span></span>)
+  .email(<span class="string"><span class="delimiter">&quot;</span><span class="content">user@example.com</span><span class="delimiter">&quot;</span></span>)
+  .group(<span class="string"><span class="delimiter">&quot;</span><span class="content">group1</span><span class="delimiter">&quot;</span></span>)
+  .group(<span class="string"><span class="delimiter">&quot;</span><span class="content">group2</span><span class="delimiter">&quot;</span></span>)
+  .build();
+OwncloudUserDetails createdUser =
+  owncloudUserModificationService.saveUser(newUser);</code></pre>
 </div>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_application_properties">Application Properties</h3>
+<h3 id="_modifying_a_user">modifying a User</h3>
 <div class="paragraph">
-<p>Add the following Property:</p>
+<p>If you want to modify the Information about a User this User has to be read just before by
+<code>OwncloudUserQueryService.findOneUser(String username)</code>. With the <code>OwncloudUserDetails</code> Object
+in Hands you can create a new <code>OwncloudModificationUser</code>.</p>
 </div>
 <div class="listingblock">
-<div class="title">application.properties</div>
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="properties">owncloud.location=https://www.example.com/owncloud</code></pre>
+<pre class="CodeRay highlight"><code data-lang="java">OwncloudUserDetails existingUser =
+  owncloudUserQueryService.findOneUser(<span class="string"><span class="delimiter">&quot;</span><span class="content">user1</span><span class="delimiter">&quot;</span></span>);
+OwncloudModificationUser modificationUser =
+  <span class="keyword">new</span> OwncloudModificationUser(existingUser);
+modificationUser.setDisplayName(<span class="string"><span class="delimiter">&quot;</span><span class="content">new Display Name of the User</span><span class="delimiter">&quot;</span></span>);
+existingUser = owncloudUserModificationService.saveUser(modificationUser);</code></pre>
 </div>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_test_your_application">Test your Application</h3>
+<h3 id="_methods">Methods</h3>
 <div class="paragraph">
-<p>When you now run your Spring-Boot Application the following Login-Screen appears:</p>
+<p>All Owncloud REST-Calls of the List below will be prefixed by <code>/ocs/v1.php</code>.</p>
 </div>
-<div class="imageblock">
-<div class="content">
-<img src="images/standard_basic_login_screen.png" alt="Login Screen">
-</div>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 16.6666%;">
+<col style="width: 41.6666%;">
+<col style="width: 41.6668%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Method</th>
+<th class="tableblock halign-left valign-top">Owncloud REST-Call</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p><code>OwncloudUserDetails saveUser(OwncloudModificationUser userDetails)</code></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p>additional (when creating a new User):<br>
+<code>POST users -d userid="{username}" -d password="{password}"</code><br></p>
 </div>
 <div class="paragraph">
-<p>Provide your Owncloud User Credentials and you are now able to work with your Application.</p>
+<p>modifying User:<br>
+<code>PUT users -d key="display" -d value="{displayName}"</code></p>
 </div>
+<div class="paragraph">
+<p><code>PUT users -d key="email" -d value="{email}"</code></p>
+</div>
+<div class="paragraph">
+<p>when Groups will be modified:<br>
+<code>POST users/{username}/groups -d groupid="{groupname}"</code></p>
+</div>
+<div class="paragraph">
+<p><code>DELETE users/{username}/groups -d groupid="{groupname}"</code></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div><div class="ulist">
+<ul>
+<li>
+<p>creates a new User</p>
+</li>
+<li>
+<p>modifies the Information of an existing User</p>
+</li>
+</ul>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Note</div>
+</td>
+<td class="content">
+due to Security Reasons the Password of a User will not be modified nor will it be returned.
+</td>
+</tr>
+</table>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p><code>void deleteUser(String username)</code></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p><code>DELETE users/{username}</code></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p>Removes a User from Owncloud</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Note</div>
+</td>
+<td class="content">
+all Objects of this User (Files, Calendars, Addressbooks, &#8230;&#8203;) will also be removed.
+</td>
+</tr>
+</table>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p><code>void createGroup(String groupname)</code></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p><code>POST groups -d groupid="{groupname}"</code></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p>Create a new Group</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p><code>void deleteGroup(String groupname)`</code></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p><code>DELETE groups/{groupname}`</code></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p>Removes a Group from Owncloud</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Note</div>
+</td>
+<td class="content">
+all Memberships to this Group will also be removed. Also all Shares (Files, Calendars, Addressbooks, &#8230;&#8203;)
+</td>
+</tr>
+</table>
+</div></div></td>
+</tr>
+</tbody>
+</table>
 </div>
 </div>
 </div>

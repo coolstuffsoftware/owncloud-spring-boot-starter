@@ -5,7 +5,7 @@
 <!--[if IE]><meta http-equiv="X-UA-Compatible" content="IE=edge"><![endif]-->
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="generator" content="Asciidoctor 1.5.4">
-<title>Quick Start</title>
+<title>Logging</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700">
 <style>
 /* Asciidoctor default stylesheet | MIT License | http://asciidoctor.org */
@@ -513,48 +513,25 @@ table.CodeRay td.code>pre{padding:0}
 </div>
 <div id="content">
 <div class="sect1">
-<h2 id="_quick_start">Quick Start</h2>
+<h2 id="_logging">Logging</h2>
 <div class="sectionbody">
-<div class="sect2">
-<h3 id="_maven_dependency">Maven Dependency</h3>
 <div class="paragraph">
-<p>Add the following Maven Dependency:</p>
+<p>This Project uses <a href="http://www.slf4j.org">SLF4J</a> to produce the Logs.</p>
 </div>
-<div class="listingblock">
-<div class="title">pom.xml</div>
+<div class="paragraph">
+<p>You can disable the Logging by setting the Log-Level of the Package <code>software.coolstuff.springframework.owncloud</code> to <code>off</code>.</p>
+</div>
+<div class="literalblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="xml"><span class="tag">&lt;dependency&gt;</span>
-  <span class="tag">&lt;groupId&gt;</span>software.coolstuff<span class="tag">&lt;/groupId&gt;</span>
-  <span class="tag">&lt;artifactId&gt;</span>owncloud-spring-boot-starter<span class="tag">&lt;/artifactId&gt;</span>
-  <span class="tag">&lt;version&gt;</span>1.0.0<span class="tag">&lt;/version&gt;</span>
-<span class="tag">&lt;/dependency&gt;</span></code></pre>
+<pre>logging.level.software.coolstuff.springframework.owncloud=off</pre>
 </div>
 </div>
-</div>
-<div class="sect2">
-<h3 id="_application_properties">Application Properties</h3>
 <div class="paragraph">
-<p>Add the following Property:</p>
+<p>As an alternative you can set the Log-Level to <code>trace</code> if you would like to get all Rest-Requests:</p>
 </div>
-<div class="listingblock">
-<div class="title">application.properties</div>
+<div class="literalblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="properties">owncloud.location=https://www.example.com/owncloud</code></pre>
-</div>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_test_your_application">Test your Application</h3>
-<div class="paragraph">
-<p>When you now run your Spring-Boot Application the following Login-Screen appears:</p>
-</div>
-<div class="imageblock">
-<div class="content">
-<img src="images/standard_basic_login_screen.png" alt="Login Screen">
-</div>
-</div>
-<div class="paragraph">
-<p>Provide your Owncloud User Credentials and you are now able to work with your Application.</p>
+<pre>logging.level.software.coolstuff.springframework.owncloud=trace</pre>
 </div>
 </div>
 </div>
