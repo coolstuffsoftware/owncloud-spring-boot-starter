@@ -1,5 +1,7 @@
 package software.coolstuff.springframework.owncloud.service.impl;
 
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -21,11 +23,12 @@ class OwncloudResourceUserDetailsService implements UserDetailsService {
   @Override
   public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
     log.debug("Get Information about User {} from the Resource Service", username);
-    OwncloudResourceData.User user = resourceService.getUser(username);
-    if (user == null) {
-      log.error("User {} not found", username);
-      throw new UsernameNotFoundException(username);
-    }
+    OwncloudResourceData.User user = Optional
+        .ofNullable(resourceService.getUser(username))
+        .orElseThrow(() -> {
+          log.error("User {} not found", username);
+          return new UsernameNotFoundException(username);
+        });
     return conversionService.convert(user);
   }
 
