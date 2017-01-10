@@ -1,7 +1,5 @@
 package software.coolstuff.springframework.owncloud.service.impl;
 
-import java.util.Optional;
-
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.support.MessageSourceAccessor;
@@ -46,12 +44,11 @@ public class OwncloudResourceAuthenticationProvider implements AuthenticationPro
     }
 
     log.debug("Get Information about User {} from the Resource Service", username);
-    OwncloudResourceData.User user = Optional
-        .ofNullable(resourceService.getUser(username))
-        .orElseThrow(() -> {
-          log.error("User {} has not been found", username);
-          throw new BadCredentialsException(messages.getMessage("AbstractUserDetailsAuthenticationProvider.badCredentials", "Bad Credentials"));
-        });
+    OwncloudResourceData.User user = resourceService.getUser(username);
+    if (user == null) {
+      log.error("User {} has not been found", username);
+      throw new BadCredentialsException(messages.getMessage("AbstractUserDetailsAuthenticationProvider.badCredentials", "Bad Credentials"));
+    }
     if (!user.isEnabled()) {
       log.error("User {} is disabled", username);
       throw new DisabledException(messages.getMessage("AbstractUserDetailsAuthenticationProvider.disabled", "Disabled"));
