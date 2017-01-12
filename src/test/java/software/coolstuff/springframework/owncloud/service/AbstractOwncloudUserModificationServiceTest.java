@@ -47,7 +47,7 @@ public abstract class AbstractOwncloudUserModificationServiceTest extends Abstra
         .username("user1")
         .password("password")
         .enabled(true)
-        .displayName("Mr. User 1")
+        .displayname("Mr. User 1")
         .email("user1@example.com")
         .authorities(Lists.newArrayList(
             new SimpleGrantedAuthority("group1"),
@@ -61,7 +61,7 @@ public abstract class AbstractOwncloudUserModificationServiceTest extends Abstra
     Assert.assertEquals(userDetails.getUsername(), modificationUser.getUsername());
     Assert.assertEquals(userDetails.getPassword(), modificationUser.getPassword());
     Assert.assertEquals(userDetails.isEnabled(), modificationUser.isEnabled());
-    Assert.assertEquals(userDetails.getDisplayName(), modificationUser.getDisplayName());
+    Assert.assertEquals(userDetails.getDisplayname(), modificationUser.getDisplayname());
     Assert.assertEquals(userDetails.getEmail(), modificationUser.getEmail());
     Assert.assertTrue(CollectionUtils.isEqualCollection(modificationUser.getGroups(), Lists.newArrayList("group1", "group2")));
   }
@@ -72,7 +72,7 @@ public abstract class AbstractOwncloudUserModificationServiceTest extends Abstra
         .username("user1")
         .password("password")
         .enabled(true)
-        .displayName("Mr. User 1")
+        .displayname("Mr. User 1")
         .email("user1@example.com")
         .build();
 
@@ -83,7 +83,7 @@ public abstract class AbstractOwncloudUserModificationServiceTest extends Abstra
     Assert.assertEquals(userDetails.getUsername(), modificationUser.getUsername());
     Assert.assertEquals(userDetails.getPassword(), modificationUser.getPassword());
     Assert.assertEquals(userDetails.isEnabled(), modificationUser.isEnabled());
-    Assert.assertEquals(userDetails.getDisplayName(), modificationUser.getDisplayName());
+    Assert.assertEquals(userDetails.getDisplayname(), modificationUser.getDisplayname());
     Assert.assertEquals(userDetails.getEmail(), modificationUser.getEmail());
     Assert.assertTrue(CollectionUtils.isEmpty(modificationUser.getGroups()));
   }
@@ -95,7 +95,7 @@ public abstract class AbstractOwncloudUserModificationServiceTest extends Abstra
         .username("user3")
         .password("password")
         .enabled(true)
-        .displayName("Mr. User 3")
+        .displayname("Mr. User 3")
         .email("user3@example.com")
         .build();
 
@@ -108,7 +108,7 @@ public abstract class AbstractOwncloudUserModificationServiceTest extends Abstra
     Assert.assertEquals(newUser.getUsername(), createdUser.getUsername());
     Assert.assertNull(createdUser.getPassword());
     Assert.assertEquals(newUser.isEnabled(), createdUser.isEnabled());
-    Assert.assertEquals(newUser.getDisplayName(), createdUser.getDisplayName());
+    Assert.assertEquals(newUser.getDisplayname(), createdUser.getDisplayname());
     Assert.assertEquals(newUser.getEmail(), createdUser.getEmail());
 
     checkAuthorities(createdUser.getUsername(), createdUser.getAuthorities());
@@ -123,9 +123,10 @@ public abstract class AbstractOwncloudUserModificationServiceTest extends Abstra
         .username("user4")
         .password("password")
         .enabled(true)
-        .displayName("Mrs. User 4")
+        .displayname("Mrs. User 4")
         .email("user4@example.com")
-        .groups(Lists.newArrayList("group1", "group2"))
+        .group("group1")
+        .group("group2")
         .build();
 
     prepareTestSaveUser_CreateUser_OK_WithGroups(newUser);
@@ -137,7 +138,7 @@ public abstract class AbstractOwncloudUserModificationServiceTest extends Abstra
     Assert.assertEquals(newUser.getUsername(), createdUser.getUsername());
     Assert.assertNull(createdUser.getPassword());
     Assert.assertEquals(newUser.isEnabled(), createdUser.isEnabled());
-    Assert.assertEquals(newUser.getDisplayName(), createdUser.getDisplayName());
+    Assert.assertEquals(newUser.getDisplayname(), createdUser.getDisplayname());
     Assert.assertEquals(newUser.getEmail(), createdUser.getEmail());
 
     checkAuthorities(createdUser.getUsername(), createdUser.getAuthorities(), "group1", "group2");
@@ -152,7 +153,7 @@ public abstract class AbstractOwncloudUserModificationServiceTest extends Abstra
         .username("user2")
         .password("password")
         .enabled(true)
-        .displayName("Mrs. User 1")
+        .displayname("Mrs. User 1")
         .email("user2@example.com")
         .build();
 
@@ -160,7 +161,7 @@ public abstract class AbstractOwncloudUserModificationServiceTest extends Abstra
         .username("user2")
         .password("password")
         .enabled(true)
-        .displayName("Mrs. User 2 in Subdomain")
+        .displayname("Mrs. User 2 in Subdomain")
         .email("user2@subdomain.example.com")
         .build();
 
@@ -173,7 +174,7 @@ public abstract class AbstractOwncloudUserModificationServiceTest extends Abstra
     Assert.assertEquals(updateUser.getUsername(), updatedUser.getUsername());
     Assert.assertNull(updatedUser.getPassword());
     Assert.assertEquals(updateUser.isEnabled(), updatedUser.isEnabled());
-    Assert.assertEquals(updateUser.getDisplayName(), updatedUser.getDisplayName());
+    Assert.assertEquals(updateUser.getDisplayname(), updatedUser.getDisplayname());
     Assert.assertEquals(updateUser.getEmail(), updatedUser.getEmail());
     Assert.assertTrue(CollectionUtils.isEmpty(updatedUser.getAuthorities()));
   }
@@ -187,7 +188,7 @@ public abstract class AbstractOwncloudUserModificationServiceTest extends Abstra
         .username("user1")
         .password("s3cr3t")
         .enabled(true)
-        .displayName("Mr. User 1")
+        .displayname("Mr. User 1")
         .email("user1@example.com")
         .group("group1")
         .group("group2")
@@ -197,7 +198,7 @@ public abstract class AbstractOwncloudUserModificationServiceTest extends Abstra
         .username("user1")
         .password("s3cr3t")
         .enabled(false) // disabled instead of enabled
-        .displayName("Mr. User 1")
+        .displayname("Mr. User 1")
         .email("user1@example.com")
         .group("group1")
         .group("group3") // group3 instead of group2
@@ -212,7 +213,7 @@ public abstract class AbstractOwncloudUserModificationServiceTest extends Abstra
     Assert.assertEquals(updateUser.getUsername(), updatedUser.getUsername());
     Assert.assertNull(updatedUser.getPassword());
     Assert.assertEquals(updateUser.isEnabled(), updatedUser.isEnabled());
-    Assert.assertEquals(updateUser.getDisplayName(), updatedUser.getDisplayName());
+    Assert.assertEquals(updateUser.getDisplayname(), updatedUser.getDisplayname());
     Assert.assertEquals(updateUser.getEmail(), updatedUser.getEmail());
     checkAuthorities(updatedUser.getUsername(), updatedUser.getAuthorities(), updateUser.getGroups().toArray(new String[] {}));
   }

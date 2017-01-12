@@ -36,7 +36,7 @@ class OwncloudUserQueryResourceServiceImpl implements OwncloudUserQueryService {
     log.debug("Get all Users with a DisplayName like {}", filter);
     List<String> filteredUsers = new ArrayList<>();
     for (User user : resourceService.getUsers()) {
-      if (StringUtils.isBlank(filter) || StringUtils.contains(user.getDisplayName(), filter)) {
+      if (StringUtils.isBlank(filter) || StringUtils.contains(user.getDisplayname(), filter)) {
         log.trace("add User {} to the Result", user.getUsername());
         filteredUsers.add(user.getUsername());
       }

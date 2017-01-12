@@ -4,7 +4,7 @@
       <username>user2</username>
       <password>s3cr3t</password>
       <enabled>false</enabled>
-      <displayName>Mrs. User 2</displayName>
+      <displayname>Mrs. User 2</displayname>
       <email>user2@example.com</email>
     </user>
   </users>
