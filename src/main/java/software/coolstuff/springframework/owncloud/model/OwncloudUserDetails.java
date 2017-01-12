@@ -30,7 +30,6 @@ import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMap
 import org.springframework.security.core.userdetails.UserDetails;
 
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -49,7 +48,6 @@ import software.coolstuff.springframework.owncloud.service.api.OwncloudGrantedAu
  */
 @Data
 @NoArgsConstructor
-@AllArgsConstructor
 @EqualsAndHashCode(of = "username")
 @ToString(exclude = "password")
 public class OwncloudUserDetails implements UserDetails {
@@ -103,7 +101,7 @@ public class OwncloudUserDetails implements UserDetails {
    * @param displayName Display Name of the authenticated User
    * @return Display Name of the authenticated User
    */
-  private String displayName;
+  private String displayname;
 
   /**
    * Email of the authenticated User.
@@ -123,14 +121,14 @@ public class OwncloudUserDetails implements UserDetails {
       boolean enabled,
       Collection<? extends GrantedAuthority> authorities,
       List<String> groups,
-      String displayName,
+      String displayname,
       String email) {
     setUsername(username);
     setPassword(password);
     setEnabled(enabled);
     setAuthorities(authorities);
     setGroups(groups);
-    setDisplayName(displayName);
+    setDisplayname(displayname);
     setEmail(email);
   }
 

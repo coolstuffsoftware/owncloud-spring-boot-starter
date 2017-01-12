@@ -148,7 +148,8 @@ abstract class AbstractOwncloudRestServiceImpl implements OwncloudRestService {
   protected HttpHeaders prepareHeaderWithBasicAuthorization(String username, String password) {
     Validate.notBlank(username);
 
-    String encodedCredentials = new String(Base64.getEncoder().encode((username + ":" + password).getBytes()));
+    final byte[] rawEncodedCredentials = Base64.getEncoder().encode((username + ":" + password).getBytes());
+    final String encodedCredentials = new String(rawEncodedCredentials);
 
     HttpHeaders headers = new HttpHeaders();
     log.trace("Use Basic Authorization with User {}", username);
@@ -239,7 +240,8 @@ abstract class AbstractOwncloudRestServiceImpl implements OwncloudRestService {
     if (StringUtils.startsWith(encodedCredentials, AUTHORIZATION_METHOD_PREFIX)) {
       encodedCredentials = StringUtils.substring(encodedCredentials, AUTHORIZATION_METHOD_PREFIX.length());
     }
-    String decodedCredentials = new String(Base64.getDecoder().decode(encodedCredentials.getBytes()));
+    final byte[] rawDecodedCredentials = Base64.getDecoder().decode(encodedCredentials.getBytes());
+    final String decodedCredentials = new String(rawDecodedCredentials);
     if (!StringUtils.contains(decodedCredentials, ':')) {
       return null;
     }

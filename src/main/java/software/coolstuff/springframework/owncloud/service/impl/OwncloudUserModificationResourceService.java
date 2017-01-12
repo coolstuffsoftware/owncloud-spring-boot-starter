@@ -47,7 +47,7 @@ class OwncloudUserModificationResourceService implements OwncloudUserModificatio
     }
 
     log.debug("Modify Information of User {}", existingUser.getUsername());
-    existingUser.setDisplayName(modificationUser.getDisplayName());
+    existingUser.setDisplayname(modificationUser.getDisplayname());
     existingUser.setEmail(modificationUser.getEmail());
     existingUser.setEnabled(modificationUser.isEnabled());
 

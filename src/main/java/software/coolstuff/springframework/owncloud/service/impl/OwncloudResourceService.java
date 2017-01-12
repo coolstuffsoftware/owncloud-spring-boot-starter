@@ -219,8 +219,8 @@ class OwncloudResourceService {
       @JacksonXmlProperty(localName = "enabled")
       private boolean enabled = true;
 
-      @JacksonXmlProperty(localName = "displayName")
-      private String displayName;
+      @JacksonXmlProperty(localName = "displayname")
+      private String displayname;
 
       @JacksonXmlProperty(localName = "email")
       private String email;

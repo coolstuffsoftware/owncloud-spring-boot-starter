@@ -75,7 +75,7 @@ public abstract class AbstractOwncloudUserModificationServiceRestTest
               .build(),
           userModification.getExistingUser().isEnabled(),
           userModification.getExistingUser().getEmail(),
-          userModification.getExistingUser().getDisplayName());
+          userModification.getExistingUser().getDisplayname());
     } else {
       respondFailure(
           RestRequest.builder()
@@ -109,7 +109,7 @@ public abstract class AbstractOwncloudUserModificationServiceRestTest
     }
 
     // change the Displayname
-    if (userModification.getExistingUser() == null || !StringUtils.equals(userModification.getExistingUser().getDisplayName(), userModification.getNewUser().getDisplayName())) {
+    if (userModification.getExistingUser() == null || !StringUtils.equals(userModification.getExistingUser().getDisplayname(), userModification.getNewUser().getDisplayname())) {
       if (userModification.isErrorUpdateDisplayName()) {
         respondFailure(
             RestRequest.builder()
@@ -120,7 +120,7 @@ public abstract class AbstractOwncloudUserModificationServiceRestTest
       } else {
         MultiValueMap<String, String> putData = new LinkedMultiValueMap<>();
         putData.put("key", Lists.newArrayList("display"));
-        putData.put("value", Lists.newArrayList(userModification.getNewUser().getDisplayName()));
+        putData.put("value", Lists.newArrayList(userModification.getNewUser().getDisplayname()));
         respondSuccess(
             RestRequest.builder()
                 .method(PUT)
@@ -242,7 +242,7 @@ public abstract class AbstractOwncloudUserModificationServiceRestTest
             .build(),
         userModification.getNewUser().isEnabled(),
         userModification.getNewUser().getEmail(),
-        userModification.getNewUser().getDisplayName());
+        userModification.getNewUser().getDisplayname());
     respondGroups(
         RestRequest.builder()
             .server(queryServer)
@@ -333,7 +333,7 @@ public abstract class AbstractOwncloudUserModificationServiceRestTest
         .username("user5")
         .password("password")
         .enabled(true)
-        .displayName("Mrs. User 5")
+        .displayname("Mrs. User 5")
         .email("user5@example.com")
         .build();
 
@@ -353,7 +353,7 @@ public abstract class AbstractOwncloudUserModificationServiceRestTest
         .username("user5")
         .password("password")
         .enabled(true)
-        .displayName("Mrs. User 5")
+        .displayname("Mrs. User 5")
         .email("user5@example.com")
         .build();
 
@@ -373,7 +373,7 @@ public abstract class AbstractOwncloudUserModificationServiceRestTest
         .username("user5")
         .password("password")
         .enabled(true)
-        .displayName("Mrs. User 5")
+        .displayname("Mrs. User 5")
         .email("user5@example.com")
         .build();
 
@@ -393,7 +393,7 @@ public abstract class AbstractOwncloudUserModificationServiceRestTest
         .username("user5")
         .password("password")
         .enabled(true)
-        .displayName("Mrs. User 5")
+        .displayname("Mrs. User 5")
         .email("user5@example.com")
         .build();
 
@@ -413,7 +413,7 @@ public abstract class AbstractOwncloudUserModificationServiceRestTest
         .username("user5")
         .password("password")
         .enabled(true)
-        .displayName("Mrs. User 5")
+        .displayname("Mrs. User 5")
         .email("user5@example.com")
         .build();
 
@@ -433,7 +433,7 @@ public abstract class AbstractOwncloudUserModificationServiceRestTest
         .username("user5")
         .password("password")
         .enabled(true)
-        .displayName("Mrs. User 5")
+        .displayname("Mrs. User 5")
         .email("user5@example.com")
         .build();
 
@@ -441,7 +441,7 @@ public abstract class AbstractOwncloudUserModificationServiceRestTest
         .username("user5")
         .password("password")
         .enabled(false)
-        .displayName("changed Value")
+        .displayname("changed Value")
         .email("changed Value")
         .build();
 
@@ -462,7 +462,7 @@ public abstract class AbstractOwncloudUserModificationServiceRestTest
         .username("user5")
         .password("password")
         .enabled(true)
-        .displayName("Mrs. User 5")
+        .displayname("Mrs. User 5")
         .email("user5@example.com")
         .build();
 
@@ -470,7 +470,7 @@ public abstract class AbstractOwncloudUserModificationServiceRestTest
         .username("user5")
         .password("password")
         .enabled(false)
-        .displayName("changed Value")
+        .displayname("changed Value")
         .email("changed Value")
         .build();
 
@@ -491,7 +491,7 @@ public abstract class AbstractOwncloudUserModificationServiceRestTest
         .username("user5")
         .password("password")
         .enabled(true)
-        .displayName("Mrs. User 5")
+        .displayname("Mrs. User 5")
         .email("user5@example.com")
         .build();
 
@@ -499,7 +499,7 @@ public abstract class AbstractOwncloudUserModificationServiceRestTest
         .username("user5")
         .password("password")
         .enabled(false)
-        .displayName("changed Value")
+        .displayname("changed Value")
         .email("changed Value")
         .build();
 
@@ -520,7 +520,7 @@ public abstract class AbstractOwncloudUserModificationServiceRestTest
         .username("user5")
         .password("password")
         .enabled(true)
-        .displayName("Mrs. User 5")
+        .displayname("Mrs. User 5")
         .email("user5@example.com")
         .build();
 
@@ -528,7 +528,7 @@ public abstract class AbstractOwncloudUserModificationServiceRestTest
         .username("user5")
         .password("password")
         .enabled(false)
-        .displayName("changed Value")
+        .displayname("changed Value")
         .email("changed Value")
         .build();
 
@@ -549,7 +549,7 @@ public abstract class AbstractOwncloudUserModificationServiceRestTest
         .username("user5")
         .password("password")
         .enabled(true)
-        .displayName("Mrs. User 5")
+        .displayname("Mrs. User 5")
         .email("user5@example.com")
         .build();
 
@@ -557,7 +557,7 @@ public abstract class AbstractOwncloudUserModificationServiceRestTest
         .username("user5")
         .password("password")
         .enabled(false)
-        .displayName("changed Value")
+        .displayname("changed Value")
         .email("changed Value")
         .build();
 
@@ -578,7 +578,7 @@ public abstract class AbstractOwncloudUserModificationServiceRestTest
         .username("user5")
         .password("password")
         .enabled(true)
-        .displayName("Mrs. User 5")
+        .displayname("Mrs. User 5")
         .email("user5@example.com")
         .build();
 
@@ -586,7 +586,7 @@ public abstract class AbstractOwncloudUserModificationServiceRestTest
         .username("user5")
         .password("password")
         .enabled(false)
-        .displayName("changed Value")
+        .displayname("changed Value")
         .email("changed Value")
         .build();
 
@@ -607,7 +607,7 @@ public abstract class AbstractOwncloudUserModificationServiceRestTest
         .username("user5")
         .password("password")
         .enabled(true)
-        .displayName("Mrs. User 5")
+        .displayname("Mrs. User 5")
         .email("user5@example.com")
         .build();
 
@@ -615,7 +615,7 @@ public abstract class AbstractOwncloudUserModificationServiceRestTest
         .username("user5")
         .password("password")
         .enabled(false)
-        .displayName("changed Value")
+        .displayname("changed Value")
         .email("changed Value")
         .build();
 
@@ -636,7 +636,7 @@ public abstract class AbstractOwncloudUserModificationServiceRestTest
         .username("user5")
         .password("password")
         .enabled(true)
-        .displayName("Mrs. User 5")
+        .displayname("Mrs. User 5")
         .email("user5@example.com")
         .build();
 
@@ -644,7 +644,7 @@ public abstract class AbstractOwncloudUserModificationServiceRestTest
         .username("user5")
         .password("password")
         .enabled(false)
-        .displayName("changed Value")
+        .displayname("changed Value")
         .email("changed Value")
         .build();
 
@@ -665,7 +665,7 @@ public abstract class AbstractOwncloudUserModificationServiceRestTest
         .username("user5")
         .password("password")
         .enabled(false)
-        .displayName("Mrs. User 5")
+        .displayname("Mrs. User 5")
         .email("user5@example.com")
         .build();
 
@@ -673,7 +673,7 @@ public abstract class AbstractOwncloudUserModificationServiceRestTest
         .username("user5")
         .password("password")
         .enabled(true)
-        .displayName("changed Value")
+        .displayname("changed Value")
         .email("changed Value")
         .build();
 
@@ -694,7 +694,7 @@ public abstract class AbstractOwncloudUserModificationServiceRestTest
         .username("user5")
         .password("password")
         .enabled(false)
-        .displayName("Mrs. User 5")
+        .displayname("Mrs. User 5")
         .email("user5@example.com")
         .build();
 
@@ -702,7 +702,7 @@ public abstract class AbstractOwncloudUserModificationServiceRestTest
         .username("user5")
         .password("password")
         .enabled(true)
-        .displayName("changed Value")
+        .displayname("changed Value")
         .email("changed Value")
         .build();
 
@@ -723,7 +723,7 @@ public abstract class AbstractOwncloudUserModificationServiceRestTest
         .username("user5")
         .password("password")
         .enabled(false)
-        .displayName("Mrs. User 5")
+        .displayname("Mrs. User 5")
         .email("user5@example.com")
         .build();
 
@@ -731,7 +731,7 @@ public abstract class AbstractOwncloudUserModificationServiceRestTest
         .username("user5")
         .password("password")
         .enabled(true)
-        .displayName("changed Value")
+        .displayname("changed Value")
         .email("changed Value")
         .build();
 
@@ -752,7 +752,7 @@ public abstract class AbstractOwncloudUserModificationServiceRestTest
         .username("user5")
         .password("password")
         .enabled(false)
-        .displayName("Mrs. User 5")
+        .displayname("Mrs. User 5")
         .email("user5@example.com")
         .build();
 
@@ -760,7 +760,7 @@ public abstract class AbstractOwncloudUserModificationServiceRestTest
         .username("user5")
         .password("password")
         .enabled(true)
-        .displayName("changed Value")
+        .displayname("changed Value")
         .email("changed Value")
         .build();
 
@@ -781,7 +781,7 @@ public abstract class AbstractOwncloudUserModificationServiceRestTest
         .username("user5")
         .password("password")
         .enabled(true)
-        .displayName("Mrs. User 5")
+        .displayname("Mrs. User 5")
         .email("user5@example.com")
         .build();
 
@@ -789,7 +789,7 @@ public abstract class AbstractOwncloudUserModificationServiceRestTest
         .username("user5")
         .password("password")
         .enabled(false)
-        .displayName("changed Value")
+        .displayname("changed Value")
         .email("changed Value")
         .build();
 
@@ -810,7 +810,7 @@ public abstract class AbstractOwncloudUserModificationServiceRestTest
         .username("user5")
         .password("password")
         .enabled(true)
-        .displayName("Mrs. User 5")
+        .displayname("Mrs. User 5")
         .email("user5@example.com")
         .build();
 
@@ -818,7 +818,7 @@ public abstract class AbstractOwncloudUserModificationServiceRestTest
         .username("user5")
         .password("password")
         .enabled(false)
-        .displayName("changed Value")
+        .displayname("changed Value")
         .email("changed Value")
         .build();
 
@@ -839,7 +839,7 @@ public abstract class AbstractOwncloudUserModificationServiceRestTest
         .username("user5")
         .password("password")
         .enabled(true)
-        .displayName("Mrs. User 5")
+        .displayname("Mrs. User 5")
         .email("user5@example.com")
         .build();
 
@@ -847,7 +847,7 @@ public abstract class AbstractOwncloudUserModificationServiceRestTest
         .username("user5")
         .password("password")
         .enabled(false)
-        .displayName("changed Value")
+        .displayname("changed Value")
         .email("changed Value")
         .build();
 
@@ -868,7 +868,7 @@ public abstract class AbstractOwncloudUserModificationServiceRestTest
         .username("user5")
         .password("password")
         .enabled(true)
-        .displayName("Mrs. User 5")
+        .displayname("Mrs. User 5")
         .email("user5@example.com")
         .build();
 
@@ -876,7 +876,7 @@ public abstract class AbstractOwncloudUserModificationServiceRestTest
         .username("user5")
         .password("password")
         .enabled(false)
-        .displayName("changed Value")
+        .displayname("changed Value")
         .email("changed Value")
         .build();
 
@@ -897,7 +897,7 @@ public abstract class AbstractOwncloudUserModificationServiceRestTest
         .username("user5")
         .password("password")
         .enabled(true)
-        .displayName("Mrs. User 5")
+        .displayname("Mrs. User 5")
         .email("user5@example.com")
         .group("group1")
         .build();
@@ -906,7 +906,7 @@ public abstract class AbstractOwncloudUserModificationServiceRestTest
         .username("user5")
         .password("password")
         .enabled(false)
-        .displayName("changed Value")
+        .displayname("changed Value")
         .email("changed Value")
         .group("group1")
         .group("group2")
@@ -929,7 +929,7 @@ public abstract class AbstractOwncloudUserModificationServiceRestTest
         .username("user5")
         .password("password")
         .enabled(true)
-        .displayName("Mrs. User 5")
+        .displayname("Mrs. User 5")
         .email("user5@example.com")
         .group("group1")
         .build();
@@ -938,7 +938,7 @@ public abstract class AbstractOwncloudUserModificationServiceRestTest
         .username("user5")
         .password("password")
         .enabled(false)
-        .displayName("changed Value")
+        .displayname("changed Value")
         .email("changed Value")
         .group("group1")
         .group("group2")
@@ -961,7 +961,7 @@ public abstract class AbstractOwncloudUserModificationServiceRestTest
         .username("user5")
         .password("password")
         .enabled(true)
-        .displayName("Mrs. User 5")
+        .displayname("Mrs. User 5")
         .email("user5@example.com")
         .group("group1")
         .build();
@@ -970,7 +970,7 @@ public abstract class AbstractOwncloudUserModificationServiceRestTest
         .username("user5")
         .password("password")
         .enabled(false)
-        .displayName("changed Value")
+        .displayname("changed Value")
         .email("changed Value")
         .group("group1")
         .group("group2")
@@ -993,7 +993,7 @@ public abstract class AbstractOwncloudUserModificationServiceRestTest
         .username("user5")
         .password("password")
         .enabled(true)
-        .displayName("Mrs. User 5")
+        .displayname("Mrs. User 5")
         .email("user5@example.com")
         .group("group1")
         .build();
@@ -1002,7 +1002,7 @@ public abstract class AbstractOwncloudUserModificationServiceRestTest
         .username("user5")
         .password("password")
         .enabled(false)
-        .displayName("changed Value")
+        .displayname("changed Value")
         .email("changed Value")
         .group("group1")
         .group("group2")
@@ -1025,7 +1025,7 @@ public abstract class AbstractOwncloudUserModificationServiceRestTest
         .username("user5")
         .password("password")
         .enabled(true)
-        .displayName("Mrs. User 5")
+        .displayname("Mrs. User 5")
         .email("user5@example.com")
         .group("group1")
         .build();
@@ -1034,7 +1034,7 @@ public abstract class AbstractOwncloudUserModificationServiceRestTest
         .username("user5")
         .password("password")
         .enabled(false)
-        .displayName("changed Value")
+        .displayname("changed Value")
         .email("changed Value")
         .group("group1")
         .group("group2")
@@ -1057,7 +1057,7 @@ public abstract class AbstractOwncloudUserModificationServiceRestTest
         .username("user5")
         .password("password")
         .enabled(true)
-        .displayName("Mrs. User 5")
+        .displayname("Mrs. User 5")
         .email("user5@example.com")
         .group("group1")
         .build();
@@ -1066,7 +1066,7 @@ public abstract class AbstractOwncloudUserModificationServiceRestTest
         .username("user5")
         .password("password")
         .enabled(false)
-        .displayName("changed Value")
+        .displayname("changed Value")
         .email("changed Value")
         .group("group1")
         .group("group2")
@@ -1089,7 +1089,7 @@ public abstract class AbstractOwncloudUserModificationServiceRestTest
         .username("user5")
         .password("password")
         .enabled(true)
-        .displayName("Mrs. User 5")
+        .displayname("Mrs. User 5")
         .email("user5@example.com")
         .group("group1")
         .build();
@@ -1098,7 +1098,7 @@ public abstract class AbstractOwncloudUserModificationServiceRestTest
         .username("user5")
         .password("password")
         .enabled(false)
-        .displayName("changed Value")
+        .displayname("changed Value")
         .email("changed Value")
         .group("group1")
         .group("group2")
@@ -1121,7 +1121,7 @@ public abstract class AbstractOwncloudUserModificationServiceRestTest
         .username("user5")
         .password("password")
         .enabled(true)
-        .displayName("Mrs. User 5")
+        .displayname("Mrs. User 5")
         .email("user5@example.com")
         .group("group1")
         .group("group2")
@@ -1131,7 +1131,7 @@ public abstract class AbstractOwncloudUserModificationServiceRestTest
         .username("user5")
         .password("password")
         .enabled(false)
-        .displayName("changed Value")
+        .displayname("changed Value")
         .email("changed Value")
         .group("group1")
         .build();
@@ -1153,7 +1153,7 @@ public abstract class AbstractOwncloudUserModificationServiceRestTest
         .username("user5")
         .password("password")
         .enabled(true)
-        .displayName("Mrs. User 5")
+        .displayname("Mrs. User 5")
         .email("user5@example.com")
         .group("group1")
         .group("group2")
@@ -1163,7 +1163,7 @@ public abstract class AbstractOwncloudUserModificationServiceRestTest
         .username("user5")
         .password("password")
         .enabled(false)
-        .displayName("changed Value")
+        .displayname("changed Value")
         .email("changed Value")
         .group("group1")
         .build();
@@ -1185,7 +1185,7 @@ public abstract class AbstractOwncloudUserModificationServiceRestTest
         .username("user5")
         .password("password")
         .enabled(true)
-        .displayName("Mrs. User 5")
+        .displayname("Mrs. User 5")
         .email("user5@example.com")
         .group("group1")
         .group("group2")
@@ -1195,7 +1195,7 @@ public abstract class AbstractOwncloudUserModificationServiceRestTest
         .username("user5")
         .password("password")
         .enabled(false)
-        .displayName("changed Value")
+        .displayname("changed Value")
         .email("changed Value")
         .group("group1")
         .build();
@@ -1217,7 +1217,7 @@ public abstract class AbstractOwncloudUserModificationServiceRestTest
         .username("user5")
         .password("password")
         .enabled(true)
-        .displayName("Mrs. User 5")
+        .displayname("Mrs. User 5")
         .email("user5@example.com")
         .group("group1")
         .group("group2")
@@ -1227,7 +1227,7 @@ public abstract class AbstractOwncloudUserModificationServiceRestTest
         .username("user5")
         .password("password")
         .enabled(false)
-        .displayName("changed Value")
+        .displayname("changed Value")
         .email("changed Value")
         .group("group1")
         .build();
@@ -1249,7 +1249,7 @@ public abstract class AbstractOwncloudUserModificationServiceRestTest
         .username("user5")
         .password("password")
         .enabled(true)
-        .displayName("Mrs. User 5")
+        .displayname("Mrs. User 5")
         .email("user5@example.com")
         .group("group1")
         .group("group2")
@@ -1259,7 +1259,7 @@ public abstract class AbstractOwncloudUserModificationServiceRestTest
         .username("user5")
         .password("password")
         .enabled(false)
-        .displayName("changed Value")
+        .displayname("changed Value")
         .email("changed Value")
         .group("group1")
         .build();
@@ -1281,7 +1281,7 @@ public abstract class AbstractOwncloudUserModificationServiceRestTest
         .username("user5")
         .password("password")
         .enabled(true)
-        .displayName("Mrs. User 5")
+        .displayname("Mrs. User 5")
         .email("user5@example.com")
         .group("group1")
         .group("group2")
@@ -1291,7 +1291,7 @@ public abstract class AbstractOwncloudUserModificationServiceRestTest
         .username("user5")
         .password("password")
         .enabled(false)
-        .displayName("changed Value")
+        .displayname("changed Value")
         .email("changed Value")
         .group("group1")
         .build();
@@ -1313,7 +1313,7 @@ public abstract class AbstractOwncloudUserModificationServiceRestTest
         .username("user5")
         .password("password")
         .enabled(true)
-        .displayName("Mrs. User 5")
+        .displayname("Mrs. User 5")
         .email("user5@example.com")
         .group("group1")
         .group("group2")
@@ -1323,7 +1323,7 @@ public abstract class AbstractOwncloudUserModificationServiceRestTest
         .username("user5")
         .password("password")
         .enabled(false)
-        .displayName("changed Value")
+        .displayname("changed Value")
         .email("changed Value")
         .group("group1")
         .build();

@@ -172,7 +172,7 @@ public abstract class AbstractOwncloudUserQueryServiceTest extends AbstractOwncl
         .username("user1")
         .enabled(true)
         .email("user1@example.com")
-        .displayName("Mr. User 1")
+        .displayname("Mr. User 1")
         .build();
     prepareTestFindOneUser_OK(expectedUser, "group1", "group2");
 
@@ -182,7 +182,7 @@ public abstract class AbstractOwncloudUserQueryServiceTest extends AbstractOwncl
     Assert.assertNotNull(actualUser);
     Assert.assertEquals(expectedUser.getUsername(), actualUser.getUsername());
     Assert.assertNull(actualUser.getPassword());
-    Assert.assertEquals(expectedUser.getDisplayName(), actualUser.getDisplayName());
+    Assert.assertEquals(expectedUser.getDisplayname(), actualUser.getDisplayname());
     Assert.assertEquals(expectedUser.getEmail(), actualUser.getEmail());
 
     checkAuthorities(actualUser.getUsername(), actualUser.getAuthorities(), "group1", "group2");
