@@ -78,7 +78,7 @@ public abstract class AbstractOwncloudAuthenticationProviderTest extends Abstrac
     Assert.assertTrue(OwncloudUserDetails.class.isAssignableFrom(authentication.getPrincipal().getClass()));
     OwncloudUserDetails principal = (OwncloudUserDetails) authentication.getPrincipal();
     Assert.assertTrue(principal.isEnabled());
-    Assert.assertEquals("Mr. User 1", principal.getDisplayName());
+    Assert.assertEquals("Mr. User 1", principal.getDisplayname());
     Assert.assertEquals("user1@example.com", principal.getEmail());
     Assert.assertEquals(2, principal.getAuthorities().size());
   }

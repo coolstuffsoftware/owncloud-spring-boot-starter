@@ -127,7 +127,7 @@ public abstract class AbstractOwncloudUserQueryServiceRestTest extends AbstractO
             .build(),
         expectedUser.isEnabled(),
         expectedUser.getEmail(),
-        expectedUser.getDisplayName());
+        expectedUser.getDisplayname());
     respondGroups(
         RestRequest.builder()
             .method(GET)

@@ -41,7 +41,7 @@ This XML-Resource should have the following Format:
       <password>s3cr3t</password> <4>
       <enabled>true</enabled>
       
-      <displayName>Mr. User 1</displayName> <5>
+      <displayname>Mr. User 1</displayname> <5>
       <email>user1@example.com</email>
       
       <groups> <6>

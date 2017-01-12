@@ -75,8 +75,8 @@ class OwncloudUserModificationRestServiceImpl extends AbstractOwncloudRestServic
 
   private void updateUser(OwncloudModificationUser user, Ocs.User.Data existingUser) {
     // change the Display Name
-    if (!StringUtils.equals(user.getDisplayName(), existingUser.getDisplayname())) {
-      updateOwncloudUserField(user.getUsername(), UserUpdateField.DISPLAY_NAME, user.getDisplayName());
+    if (!StringUtils.equals(user.getDisplayname(), existingUser.getDisplayname())) {
+      updateOwncloudUserField(user.getUsername(), UserUpdateField.DISPLAY_NAME, user.getDisplayname());
     }
 
     // change the eMail

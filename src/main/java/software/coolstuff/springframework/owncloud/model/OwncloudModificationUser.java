@@ -70,7 +70,7 @@ public class OwncloudModificationUser {
    * @param displayName Display Name of the User to be modified
    * @return modified Display Name
    */
-  private String displayName;
+  private String displayname;
 
   /**
    * Email of the User to be modified.
@@ -107,7 +107,7 @@ public class OwncloudModificationUser {
 
     setEnabled(userDetails.isEnabled());
 
-    setDisplayName(userDetails.getDisplayName());
+    setDisplayname(userDetails.getDisplayname());
     setEmail(userDetails.getEmail());
 
     if (CollectionUtils.isNotEmpty(userDetails.getAuthorities())) {
