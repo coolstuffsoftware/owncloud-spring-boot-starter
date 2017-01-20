@@ -24,17 +24,9 @@ import static org.springframework.test.web.client.match.MockRestRequestMatchers.
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
@@ -47,28 +39,19 @@ import java.util.List;
 import javax.validation.constraints.NotNull;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
 import org.apache.velocity.context.Context;
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestName;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.SpringBootDependencyInjectionTestExecutionListener;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
-import org.springframework.core.annotation.AnnotationUtils;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.ResourceLoader;
-import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -86,24 +69,15 @@ import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.test.web.client.RequestMatcher;
 import org.springframework.test.web.client.ResponseActions;
 import org.springframework.util.MultiValueMap;
-import org.xmlunit.builder.DiffBuilder;
-import org.xmlunit.builder.Input;
-import org.xmlunit.diff.DefaultNodeMatcher;
-import org.xmlunit.diff.Diff;
-import org.xmlunit.diff.ElementSelectors;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.extern.slf4j.Slf4j;
 import software.coolstuff.springframework.owncloud.config.AuthorityAppenderConfiguration;
 import software.coolstuff.springframework.owncloud.config.AuthorityMapperConfiguration;
-import software.coolstuff.springframework.owncloud.config.CompareResourceAfter;
 import software.coolstuff.springframework.owncloud.config.VelocityConfiguration;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudGrantedAuthoritiesMapper;
-import software.coolstuff.springframework.owncloud.service.impl.resource.file.OwncloudFileResourceTest;
-import software.coolstuff.springframework.owncloud.service.impl.resource.file.OwncloudModifyingFileResourceTest;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(
@@ -120,14 +94,9 @@ import software.coolstuff.springframework.owncloud.service.impl.resource.file.Ow
     WithSecurityContextTestExecutionListener.class,
     OwncloudFileResourceTestExecutionListener.class
 })
-@Slf4j
 public abstract class AbstractOwncloudServiceTest {
 
-  private final static String ORIGINAL_RESOURCE = "classpath:/owncloud.xml";
   private final static String VELOCITY_PATH_PREFIX = "/velocity/";
-
-  @Autowired
-  private ResourceLoader resourceLoader;
 
   @Autowired(required = false)
   private OwncloudGrantedAuthoritiesMapper owncloudGrantedAuthoritiesMapper;
@@ -141,23 +110,12 @@ public abstract class AbstractOwncloudServiceTest {
   @Autowired
   private VelocityEngine velocityEngine;
 
-  @Rule
-  public TestName testName = new TestName();
-
-  @Autowired(required = false)
-  private OwncloudResourceService resourceService;
-
   private MockRestServiceServer server;
 
   @Before
   public final void setUp() throws Exception {
     if (this instanceof OwncloudServiceRestTest) {
       server = createServer(((OwncloudServiceRestTest) this).owncloudService());
-    }
-
-    if (this instanceof OwncloudFileResourceTest) {
-      copyClasspathResourceToFile();
-      resourceService.afterPropertiesSet();
     }
   }
 
@@ -173,83 +131,6 @@ public abstract class AbstractOwncloudServiceTest {
 
   protected final MockRestServiceServer getServer() {
     return server;
-  }
-
-  private void copyClasspathResourceToFile() throws IOException, FileNotFoundException {
-    Resource target = resourceLoader.getResource(properties.getLocation());
-    if (!(target instanceof UrlResource)) {
-      throw new IllegalStateException(String.format(
-          "TestClass %s implements %s but the Resource-Location %s is not of Type %s",
-          this.getClass().getName(),
-          OwncloudFileResourceTest.class.getName(),
-          properties.getLocation(),
-          UrlResource.class.getName()));
-    }
-
-    try (InputStream is = new BufferedInputStream(getSourceResource().getInputStream());
-        OutputStream os = new BufferedOutputStream(new FileOutputStream(target.getFile()))) {
-      log.debug("Copy Content of Classpath-Resource {} to File {}", ORIGINAL_RESOURCE, properties.getLocation());
-      IOUtils.copy(is, os);
-    }
-  }
-
-  @After
-  public void tearDownResource() throws Throwable {
-    if (this instanceof OwncloudFileResourceTest) {
-      resourceService.destroy();
-      Resource target = resourceLoader.getResource(properties.getLocation());
-
-      boolean hasSpecificResourceTest = false;
-      for (Method method : this.getClass().getMethods()) {
-        // is this Method annotated by @CompareResourceAfter
-        CompareResourceAfter compareResourceAfter = AnnotationUtils.findAnnotation(method, CompareResourceAfter.class);
-        if (compareResourceAfter == null || !StringUtils.equals(compareResourceAfter.value(), testName.getMethodName())) {
-          continue;
-        }
-
-        // a Method annotated by @Test cannot also be annotated by
-        // @CompareResourceAfter
-        if (AnnotationUtils.findAnnotation(method, Test.class) != null) {
-          log.warn("Method {} of Class {} cannot be annotated by {} and {}", method.getName(), this.getClass().getName(), CompareResourceAfter.class, Test.class);
-          continue;
-        }
-
-        // the @CompareResourceAfter annotated Method must have exactly 2
-        // Parameters of Type org.springframework.core.io.Resource
-        if (method.getParameterCount() != 1) {
-          log.warn("Method {} of Class {} is annotated by {} but has {} Parameters instead of 1",
-              method.getName(),
-              this.getClass().getName(),
-              CompareResourceAfter.class.getName(),
-              method.getParameterCount());
-          continue;
-        }
-        boolean correctParameterTypes = true;
-        for (Class<?> parameterClass : method.getParameterTypes()) {
-          correctParameterTypes = correctParameterTypes && Resource.class.isAssignableFrom(parameterClass);
-        }
-        if (!correctParameterTypes) {
-          log.warn("Method {} of Class {} (annotated by {}) must have 1 Parameter of Type {}",
-              method.getName(),
-              this.getClass(),
-              CompareResourceAfter.class.getName(),
-              Resource.class.getName());
-          continue;
-        }
-
-        log.debug("Call the Resource Comparsion Method {} on Class {}", method.getName(), this.getClass().getName());
-        hasSpecificResourceTest = true;
-        try {
-          method.invoke(this, target);
-        } catch (InvocationTargetException e) {
-          throw e.getCause();
-        }
-      }
-
-      if (!hasSpecificResourceTest && ((OwncloudFileResourceTest) this).isCheckAllResourcesAgainstOriginal()) {
-        compareResourcesWithOriginalSource(target);
-      }
-    }
   }
 
   protected void respondUsers(RestRequest request, String... users) throws IOException {
@@ -400,25 +281,6 @@ public abstract class AbstractOwncloudServiceTest {
     preparedRequest.andRespond(withSuccess(merge("user.vm", context), MediaType.TEXT_XML));
   }
 
-  protected Resource getResourceOf(String testCase) {
-    if (!(this instanceof OwncloudModifyingFileResourceTest)) {
-      return null;
-    }
-
-    OwncloudModifyingFileResourceTest modifyingFileResourceTest = (OwncloudModifyingFileResourceTest) this;
-
-    String path = "/";
-    if (StringUtils.isNotBlank(modifyingFileResourceTest.getResourcePrefix())) {
-      if (StringUtils.startsWith(modifyingFileResourceTest.getResourcePrefix(), "/")) {
-        path = StringUtils.appendIfMissing(modifyingFileResourceTest.getResourcePrefix(), "/");
-      } else {
-        path += StringUtils.appendIfMissing(modifyingFileResourceTest.getResourcePrefix(), "/");
-      }
-    }
-
-    return resourceLoader.getResource("classpath:" + path + testCase + ".xml");
-  }
-
   protected void checkAuthorities(String username, Collection<? extends GrantedAuthority> actual, String... expected) {
     Assert.assertEquals(expected.length, actual == null ? 0 : actual.size());
     List<SimpleGrantedAuthority> authorities = new ArrayList<>();
@@ -433,30 +295,6 @@ public abstract class AbstractOwncloudServiceTest {
       Assert.assertTrue(CollectionUtils.isEqualCollection(actual, grantedAuthoritiesMapper.mapAuthorities(authorities)));
     } else {
       Assert.assertTrue(CollectionUtils.isEqualCollection(actual, authorities));
-    }
-  }
-
-  protected Resource getSourceResource() {
-    Resource resource = resourceLoader.getResource(ORIGINAL_RESOURCE);
-    if (resource == null) {
-      throw new IllegalStateException("Source Resource " + ORIGINAL_RESOURCE + " is not available");
-    }
-    return resource;
-  }
-
-  protected void compareResourcesWithOriginalSource(Resource target) throws Exception {
-    compareResources(getSourceResource(), target);
-  }
-
-  protected void compareResources(Resource source, Resource target) throws Exception {
-    try (InputStream inputSource = new BufferedInputStream(source.getInputStream());
-        InputStream inputTarget = new BufferedInputStream(target.getInputStream())) {
-      Diff diff = DiffBuilder.compare(Input.fromStream(inputSource))
-          .withTest(Input.fromStream(inputTarget))
-          .checkForSimilar()
-          .withNodeMatcher(new DefaultNodeMatcher(ElementSelectors.byNameAndText))
-          .build();
-      Assert.assertFalse(diff.toString(), diff.hasDifferences());
     }
   }
 

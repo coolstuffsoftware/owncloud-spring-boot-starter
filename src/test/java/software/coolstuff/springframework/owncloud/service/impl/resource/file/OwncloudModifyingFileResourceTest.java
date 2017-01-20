@@ -17,8 +17,16 @@
 */
 package software.coolstuff.springframework.owncloud.service.impl.resource.file;
 
+import org.springframework.core.io.Resource;
+
+import software.coolstuff.springframework.owncloud.service.impl.OwncloudFileResourceTestExecutionListener;
+
 public interface OwncloudModifyingFileResourceTest extends OwncloudFileResourceTest {
 
   String getResourcePrefix();
+
+  default void compareResources(Resource source, Resource target) throws Exception {
+    OwncloudFileResourceTestExecutionListener.compareResources(source, target);
+  }
 
 }
