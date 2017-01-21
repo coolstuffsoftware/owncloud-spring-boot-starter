@@ -19,7 +19,7 @@ package software.coolstuff.springframework.owncloud.service.impl.resource.file;
 
 import org.springframework.core.io.Resource;
 
-import software.coolstuff.springframework.owncloud.service.impl.OwncloudFileResourceTestExecutionListener;
+import software.coolstuff.springframework.owncloud.service.impl.resource.OwncloudFileResourceTestExecutionListener;
 
 public interface OwncloudModifyingFileResourceTest extends OwncloudFileResourceTest {
 

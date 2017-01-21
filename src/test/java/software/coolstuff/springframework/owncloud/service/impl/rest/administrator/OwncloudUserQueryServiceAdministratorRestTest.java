@@ -19,7 +19,7 @@ package software.coolstuff.springframework.owncloud.service.impl.rest.administra
 
 import org.springframework.test.context.ActiveProfiles;
 
-import software.coolstuff.springframework.owncloud.service.impl.AbstractOwncloudUserQueryServiceRestTest;
+import software.coolstuff.springframework.owncloud.service.impl.rest.AbstractOwncloudUserQueryServiceRestTest;
 
 @ActiveProfiles("ADMINISTRATOR-URL")
 public class OwncloudUserQueryServiceAdministratorRestTest extends AbstractOwncloudUserQueryServiceRestTest {

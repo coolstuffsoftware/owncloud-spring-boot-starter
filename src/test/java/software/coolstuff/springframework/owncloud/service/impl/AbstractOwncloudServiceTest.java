@@ -52,6 +52,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.SpringBootDependencyInjectionTestExecutionListener;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -78,12 +79,14 @@ import software.coolstuff.springframework.owncloud.config.AuthorityAppenderConfi
 import software.coolstuff.springframework.owncloud.config.AuthorityMapperConfiguration;
 import software.coolstuff.springframework.owncloud.config.VelocityConfiguration;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudGrantedAuthoritiesMapper;
+import software.coolstuff.springframework.owncloud.service.impl.resource.OwncloudFileResourceTestExecutionListener;
+import software.coolstuff.springframework.owncloud.service.impl.rest.OwncloudRestService;
+import software.coolstuff.springframework.owncloud.service.impl.rest.OwncloudRestServiceTest;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(
     webEnvironment = WebEnvironment.NONE,
     classes = {
-        OwncloudAutoConfiguration.class,
         VelocityConfiguration.class,
         AuthorityAppenderConfiguration.class,
         AuthorityMapperConfiguration.class
@@ -94,8 +97,10 @@ import software.coolstuff.springframework.owncloud.service.api.OwncloudGrantedAu
     WithSecurityContextTestExecutionListener.class,
     OwncloudFileResourceTestExecutionListener.class
 })
+@ComponentScan
 public abstract class AbstractOwncloudServiceTest {
 
+  private final static String DEFAULT_PATH = "/ocs/v1.php";
   private final static String VELOCITY_PATH_PREFIX = "/velocity/";
 
   @Autowired(required = false)
@@ -114,8 +119,8 @@ public abstract class AbstractOwncloudServiceTest {
 
   @Before
   public final void setUp() throws Exception {
-    if (this instanceof OwncloudServiceRestTest) {
-      server = createServer(((OwncloudServiceRestTest) this).owncloudService());
+    if (this instanceof OwncloudRestServiceTest) {
+      server = createServer(((OwncloudRestServiceTest) this).owncloudService());
     }
   }
 
@@ -147,11 +152,11 @@ public abstract class AbstractOwncloudServiceTest {
   }
 
   private boolean isNoRestTestClass() {
-    return !(this instanceof OwncloudServiceRestTest);
+    return !(this instanceof OwncloudRestServiceTest);
   }
 
   private ResponseActions prepareRestRequest(RestRequest request) throws MalformedURLException {
-    OwncloudServiceRestTest restTest = (OwncloudServiceRestTest) this;
+    OwncloudRestServiceTest restTest = (OwncloudRestServiceTest) this;
     MockRestServiceServer server = this.server;
     if (request.getServer() != null) {
       server = request.getServer();
@@ -173,7 +178,7 @@ public abstract class AbstractOwncloudServiceTest {
       URL url = new URL(properties.getLocation());
       rootURI = properties.getLocation();
       if (StringUtils.isBlank(url.getPath()) || "/".equals(url.getPath())) {
-        rootURI = URI.create(url.toString() + AbstractOwncloudRestServiceImpl.DEFAULT_PATH).toString();
+        rootURI = URI.create(url.toString() + DEFAULT_PATH).toString();
       }
     }
     return requestTo(rootURI + uri);
@@ -296,10 +301,6 @@ public abstract class AbstractOwncloudServiceTest {
     } else {
       Assert.assertTrue(CollectionUtils.isEqualCollection(actual, authorities));
     }
-  }
-
-  protected final String getDefaultBasicAuthorizationHeader() {
-    return "Basic " + Base64.getEncoder().encodeToString((properties.getUsername() + ":" + properties.getPassword()).getBytes());
   }
 
   protected final String getSecurityContextBasicAuthorizationHeader() {

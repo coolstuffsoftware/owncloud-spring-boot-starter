@@ -1,7 +1,0 @@
-package software.coolstuff.springframework.owncloud.service.impl;
-
-import software.coolstuff.springframework.owncloud.service.AbstractOwncloudUserModificationServiceTest;
-
-public abstract class AbstractOwncloudUserModificationServiceResourceTest extends AbstractOwncloudUserModificationServiceTest {
-
-}

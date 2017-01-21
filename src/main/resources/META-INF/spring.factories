@@ -1,1 +1,1 @@
-org.springframework.boot.autoconfigure.EnableAutoConfiguration=software.coolstuff.springframework.owncloud.service.impl.OwncloudAutoConfiguration
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=software.coolstuff.springframework.owncloud.service.impl.OwncloudAutoConfiguration,software.coolstuff.springframework.owncloud.service.impl.resource.OwncloudResourceAutoConfiguration,software.coolstuff.springframework.owncloud.service.impl.rest.OwncloudRestAutoConfiguration

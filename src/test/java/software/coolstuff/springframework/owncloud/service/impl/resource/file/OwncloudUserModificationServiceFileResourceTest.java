@@ -23,7 +23,7 @@ import org.springframework.core.io.ResourceLoader;
 import org.springframework.test.context.ActiveProfiles;
 
 import software.coolstuff.springframework.owncloud.config.CompareResourceAfter;
-import software.coolstuff.springframework.owncloud.service.impl.AbstractOwncloudUserModificationServiceResourceTest;
+import software.coolstuff.springframework.owncloud.service.impl.resource.AbstractOwncloudUserModificationServiceResourceTest;
 
 @ActiveProfiles("FILE-RESOURCE")
 public class OwncloudUserModificationServiceFileResourceTest extends AbstractOwncloudUserModificationServiceResourceTest implements OwncloudModifyingFileResourceTest {
