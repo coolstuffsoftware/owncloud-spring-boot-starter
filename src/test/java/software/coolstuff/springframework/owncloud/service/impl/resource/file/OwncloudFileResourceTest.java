@@ -17,8 +17,12 @@
 */
 package software.coolstuff.springframework.owncloud.service.impl.resource.file;
 
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
+
 import software.coolstuff.springframework.owncloud.config.CompareResourceAfter;
-import software.coolstuff.springframework.owncloud.service.impl.OwncloudFileResourceTestExecutionListener;
+import software.coolstuff.springframework.owncloud.service.impl.resource.OwncloudFileResourceTestExecutionListener;
 
 /**
  * A markup Interface to inform the Method {@link OwncloudFileResourceTestExecutionListener#beforeTestClass(org.springframework.test.context.TestContext)} to copy the Classpath Resource
@@ -38,6 +42,25 @@ public interface OwncloudFileResourceTest {
 
   default boolean isCheckAllResourcesAgainstOriginal() {
     return true;
+  }
+
+  default Resource getResourceOf(ResourceLoader resourceLoader, String testCase) {
+    if (!(this instanceof OwncloudModifyingFileResourceTest)) {
+      return null;
+    }
+
+    OwncloudModifyingFileResourceTest modifyingFileResourceTest = (OwncloudModifyingFileResourceTest) this;
+
+    String path = "/";
+    if (StringUtils.isNotBlank(modifyingFileResourceTest.getResourcePrefix())) {
+      if (StringUtils.startsWith(modifyingFileResourceTest.getResourcePrefix(), "/")) {
+        path = StringUtils.appendIfMissing(modifyingFileResourceTest.getResourcePrefix(), "/");
+      } else {
+        path += StringUtils.appendIfMissing(modifyingFileResourceTest.getResourcePrefix(), "/");
+      }
+    }
+
+    return resourceLoader.getResource("classpath:" + path + testCase + ".xml");
   }
 
 }

@@ -17,14 +17,19 @@
 */
 package software.coolstuff.springframework.owncloud.service.impl.resource.file;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.test.context.ActiveProfiles;
 
 import software.coolstuff.springframework.owncloud.config.CompareResourceAfter;
-import software.coolstuff.springframework.owncloud.service.impl.AbstractOwncloudUserModificationServiceResourceTest;
+import software.coolstuff.springframework.owncloud.service.impl.resource.AbstractOwncloudUserModificationServiceResourceTest;
 
 @ActiveProfiles("FILE-RESOURCE")
 public class OwncloudUserModificationServiceFileResourceTest extends AbstractOwncloudUserModificationServiceResourceTest implements OwncloudModifyingFileResourceTest {
+
+  @Autowired
+  private ResourceLoader resourceLoader;
 
   @Override
   public String getResourcePrefix() {
@@ -33,36 +38,36 @@ public class OwncloudUserModificationServiceFileResourceTest extends AbstractOwn
 
   @CompareResourceAfter("testSaveUser_CreateUser_OK_WithoutGroups")
   public void compareAfterTestSaveUser_CreateUser_OK_WithoutGroups(Resource target) throws Exception {
-    compareResources(getResourceOf("owncloud_afterSave_User3"), target);
+    compareResources(getResourceOf(resourceLoader, "owncloud_afterSave_User3"), target);
   }
 
   @CompareResourceAfter("testSaveUser_CreateUser_OK_WithGroups")
   public void compareAfterTestSaveUser_CreateUser_OK_WithGroups(Resource target) throws Exception {
-    compareResources(getResourceOf("owncloud_afterSave_User4"), target);
+    compareResources(getResourceOf(resourceLoader, "owncloud_afterSave_User4"), target);
   }
 
   @CompareResourceAfter("testSaveUser_UpdateUser_OK_WithoutGroups")
   public void compareAfterTestSaveUser_UpdateUser_OK_WithoutGroups(Resource target) throws Exception {
-    compareResources(getResourceOf("owncloud_afterSave_User2"), target);
+    compareResources(getResourceOf(resourceLoader, "owncloud_afterSave_User2"), target);
   }
 
   @CompareResourceAfter("testSaveUser_UpdateUser_OK_WithGroups")
   public void compareTestSaveUser_UpdateUser_OK_WithGroups(Resource target) throws Exception {
-    compareResources(getResourceOf("owncloud_afterSave_User1"), target);
+    compareResources(getResourceOf(resourceLoader, "owncloud_afterSave_User1"), target);
   }
 
   @CompareResourceAfter("testDeleteUser_OK")
   public void compareTestDeleteUser_OK(Resource target) throws Exception {
-    compareResources(getResourceOf("owncloud_afterDelete_User1"), target);
+    compareResources(getResourceOf(resourceLoader, "owncloud_afterDelete_User1"), target);
   }
 
   @CompareResourceAfter("testCreateGroup_OK")
   public void compareTestCreateGroup_OK(Resource target) throws Exception {
-    compareResources(getResourceOf("owncloud_afterCreate_Group4"), target);
+    compareResources(getResourceOf(resourceLoader, "owncloud_afterCreate_Group4"), target);
   }
 
   @CompareResourceAfter("testDeleteGroup_OK")
   public void compareTestDeleteGroup_OK(Resource target) throws Exception {
-    compareResources(getResourceOf("owncloud_afterDelete_Group1"), target);
+    compareResources(getResourceOf(resourceLoader, "owncloud_afterDelete_Group1"), target);
   }
 }

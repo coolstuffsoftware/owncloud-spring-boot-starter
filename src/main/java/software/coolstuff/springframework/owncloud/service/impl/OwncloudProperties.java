@@ -17,17 +17,57 @@
 */
 package software.coolstuff.springframework.owncloud.service.impl;
 
-import org.springframework.boot.context.properties.ConfigurationProperties;
-
 import lombok.Data;
+import software.coolstuff.springframework.owncloud.service.api.OwncloudUserModificationService;
 
+/**
+ * Owncloud Configuration Properties.
+ *
+ * The Configuration Properties will be implemented by 2 Classes
+ * <ul>
+ *   <li>software.coolstuff.springframework.owncloud.service.impl.resource.OwncloudResourceProperties<br/>
+ *       Implements Resource specific Properties
+ *   </li>
+ *   <li>software.coolstuff.springframework.owncloud.service.impl.rest.OwncloudRestProperties<br/>
+ *       Implements REST specific Properties
+ *   </li>
+ * </ul>
+ *
+ * Within this Class you find the common Properties used by both Implementations
+ *
+ * @author mufasa1976
+ */
 @Data
-@ConfigurationProperties(prefix = "owncloud")
-class OwncloudProperties {
+public abstract class OwncloudProperties {
 
+  /**
+   * Location of the Owncloud Instance.
+   * <p/>
+   * May start with either of these:
+   * <table>
+   *   <tr>
+   *     <th>Prefix</th>
+   *     <th>Usage</th>
+   *   </tr>
+   *   <tr>
+   *     <td><code>classpath:</code></td>
+   *     <td>Use a XML-Resource within the Classpath to configure the Owncloud Services</td>
+   *   </tr>
+   *   <tr>
+   *     <td><code>file:</code></td>
+   *     <td>Use a XML-Resource outside the Classpath to configure the Owncloud Services</td>
+   *   </tr>
+   *   <tr>
+   *     <td><code>http://</code> or<br/><code>https://</code></td>
+   *     <td>Connects to the Owncloud Instance</td>
+   *   </tr>
+   * </table>
+   */
   private String location;
-  private String username;
-  private String password;
+
+  /**
+   * Should Modifications through {@link OwncloudUserModificationService} be allowed
+   */
   private boolean enableModifications = false;
 
 }

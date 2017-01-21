@@ -19,7 +19,7 @@ package software.coolstuff.springframework.owncloud.service.impl.rest.authentica
 
 import org.springframework.test.context.ActiveProfiles;
 
-import software.coolstuff.springframework.owncloud.service.impl.AbstractOwncloudAuthenticationProviderRestTest;
+import software.coolstuff.springframework.owncloud.service.impl.rest.AbstractOwncloudAuthenticationProviderRestTest;
 
 @ActiveProfiles("AUTHENTICATED-USER-URL")
 public class OwncloudAuthenticationProviderAuthenticatedUserRestTest extends AbstractOwncloudAuthenticationProviderRestTest {
