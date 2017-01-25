@@ -79,7 +79,7 @@ import software.coolstuff.springframework.owncloud.config.AuthorityAppenderConfi
 import software.coolstuff.springframework.owncloud.config.AuthorityMapperConfiguration;
 import software.coolstuff.springframework.owncloud.config.VelocityConfiguration;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudGrantedAuthoritiesMapper;
-import software.coolstuff.springframework.owncloud.service.impl.resource.OwncloudFileResourceTestExecutionListener;
+import software.coolstuff.springframework.owncloud.service.impl.local.OwncloudLocalFileTestExecutionListener;
 import software.coolstuff.springframework.owncloud.service.impl.rest.OwncloudRestService;
 import software.coolstuff.springframework.owncloud.service.impl.rest.OwncloudRestServiceTest;
 
@@ -95,7 +95,7 @@ import software.coolstuff.springframework.owncloud.service.impl.rest.OwncloudRes
     SpringBootDependencyInjectionTestExecutionListener.class,
     DependencyInjectionTestExecutionListener.class,
     WithSecurityContextTestExecutionListener.class,
-    OwncloudFileResourceTestExecutionListener.class
+    OwncloudLocalFileTestExecutionListener.class
 })
 @ComponentScan
 public abstract class AbstractOwncloudServiceTest {

@@ -15,14 +15,13 @@
    along with this program; if not, write to the Free Software Foundation,
    Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 */
-package software.coolstuff.springframework.owncloud.service.impl.rest;
+package software.coolstuff.springframework.owncloud.service.impl.local;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.converter.xml.MappingJackson2XmlHttpMessageConverter;
@@ -32,34 +31,40 @@ import software.coolstuff.springframework.owncloud.service.api.OwncloudUserQuery
 
 @Configuration
 @ConditionalOnClass({
-    RestTemplateBuilder.class,
     MappingJackson2XmlHttpMessageConverter.class
 })
-@ConditionalOnExpression("#{!('${owncloud.location}' matches 'file:.*') and !('${owncloud.location}' matches 'classpath:.*')}")
-@EnableConfigurationProperties(OwncloudRestProperties.class)
-class OwncloudRestAutoConfiguration {
+@ConditionalOnExpression("#{'${owncloud.location}' matches 'file:.*' or '${owncloud.location}' matches 'classpath:.*'}")
+@EnableConfigurationProperties(OwncloudLocalProperties.class)
+class OwncloudLocalAutoConfiguration {
 
   @Bean
-  public OwncloudUserQueryService owncloudUserQueryRestService(RestTemplateBuilder builder) {
-    return new OwncloudRestUserQueryServiceImpl(builder);
+  public OwncloudUserQueryService owncloudUserQueryService() {
+    return new OwncloudLocalUserQueryResourceImpl(owncloudResourceService());
   }
 
   @Bean
-  public OwncloudUserModificationService owncloudUserModificationRestService(RestTemplateBuilder builder) {
-    return new OwncloudRestUserModificationServiceImpl(builder);
+  public OwncloudUserModificationService owncloudUserModificationService() {
+    return new OwncloudLocalUserModificationService(owncloudResourceService());
   }
 
   @Bean
   @Qualifier("owncloudAuthenticationProvider")
-  @ConditionalOnMissingBean(OwncloudRestAuthenticationProvider.class)
-  public OwncloudRestAuthenticationProvider owncloudRestAuthenticationProvider(RestTemplateBuilder builder) {
-    return new OwncloudRestAuthenticationProvider(builder);
+  @ConditionalOnMissingBean(OwncloudLocalAuthenticationProvider.class)
+  public OwncloudLocalAuthenticationProvider owncloudAuthenticationProvider() {
+    return new OwncloudLocalAuthenticationProvider(owncloudResourceService());
   }
 
   @Bean
   @Qualifier("owncloudUserDetailsService")
-  @ConditionalOnMissingBean(OwncloudRestUserDetailsService.class)
-  public OwncloudRestUserDetailsService owncloudRestUserDetailsService(RestTemplateBuilder builder) {
-    return new OwncloudRestUserDetailsService(builder);
+  @ConditionalOnMissingBean(OwncloudLocalUserDetailsService.class)
+  public OwncloudLocalUserDetailsService owncloudResourceUserDetailsService() {
+    return new OwncloudLocalUserDetailsService(owncloudResourceService());
   }
+
+  @Bean
+  @ConditionalOnMissingBean(OwncloudLocalDataServiceImpl.class)
+  public OwncloudLocalDataService owncloudResourceService() {
+    return new OwncloudLocalDataServiceImpl();
+  }
+
 }

@@ -24,16 +24,16 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import software.coolstuff.springframework.owncloud.service.impl.resource.file.OwncloudFileResourceTest;
+import software.coolstuff.springframework.owncloud.service.impl.local.file.OwncloudLocalFileTest;
 
 /**
  * By setting this Annotation on a Method it will be invoked by <code>AbstractOwncloudResourceTest.tearDown()</code> right after the TestMethod configured by {@link #value()} and after the changed
  * Resource has been written to the Disk.
  *
- * Plesase note that the Test-Class must also implement the Interface {@link OwncloudFileResourceTest}
+ * Plesase note that the Test-Class must also implement the Interface {@link OwncloudLocalFileTest}
  *
  * @author mufasa1976
- * @see OwncloudFileResourceTest
+ * @see OwncloudLocalFileTest
  *
  */
 @Target(ElementType.METHOD)

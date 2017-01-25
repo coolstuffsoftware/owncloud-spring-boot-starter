@@ -15,18 +15,18 @@
    along with this program; if not, write to the Free Software Foundation,
    Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 */
-package software.coolstuff.springframework.owncloud.service.impl;
+package software.coolstuff.springframework.owncloud.service.impl.local.file;
 
-import org.springframework.test.context.TestContext;
-import org.springframework.test.context.support.AbstractTestExecutionListener;
+import org.springframework.core.io.Resource;
 
-import software.coolstuff.springframework.owncloud.service.impl.local.file.OwncloudLocalFileTest;
+import software.coolstuff.springframework.owncloud.service.impl.local.OwncloudLocalFileTestExecutionListener;
 
-public abstract class AbstractOwncloudTestExecutionListener extends AbstractTestExecutionListener {
+public interface OwncloudLocalModifyingFileTest extends OwncloudLocalFileTest {
 
-  protected boolean isTestClassAssignableFromOwncloudFileResourceTest(TestContext testContext) {
-    Class<?> testClass = testContext.getTestClass();
-    return OwncloudLocalFileTest.class.isAssignableFrom(testClass);
+  String getResourcePrefix();
+
+  default void compareResources(Resource source, Resource target) throws Exception {
+    OwncloudLocalFileTestExecutionListener.compareResources(source, target);
   }
 
 }

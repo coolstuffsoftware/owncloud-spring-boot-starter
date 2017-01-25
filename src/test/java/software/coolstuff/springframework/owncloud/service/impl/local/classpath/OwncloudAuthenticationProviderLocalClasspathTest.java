@@ -15,18 +15,13 @@
    along with this program; if not, write to the Free Software Foundation,
    Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 */
-package software.coolstuff.springframework.owncloud.service.impl;
+package software.coolstuff.springframework.owncloud.service.impl.local.classpath;
 
-import org.springframework.test.context.TestContext;
-import org.springframework.test.context.support.AbstractTestExecutionListener;
+import org.springframework.test.context.ActiveProfiles;
 
-import software.coolstuff.springframework.owncloud.service.impl.local.file.OwncloudLocalFileTest;
+import software.coolstuff.springframework.owncloud.service.impl.local.AbstractOwncloudAuthenticationProviderLocalTest;
 
-public abstract class AbstractOwncloudTestExecutionListener extends AbstractTestExecutionListener {
-
-  protected boolean isTestClassAssignableFromOwncloudFileResourceTest(TestContext testContext) {
-    Class<?> testClass = testContext.getTestClass();
-    return OwncloudLocalFileTest.class.isAssignableFrom(testClass);
-  }
+@ActiveProfiles("CLASSPATH-RESOURCE")
+public class OwncloudAuthenticationProviderLocalClasspathTest extends AbstractOwncloudAuthenticationProviderLocalTest {
 
 }

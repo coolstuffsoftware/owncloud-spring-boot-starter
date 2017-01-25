@@ -15,18 +15,27 @@
    along with this program; if not, write to the Free Software Foundation,
    Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 */
-package software.coolstuff.springframework.owncloud.service.impl;
+package software.coolstuff.springframework.owncloud.service.impl.local;
 
-import org.springframework.test.context.TestContext;
-import org.springframework.test.context.support.AbstractTestExecutionListener;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
-import software.coolstuff.springframework.owncloud.service.impl.local.file.OwncloudLocalFileTest;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+import software.coolstuff.springframework.owncloud.exception.OwncloudGroupNotFoundException;
 
-public abstract class AbstractOwncloudTestExecutionListener extends AbstractTestExecutionListener {
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+final class OwncloudLocalUtils {
 
-  protected boolean isTestClassAssignableFromOwncloudFileResourceTest(TestContext testContext) {
-    Class<?> testClass = testContext.getTestClass();
-    return OwncloudLocalFileTest.class.isAssignableFrom(testClass);
+  public static void validateUserNotNull(OwncloudLocalData.User user, String username) {
+    if (user == null) {
+      throw new UsernameNotFoundException(username);
+    }
+  }
+
+  public static void validateGroupNotNull(OwncloudLocalData.Group group, String groupname) {
+    if (group == null) {
+      throw new OwncloudGroupNotFoundException(groupname);
+    }
   }
 
 }

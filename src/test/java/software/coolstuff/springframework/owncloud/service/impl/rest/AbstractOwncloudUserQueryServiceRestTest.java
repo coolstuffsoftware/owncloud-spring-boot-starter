@@ -47,7 +47,7 @@ public abstract class AbstractOwncloudUserQueryServiceRestTest extends AbstractO
 
   @Override
   protected Class<? extends OwncloudUserQueryService> getUserQueryServiceClass() {
-    return OwncloudUserQueryRestServiceImpl.class;
+    return OwncloudRestUserQueryServiceImpl.class;
   }
 
   @Override
