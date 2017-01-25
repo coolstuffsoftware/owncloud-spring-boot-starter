@@ -21,6 +21,8 @@ import java.util.Collection;
 import java.util.Set;
 
 import javax.validation.constraints.NotNull;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -35,6 +37,7 @@ import lombok.Singular;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @lombok.Builder
 @XmlRootElement(name = "owncloud")
+@XmlAccessorType(XmlAccessType.FIELD)
 class OwncloudLocalData {
 
   @lombok.Data
@@ -44,6 +47,7 @@ class OwncloudLocalData {
   @AllArgsConstructor(access = AccessLevel.PRIVATE)
   @lombok.Builder
   @XmlRootElement(name = "user")
+  @XmlAccessorType(XmlAccessType.FIELD)
   static class User {
 
     @NotNull
