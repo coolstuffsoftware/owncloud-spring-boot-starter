@@ -36,7 +36,9 @@ public interface OwncloudResourceService {
 
   OwncloudResource createFile(String fileName, OwncloudResource relativeTo) throws OwncloudResourceException;
 
-  void save(OwncloudResource owncloudResource) throws OwncloudResourceException;
+  OwncloudResource createDirectory(String directoryName) throws OwncloudResourceException;
+
+  OwncloudResource createDirectory(String directoryName, OwncloudResource relativeTo) throws OwncloudResourceException;
 
   void delete(OwncloudResource owncloudResource) throws OwncloudResourceException;
 

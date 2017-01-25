@@ -17,6 +17,10 @@
 */
 package software.coolstuff.springframework.owncloud.model;
 
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.Date;
+
 /**
  * @author mufasa1976
  *
@@ -24,5 +28,17 @@ package software.coolstuff.springframework.owncloud.model;
 public interface OwncloudResource {
 
   boolean isDirectory();
+
+  Date getCreationAt();
+
+  String getCreatedBy();
+
+  Date getLastModifiedAt();
+
+  String getLastModifiedBy();
+
+  InputStream getInputStream();
+
+  OutputStream getOutputStream();
 
 }

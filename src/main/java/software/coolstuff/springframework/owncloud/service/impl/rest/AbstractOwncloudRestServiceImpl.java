@@ -141,11 +141,11 @@ abstract class AbstractOwncloudRestServiceImpl implements OwncloudRestService {
   }
 
   @Override
-  final public RestTemplate getRestTemplate() {
+  public final RestTemplate getRestTemplate() {
     return restTemplate;
   }
 
-  protected HttpHeaders prepareHeaderWithBasicAuthorization(String username, String password) {
+  protected HttpHeaders prepareHeadersWithBasicAuthorization(String username, String password) {
     Validate.notBlank(username);
 
     final byte[] rawEncodedCredentials = Base64.getEncoder().encode((username + ":" + password).getBytes());
@@ -164,7 +164,7 @@ abstract class AbstractOwncloudRestServiceImpl implements OwncloudRestService {
         // so we don't need to add any Authentication Headers
         return new HttpHeaders();
       }
-      return prepareHeaderWithBasicAuthorization(properties.getUsername(), properties.getPassword());
+      return prepareHeadersWithBasicAuthorization(properties.getUsername(), properties.getPassword());
     }
 
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -173,10 +173,10 @@ abstract class AbstractOwncloudRestServiceImpl implements OwncloudRestService {
     }
 
     //    if (authentication instanceof RememberMeAuthenticationToken) {
-    //      return prepareHeaderWithBasicAuthorization(properties.getUsername(), properties.getPassword());
+    //      return prepareHeadersWithBasicAuthorization(properties.getUsername(), properties.getPassword());
     //    }
 
-    return prepareHeaderWithBasicAuthorization(authentication.getName(), (String) authentication.getCredentials());
+    return prepareHeadersWithBasicAuthorization(authentication.getName(), (String) authentication.getCredentials());
   }
 
   protected boolean isUseAdministratorCredentials() {
@@ -188,7 +188,7 @@ abstract class AbstractOwncloudRestServiceImpl implements OwncloudRestService {
   }
 
   protected HttpEntity<String> emptyEntity(String username, String password) {
-    return new HttpEntity<>(prepareHeaderWithBasicAuthorization(username, password));
+    return new HttpEntity<>(prepareHeadersWithBasicAuthorization(username, password));
   }
 
   protected HttpEntity<String> emptyEntity() {
@@ -201,23 +201,22 @@ abstract class AbstractOwncloudRestServiceImpl implements OwncloudRestService {
     return new HttpEntity<>(new LinkedMultiValueMap<>(data), headers);
   }
 
-  protected <T extends Ocs, ENTITY> T exchange(
+  protected <T extends Ocs, E> T exchange(
       String url,
       HttpMethod method,
-      HttpEntity<ENTITY> httpEntity,
+      HttpEntity<E> httpEntity,
       Class<T> clazz,
-      Object... urlVariables) throws OwncloudStatusException {
+      Object... urlVariables) {
     return exchange(url, method, httpEntity, clazz, this::checkFailure, urlVariables);
   }
 
-  protected <T extends Ocs, ENTITY> T exchange(
+  protected <T extends Ocs, E> T exchange(
       String url,
       HttpMethod method,
-      HttpEntity<ENTITY> httpEntity,
+      HttpEntity<E> httpEntity,
       Class<T> clazz,
       OwncloudResponseStatusChecker statusChecker,
-      Object... urlVariables)
-      throws OwncloudStatusException {
+      Object... urlVariables) {
     log.trace("Exchange Data by a {} Request with URL {}. Requested Class of returned Data is {}", method, url, clazz);
     ResponseEntity<T> response = restTemplate.exchange(url, method, httpEntity, clazz, urlVariables);
     T result = response.getBody();

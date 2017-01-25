@@ -43,7 +43,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
-import com.fasterxml.jackson.dataformat.xml.jaxb.XmlJaxbAnnotationIntrospector;
+import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 
 import lombok.extern.slf4j.Slf4j;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
@@ -70,7 +70,7 @@ class OwncloudLocalDataServiceImpl implements OwncloudLocalDataService, Initiali
   public OwncloudLocalDataServiceImpl(Jackson2ObjectMapperBuilder builder) {
     Validate.notNull(builder);
     xmlMapper = builder.createXmlMapper(true).build();
-    xmlMapper.setAnnotationIntrospector(new XmlJaxbAnnotationIntrospector(xmlMapper.getTypeFactory()));
+    xmlMapper.setAnnotationIntrospector(new JaxbAnnotationIntrospector(xmlMapper.getTypeFactory()));
   }
 
   @Override
@@ -145,12 +145,12 @@ class OwncloudLocalDataServiceImpl implements OwncloudLocalDataService, Initiali
   @Override
   public OwncloudUserDetails convert(OwncloudLocalData.User user) {
     List<GrantedAuthority> authorities = new ArrayList<>();
-    List<String> groups = new ArrayList<>();
+    List<String> userGroups = new ArrayList<>();
     if (CollectionUtils.isNotEmpty(user.getGroups())) {
       log.trace("Put {} Owncloud-Group(s) into the Authorities- and Group-List");
       for (String group : user.getGroups()) {
         authorities.add(new SimpleGrantedAuthority(group));
-        groups.add(group);
+        userGroups.add(group);
       }
     }
 
@@ -160,7 +160,7 @@ class OwncloudLocalDataServiceImpl implements OwncloudLocalDataService, Initiali
         .enabled(user.isEnabled())
         .displayname(user.getDisplayname())
         .email(user.getEmail())
-        .groups(groups)
+        .groups(userGroups)
         .authorities(authorities)
         .build();
     owncloudUserDetailsMappingService.mapGrantedAuthorities(userDetails);
