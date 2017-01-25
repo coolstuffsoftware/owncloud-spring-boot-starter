@@ -30,7 +30,7 @@ import org.springframework.test.context.ActiveProfiles;
 
 import software.coolstuff.springframework.owncloud.exception.OwncloudInvalidAuthenticationObjectException;
 
-@ActiveProfiles("AUTHENTICATED-USER-URL")
+@ActiveProfiles("REST-AUTHENTICATED-USER-USER-SERVICE")
 public class OwncloudUserDetailsServiceAuthenticatedUserRestTest extends AbstractOwncloudUserDetailsServiceRestTest {
 
   @Autowired

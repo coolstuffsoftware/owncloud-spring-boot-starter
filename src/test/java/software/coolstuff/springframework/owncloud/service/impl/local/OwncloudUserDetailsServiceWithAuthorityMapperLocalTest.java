@@ -21,7 +21,7 @@ import org.springframework.test.context.ActiveProfiles;
 
 import software.coolstuff.springframework.owncloud.service.impl.rest.AbstractOwncloudUserDetailsServiceWithAuthorityMapperTest;
 
-@ActiveProfiles("AUTHORITY-MAPPER-RESOURCE")
+@ActiveProfiles("LOCAL-AUTHORITY-MAPPER-USER-SERVICE")
 public class OwncloudUserDetailsServiceWithAuthorityMapperLocalTest extends AbstractOwncloudUserDetailsServiceWithAuthorityMapperTest {
 
 }

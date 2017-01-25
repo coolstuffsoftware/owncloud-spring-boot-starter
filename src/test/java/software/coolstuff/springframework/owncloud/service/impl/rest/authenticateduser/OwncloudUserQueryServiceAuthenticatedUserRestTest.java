@@ -21,7 +21,7 @@ import org.springframework.test.context.ActiveProfiles;
 
 import software.coolstuff.springframework.owncloud.service.impl.rest.AbstractOwncloudUserQueryServiceRestTest;
 
-@ActiveProfiles("AUTHENTICATED-USER-URL")
+@ActiveProfiles("REST-AUTHENTICATED-USER-USER-SERVICE")
 public class OwncloudUserQueryServiceAuthenticatedUserRestTest extends AbstractOwncloudUserQueryServiceRestTest {
 
   @Override

@@ -23,7 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.test.context.ActiveProfiles;
 
-@ActiveProfiles("AUTHORITY-MAPPER-URL")
+@ActiveProfiles("REST-AUTHORITY-MAPPER-USER-SERVICE")
 public class OwncloudUserDetailsServiceWithAuthorityMapperRestTest extends AbstractOwncloudUserDetailsServiceWithAuthorityMapperTest implements OwncloudRestServiceTest {
 
   @Autowired

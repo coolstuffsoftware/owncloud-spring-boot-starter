@@ -29,7 +29,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
 
 @Configuration
-@Profile({ "AUTHORITY-MAPPER-RESOURCE", "AUTHORITY-MAPPER-URL" })
+@Profile({ "LOCAL-AUTHORITY-MAPPER-USER-SERVICE", "REST-AUTHORITY-MAPPER-USER-SERVICE" })
 public class AuthorityMapperConfiguration {
 
   @Bean

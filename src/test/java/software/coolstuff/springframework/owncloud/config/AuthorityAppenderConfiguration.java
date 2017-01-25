@@ -30,7 +30,7 @@ import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMap
 import software.coolstuff.springframework.owncloud.service.api.OwncloudGrantedAuthoritiesMapper;
 
 @Configuration
-@Profile({ "AUTHORITY-APPENDER-RESOURCE", "AUTHORITY-APPENDER-URL" })
+@Profile({ "LOCAL-AUTHORITY-APPENDER-USER-SERVICE", "REST-AUTHORITY-APPENDER-USER-SERVICE" })
 public class AuthorityAppenderConfiguration {
 
   @Bean

@@ -23,7 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.test.context.ActiveProfiles;
 
-@ActiveProfiles("AUTHORITY-APPENDER-URL")
+@ActiveProfiles("REST-AUTHORITY-APPENDER-USER-SERVICE")
 public class OwncloudUserDetailsServiceWithAuthorityAppenderRestTest extends AbstractOwncloudUserDetailsServiceWithAuthorityAppenderTest implements OwncloudRestServiceTest {
 
   @Autowired

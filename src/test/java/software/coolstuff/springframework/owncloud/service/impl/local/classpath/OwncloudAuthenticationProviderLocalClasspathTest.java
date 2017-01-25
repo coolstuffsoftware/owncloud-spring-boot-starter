@@ -21,7 +21,7 @@ import org.springframework.test.context.ActiveProfiles;
 
 import software.coolstuff.springframework.owncloud.service.impl.local.AbstractOwncloudAuthenticationProviderLocalTest;
 
-@ActiveProfiles("CLASSPATH-RESOURCE")
+@ActiveProfiles("LOCAL-CLASSPATH-USER-Service")
 public class OwncloudAuthenticationProviderLocalClasspathTest extends AbstractOwncloudAuthenticationProviderLocalTest {
 
 }

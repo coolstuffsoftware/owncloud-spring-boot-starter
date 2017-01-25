@@ -21,7 +21,7 @@ import org.springframework.test.context.ActiveProfiles;
 
 import software.coolstuff.springframework.owncloud.service.impl.local.AbstractOwncloudUserModificationServiceLocalTest;
 
-@ActiveProfiles("CLASSPATH-RESOURCE")
+@ActiveProfiles("LOCAL-CLASSPATH-USER-SERVICE")
 public class OwncloudUserModificationServiceLocalClasspathTest extends AbstractOwncloudUserModificationServiceLocalTest {
 
 }
