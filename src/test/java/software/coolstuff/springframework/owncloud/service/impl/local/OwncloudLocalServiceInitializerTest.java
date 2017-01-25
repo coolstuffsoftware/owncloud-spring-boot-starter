@@ -19,12 +19,14 @@ package software.coolstuff.springframework.owncloud.service.impl.local;
 
 import org.junit.Test;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 
 public class OwncloudLocalServiceInitializerTest {
 
   @Test(expected = IllegalStateException.class)
   public void testCheckGroupReferences_NOK() throws Exception {
-    InitializingBean localDataService = new OwncloudLocalDataServiceImpl() {
+    Jackson2ObjectMapperBuilder builder = Jackson2ObjectMapperBuilder.xml();
+    InitializingBean localDataService = new OwncloudLocalDataServiceImpl(builder) {
 
       @Override
       public void afterPropertiesSet() throws Exception {
@@ -32,10 +34,10 @@ public class OwncloudLocalServiceInitializerTest {
             OwncloudLocalData.builder()
                 .user(
                     OwncloudLocalData.User.builder()
-                        .group(new OwncloudLocalData.Group("group1"))
-                        .group(new OwncloudLocalData.Group("group2"))
+                        .group("group1")
+                        .group("group2")
                         .build())
-                .group(new OwncloudLocalData.Group("group1"))
+                .group("group1")
                 .build());
       }
 

@@ -46,10 +46,10 @@ class OwncloudLocalUserQueryResourceImpl implements OwncloudUserQueryService {
   public List<String> findAllGroups(String filter) {
     log.debug("Get all Users with a Group like {}", filter);
     List<String> filteredGroups = new ArrayList<>();
-    for (OwncloudLocalData.Group group : localDataService.getGroups()) {
-      if (StringUtils.isBlank(filter) || StringUtils.contains(group.getGroup(), filter)) {
-        log.trace("add Group {} to the Result", group.getGroup());
-        filteredGroups.add(group.getGroup());
+    for (String group : localDataService.getGroups()) {
+      if (StringUtils.isBlank(filter) || StringUtils.contains(group, filter)) {
+        log.trace("add Group {} to the Result", group);
+        filteredGroups.add(group);
       }
     }
     return filteredGroups;
@@ -73,8 +73,8 @@ class OwncloudLocalUserQueryResourceImpl implements OwncloudUserQueryService {
 
   private void addWhenMemberOfGroup(String groupname, List<String> members, OwncloudLocalData.User user) {
     if (CollectionUtils.isNotEmpty(user.getGroups())) {
-      for (OwncloudLocalData.Group group : user.getGroups()) {
-        if (StringUtils.equals(groupname, group.getGroup())) {
+      for (String group : user.getGroups()) {
+        if (StringUtils.equals(groupname, group)) {
           log.trace("Add User {} as a Member of Group {}", user.getUsername(), groupname);
           members.add(user.getUsername());
           break;
@@ -89,9 +89,9 @@ class OwncloudLocalUserQueryResourceImpl implements OwncloudUserQueryService {
     List<String> groups = new ArrayList<>();
     if (CollectionUtils.isNotEmpty(user.getGroups())) {
       log.debug("Get all Groups assigned to User {}", user.getUsername());
-      for (OwncloudLocalData.Group group : user.getGroups()) {
-        log.trace("Add Group {} to be assigned to User {}", group.getGroup(), user.getUsername());
-        groups.add(group.getGroup());
+      for (String group : user.getGroups()) {
+        log.trace("Add Group {} to be assigned to User {}", group, user.getUsername());
+        groups.add(group);
       }
     }
     return groups;

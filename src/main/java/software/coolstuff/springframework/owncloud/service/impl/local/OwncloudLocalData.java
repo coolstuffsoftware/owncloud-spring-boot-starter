@@ -18,76 +18,54 @@
 package software.coolstuff.springframework.owncloud.service.impl.local;
 
 import java.util.Collection;
-import java.util.List;
+import java.util.Set;
 
 import javax.validation.constraints.NotNull;
-
-import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
-import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
-import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
-import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlText;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElementWrapper;
+import javax.xml.bind.annotation.XmlRootElement;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.Singular;
 
-/**
- * @author mufasa1976
- */
 @lombok.Data
 @NoArgsConstructor
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @lombok.Builder
-@JacksonXmlRootElement(localName = "owncloud")
+@XmlRootElement(name = "owncloud")
 class OwncloudLocalData {
 
   @lombok.Data
-  @AllArgsConstructor
-  @JacksonXmlRootElement(localName = "group")
-  static class Group {
-
-    @JacksonXmlText
-    private String group;
-
-  }
-
-  @lombok.Data
+  @lombok.EqualsAndHashCode(of = "username")
+  @lombok.ToString(exclude = "password")
   @NoArgsConstructor
   @AllArgsConstructor(access = AccessLevel.PRIVATE)
   @lombok.Builder
-  @JacksonXmlRootElement(localName = "user")
+  @XmlRootElement(name = "user")
   static class User {
 
     @NotNull
-    @JacksonXmlProperty(localName = "username")
     private String username;
-
-    @JacksonXmlProperty(localName = "password")
     private String password;
-
-    @JacksonXmlProperty(localName = "enabled")
     private boolean enabled = true;
-
-    @JacksonXmlProperty(localName = "displayname")
     private String displayname;
-
-    @JacksonXmlProperty(localName = "email")
     private String email;
 
     @Singular
-    @JacksonXmlElementWrapper(localName = "groups", useWrapping = true)
-    @JacksonXmlProperty(localName = "group")
-    private List<Group> groups;
+    @XmlElementWrapper(name = "groups")
+    @XmlElement(name = "group")
+    private Set<String> groups;
   }
 
   @Singular
-  @JacksonXmlElementWrapper(localName = "users", useWrapping = true)
-  @JacksonXmlProperty(localName = "user")
+  @XmlElementWrapper(name = "users")
+  @XmlElement(name = "user")
   private Collection<User> users;
 
   @Singular
-  @JacksonXmlElementWrapper(localName = "groups", useWrapping = true)
-  @JacksonXmlProperty(localName = "group")
-  private Collection<Group> groups;
+  @XmlElementWrapper(name = "groups")
+  @XmlElement(name = "group")
+  private Set<String> groups;
 }

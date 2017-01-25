@@ -41,11 +41,11 @@ interface OwncloudLocalDataService {
 
   boolean groupExists(String groupname);
 
-  Collection<OwncloudLocalData.Group> getGroups();
+  Collection<String> getGroups();
 
-  OwncloudLocalData.Group getGroup(String groupname);
+  String getGroup(String groupname);
 
-  void addGroup(OwncloudLocalData.Group group);
+  void addGroup(String group);
 
   void removeGroup(String groupname);
 

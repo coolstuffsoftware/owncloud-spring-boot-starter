@@ -21,7 +21,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import software.coolstuff.springframework.owncloud.exception.OwncloudGroupNotFoundException;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 final class OwncloudLocalUtils {
@@ -29,12 +28,6 @@ final class OwncloudLocalUtils {
   public static void validateUserNotNull(OwncloudLocalData.User user, String username) {
     if (user == null) {
       throw new UsernameNotFoundException(username);
-    }
-  }
-
-  public static void validateGroupNotNull(OwncloudLocalData.Group group, String groupname) {
-    if (group == null) {
-      throw new OwncloudGroupNotFoundException(groupname);
     }
   }
 

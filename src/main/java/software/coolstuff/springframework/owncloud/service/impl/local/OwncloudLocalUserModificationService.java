@@ -1,9 +1,10 @@
 package software.coolstuff.springframework.owncloud.service.impl.local;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
@@ -53,7 +54,7 @@ class OwncloudLocalUserModificationService implements OwncloudUserModificationSe
   }
 
   private void manageGroups(OwncloudLocalData.User existingUser, OwncloudModificationUser newUser) {
-    List<OwncloudLocalData.Group> groups = new ArrayList<>();
+    Set<String> groups = new HashSet<>();
     if (CollectionUtils.isNotEmpty(newUser.getGroups())) {
       log.debug("Modify the Group Memberships of User {}", existingUser.getUsername());
       for (String groupname : newUser.getGroups()) {
@@ -62,7 +63,7 @@ class OwncloudLocalUserModificationService implements OwncloudUserModificationSe
           throw new OwncloudGroupNotFoundException(groupname);
         }
         log.trace("Assign Group {} to User {}", groupname, existingUser.getUsername());
-        groups.add(new OwncloudLocalData.Group(groupname));
+        groups.add(groupname);
       }
     }
     existingUser.setGroups(groups);
@@ -88,7 +89,7 @@ class OwncloudLocalUserModificationService implements OwncloudUserModificationSe
       throw new OwncloudGroupAlreadyExistsException(groupname);
     }
     log.debug("Create Group {}", groupname);
-    localDataService.addGroup(new OwncloudLocalData.Group(groupname));
+    localDataService.addGroup(groupname);
     log.info("Group {} successfully created");
   }
 
@@ -97,8 +98,10 @@ class OwncloudLocalUserModificationService implements OwncloudUserModificationSe
     Validate.notBlank(groupname);
 
     log.debug("Get Information of Group {} from the Resource Service", groupname);
-    OwncloudLocalData.Group group = localDataService.getGroup(groupname);
-    OwncloudLocalUtils.validateGroupNotNull(group, groupname);
+    String group = localDataService.getGroup(groupname);
+    if (StringUtils.isBlank(group)) {
+      throw new OwncloudGroupNotFoundException(groupname);
+    }
 
     for (OwncloudLocalData.User user : localDataService.getUsers()) {
       if (user.getGroups() != null) {

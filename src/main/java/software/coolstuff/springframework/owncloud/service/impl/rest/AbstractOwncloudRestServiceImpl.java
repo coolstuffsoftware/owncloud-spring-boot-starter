@@ -39,7 +39,6 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.FormHttpMessageConverter;
-import org.springframework.http.converter.xml.MappingJackson2XmlHttpMessageConverter;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -79,9 +78,6 @@ abstract class AbstractOwncloudRestServiceImpl implements OwncloudRestService {
 
   @Autowired
   private OwncloudRestProperties properties;
-
-  @Autowired
-  private MappingJackson2XmlHttpMessageConverter mappingJackson2XmlHttpMessageConverter;
 
   @Autowired
   private OwncloudUserDetailsMappingService owncloudUserDetailsMappingService;
@@ -128,7 +124,6 @@ abstract class AbstractOwncloudRestServiceImpl implements OwncloudRestService {
       log.info("Create the REST-Template to URI {} with the administrative User {}", rootURI, properties.getUsername());
       restTemplate = restTemplateBuilder
           .basicAuthorization(properties.getUsername(), properties.getPassword())
-          .messageConverters(mappingJackson2XmlHttpMessageConverter)
           .additionalMessageConverters(new FormHttpMessageConverter())
           .errorHandler(responseErrorHandler)
           .rootUri(rootURI)
@@ -136,7 +131,6 @@ abstract class AbstractOwncloudRestServiceImpl implements OwncloudRestService {
     } else {
       log.info("Create the REST-Template to URI {} to be used with the authenticated User", rootURI);
       restTemplate = restTemplateBuilder
-          .messageConverters(mappingJackson2XmlHttpMessageConverter)
           .additionalMessageConverters(new FormHttpMessageConverter())
           .errorHandler(responseErrorHandler)
           .rootUri(rootURI)

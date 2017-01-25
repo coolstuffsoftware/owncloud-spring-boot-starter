@@ -23,9 +23,12 @@ import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
@@ -35,9 +38,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.io.UrlResource;
-import org.springframework.http.converter.xml.MappingJackson2XmlHttpMessageConverter;
+import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+
+import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import com.fasterxml.jackson.dataformat.xml.jaxb.XmlJaxbAnnotationIntrospector;
 
 import lombok.extern.slf4j.Slf4j;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
@@ -47,6 +53,8 @@ import software.coolstuff.springframework.owncloud.service.impl.OwncloudUserDeta
 @Slf4j
 class OwncloudLocalDataServiceImpl implements OwncloudLocalDataService, InitializingBean, DisposableBean {
 
+  private final XmlMapper xmlMapper;
+
   @Autowired
   private ResourceLoader resourceLoader;
 
@@ -54,13 +62,16 @@ class OwncloudLocalDataServiceImpl implements OwncloudLocalDataService, Initiali
   private OwncloudProperties properties;
 
   @Autowired
-  private MappingJackson2XmlHttpMessageConverter messageConverter;
-
-  @Autowired
   private OwncloudUserDetailsMappingService owncloudUserDetailsMappingService;
 
   private Map<String, OwncloudLocalData.User> users = new HashMap<>();
-  private Map<String, OwncloudLocalData.Group> groups = new HashMap<>();
+  private Set<String> groups = new HashSet<>();
+
+  public OwncloudLocalDataServiceImpl(Jackson2ObjectMapperBuilder builder) {
+    Validate.notNull(builder);
+    xmlMapper = builder.createXmlMapper(true).build();
+    xmlMapper.setAnnotationIntrospector(new XmlJaxbAnnotationIntrospector(xmlMapper.getTypeFactory()));
+  }
 
   @Override
   public void afterPropertiesSet() throws Exception {
@@ -71,8 +82,7 @@ class OwncloudLocalDataServiceImpl implements OwncloudLocalDataService, Initiali
     Validate.isTrue(resource.isReadable());
 
     log.debug("Read the Resource {} to the Class {}", resource.getFilename(), OwncloudLocalData.class.getName());
-    OwncloudLocalData resourceData = messageConverter.getObjectMapper().readValue(resource.getInputStream(),
-        OwncloudLocalData.class);
+    OwncloudLocalData resourceData = xmlMapper.readValue(resource.getInputStream(), OwncloudLocalData.class);
     checkGroupReferences(resourceData);
 
     log.trace("Clear the Users Map");
@@ -85,11 +95,8 @@ class OwncloudLocalDataServiceImpl implements OwncloudLocalDataService, Initiali
 
     log.trace("Clear the Groups Map");
     groups.clear();
-
     log.debug("Read the Groups as a Map");
-    for (OwncloudLocalData.Group group : resourceData.getGroups()) {
-      groups.put(group.getGroup(), group);
-    }
+    groups.addAll(resourceData.getGroups());
 
     log.info("User Information from Resource Location {} successfully loaded", properties.getLocation());
   }
@@ -102,7 +109,7 @@ class OwncloudLocalDataServiceImpl implements OwncloudLocalDataService, Initiali
 
       log.debug("Check, if the Groups of User {} are registered within the general Group Definitions", user.getUsername());
       if (!CollectionUtils.isSubCollection(user.getGroups(), resourceData.getGroups())) {
-        Collection<OwncloudLocalData.Group> unknownGroups = CollectionUtils.subtract(user.getGroups(), resourceData.getGroups());
+        Collection<String> unknownGroups = CollectionUtils.subtract(user.getGroups(), resourceData.getGroups());
         final String exceptionMessage = String.format(
             "User %s has unknown Groups defined: %s. Please define these Groups within <groups> or remove it from the User",
             user.getUsername(),
@@ -126,12 +133,12 @@ class OwncloudLocalDataServiceImpl implements OwncloudLocalDataService, Initiali
     log.debug("Add Users to the Synchronization Structure {}", OwncloudLocalData.class.getName());
     resourceData.setUsers(users.values());
     log.debug("Add Gropus to the Synchronization Structure {}", OwncloudLocalData.class.getName());
-    resourceData.setGroups(groups.values());
+    resourceData.setGroups(groups);
 
     File file = resource.getFile();
     log.info("Save changed Data to Resource {}", resource.getFilename());
     try (OutputStream output = new BufferedOutputStream(new FileOutputStream(file))) {
-      messageConverter.getObjectMapper().writeValue(output, resourceData);
+      xmlMapper.writeValue(output, resourceData);
     }
   }
 
@@ -141,9 +148,9 @@ class OwncloudLocalDataServiceImpl implements OwncloudLocalDataService, Initiali
     List<String> groups = new ArrayList<>();
     if (CollectionUtils.isNotEmpty(user.getGroups())) {
       log.trace("Put {} Owncloud-Group(s) into the Authorities- and Group-List");
-      for (OwncloudLocalData.Group ownclougGroup : user.getGroups()) {
-        authorities.add(new SimpleGrantedAuthority(ownclougGroup.getGroup()));
-        groups.add(ownclougGroup.getGroup());
+      for (String group : user.getGroups()) {
+        authorities.add(new SimpleGrantedAuthority(group));
+        groups.add(group);
       }
     }
 
@@ -197,22 +204,27 @@ class OwncloudLocalDataServiceImpl implements OwncloudLocalDataService, Initiali
 
   @Override
   public boolean groupExists(String groupname) {
-    return groups.containsKey(groupname);
+    return groups.contains(groupname);
   }
 
   @Override
-  public Collection<OwncloudLocalData.Group> getGroups() {
-    return groups.values();
+  public Collection<String> getGroups() {
+    return Collections.unmodifiableCollection(groups);
   }
 
   @Override
-  public OwncloudLocalData.Group getGroup(String groupname) {
-    return groups.get(groupname);
+  public String getGroup(String groupname) {
+    for (String group : groups) {
+      if (group.equals(groupname)) {
+        return group;
+      }
+    }
+    return null;
   }
 
   @Override
-  public void addGroup(OwncloudLocalData.Group group) {
-    groups.put(group.getGroup(), group);
+  public void addGroup(String group) {
+    groups.add(group);
   }
 
   @Override
