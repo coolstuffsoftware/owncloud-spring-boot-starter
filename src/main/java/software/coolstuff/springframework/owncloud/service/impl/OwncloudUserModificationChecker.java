@@ -17,10 +17,15 @@ class OwncloudUserModificationChecker {
 
   @Before("execution(* software.coolstuff.springframework.owncloud.service.api.OwncloudUserModificationService.*(..))")
   void checkModificationsAllowed(JoinPoint joinPoint) {
-    if (!owncloudProperties.isEnableModifications()) {
+    if (modificationsNotAllowed()) {
       log.warn("Access denied for Method {}.{}() because Modifications are not allowed",
           joinPoint.getSignature().getDeclaringTypeName(), joinPoint.getSignature().getName());
       throw new AccessDeniedException("no modifications allowed");
     }
   }
+
+  private boolean modificationsNotAllowed() {
+    return owncloudProperties.getUserService() == null || !owncloudProperties.getUserService().isEnableModifications();
+  }
+
 }

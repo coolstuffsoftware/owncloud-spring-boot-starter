@@ -25,7 +25,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 final class OwncloudLocalUtils {
 
-  public static void validateUserNotNull(OwncloudLocalData.User user, String username) {
+  public static void validateUserNotNull(OwncloudLocalUserData.User user, String username) {
     if (user == null) {
       throw new UsernameNotFoundException(username);
     }

@@ -29,7 +29,7 @@ import org.springframework.boot.test.autoconfigure.web.client.RestClientTest;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import software.coolstuff.springframework.owncloud.config.WithOwncloudMockUser;
-import software.coolstuff.springframework.owncloud.exception.OwncloudGroupNotFoundException;
+import software.coolstuff.springframework.owncloud.exception.auth.OwncloudGroupNotFoundException;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudUserQueryService;
 import software.coolstuff.springframework.owncloud.service.impl.AbstractOwncloudServiceTest;

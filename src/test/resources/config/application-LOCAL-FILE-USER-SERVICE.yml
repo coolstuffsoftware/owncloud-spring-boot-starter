@@ -1,3 +1,4 @@
 owncloud:
   location: file:target/owncloud.xml
-  enable-modifications: true
+  user-service:
+    enable-modifications: true

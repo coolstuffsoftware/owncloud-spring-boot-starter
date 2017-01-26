@@ -26,14 +26,14 @@ public class OwncloudLocalServiceInitializerTest {
   @Test(expected = IllegalStateException.class)
   public void testCheckGroupReferences_NOK() throws Exception {
     Jackson2ObjectMapperBuilder builder = Jackson2ObjectMapperBuilder.xml();
-    InitializingBean localDataService = new OwncloudLocalDataServiceImpl(builder) {
+    InitializingBean localDataService = new OwncloudLocalUserDataServiceImpl(builder) {
 
       @Override
       public void afterPropertiesSet() throws Exception {
         checkGroupReferences(
-            OwncloudLocalData.builder()
+            OwncloudLocalUserData.builder()
                 .user(
-                    OwncloudLocalData.User.builder()
+                    OwncloudLocalUserData.User.builder()
                         .group("group1")
                         .group("group2")
                         .build())

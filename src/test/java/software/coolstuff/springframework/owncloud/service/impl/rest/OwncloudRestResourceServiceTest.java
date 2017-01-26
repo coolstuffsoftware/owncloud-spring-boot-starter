@@ -15,35 +15,19 @@
    along with this program; if not, write to the Free Software Foundation,
    Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 */
-package software.coolstuff.springframework.owncloud.model;
+package software.coolstuff.springframework.owncloud.service.impl.rest;
 
-import java.io.InputStream;
-import java.util.Date;
+import org.springframework.test.context.ActiveProfiles;
 
-import software.coolstuff.springframework.owncloud.exception.resource.OwncloudUnmodifiableResourceException;
+import software.coolstuff.springframework.owncloud.service.AbstractOwncloudResourceServiceTest;
+import software.coolstuff.springframework.owncloud.service.api.OwncloudResourceService;
 
-/**
- * @author mufasa1976
- *
- */
-public interface OwncloudResource {
+@ActiveProfiles("REST-RESOURCE-SERVICE")
+public class OwncloudRestResourceServiceTest extends AbstractOwncloudResourceServiceTest {
 
-  boolean isDirectory();
-
-  boolean isModifiable();
-
-  OwncloudModifiableResource getModifiableResource() throws OwncloudUnmodifiableResourceException;
-
-  Date getCreationAt();
-
-  Date getLastModifiedAt();
-
-  String getContentType();
-
-  String getETag();
-
-  Long getContentLength();
-
-  InputStream getContent();
+  @Override
+  protected Class<? extends OwncloudResourceService> getExpectedImplementationClass() {
+    return OwncloudRestResourceServiceImpl.class;
+  }
 
 }

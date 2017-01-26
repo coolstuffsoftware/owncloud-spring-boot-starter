@@ -1,5 +1,5 @@
 /*
-   Copyright (C) 2017 by the original Authors.
+   Copyright (C) 2016 by the original Authors.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -15,35 +15,13 @@
    along with this program; if not, write to the Free Software Foundation,
    Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 */
-package software.coolstuff.springframework.owncloud.model;
+package software.coolstuff.springframework.owncloud.service.impl.local.classpath;
 
-import java.io.InputStream;
-import java.util.Date;
+import org.springframework.test.context.ActiveProfiles;
 
-import software.coolstuff.springframework.owncloud.exception.resource.OwncloudUnmodifiableResourceException;
+import software.coolstuff.springframework.owncloud.service.impl.local.AbstractLocalOwncloudAuthenticationProviderTest;
 
-/**
- * @author mufasa1976
- *
- */
-public interface OwncloudResource {
-
-  boolean isDirectory();
-
-  boolean isModifiable();
-
-  OwncloudModifiableResource getModifiableResource() throws OwncloudUnmodifiableResourceException;
-
-  Date getCreationAt();
-
-  Date getLastModifiedAt();
-
-  String getContentType();
-
-  String getETag();
-
-  Long getContentLength();
-
-  InputStream getContent();
+@ActiveProfiles("LOCAL-CLASSPATH-USER-SERVICE")
+public class OwncloudLocalAuthenticationProviderClasspathTest extends AbstractLocalOwncloudAuthenticationProviderTest {
 
 }

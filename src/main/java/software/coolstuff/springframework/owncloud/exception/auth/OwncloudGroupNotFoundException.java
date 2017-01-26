@@ -15,30 +15,26 @@
    along with this program; if not, write to the Free Software Foundation,
    Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 */
-package software.coolstuff.springframework.owncloud.service.impl.local;
+package software.coolstuff.springframework.owncloud.exception.auth;
 
-import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.ToString;
-import software.coolstuff.springframework.owncloud.service.impl.OwncloudProperties;
+import software.coolstuff.springframework.owncloud.exception.OwncloudStatusException;
 
-@Data
-@EqualsAndHashCode(callSuper = true)
-@ToString(callSuper = true)
-@ConfigurationProperties("owncloud")
-class OwncloudLocalProperties extends OwncloudProperties {
+/**
+ * Thrown when a Owncloud Group doesn&apos;t exist. This is most because of the Membership Maintenance or
+ * when a non-existing Group will be removed.
+ *
+ * @author mufasa1976
+ */
+@ResponseStatus(code = HttpStatus.NOT_FOUND, reason = "Group not found")
+public class OwncloudGroupNotFoundException extends OwncloudStatusException {
 
-  @Data
-  @EqualsAndHashCode(callSuper = true)
-  @ToString(callSuper = true)
-  static class Webdav extends OwncloudProperties.Webdav {
+  private static final long serialVersionUID = -7451968497723587443L;
 
-    private String location;
-
+  public OwncloudGroupNotFoundException(String groupname) {
+    super("Group " + groupname + " not found");
   }
-
-  private Webdav webdav = new Webdav();
 
 }

@@ -27,7 +27,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.access.AccessDeniedException;
 
 import lombok.extern.slf4j.Slf4j;
-import software.coolstuff.springframework.owncloud.exception.OwncloudGroupNotFoundException;
+import software.coolstuff.springframework.owncloud.exception.auth.OwncloudGroupNotFoundException;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudUserQueryService;
 

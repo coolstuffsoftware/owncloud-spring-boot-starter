@@ -24,7 +24,7 @@ class OwncloudLocalAuthenticationProvider implements AuthenticationProvider {
 
   private MessageSourceAccessor messages = SpringSecurityMessageSource.getAccessor();
 
-  private final OwncloudLocalDataService localDataService;
+  private final OwncloudLocalUserDataService localDataService;
 
   @Autowired
   private OwncloudLocalUserDetailsService userDetailsService;
@@ -44,7 +44,7 @@ class OwncloudLocalAuthenticationProvider implements AuthenticationProvider {
     }
 
     log.debug("Get Information about User {} from the Resource Service", username);
-    OwncloudLocalData.User user = localDataService.getUser(username);
+    OwncloudLocalUserData.User user = localDataService.getUser(username);
     if (user == null) {
       log.error("User {} has not been found", username);
       throw new BadCredentialsException(messages.getMessage("AbstractUserDetailsAuthenticationProvider.badCredentials", "Bad Credentials"));

@@ -41,6 +41,31 @@ import software.coolstuff.springframework.owncloud.service.api.OwncloudUserModif
 public abstract class OwncloudProperties {
 
   /**
+   * Common Properties for the UserService
+   *
+   * @author mufasa1976
+   */
+  @Data
+  public static class UserService {
+
+    /**
+     * Should Modifications through {@link OwncloudUserModificationService} be allowed
+     */
+    private boolean enableModifications = false;
+
+  }
+
+  /**
+   * Common WebDAV Properties
+   *
+   * @author mufasa1976
+   */
+  @Data
+  public static class Webdav {
+
+  }
+
+  /**
    * Location of the Owncloud Instance.
    * <p/>
    * May start with either of these:
@@ -66,8 +91,13 @@ public abstract class OwncloudProperties {
   private String location;
 
   /**
-   * Should Modifications through {@link OwncloudUserModificationService} be allowed
+   * User Service common Properties
    */
-  private boolean enableModifications = false;
+  private UserService userService = new UserService();
+
+  /**
+   * WebDAV common Properties
+   */
+  private Webdav webdav = new Webdav();
 
 }

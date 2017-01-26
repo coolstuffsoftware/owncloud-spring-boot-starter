@@ -28,8 +28,8 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import com.google.common.collect.Lists;
 
 import software.coolstuff.springframework.owncloud.config.WithOwncloudMockUser;
-import software.coolstuff.springframework.owncloud.exception.OwncloudGroupAlreadyExistsException;
-import software.coolstuff.springframework.owncloud.exception.OwncloudGroupNotFoundException;
+import software.coolstuff.springframework.owncloud.exception.auth.OwncloudGroupAlreadyExistsException;
+import software.coolstuff.springframework.owncloud.exception.auth.OwncloudGroupNotFoundException;
 import software.coolstuff.springframework.owncloud.model.OwncloudModificationUser;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudUserModificationService;

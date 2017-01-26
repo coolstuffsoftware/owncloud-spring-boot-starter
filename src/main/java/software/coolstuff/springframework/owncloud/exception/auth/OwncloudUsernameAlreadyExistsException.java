@@ -1,5 +1,5 @@
 /*
-   Copyright (C) 2017 by the original Authors.
+   Copyright (C) 2016 by the original Authors.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -15,35 +15,24 @@
    along with this program; if not, write to the Free Software Foundation,
    Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 */
-package software.coolstuff.springframework.owncloud.model;
+package software.coolstuff.springframework.owncloud.exception.auth;
 
-import java.io.InputStream;
-import java.util.Date;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
-import software.coolstuff.springframework.owncloud.exception.resource.OwncloudUnmodifiableResourceException;
+import software.coolstuff.springframework.owncloud.exception.OwncloudStatusException;
 
 /**
- * @author mufasa1976
+ * Thrown when the Username already exists.
  *
+ * @author mufasa1976
  */
-public interface OwncloudResource {
+@ResponseStatus(HttpStatus.CONFLICT)
+public class OwncloudUsernameAlreadyExistsException extends OwncloudStatusException {
 
-  boolean isDirectory();
+  private static final long serialVersionUID = 9039656661419987314L;
 
-  boolean isModifiable();
-
-  OwncloudModifiableResource getModifiableResource() throws OwncloudUnmodifiableResourceException;
-
-  Date getCreationAt();
-
-  Date getLastModifiedAt();
-
-  String getContentType();
-
-  String getETag();
-
-  Long getContentLength();
-
-  InputStream getContent();
-
+  public OwncloudUsernameAlreadyExistsException(String msg) {
+    super(msg);
+  }
 }

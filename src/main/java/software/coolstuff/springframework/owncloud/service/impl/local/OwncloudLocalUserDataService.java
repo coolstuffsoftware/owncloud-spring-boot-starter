@@ -17,28 +17,36 @@
 */
 package software.coolstuff.springframework.owncloud.service.impl.local;
 
-import org.springframework.boot.context.properties.ConfigurationProperties;
+import java.util.Collection;
 
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.ToString;
-import software.coolstuff.springframework.owncloud.service.impl.OwncloudProperties;
+import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
 
-@Data
-@EqualsAndHashCode(callSuper = true)
-@ToString(callSuper = true)
-@ConfigurationProperties("owncloud")
-class OwncloudLocalProperties extends OwncloudProperties {
+interface OwncloudLocalUserDataService {
 
-  @Data
-  @EqualsAndHashCode(callSuper = true)
-  @ToString(callSuper = true)
-  static class Webdav extends OwncloudProperties.Webdav {
+  OwncloudUserDetails convert(OwncloudLocalUserData.User user);
 
-    private String location;
+  boolean userNotExists(String username);
 
-  }
+  boolean userExists(String username);
 
-  private Webdav webdav = new Webdav();
+  Collection<OwncloudLocalUserData.User> getUsers();
+
+  OwncloudLocalUserData.User getUser(String username);
+
+  void addUser(OwncloudLocalUserData.User user);
+
+  void removeUser(String username);
+
+  boolean groupNotExists(String groupname);
+
+  boolean groupExists(String groupname);
+
+  Collection<String> getGroups();
+
+  String getGroup(String groupname);
+
+  void addGroup(String group);
+
+  void removeGroup(String groupname);
 
 }

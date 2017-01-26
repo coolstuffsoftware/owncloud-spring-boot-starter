@@ -15,35 +15,14 @@
    along with this program; if not, write to the Free Software Foundation,
    Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 */
-package software.coolstuff.springframework.owncloud.model;
-
-import java.io.InputStream;
-import java.util.Date;
-
-import software.coolstuff.springframework.owncloud.exception.resource.OwncloudUnmodifiableResourceException;
+package software.coolstuff.springframework.owncloud.exception.resource;
 
 /**
  * @author mufasa1976
  *
  */
-public interface OwncloudResource {
+public class OwncloudUnmodifiableResourceException extends OwncloudResourceException {
 
-  boolean isDirectory();
-
-  boolean isModifiable();
-
-  OwncloudModifiableResource getModifiableResource() throws OwncloudUnmodifiableResourceException;
-
-  Date getCreationAt();
-
-  Date getLastModifiedAt();
-
-  String getContentType();
-
-  String getETag();
-
-  Long getContentLength();
-
-  InputStream getContent();
+  private static final long serialVersionUID = -1351150510187017683L;
 
 }

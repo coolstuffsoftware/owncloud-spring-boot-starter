@@ -27,6 +27,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.converter.xml.MappingJackson2XmlHttpMessageConverter;
 
+import software.coolstuff.springframework.owncloud.service.api.OwncloudResourceService;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudUserModificationService;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudUserQueryService;
 
@@ -61,5 +62,10 @@ class OwncloudRestAutoConfiguration {
   @ConditionalOnMissingBean(OwncloudRestUserDetailsService.class)
   public OwncloudRestUserDetailsService owncloudRestUserDetailsService(RestTemplateBuilder builder) {
     return new OwncloudRestUserDetailsService(builder);
+  }
+
+  @Bean
+  public OwncloudResourceService owncloudResourceService() {
+    return new OwncloudRestResourceServiceImpl();
   }
 }

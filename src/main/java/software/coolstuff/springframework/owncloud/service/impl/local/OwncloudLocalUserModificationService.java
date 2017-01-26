@@ -10,8 +10,8 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import software.coolstuff.springframework.owncloud.exception.OwncloudGroupAlreadyExistsException;
-import software.coolstuff.springframework.owncloud.exception.OwncloudGroupNotFoundException;
+import software.coolstuff.springframework.owncloud.exception.auth.OwncloudGroupAlreadyExistsException;
+import software.coolstuff.springframework.owncloud.exception.auth.OwncloudGroupNotFoundException;
 import software.coolstuff.springframework.owncloud.model.OwncloudModificationUser;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudUserModificationService;
@@ -20,7 +20,7 @@ import software.coolstuff.springframework.owncloud.service.api.OwncloudUserModif
 @Slf4j
 class OwncloudLocalUserModificationService implements OwncloudUserModificationService {
 
-  private final OwncloudLocalDataService localDataService;
+  private final OwncloudLocalUserDataService localDataService;
 
   @Override
   public OwncloudUserDetails saveUser(OwncloudModificationUser modificationUser) {
@@ -28,13 +28,13 @@ class OwncloudLocalUserModificationService implements OwncloudUserModificationSe
     Validate.notBlank(modificationUser.getUsername());
 
     log.debug("Try to get User Information of User {} from the Resource Service", modificationUser.getUsername());
-    OwncloudLocalData.User existingUser = localDataService.getUser(modificationUser.getUsername());
+    OwncloudLocalUserData.User existingUser = localDataService.getUser(modificationUser.getUsername());
 
     if (existingUser == null) {
       Validate.notBlank(modificationUser.getPassword());
 
       log.debug("User {} not exists --> Create new User", modificationUser.getUsername());
-      existingUser = new OwncloudLocalData.User();
+      existingUser = new OwncloudLocalUserData.User();
       existingUser.setUsername(modificationUser.getUsername());
       existingUser.setPassword(modificationUser.getPassword());
       localDataService.addUser(existingUser);
@@ -53,7 +53,7 @@ class OwncloudLocalUserModificationService implements OwncloudUserModificationSe
     return changedUserDetails;
   }
 
-  private void manageGroups(OwncloudLocalData.User existingUser, OwncloudModificationUser newUser) {
+  private void manageGroups(OwncloudLocalUserData.User existingUser, OwncloudModificationUser newUser) {
     Set<String> groups = new HashSet<>();
     if (CollectionUtils.isNotEmpty(newUser.getGroups())) {
       log.debug("Modify the Group Memberships of User {}", existingUser.getUsername());
@@ -103,7 +103,7 @@ class OwncloudLocalUserModificationService implements OwncloudUserModificationSe
       throw new OwncloudGroupNotFoundException(groupname);
     }
 
-    for (OwncloudLocalData.User user : localDataService.getUsers()) {
+    for (OwncloudLocalUserData.User user : localDataService.getUsers()) {
       if (user.getGroups() != null) {
         log.trace("Revoke Assignment of Group {} from User {}", groupname, user.getUsername());
         user.getGroups().remove(group);

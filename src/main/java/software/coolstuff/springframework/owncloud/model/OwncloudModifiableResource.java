@@ -17,33 +17,14 @@
 */
 package software.coolstuff.springframework.owncloud.model;
 
-import java.io.InputStream;
-import java.util.Date;
-
-import software.coolstuff.springframework.owncloud.exception.resource.OwncloudUnmodifiableResourceException;
+import java.io.OutputStream;
 
 /**
  * @author mufasa1976
  *
  */
-public interface OwncloudResource {
+public interface OwncloudModifiableResource extends OwncloudResource {
 
-  boolean isDirectory();
-
-  boolean isModifiable();
-
-  OwncloudModifiableResource getModifiableResource() throws OwncloudUnmodifiableResourceException;
-
-  Date getCreationAt();
-
-  Date getLastModifiedAt();
-
-  String getContentType();
-
-  String getETag();
-
-  Long getContentLength();
-
-  InputStream getContent();
+  OutputStream getOutputStream();
 
 }

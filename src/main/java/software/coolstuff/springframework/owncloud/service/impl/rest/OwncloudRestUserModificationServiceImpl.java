@@ -33,9 +33,9 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import com.google.common.collect.Lists;
 
 import lombok.extern.slf4j.Slf4j;
-import software.coolstuff.springframework.owncloud.exception.OwncloudGroupAlreadyExistsException;
-import software.coolstuff.springframework.owncloud.exception.OwncloudGroupNotFoundException;
-import software.coolstuff.springframework.owncloud.exception.OwncloudUsernameAlreadyExistsException;
+import software.coolstuff.springframework.owncloud.exception.auth.OwncloudGroupAlreadyExistsException;
+import software.coolstuff.springframework.owncloud.exception.auth.OwncloudGroupNotFoundException;
+import software.coolstuff.springframework.owncloud.exception.auth.OwncloudUsernameAlreadyExistsException;
 import software.coolstuff.springframework.owncloud.model.OwncloudModificationUser;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudUserModificationService;

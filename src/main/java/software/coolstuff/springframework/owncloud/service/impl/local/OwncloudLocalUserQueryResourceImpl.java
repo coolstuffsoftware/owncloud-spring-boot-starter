@@ -9,7 +9,7 @@ import org.apache.commons.lang3.Validate;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import software.coolstuff.springframework.owncloud.exception.OwncloudGroupNotFoundException;
+import software.coolstuff.springframework.owncloud.exception.auth.OwncloudGroupNotFoundException;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudUserQueryService;
 
@@ -17,7 +17,7 @@ import software.coolstuff.springframework.owncloud.service.api.OwncloudUserQuery
 @Slf4j
 class OwncloudLocalUserQueryResourceImpl implements OwncloudUserQueryService {
 
-  private final OwncloudLocalDataService localDataService;
+  private final OwncloudLocalUserDataService localDataService;
 
   @Override
   public List<String> findAllUsers() {
@@ -28,7 +28,7 @@ class OwncloudLocalUserQueryResourceImpl implements OwncloudUserQueryService {
   public List<String> findAllUsers(String filter) {
     log.debug("Get all Users with a DisplayName like {}", filter);
     List<String> filteredUsers = new ArrayList<>();
-    for (OwncloudLocalData.User user : localDataService.getUsers()) {
+    for (OwncloudLocalUserData.User user : localDataService.getUsers()) {
       if (StringUtils.isBlank(filter) || StringUtils.contains(user.getDisplayname(), filter)) {
         log.trace("add User {} to the Result", user.getUsername());
         filteredUsers.add(user.getUsername());
@@ -65,13 +65,13 @@ class OwncloudLocalUserQueryResourceImpl implements OwncloudUserQueryService {
 
     log.debug("Get all Members of Group {}", groupname);
     List<String> members = new ArrayList<>();
-    for (OwncloudLocalData.User user : localDataService.getUsers()) {
+    for (OwncloudLocalUserData.User user : localDataService.getUsers()) {
       addWhenMemberOfGroup(groupname, members, user);
     }
     return members;
   }
 
-  private void addWhenMemberOfGroup(String groupname, List<String> members, OwncloudLocalData.User user) {
+  private void addWhenMemberOfGroup(String groupname, List<String> members, OwncloudLocalUserData.User user) {
     if (CollectionUtils.isNotEmpty(user.getGroups())) {
       for (String group : user.getGroups()) {
         if (StringUtils.equals(groupname, group)) {
@@ -85,7 +85,7 @@ class OwncloudLocalUserQueryResourceImpl implements OwncloudUserQueryService {
 
   @Override
   public List<String> findAllGroupsOfUser(String username) {
-    OwncloudLocalData.User user = getCheckedUser(username);
+    OwncloudLocalUserData.User user = getCheckedUser(username);
     List<String> groups = new ArrayList<>();
     if (CollectionUtils.isNotEmpty(user.getGroups())) {
       log.debug("Get all Groups assigned to User {}", user.getUsername());
@@ -97,17 +97,17 @@ class OwncloudLocalUserQueryResourceImpl implements OwncloudUserQueryService {
     return groups;
   }
 
-  private OwncloudLocalData.User getCheckedUser(String username) {
+  private OwncloudLocalUserData.User getCheckedUser(String username) {
     Validate.notBlank(username);
     log.debug("Get User {} from Resource Service", username);
-    OwncloudLocalData.User user = localDataService.getUser(username);
+    OwncloudLocalUserData.User user = localDataService.getUser(username);
     OwncloudLocalUtils.validateUserNotNull(user, username);
     return user;
   }
 
   @Override
   public OwncloudUserDetails findOneUser(String username) {
-    OwncloudLocalData.User user = getCheckedUser(username);
+    OwncloudLocalUserData.User user = getCheckedUser(username);
     return localDataService.convert(user);
   }
 

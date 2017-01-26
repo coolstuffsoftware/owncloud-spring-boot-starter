@@ -13,12 +13,12 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 class OwncloudLocalUserDetailsService implements UserDetailsService {
 
-  private final OwncloudLocalDataService localDataService;
+  private final OwncloudLocalUserDataService localDataService;
 
   @Override
   public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
     log.debug("Get Information about User {} from the Resource Service", username);
-    OwncloudLocalData.User user = Optional
+    OwncloudLocalUserData.User user = Optional
         .ofNullable(localDataService.getUser(username))
         .orElseThrow(() -> {
           log.error("User {} not found", username);

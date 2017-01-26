@@ -101,9 +101,17 @@ public class OwncloudLocalFileTestExecutionListener extends AbstractOwncloudTest
             case "location":
               owncloudProperties.setLocation((String) property.getValue());
               break;
-            case "enable-modifications":
-            case "enableModifications":
-              owncloudProperties.setEnableModifications((Boolean) property.getValue());
+            case "user-service":
+            case "userService":
+              continue;
+            case "user-service.enable-modifications":
+            case "userService.enable-modifications":
+            case "user-service.enableModifications":
+            case "userService.enableModifications":
+              if (owncloudProperties.getUserService() == null) {
+                owncloudProperties.setUserService(new OwncloudProperties.UserService());
+              }
+              owncloudProperties.getUserService().setEnableModifications((Boolean) property.getValue());
               break;
             default:
               throw new IllegalArgumentException("Invalid Property owncloud." + property.getKey());
@@ -135,7 +143,7 @@ public class OwncloudLocalFileTestExecutionListener extends AbstractOwncloudTest
       OwncloudProperties properties = applicationContext.getBean(OwncloudProperties.class);
       copyClasspathResourceToFile(resourceLoader, properties);
 
-      InitializingBean localDataService = applicationContext.getBean(OwncloudLocalDataServiceImpl.class);
+      InitializingBean localDataService = applicationContext.getBean(OwncloudLocalUserDataServiceImpl.class);
       localDataService.afterPropertiesSet();
     }
   }
@@ -174,7 +182,7 @@ public class OwncloudLocalFileTestExecutionListener extends AbstractOwncloudTest
       Class<?> testClass = testContext.getTestClass();
       Method testMethod = testContext.getTestMethod();
 
-      DisposableBean localDataService = applicationContext.getBean(OwncloudLocalDataServiceImpl.class);
+      DisposableBean localDataService = applicationContext.getBean(OwncloudLocalUserDataServiceImpl.class);
       localDataService.destroy();
 
       ResourceLoader resourceLoader = applicationContext;

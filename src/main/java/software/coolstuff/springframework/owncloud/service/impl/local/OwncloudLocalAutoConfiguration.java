@@ -22,11 +22,13 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 
+import software.coolstuff.springframework.owncloud.service.api.OwncloudResourceService;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudUserModificationService;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudUserQueryService;
 
@@ -41,32 +43,39 @@ class OwncloudLocalAutoConfiguration {
 
   @Bean
   public OwncloudUserQueryService owncloudUserQueryService() {
-    return new OwncloudLocalUserQueryResourceImpl(owncloudResourceService());
+    return new OwncloudLocalUserQueryResourceImpl(owncloudLocalUserDataService());
   }
 
   @Bean
   public OwncloudUserModificationService owncloudUserModificationService() {
-    return new OwncloudLocalUserModificationService(owncloudResourceService());
+    return new OwncloudLocalUserModificationService(owncloudLocalUserDataService());
   }
 
   @Bean
   @Qualifier("owncloudAuthenticationProvider")
   @ConditionalOnMissingBean(OwncloudLocalAuthenticationProvider.class)
   public OwncloudLocalAuthenticationProvider owncloudAuthenticationProvider() {
-    return new OwncloudLocalAuthenticationProvider(owncloudResourceService());
+    return new OwncloudLocalAuthenticationProvider(owncloudLocalUserDataService());
   }
 
   @Bean
   @Qualifier("owncloudUserDetailsService")
   @ConditionalOnMissingBean(OwncloudLocalUserDetailsService.class)
   public OwncloudLocalUserDetailsService owncloudResourceUserDetailsService() {
-    return new OwncloudLocalUserDetailsService(owncloudResourceService());
+    return new OwncloudLocalUserDetailsService(owncloudLocalUserDataService());
   }
 
   @Bean
-  @ConditionalOnMissingBean(OwncloudLocalDataServiceImpl.class)
-  public OwncloudLocalDataService owncloudResourceService() {
-    return new OwncloudLocalDataServiceImpl(jackson2ObjectMapperBuilder);
+  @ConditionalOnMissingBean(OwncloudLocalUserDataService.class)
+  public OwncloudLocalUserDataService owncloudLocalUserDataService() {
+    return new OwncloudLocalUserDataServiceImpl(jackson2ObjectMapperBuilder);
+  }
+
+  @Bean
+  @ConditionalOnMissingBean(OwncloudResourceService.class)
+  @ConditionalOnProperty("owncloud.webdav.location")
+  public OwncloudResourceService owncloudResourceService() {
+    return new OwncloudLocalResourceServiceImpl();
   }
 
 }
