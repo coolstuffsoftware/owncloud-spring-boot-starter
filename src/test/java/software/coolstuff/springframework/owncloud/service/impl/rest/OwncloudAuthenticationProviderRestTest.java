@@ -27,21 +27,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.web.client.HttpStatusCodeException;
 
 import software.coolstuff.springframework.owncloud.service.AbstractOwncloudAuthenticationProviderTest;
 
-public abstract class AbstractOwncloudAuthenticationProviderRestTest extends AbstractOwncloudAuthenticationProviderTest
-    implements OwncloudRestServiceTest {
+@ActiveProfiles("REST-USER-SERVICE")
+public class OwncloudAuthenticationProviderRestTest extends AbstractOwncloudAuthenticationProviderTest implements OwncloudRestServiceTest {
 
   @Autowired
   private AuthenticationProvider authenticationProvider;
 
   @Autowired
   private OwncloudRestUserDetailsService userDetailsService;
-
-  @Autowired
-  private OwncloudRestProperties properties;
 
   @Override
   public final OwncloudRestService owncloudService() {
@@ -51,11 +49,6 @@ public abstract class AbstractOwncloudAuthenticationProviderRestTest extends Abs
   @Override
   protected Class<? extends AuthenticationProvider> getAuthenticationProviderClass() {
     return OwncloudRestAuthenticationProvider.class;
-  }
-
-  @Override
-  public OwncloudRestProperties getProperties() {
-    return properties;
   }
 
   @Override

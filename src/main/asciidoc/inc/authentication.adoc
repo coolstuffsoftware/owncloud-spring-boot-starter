@@ -35,6 +35,8 @@ public class MyWebSecurityConfigurerAdapter extends WebSecurityConfigurerAdapter
 By the Qualifier `owncloudAuthenticationProvider` you can inject the Owncloud Authentication Provider directly into the `WebSecurityConfigurerAdapter` and use this AuthenticationProvider for Authentication.
 
 === RememberMe Services
-Unfortunatly RememberMe Service is not available for Owncloud Authentication. Like Microsoft ActiveDirectory the Owncloud Instance doesn't provide the Password of a User which is necessary for InMemory RememberMe Services.
+Unfortunatly RememberMe Service is not available for Owncloud Authentication. Like Microsoft ActiveDirectory the Owncloud Instance doesn't provide the Password of a User which is necessary for InMemory RememberMe Services. +
+Also the RememberMe-Services based on Persistent Tokens will not work because you need the Password of the Owncloud User for all Requests to the Owncloud. This could only be provided, if the original Session is available
+(and not reauthenticated by the RememberMe Service).
 
-It is planned that the Owncloud Authentication Provider provides RememberMe Services for persistent RememberMe Tokens. But not at this Moment.
+Maybe one time Owncloud will provide an Application Token or work as a OAuth Provider. But this will be future work.

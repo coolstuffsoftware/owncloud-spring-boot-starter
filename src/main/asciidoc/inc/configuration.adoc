@@ -4,8 +4,6 @@ All Services of this Spring-Boot Starter will be managed by the following http:/
 |===
 | Name | mandatory | Data Type |Default | Description
 | owncloud.location | true | String | - | The Location of the Owncloud Instance
-| owncloud.username | false | String | `null` | Username of the Owncloud Administrator
-| owncloud.password | false | String | `null`| Password of the Owncloud Administrator
 | owncloud.enable-modifications | false | boolean | `false`
   | Modifications through `OwncloudUserModificationService` are allowed/disallowed
 |===
@@ -93,41 +91,3 @@ of the Application. This is useful for incremental Integration Tests.
 When you use a `classpath:` Resource the changed Data will not be written. Therefor this type should be used
 for local Development and/or Unit Tests.
 
-=== owncloud.username, owncloud.password
-Working with this Spring-Boot Starter can be established by 2 different Approaches:
-
-* either by the User which has been successfully authenticated using
-  `OwncloudAuthenticationProvider` and `OwncloudUserDetailsService` or
-* by specifying an Owncloud Administrator
-
-Here are some Pros and Contras for every of the 2 Approaches:
-[cols="2, 5a, 5a", options="header"]
-|===
-| Authentication Type | Pros | Contras
-
-| authenticated User
-| * Principle of the least Privilege
-  * Privileges will be managed by Owncloud
-  * no Password needed in Configuration Files
-| * Functionality depends on the Privileges of
-    the authenticated User +
-    -> Behaviour of the following
-    Services are not predictable
-  ** `OwncloudUserModificationService`
-  *** `saveUser()` cannot change the
-      Group Memberships
-  *** `deleteUser()` may not work
-  *** `createGroup` & `deleteGroup` may not work
-  ** `OwncloudUserQueryService`
-  *** all `findAll*` Methods may not work
-
-| Administrator
-| * No restriction to any Services
-  * Privileges will be managed by the Application
-  * Predictable Usage of the Services
-| * unencrypted Password in the Configuration File
-    (could be encrypted by using
-    http://cloud.spring.io/spring-cloud-static/Camden.SR3/#_security[Spring Cloud Configuration Service])
-  * Principle of the least Privilege will be broken +
-    -> Owncloud possibly could be broken by the Application
-|===

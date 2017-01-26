@@ -64,12 +64,11 @@ import software.coolstuff.springframework.owncloud.service.impl.OwncloudUtils;
 @Slf4j
 abstract class AbstractOwncloudRestServiceImpl implements OwncloudRestService {
 
-  private final static String DEFAULT_PATH = "/ocs/v1.php";
+  private static final String DEFAULT_PATH = "/ocs/v1.php";
 
-  private final static String AUTHORIZATION_METHOD_PREFIX = "Basic ";
+  private static final String AUTHORIZATION_METHOD_PREFIX = "Basic ";
 
   private final RestTemplateBuilder restTemplateBuilder;
-  private final boolean addBasicAuthentication;
   private final ResponseErrorHandler responseErrorHandler;
 
   protected MessageSourceAccessor messages = SpringSecurityMessageSource.getAccessor();
@@ -83,11 +82,7 @@ abstract class AbstractOwncloudRestServiceImpl implements OwncloudRestService {
   private OwncloudUserDetailsMappingService owncloudUserDetailsMappingService;
 
   protected AbstractOwncloudRestServiceImpl(RestTemplateBuilder builder) {
-    this(builder, true);
-  }
-
-  protected AbstractOwncloudRestServiceImpl(RestTemplateBuilder builder, boolean addBasicAuthentication) {
-    this(builder, addBasicAuthentication, new DefaultOwncloudResponseErrorHandler(SpringSecurityMessageSource.getAccessor()));
+    this(builder, new DefaultOwncloudResponseErrorHandler(SpringSecurityMessageSource.getAccessor()));
   }
 
   @PostConstruct
@@ -120,22 +115,12 @@ abstract class AbstractOwncloudRestServiceImpl implements OwncloudRestService {
       rootURI = URI.create(locationURL.toString() + DEFAULT_PATH).toString();
     }
 
-    if (addBasicAuthentication && StringUtils.isNotBlank(properties.getUsername())) {
-      log.info("Create the REST-Template to URI {} with the administrative User {}", rootURI, properties.getUsername());
-      restTemplate = restTemplateBuilder
-          .basicAuthorization(properties.getUsername(), properties.getPassword())
-          .additionalMessageConverters(new FormHttpMessageConverter())
-          .errorHandler(responseErrorHandler)
-          .rootUri(rootURI)
-          .build();
-    } else {
-      log.info("Create the REST-Template to URI {} to be used with the authenticated User", rootURI);
-      restTemplate = restTemplateBuilder
-          .additionalMessageConverters(new FormHttpMessageConverter())
-          .errorHandler(responseErrorHandler)
-          .rootUri(rootURI)
-          .build();
-    }
+    log.info("Create the REST-Template to URI {} to be used with the authenticated User", rootURI);
+    restTemplate = restTemplateBuilder
+        .additionalMessageConverters(new FormHttpMessageConverter())
+        .errorHandler(responseErrorHandler)
+        .rootUri(rootURI)
+        .build();
 
     Validate.notNull(restTemplate);
   }
@@ -145,7 +130,15 @@ abstract class AbstractOwncloudRestServiceImpl implements OwncloudRestService {
     return restTemplate;
   }
 
-  protected HttpHeaders prepareHeadersWithBasicAuthorization(String username, String password) {
+  protected HttpHeaders prepareHeadersWithBasicAuthorization() {
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    if (!OwncloudUtils.isAuthenticationClassSupported(authentication.getClass())) {
+      throw new OwncloudInvalidAuthenticationObjectException(authentication);
+    }
+    return prepareHeadersWithBasicAuthorization(authentication.getName(), (String) authentication.getCredentials());
+  }
+
+  private HttpHeaders prepareHeadersWithBasicAuthorization(String username, String password) {
     Validate.notBlank(username);
 
     final byte[] rawEncodedCredentials = Base64.getEncoder().encode((username + ":" + password).getBytes());
@@ -155,32 +148,6 @@ abstract class AbstractOwncloudRestServiceImpl implements OwncloudRestService {
     log.trace("Use Basic Authorization with User {}", username);
     headers.add(HttpHeaders.AUTHORIZATION, AUTHORIZATION_METHOD_PREFIX + encodedCredentials);
     return headers;
-  }
-
-  protected HttpHeaders prepareHeadersWithBasicAuthorization() {
-    if (isUseAdministratorCredentials()) {
-      if (addBasicAuthentication) {
-        // Authentication Header will be added by RestTemplate.basicAuthorization()
-        // so we don't need to add any Authentication Headers
-        return new HttpHeaders();
-      }
-      return prepareHeadersWithBasicAuthorization(properties.getUsername(), properties.getPassword());
-    }
-
-    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-    if (!OwncloudUtils.isAuthenticationClassSupported(authentication.getClass())) {
-      throw new OwncloudInvalidAuthenticationObjectException(authentication);
-    }
-
-    //    if (authentication instanceof RememberMeAuthenticationToken) {
-    //      return prepareHeadersWithBasicAuthorization(properties.getUsername(), properties.getPassword());
-    //    }
-
-    return prepareHeadersWithBasicAuthorization(authentication.getName(), (String) authentication.getCredentials());
-  }
-
-  protected boolean isUseAdministratorCredentials() {
-    return StringUtils.isNotBlank(properties.getUsername());
   }
 
   protected String getLocation() {

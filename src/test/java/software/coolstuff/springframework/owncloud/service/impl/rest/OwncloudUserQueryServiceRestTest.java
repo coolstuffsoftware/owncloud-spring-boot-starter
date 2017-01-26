@@ -24,6 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.util.UriUtils;
 
@@ -32,13 +33,11 @@ import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
 import software.coolstuff.springframework.owncloud.service.AbstractOwncloudUserQueryServiceTest;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudUserQueryService;
 
-public abstract class AbstractOwncloudUserQueryServiceRestTest extends AbstractOwncloudUserQueryServiceTest implements OwncloudRestServiceTest {
+@ActiveProfiles("REST-USER-SERVICE")
+public class OwncloudUserQueryServiceRestTest extends AbstractOwncloudUserQueryServiceTest implements OwncloudRestServiceTest {
 
   @Autowired
   private OwncloudUserQueryService userQueryService;
-
-  @Autowired
-  private OwncloudRestProperties properties;
 
   @Override
   public final OwncloudRestService owncloudService() {
@@ -48,11 +47,6 @@ public abstract class AbstractOwncloudUserQueryServiceRestTest extends AbstractO
   @Override
   protected Class<? extends OwncloudUserQueryService> getUserQueryServiceClass() {
     return OwncloudRestUserQueryServiceImpl.class;
-  }
-
-  @Override
-  public OwncloudRestProperties getProperties() {
-    return properties;
   }
 
   @Override

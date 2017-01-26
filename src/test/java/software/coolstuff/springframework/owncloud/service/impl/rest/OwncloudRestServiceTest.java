@@ -17,18 +17,8 @@
 */
 package software.coolstuff.springframework.owncloud.service.impl.rest;
 
-import java.util.Base64;
-
 public interface OwncloudRestServiceTest {
 
   OwncloudRestService owncloudService();
-
-  String getBasicAuthorizationHeader();
-
-  OwncloudRestProperties getProperties();
-
-  default String getDefaultBasicAuthorizationHeader() {
-    return "Basic " + Base64.getEncoder().encodeToString((getProperties().getUsername() + ":" + getProperties().getPassword()).getBytes());
-  }
 
 }

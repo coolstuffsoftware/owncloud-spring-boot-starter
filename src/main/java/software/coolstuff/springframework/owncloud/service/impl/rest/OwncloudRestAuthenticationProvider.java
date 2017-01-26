@@ -42,7 +42,7 @@ class OwncloudRestAuthenticationProvider extends AbstractOwncloudRestServiceImpl
   private OwncloudRestUserDetailsService userDetailsService;
 
   public OwncloudRestAuthenticationProvider(RestTemplateBuilder builder) {
-    super(builder, false);
+    super(builder);
   }
 
   @Override

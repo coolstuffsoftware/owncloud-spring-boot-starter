@@ -15,14 +15,24 @@ import software.coolstuff.springframework.owncloud.model.OwncloudAuthentication;
 public final class OwncloudUtils {
 
   /**
-   * Checks, if the given Authentication Class is expected to be valid
+   * Checks, if the given Authentication Class is expected valid
    * to be used by the Owncloud AuthenticationProvider Implementations.
-   * @param authentication Class of the Authentication Object
+   * @param authenticationClass Class of the Authentication Object
    * @return is the Authentication Object be servicable by the Owncloud AuthenticationProvider Implementation
    */
-  public static boolean isAuthenticationClassSupported(Class<?> authentication) {
-    return UsernamePasswordAuthenticationToken.class.isAssignableFrom(authentication) ||
-        OwncloudAuthentication.class.isAssignableFrom(authentication);
+  public static boolean isAuthenticationClassSupported(Class<?> authenticationClass) {
+    return UsernamePasswordAuthenticationToken.class.isAssignableFrom(authenticationClass) ||
+        OwncloudAuthentication.class.isAssignableFrom(authenticationClass);
+  }
+
+  /**
+   * Checks, if the given Authentication Class is expected invalid
+   * to be used by the Owncloud AuthenticationProvider Implementations.
+   * @param authenticationClass Class of the Authentication Object
+   * @return is the Authentication Object be not servicable by the Owncloud AuthenticationProvider Implementation
+   */
+  public static boolean isAuthenticationClassNotSupported(Class<?> authenticationClass) {
+    return !isAuthenticationClassSupported(authenticationClass);
   }
 
 }

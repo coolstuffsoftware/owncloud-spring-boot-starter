@@ -23,28 +23,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.test.context.ActiveProfiles;
 
+import software.coolstuff.springframework.owncloud.service.impl.AbstractOwncloudUserDetailsServiceWithAuthorityAppenderTest;
+
 @ActiveProfiles("REST-AUTHORITY-APPENDER-USER-SERVICE")
 public class OwncloudUserDetailsServiceWithAuthorityAppenderRestTest extends AbstractOwncloudUserDetailsServiceWithAuthorityAppenderTest implements OwncloudRestServiceTest {
 
   @Autowired
   private UserDetailsService userDetailsService;
 
-  @Autowired
-  private OwncloudRestProperties properties;
-
   @Override
   public OwncloudRestService owncloudService() {
     return (OwncloudRestService) userDetailsService;
-  }
-
-  @Override
-  public String getBasicAuthorizationHeader() {
-    return getSecurityContextBasicAuthorizationHeader();
-  }
-
-  @Override
-  public OwncloudRestProperties getProperties() {
-    return properties;
   }
 
   @Override

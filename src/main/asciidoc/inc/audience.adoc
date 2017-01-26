@@ -3,8 +3,7 @@ This Project aims at Developers who wants to enable their SpringBoot Application
 
 It's planned to implement the following additional API's of Owncloud:
 
-* http://docs.spring.io/spring-security/site/docs/4.2.1.RELEASE/reference/htmlsingle/#remember-me[Remember-Me Services]
 * Subadmins (via https://doc.owncloud.org/server/latest/admin_manual/configuration_user/user_provisioning_api.html[User Provisioning API])
 * App Management (via https://doc.owncloud.org/server/latest/admin_manual/configuration_user/user_provisioning_api.html[User Provisioning API])
-* WebDAV (via http://jackrabbit.apache.org/jcr/index.html[Apache Jackrabbit WebDAV Library])
+* WebDAV (via http://github.org/lookfirst/sardine[Sardine WebDAV Library])
 * https://doc.owncloud.org/server/latest/developer_manual/core/ocs-share-api.html[OCS Share API]

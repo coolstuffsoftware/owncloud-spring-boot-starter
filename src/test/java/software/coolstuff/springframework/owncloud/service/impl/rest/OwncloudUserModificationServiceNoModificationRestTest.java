@@ -34,22 +34,9 @@ public class OwncloudUserModificationServiceNoModificationRestTest extends Abstr
   @Autowired
   private OwncloudUserModificationService userModificationService;
 
-  @Autowired
-  private OwncloudRestProperties properties;
-
   @Override
   public final OwncloudRestService owncloudService() {
     return (OwncloudRestService) userModificationService;
-  }
-
-  @Override
-  public String getBasicAuthorizationHeader() {
-    return null;
-  }
-
-  @Override
-  public OwncloudRestProperties getProperties() {
-    return properties;
   }
 
   @Test(expected = AccessDeniedException.class)

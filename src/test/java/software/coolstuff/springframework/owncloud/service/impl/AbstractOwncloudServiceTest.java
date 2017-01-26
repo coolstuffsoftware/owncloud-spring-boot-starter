@@ -156,7 +156,6 @@ public abstract class AbstractOwncloudServiceTest {
   }
 
   private ResponseActions prepareRestRequest(RestRequest request) throws MalformedURLException {
-    OwncloudRestServiceTest restTest = (OwncloudRestServiceTest) this;
     MockRestServiceServer server = this.server;
     if (request.getServer() != null) {
       server = request.getServer();
@@ -167,7 +166,8 @@ public abstract class AbstractOwncloudServiceTest {
     if (StringUtils.isNotBlank(request.getBasicAuthentication())) {
       responseActions.andExpect(header(HttpHeaders.AUTHORIZATION, request.getBasicAuthentication()));
     } else {
-      responseActions.andExpect(header(HttpHeaders.AUTHORIZATION, restTest.getBasicAuthorizationHeader()));
+      Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+      responseActions.andExpect(header(HttpHeaders.AUTHORIZATION, "Basic " + Base64.getEncoder().encodeToString((authentication.getName() + ":" + authentication.getCredentials()).getBytes())));
     }
     return responseActions;
   }

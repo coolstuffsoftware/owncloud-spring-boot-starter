@@ -15,22 +15,21 @@
    along with this program; if not, write to the Free Software Foundation,
    Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 */
-package software.coolstuff.springframework.owncloud.service.impl.rest;
+package software.coolstuff.springframework.owncloud.service.impl;
 
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.client.RestClientTest;
 import org.springframework.context.ApplicationContext;
-import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
 import software.coolstuff.springframework.owncloud.config.WithOwncloudMockUser;
-import software.coolstuff.springframework.owncloud.service.impl.AbstractOwncloudServiceTest;
+import software.coolstuff.springframework.owncloud.service.api.OwncloudGrantedAuthoritiesMapper;
 
-@RestClientTest(OwncloudRestUserDetailsService.class)
-public abstract class AbstractOwncloudUserDetailsServiceWithAuthorityMapperTest extends AbstractOwncloudServiceTest {
+@RestClientTest(UserDetailsService.class)
+public abstract class AbstractOwncloudUserDetailsServiceWithAuthorityAppenderTest extends AbstractOwncloudServiceTest {
 
   @Autowired
   private UserDetailsService userDetailsService;
@@ -40,13 +39,13 @@ public abstract class AbstractOwncloudUserDetailsServiceWithAuthorityMapperTest 
 
   @Test
   public void testGrantedAuthorityAppenderLoadedByApplicationContext() throws Exception {
-    applicationContext.getBean(GrantedAuthoritiesMapper.class);
+    applicationContext.getBean(OwncloudGrantedAuthoritiesMapper.class);
   }
 
   @Test
   @WithOwncloudMockUser(username = "test1", password = "password")
-  public void testMappedGroups() throws Exception {
-    prepareTestMappedGroups("user1", true, "user1@example.com", "Mr. User 1", "group1", "group2");
+  public void testAppendedGroups() throws Exception {
+    prepareTestAppendedGroups("user1", true, "user1@example.com", "Mr. User 1", "group1", "group2");
 
     UserDetails userDetails = userDetailsService.loadUserByUsername("user1");
     verifyServer();
@@ -54,9 +53,9 @@ public abstract class AbstractOwncloudUserDetailsServiceWithAuthorityMapperTest 
     Assert.assertNotNull(userDetails);
     Assert.assertEquals("user1", userDetails.getUsername());
 
-    checkAuthorities(userDetails.getUsername(), userDetails.getAuthorities(), "group1", "group2");
+    checkAuthorities(userDetails.getUsername(), userDetails.getAuthorities(), "group1", "group2", "group98", "group99");
   }
 
-  protected void prepareTestMappedGroups(String username, boolean enable, String email, String displayName, String... groups) throws Exception {}
+  protected void prepareTestAppendedGroups(String username, boolean enable, String email, String displayName, String... groups) throws Exception {}
 
 }

@@ -31,6 +31,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -47,8 +48,8 @@ import software.coolstuff.springframework.owncloud.service.AbstractOwncloudUserM
 import software.coolstuff.springframework.owncloud.service.api.OwncloudUserModificationService;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudUserQueryService;
 
-public abstract class AbstractOwncloudUserModificationServiceRestTest
-    extends AbstractOwncloudUserModificationServiceTest implements OwncloudRestServiceTest {
+@ActiveProfiles("REST-USER-SERVICE")
+public class OwncloudUserModificationServiceRestTest extends AbstractOwncloudUserModificationServiceTest implements OwncloudRestServiceTest {
 
   @Autowired
   private OwncloudUserModificationService userModificationService;
@@ -56,17 +57,9 @@ public abstract class AbstractOwncloudUserModificationServiceRestTest
   @Autowired
   private OwncloudUserQueryService userQueryService;
 
-  @Autowired
-  private OwncloudRestProperties properties;
-
   @Override
   public final OwncloudRestService owncloudService() {
     return (OwncloudRestService) userModificationService;
-  }
-
-  @Override
-  public OwncloudRestProperties getProperties() {
-    return properties;
   }
 
   @Override

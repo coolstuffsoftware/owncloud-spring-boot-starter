@@ -26,11 +26,8 @@ import software.coolstuff.springframework.owncloud.service.impl.OwncloudProperti
 
 @Data
 @EqualsAndHashCode(callSuper = true)
-@ToString(exclude = "password")
+@ToString(callSuper = true)
 @ConfigurationProperties("owncloud")
 class OwncloudRestProperties extends OwncloudProperties {
-
-  private String username;
-  private String password;
 
 }

@@ -19,21 +19,25 @@ package software.coolstuff.springframework.owncloud.service.impl.rest;
 
 import static org.springframework.http.HttpMethod.GET;
 
+import java.io.IOException;
+import java.net.MalformedURLException;
+
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.test.context.support.WithAnonymousUser;
+import org.springframework.test.context.ActiveProfiles;
 
 import software.coolstuff.springframework.owncloud.config.WithOwncloudMockUser;
+import software.coolstuff.springframework.owncloud.exception.OwncloudInvalidAuthenticationObjectException;
 import software.coolstuff.springframework.owncloud.service.AbstractOwncloudUserDetailsServiceTest;
 
-public abstract class AbstractOwncloudUserDetailsServiceRestTest extends AbstractOwncloudUserDetailsServiceTest implements OwncloudRestServiceTest {
+@ActiveProfiles("REST-USER-SERVICE")
+public class OwncloudUserDetailsServiceRestTest extends AbstractOwncloudUserDetailsServiceTest implements OwncloudRestServiceTest {
 
   @Autowired
   private UserDetailsService userDetailsService;
-
-  @Autowired
-  private OwncloudRestProperties properties;
 
   @Override
   public final OwncloudRestService owncloudService() {
@@ -43,11 +47,6 @@ public abstract class AbstractOwncloudUserDetailsServiceRestTest extends Abstrac
   @Override
   protected Class<? extends UserDetailsService> getUserDetailsServiceClass() {
     return OwncloudRestUserDetailsService.class;
-  }
-
-  @Override
-  public OwncloudRestProperties getProperties() {
-    return properties;
   }
 
   @Override
@@ -101,6 +100,21 @@ public abstract class AbstractOwncloudUserDetailsServiceRestTest extends Abstrac
             .url("/cloud/users/user1")
             .build(),
         999);
+
+    userDetailsService.loadUserByUsername("user1");
+  }
+
+  @Test(expected = OwncloudInvalidAuthenticationObjectException.class)
+  @WithAnonymousUser
+  public void testUserDetails_WrongAuthenticationObject() throws MalformedURLException, IOException {
+    respondUser(
+        RestRequest.builder()
+            .method(GET)
+            .url("/cloud/user/user1")
+            .build(),
+        true,
+        "user1@example.com",
+        "Mr. User 1");
 
     userDetailsService.loadUserByUsername("user1");
   }
