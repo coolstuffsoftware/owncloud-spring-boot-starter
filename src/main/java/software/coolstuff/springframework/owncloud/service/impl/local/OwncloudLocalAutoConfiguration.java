@@ -73,7 +73,7 @@ class OwncloudLocalAutoConfiguration {
 
   @Bean
   @ConditionalOnMissingBean(OwncloudResourceService.class)
-  @ConditionalOnProperty("owncloud.webdav.location")
+  @ConditionalOnProperty("owncloud.resource-service.location")
   public OwncloudResourceService owncloudResourceService() {
     return new OwncloudLocalResourceServiceImpl();
   }

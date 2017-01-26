@@ -1,4 +1,4 @@
 owncloud:
   location: classpath:/owncloud.xml
-  webdav:
+  resource-service:
     location: ./target

@@ -56,12 +56,12 @@ public abstract class OwncloudProperties {
   }
 
   /**
-   * Common WebDAV Properties
+   * Common Resource Service Properties
    *
    * @author mufasa1976
    */
   @Data
-  public static class Webdav {
+  public static class ResourceServiceProperties {
 
   }
 
@@ -98,6 +98,6 @@ public abstract class OwncloudProperties {
   /**
    * WebDAV common Properties
    */
-  private Webdav webdav = new Webdav();
+  private ResourceServiceProperties resourceService = new ResourceServiceProperties();
 
 }

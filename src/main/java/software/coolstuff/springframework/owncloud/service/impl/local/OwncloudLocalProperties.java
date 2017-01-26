@@ -33,12 +33,12 @@ class OwncloudLocalProperties extends OwncloudProperties {
   @Data
   @EqualsAndHashCode(callSuper = true)
   @ToString(callSuper = true)
-  static class Webdav extends OwncloudProperties.Webdav {
+  static class ResourceServiceProperties extends OwncloudProperties.ResourceServiceProperties {
 
     private String location;
 
   }
 
-  private Webdav webdav = new Webdav();
+  private ResourceServiceProperties resourceService = new ResourceServiceProperties();
 
 }

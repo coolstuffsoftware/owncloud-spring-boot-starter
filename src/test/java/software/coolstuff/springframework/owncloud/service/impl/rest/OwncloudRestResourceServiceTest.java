@@ -17,17 +17,13 @@
 */
 package software.coolstuff.springframework.owncloud.service.impl.rest;
 
+import org.junit.Ignore;
 import org.springframework.test.context.ActiveProfiles;
 
 import software.coolstuff.springframework.owncloud.service.AbstractOwncloudResourceServiceTest;
-import software.coolstuff.springframework.owncloud.service.api.OwncloudResourceService;
 
 @ActiveProfiles("REST-RESOURCE-SERVICE")
+@Ignore
 public class OwncloudRestResourceServiceTest extends AbstractOwncloudResourceServiceTest {
-
-  @Override
-  protected Class<? extends OwncloudResourceService> getExpectedImplementationClass() {
-    return OwncloudRestResourceServiceImpl.class;
-  }
 
 }

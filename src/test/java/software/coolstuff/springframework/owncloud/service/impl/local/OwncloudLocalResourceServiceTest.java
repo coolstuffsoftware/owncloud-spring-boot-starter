@@ -17,6 +17,11 @@
 */
 package software.coolstuff.springframework.owncloud.service.impl.local;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 
 import software.coolstuff.springframework.owncloud.service.AbstractOwncloudResourceServiceTest;
@@ -25,8 +30,14 @@ import software.coolstuff.springframework.owncloud.service.api.OwncloudResourceS
 @ActiveProfiles("LOCAL-RESOURCE-SERVICE")
 public class OwncloudLocalResourceServiceTest extends AbstractOwncloudResourceServiceTest {
 
-  @Override
-  protected Class<? extends OwncloudResourceService> getExpectedImplementationClass() {
-    return OwncloudLocalResourceServiceImpl.class;
+  @Autowired
+  private OwncloudResourceService resourceService;
+
+  @Test
+  @WithMockUser(username = "user", password = "s3cr3t")
+  public void testImplementationClass() {
+    assertThat(resourceService).isNotNull();
+    assertThat(resourceService.getClass()).isAssignableFrom(OwncloudLocalResourceServiceImpl.class);
   }
+
 }

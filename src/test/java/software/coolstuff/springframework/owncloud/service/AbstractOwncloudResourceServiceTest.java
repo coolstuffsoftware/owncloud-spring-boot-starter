@@ -17,11 +17,7 @@
 */
 package software.coolstuff.springframework.owncloud.service;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.SpringBootDependencyInjectionTestExecutionListener;
 import org.springframework.boot.test.autoconfigure.web.client.RestClientTest;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -37,7 +33,7 @@ import software.coolstuff.springframework.owncloud.service.api.OwncloudResourceS
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(
-    webEnvironment = WebEnvironment.NONE,
+    webEnvironment = WebEnvironment.MOCK,
     classes = {
         VelocityConfiguration.class
     })
@@ -50,14 +46,4 @@ import software.coolstuff.springframework.owncloud.service.api.OwncloudResourceS
 @RestClientTest(OwncloudResourceService.class)
 public abstract class AbstractOwncloudResourceServiceTest {
 
-  @Autowired
-  private OwncloudResourceService resourceService;
-
-  @Test
-  public void testImplementationClass() {
-    assertThat(resourceService).isNotNull();
-    assertThat(resourceService.getClass()).isAssignableFrom(getExpectedImplementationClass());
-  }
-
-  protected abstract Class<? extends OwncloudResourceService> getExpectedImplementationClass();
 }

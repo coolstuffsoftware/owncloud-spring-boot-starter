@@ -41,7 +41,7 @@ class OwncloudLocalResourceServiceImpl implements OwncloudResourceService {
 
   @PostConstruct
   protected void afterPropertiesSet() throws Exception {
-    OwncloudLocalProperties.Webdav webdavProperties = properties.getWebdav();
+    OwncloudLocalProperties.ResourceServiceProperties webdavProperties = properties.getResourceService();
     Validate.notNull(webdavProperties);
     Validate.notEmpty(webdavProperties.getLocation());
 
