@@ -18,7 +18,6 @@
 package software.coolstuff.springframework.owncloud.service.impl.rest;
 
 import java.net.MalformedURLException;
-import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Base64;
@@ -87,41 +86,18 @@ abstract class AbstractOwncloudRestServiceImpl implements OwncloudRestService {
 
   @PostConstruct
   public void afterPropertiesSet() throws Exception {
-    URL locationURL = checkAndConvertLocation(properties.getLocation());
+    URL locationURL = OwncloudRestUtils.checkAndConvertLocation(properties.getLocation());
     configureRestTemplate(locationURL);
   }
 
-  protected URL checkAndConvertLocation(String location) throws MalformedURLException {
-    Validate.notBlank(location);
-    log.debug("Check if the Location {} is a valid URL", location);
-    URL url = new URL(location);
-    log.debug("Check if the Location {} either start with http or https", location);
-    if (isNotValidProtocol(url)) {
-      final String exceptionMessage = "Invalid Protocol " + url.getProtocol() + ". Only http or https are allowed";
-      log.error(exceptionMessage);
-      throw new IllegalArgumentException(exceptionMessage);
-    }
-    return url;
-  }
-
-  private boolean isNotValidProtocol(URL url) {
-    return !StringUtils.equals(url.getProtocol(), "http") && !StringUtils.equals(url.getProtocol(), "https");
-  }
-
   private void configureRestTemplate(URL locationURL) throws MalformedURLException {
-    log.debug("Extract the Root-URI from URL {}", locationURL);
-    String rootURI = locationURL.toString();
-    if (StringUtils.isBlank(locationURL.getPath()) || "/".equals(locationURL.getPath())) {
-      rootURI = URI.create(locationURL.toString() + DEFAULT_PATH).toString();
-    }
-
-    log.info("Create the REST-Template to URI {} to be used with the authenticated User", rootURI);
+    String rootUri = OwncloudRestUtils.appendDefaultPath(locationURL, DEFAULT_PATH);
+    log.info("Create the REST-Template to URI {} to be used with the authenticated User", rootUri);
     restTemplate = restTemplateBuilder
         .additionalMessageConverters(new FormHttpMessageConverter())
         .errorHandler(responseErrorHandler)
-        .rootUri(rootURI)
+        .rootUri(rootUri)
         .build();
-
     Validate.notNull(restTemplate);
   }
 

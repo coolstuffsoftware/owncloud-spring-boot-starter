@@ -18,6 +18,7 @@
 package software.coolstuff.springframework.owncloud.service.impl.local;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
@@ -54,55 +55,31 @@ class OwncloudLocalResourceServiceImpl implements OwncloudResourceService {
   }
 
   @Override
-  public List<OwncloudResource> list() throws OwncloudResourceException {
+  public List<OwncloudResource> listRoot() throws OwncloudResourceException {
     // TODO Auto-generated method stub
     return null;
   }
 
   @Override
-  public List<OwncloudResource> list(OwncloudResource relativeTo) throws OwncloudResourceException {
+  public List<OwncloudResource> list(Path relativeTo) throws OwncloudResourceException {
     // TODO Auto-generated method stub
     return null;
   }
 
   @Override
-  public OwncloudModifiableResource createFile(String fileName) throws OwncloudResourceException {
+  public OwncloudModifiableResource createFile(Path file) throws OwncloudResourceException {
     // TODO Auto-generated method stub
     return null;
   }
 
   @Override
-  public OwncloudModifiableResource createFile(String fileName, OwncloudResource relativeTo) throws OwncloudResourceException {
+  public OwncloudResource createDirectory(Path directory) throws OwncloudResourceException {
     // TODO Auto-generated method stub
     return null;
   }
 
   @Override
-  public OwncloudResource createDirectory(String directoryName) throws OwncloudResourceException {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  @Override
-  public OwncloudResource createDirectory(String directoryName, OwncloudResource relativeTo) throws OwncloudResourceException {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  @Override
-  public void delete(OwncloudResource owncloudResource) throws OwncloudResourceException {
-    // TODO Auto-generated method stub
-
-  }
-
-  @Override
-  public void move(OwncloudResource source, OwncloudResource destination) throws OwncloudResourceException {
-    // TODO Auto-generated method stub
-
-  }
-
-  @Override
-  public void copy(OwncloudResource source, OwncloudResource destination) throws OwncloudResourceException {
+  public void delete(Path resource) throws OwncloudResourceException {
     // TODO Auto-generated method stub
 
   }

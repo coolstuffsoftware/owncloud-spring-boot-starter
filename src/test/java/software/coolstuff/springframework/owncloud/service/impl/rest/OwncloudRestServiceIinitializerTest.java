@@ -4,30 +4,16 @@ import java.net.MalformedURLException;
 
 import org.junit.Test;
 
-import software.coolstuff.springframework.owncloud.service.impl.rest.AbstractOwncloudRestServiceImpl;
-
 public class OwncloudRestServiceIinitializerTest {
 
   @Test(expected = MalformedURLException.class)
   public void testInvalidURL() throws Exception {
-    AbstractOwncloudRestServiceImpl restService = new AbstractOwncloudRestServiceImpl(null) {
-      @Override
-      public void afterPropertiesSet() throws Exception {
-        checkAndConvertLocation("totally wrong URL");
-      }
-    };
-    restService.afterPropertiesSet();
+    OwncloudRestUtils.checkAndConvertLocation("totally wrong URL");
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void testWrongProtocol() throws Exception {
-    AbstractOwncloudRestServiceImpl restService = new AbstractOwncloudRestServiceImpl(null) {
-      @Override
-      public void afterPropertiesSet() throws Exception {
-        checkAndConvertLocation("ftp://illegal.protocol.com");
-      }
-    };
-    restService.afterPropertiesSet();
+    OwncloudRestUtils.checkAndConvertLocation("ftp://illegal.protocol.com");
   }
 
 }

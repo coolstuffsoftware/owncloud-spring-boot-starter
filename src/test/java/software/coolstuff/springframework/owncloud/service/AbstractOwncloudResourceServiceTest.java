@@ -17,6 +17,7 @@
 */
 package software.coolstuff.springframework.owncloud.service;
 
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.autoconfigure.SpringBootDependencyInjectionTestExecutionListener;
 import org.springframework.boot.test.autoconfigure.web.client.RestClientTest;
@@ -45,5 +46,8 @@ import software.coolstuff.springframework.owncloud.service.api.OwncloudResourceS
 @ComponentScan
 @RestClientTest(OwncloudResourceService.class)
 public abstract class AbstractOwncloudResourceServiceTest {
+
+  @Test
+  public void testOK() {}
 
 }

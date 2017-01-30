@@ -17,13 +17,21 @@
 */
 package software.coolstuff.springframework.owncloud.service.impl.rest;
 
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Validate;
+
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
+@Slf4j
 final class OwncloudRestUtils {
 
   public static List<String> convertGroups(Ocs.Groups ocsGroups) {
@@ -40,4 +48,28 @@ final class OwncloudRestUtils {
     return ocsGroups != null && ocsGroups.getData() != null && ocsGroups.getData().getGroups() != null;
   }
 
+  public static URL checkAndConvertLocation(String location) throws MalformedURLException {
+    Validate.notBlank(location);
+    log.debug("Check if the Location {} is a valid URL", location);
+    URL url = new URL(location);
+    log.debug("Check if the Location {} either start with http or https", location);
+    if (isNotValidProtocol(url)) {
+      final String exceptionMessage = "Invalid Protocol " + url.getProtocol() + ". Only http or https are allowed";
+      log.error(exceptionMessage);
+      throw new IllegalArgumentException(exceptionMessage);
+    }
+    return url;
+  }
+
+  private static boolean isNotValidProtocol(URL url) {
+    return !StringUtils.equals(url.getProtocol(), "http") && !StringUtils.equals(url.getProtocol(), "https");
+  }
+
+  public static String appendDefaultPath(URL locationURL, String defaultPath) {
+    log.debug("Extract the Root-URI from URL {}", locationURL);
+    if (StringUtils.isBlank(locationURL.getPath()) || "/".equals(locationURL.getPath())) {
+      return URI.create(locationURL.toString() + defaultPath).toString();
+    }
+    return locationURL.toString();
+  }
 }

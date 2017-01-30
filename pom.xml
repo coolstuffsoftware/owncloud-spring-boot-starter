@@ -57,7 +57,6 @@
     <sardine.version>5.7</sardine.version>
     <xmlunit.version>2.3.0</xmlunit.version>
     <lombok-plugin.version>1.16.12.0</lombok-plugin.version>
-    <javaee.version>7.0</javaee.version>
 
     <!-- Javadoc Properties -->
     <author>false</author>
@@ -117,13 +116,6 @@
         <artifactId>xmlunit-core</artifactId>
         <version>${xmlunit.version}</version>
       </dependency>
-
-      <!-- JavaEE API -->
-      <dependency>
-        <groupId>javax</groupId>
-        <artifactId>javaee-api</artifactId>
-        <version>${javaee.version}</version>
-      </dependency>
     </dependencies>
   </dependencyManagement>
 
@@ -131,6 +123,10 @@
     <!-- Compile Dependencies -->
 
     <!-- Spring Boot -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-web</artifactId>
+    </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-security</artifactId>
@@ -225,13 +221,6 @@
     <dependency>
       <groupId>org.apache.velocity</groupId>
       <artifactId>velocity-tools</artifactId>
-      <scope>test</scope>
-    </dependency>
-
-    <!-- JavaEE API -->
-    <dependency>
-      <groupId>javax</groupId>
-      <artifactId>javaee-api</artifactId>
       <scope>test</scope>
     </dependency>
   </dependencies>
