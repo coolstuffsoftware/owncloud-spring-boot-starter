@@ -26,14 +26,12 @@ import java.util.Optional;
 import com.github.sardine.DavResource;
 
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import software.coolstuff.springframework.owncloud.exception.resource.OwncloudUnmodifiableResourceException;
 import software.coolstuff.springframework.owncloud.model.OwncloudModifiableResource;
 
 /**
  * @author mufasa1976
  */
-@RequiredArgsConstructor
 class OwncloudRestResource implements OwncloudModifiableResource {
 
   private final URI href;
@@ -42,6 +40,12 @@ class OwncloudRestResource implements OwncloudModifiableResource {
   @Getter
   private final boolean directory;
   private DavResource davResource;
+
+  public OwncloudRestResource(final URI href, boolean directory) {
+    this.href = href;
+    this.lastModifiedAt = this.creationAt = new Date();
+    this.directory = directory;
+  }
 
   public OwncloudRestResource(final DavResource davResource) {
     this.href = davResource.getHref();
