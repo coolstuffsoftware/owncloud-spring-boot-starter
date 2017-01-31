@@ -17,41 +17,72 @@
 */
 package software.coolstuff.springframework.owncloud.service.impl.rest;
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
 import java.util.Date;
-import java.util.Optional;
+
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
+import org.springframework.web.client.RestOperations;
 
 import com.github.sardine.DavResource;
 
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Data;
 import lombok.Getter;
+import lombok.Setter;
+import lombok.val;
 import software.coolstuff.springframework.owncloud.exception.resource.OwncloudUnmodifiableResourceException;
 import software.coolstuff.springframework.owncloud.model.OwncloudModifiableResource;
 
 /**
  * @author mufasa1976
  */
+@Data
+@Setter(AccessLevel.PACKAGE)
 class OwncloudRestResource implements OwncloudModifiableResource {
 
+  private static final long DEFAULT_LENGTH = -1;
+
+  @Getter(AccessLevel.NONE)
+  private final RestOperations restOperations;
+  @Getter(AccessLevel.NONE)
   private final URI href;
+  private final boolean directory;
   private final Date creationAt;
   private Date lastModifiedAt;
-  @Getter
-  private final boolean directory;
-  private DavResource davResource;
+  private MediaType mediaType;
+  private String eTag;
+  private long contentLength = DEFAULT_LENGTH;
+  @Getter(AccessLevel.NONE)
+  private byte[] content;
 
-  public OwncloudRestResource(final URI href, boolean directory) {
+  @Builder
+  public OwncloudRestResource(
+      final RestOperations restOperations,
+      final URI href,
+      boolean directory,
+      final MediaType mediaType,
+      final String eTag) {
+    this.restOperations = restOperations;
     this.href = href;
     this.lastModifiedAt = this.creationAt = new Date();
     this.directory = directory;
+    this.mediaType = mediaType;
+    this.eTag = eTag;
   }
 
-  public OwncloudRestResource(final DavResource davResource) {
+  public OwncloudRestResource(final RestOperations restOperations, final DavResource davResource) {
+    this.restOperations = restOperations;
     this.href = davResource.getHref();
-    this.lastModifiedAt = this.creationAt = new Date();
+    this.creationAt = davResource.getCreation();
+    this.lastModifiedAt = davResource.getModified();
     this.directory = davResource.isDirectory();
-    this.davResource = davResource;
+    this.contentLength = davResource.getContentLength();
   }
 
   @Override
@@ -68,41 +99,22 @@ class OwncloudRestResource implements OwncloudModifiableResource {
   }
 
   @Override
-  public Date getCreationAt() {
-    return Optional.ofNullable(davResource)
-        .map(davResource -> davResource.getCreation())
-        .orElse(creationAt);
-  }
-
-  @Override
-  public Date getLastModifiedAt() {
-    return Optional.ofNullable(davResource)
-        .map(davResourcde -> davResource.getModified())
-        .orElse(lastModifiedAt);
-  }
-
-  @Override
-  public String getContentType() {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  @Override
-  public String getETag() {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  @Override
   public Long getContentLength() {
-    // TODO Auto-generated method stub
-    return null;
+    if (content == null) {
+      return contentLength;
+    }
+    return Long.valueOf(content.length);
   }
 
   @Override
   public InputStream getContent() {
-    // TODO Auto-generated method stub
-    return null;
+    if (content != null) {
+      return new ByteArrayInputStream(content);
+    }
+    return restOperations.execute(href, HttpMethod.GET, request -> {
+      val headers = request.getHeaders();
+      headers.add(HttpHeaders.ACCEPT, MediaType.APPLICATION_OCTET_STREAM_VALUE);
+    }, response -> response.getBody());
   }
 
   @Override

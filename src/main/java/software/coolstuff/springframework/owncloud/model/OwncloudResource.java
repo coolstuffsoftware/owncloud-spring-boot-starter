@@ -20,6 +20,8 @@ package software.coolstuff.springframework.owncloud.model;
 import java.io.InputStream;
 import java.util.Date;
 
+import org.springframework.http.MediaType;
+
 import software.coolstuff.springframework.owncloud.exception.resource.OwncloudUnmodifiableResourceException;
 
 /**
@@ -38,7 +40,7 @@ public interface OwncloudResource {
 
   Date getLastModifiedAt();
 
-  String getContentType();
+  MediaType getMediaType();
 
   String getETag();
 

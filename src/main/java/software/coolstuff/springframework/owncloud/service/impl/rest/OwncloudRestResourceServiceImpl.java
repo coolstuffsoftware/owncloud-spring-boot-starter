@@ -25,6 +25,7 @@ import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.http.converter.ByteArrayHttpMessageConverter;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.client.RestOperations;
@@ -51,6 +52,7 @@ class OwncloudRestResourceServiceImpl implements OwncloudResourceService {
     String rootUri = getUri(locationURL, authentication.getName());
     restOperations = builder
         .basicAuthorization(authentication.getName(), (String) authentication.getCredentials())
+        .messageConverters(new ByteArrayHttpMessageConverter())
         .rootUri(rootUri)
         .build();
   }
