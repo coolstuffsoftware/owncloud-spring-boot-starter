@@ -1,5 +1,5 @@
 /*
-   Copyright (C) 2017 by the original Authors.
+   Copyright (C) 2016 by the original Authors.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -15,16 +15,13 @@
    along with this program; if not, write to the Free Software Foundation,
    Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 */
-package software.coolstuff.springframework.owncloud.model;
-
-import java.io.OutputStream;
+package software.coolstuff.springframework.owncloud.exception.resource;
 
 /**
  * @author mufasa1976
- *
  */
-public interface OwncloudModifiableResource extends OwncloudResource {
+public class OwncloudNoDirectoryResourceException extends OwncloudResourceException {
 
-  OutputStream getOutputStream();
+  private static final long serialVersionUID = -5042081519645219826L;
 
 }

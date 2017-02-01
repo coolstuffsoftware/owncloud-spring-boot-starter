@@ -17,6 +17,8 @@
 */
 package software.coolstuff.springframework.owncloud.service.impl.rest;
 
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Path;
@@ -31,7 +33,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.client.RestOperations;
 
 import software.coolstuff.springframework.owncloud.exception.resource.OwncloudResourceException;
-import software.coolstuff.springframework.owncloud.model.OwncloudModifiableResource;
+import software.coolstuff.springframework.owncloud.model.OwncloudFileResource;
 import software.coolstuff.springframework.owncloud.model.OwncloudResource;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudResourceService;
 
@@ -81,7 +83,13 @@ class OwncloudRestResourceServiceImpl implements OwncloudResourceService {
   }
 
   @Override
-  public OwncloudModifiableResource createFile(Path file) throws OwncloudResourceException {
+  public OwncloudResource find(Path path) throws OwncloudResourceException {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public OwncloudFileResource createFile(Path file) throws OwncloudResourceException {
     // TODO Auto-generated method stub
     return null;
   }
@@ -93,9 +101,21 @@ class OwncloudRestResourceServiceImpl implements OwncloudResourceService {
   }
 
   @Override
-  public void delete(Path resource) throws OwncloudResourceException {
+  public void delete(OwncloudResource resource) throws OwncloudResourceException {
     // TODO Auto-generated method stub
 
+  }
+
+  @Override
+  public InputStream getInputStream(OwncloudFileResource resource) throws OwncloudResourceException {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public OutputStream getOutputStream(OwncloudFileResource resource) throws OwncloudResourceException {
+    // TODO Auto-generated method stub
+    return null;
   }
 
 }

@@ -1,5 +1,5 @@
 /*
-   Copyright (C) 2017 by the original Authors.
+   Copyright (C) 2016 by the original Authors.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -17,24 +17,16 @@
 */
 package software.coolstuff.springframework.owncloud.model;
 
-import java.util.Date;
-
-import org.springframework.http.MediaType;
-
 /**
  * @author mufasa1976
- *
  */
-public interface OwncloudResource {
+public interface OwncloudFileResource extends OwncloudResource {
 
-  boolean isDirectory();
+  @Override
+  default boolean isDirectory() {
+    return false;
+  }
 
-  Date getCreationAt();
-
-  Date getLastModifiedAt();
-
-  MediaType getMediaType();
-
-  String getETag();
+  Long getContentLength();
 
 }

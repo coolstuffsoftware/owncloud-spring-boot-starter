@@ -18,6 +18,8 @@
 package software.coolstuff.springframework.owncloud.service.impl.local;
 
 import java.io.File;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.Path;
 import java.util.List;
 
@@ -28,7 +30,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import lombok.val;
 import software.coolstuff.springframework.owncloud.exception.resource.OwncloudResourceException;
-import software.coolstuff.springframework.owncloud.model.OwncloudModifiableResource;
+import software.coolstuff.springframework.owncloud.model.OwncloudFileResource;
 import software.coolstuff.springframework.owncloud.model.OwncloudResource;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudResourceService;
 
@@ -67,7 +69,13 @@ class OwncloudLocalResourceServiceImpl implements OwncloudResourceService {
   }
 
   @Override
-  public OwncloudModifiableResource createFile(Path file) throws OwncloudResourceException {
+  public OwncloudResource find(Path path) throws OwncloudResourceException {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public OwncloudFileResource createFile(Path file) throws OwncloudResourceException {
     // TODO Auto-generated method stub
     return null;
   }
@@ -79,9 +87,20 @@ class OwncloudLocalResourceServiceImpl implements OwncloudResourceService {
   }
 
   @Override
-  public void delete(Path resource) throws OwncloudResourceException {
+  public void delete(OwncloudResource resource) throws OwncloudResourceException {
     // TODO Auto-generated method stub
+  }
 
+  @Override
+  public InputStream getInputStream(OwncloudFileResource resource) throws OwncloudResourceException {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public OutputStream getOutputStream(OwncloudFileResource resource) throws OwncloudResourceException {
+    // TODO Auto-generated method stub
+    return null;
   }
 
 }

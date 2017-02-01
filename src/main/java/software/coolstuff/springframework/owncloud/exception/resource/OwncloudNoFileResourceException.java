@@ -1,5 +1,5 @@
 /*
-   Copyright (C) 2017 by the original Authors.
+   Copyright (C) 2016 by the original Authors.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -19,10 +19,9 @@ package software.coolstuff.springframework.owncloud.exception.resource;
 
 /**
  * @author mufasa1976
- *
  */
-public class OwncloudUnmodifiableResourceException extends OwncloudResourceException {
+public class OwncloudNoFileResourceException extends OwncloudResourceException {
 
-  private static final long serialVersionUID = -1351150510187017683L;
+  private static final long serialVersionUID = 1065113115546100775L;
 
 }

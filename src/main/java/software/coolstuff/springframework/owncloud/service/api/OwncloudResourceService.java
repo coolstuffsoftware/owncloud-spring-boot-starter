@@ -17,11 +17,13 @@
 */
 package software.coolstuff.springframework.owncloud.service.api;
 
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.Path;
 import java.util.List;
 
 import software.coolstuff.springframework.owncloud.exception.resource.OwncloudResourceException;
-import software.coolstuff.springframework.owncloud.model.OwncloudModifiableResource;
+import software.coolstuff.springframework.owncloud.model.OwncloudFileResource;
 import software.coolstuff.springframework.owncloud.model.OwncloudResource;
 
 /**
@@ -34,10 +36,16 @@ public interface OwncloudResourceService {
 
   List<OwncloudResource> list(Path relativeTo) throws OwncloudResourceException;
 
-  OwncloudModifiableResource createFile(Path file) throws OwncloudResourceException;
+  OwncloudResource find(Path path) throws OwncloudResourceException;
+
+  OwncloudFileResource createFile(Path file) throws OwncloudResourceException;
 
   OwncloudResource createDirectory(Path directory) throws OwncloudResourceException;
 
-  void delete(Path resource) throws OwncloudResourceException;
+  void delete(OwncloudResource resource) throws OwncloudResourceException;
+
+  InputStream getInputStream(OwncloudFileResource resource) throws OwncloudResourceException;
+
+  OutputStream getOutputStream(OwncloudFileResource resource) throws OwncloudResourceException;
 
 }
