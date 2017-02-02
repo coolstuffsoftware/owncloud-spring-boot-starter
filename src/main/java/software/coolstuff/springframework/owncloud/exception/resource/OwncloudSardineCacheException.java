@@ -1,5 +1,5 @@
 /*
-   Copyright (C) 2016 by the original Authors.
+   Copyright (C) 2017 by the original Authors.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -17,15 +17,24 @@
 */
 package software.coolstuff.springframework.owncloud.exception.resource;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.ResponseStatus;
-
 /**
  * @author mufasa1976
+ *
  */
-@ResponseStatus(code = HttpStatus.UNSUPPORTED_MEDIA_TYPE, reason = "No Directory Resource")
-public class OwncloudNoDirectoryResourceException extends OwncloudResourceException {
+public class OwncloudSardineCacheException extends OwncloudResourceException {
 
-  private static final long serialVersionUID = -5042081519645219826L;
+  private static final long serialVersionUID = 7315914423085998513L;
+
+  public OwncloudSardineCacheException(String message) {
+    super(message);
+  }
+
+  public OwncloudSardineCacheException(Throwable throwable) {
+    super(throwable);
+  }
+
+  public OwncloudSardineCacheException(String message, Throwable throwable) {
+    super(message, throwable);
+  }
 
 }

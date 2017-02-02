@@ -20,7 +20,7 @@ package software.coolstuff.springframework.owncloud.service.impl.local;
 import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.file.Path;
+import java.net.URI;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
@@ -63,25 +63,25 @@ class OwncloudLocalResourceServiceImpl implements OwncloudResourceService {
   }
 
   @Override
-  public List<OwncloudResource> list(Path relativeTo) throws OwncloudResourceException {
+  public List<OwncloudResource> list(URI relativeTo) throws OwncloudResourceException {
     // TODO Auto-generated method stub
     return null;
   }
 
   @Override
-  public OwncloudResource find(Path path) throws OwncloudResourceException {
+  public OwncloudResource find(URI path) throws OwncloudResourceException {
     // TODO Auto-generated method stub
     return null;
   }
 
   @Override
-  public OwncloudFileResource createFile(Path file) throws OwncloudResourceException {
+  public OwncloudFileResource createFile(URI file) throws OwncloudResourceException {
     // TODO Auto-generated method stub
     return null;
   }
 
   @Override
-  public OwncloudResource createDirectory(Path directory) throws OwncloudResourceException {
+  public OwncloudResource createDirectory(URI directory) throws OwncloudResourceException {
     // TODO Auto-generated method stub
     return null;
   }

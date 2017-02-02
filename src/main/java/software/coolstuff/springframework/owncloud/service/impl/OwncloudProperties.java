@@ -17,6 +17,8 @@
 */
 package software.coolstuff.springframework.owncloud.service.impl;
 
+import java.util.concurrent.TimeUnit;
+
 import lombok.Data;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudUserModificationService;
 
@@ -62,6 +64,22 @@ public abstract class OwncloudProperties {
    */
   @Data
   public static class ResourceServiceProperties {
+
+    @Data
+    public static class CacheProperties {
+      private Integer concurrencyLevel;
+      private Long expireAfterAccess;
+      private TimeUnit expireAfterAccessTimeUnit = TimeUnit.SECONDS;
+      private Long expireAfterWrite;
+      private TimeUnit expireAfterWriteTimeUnit = TimeUnit.SECONDS;
+      private Integer initialCapacity;
+      private Long maximumSize;
+      private Long maximumWeight;
+      private Long refreshAfterWrite;
+      private TimeUnit refreshAfterWriteTimeUnit;
+    }
+
+    private CacheProperties cache = new CacheProperties();
 
   }
 

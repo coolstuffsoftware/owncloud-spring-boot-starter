@@ -17,6 +17,7 @@
 */
 package software.coolstuff.springframework.owncloud.model;
 
+import java.net.URI;
 import java.util.Date;
 
 import org.springframework.http.MediaType;
@@ -27,9 +28,12 @@ import org.springframework.http.MediaType;
  */
 public interface OwncloudResource {
 
-  boolean isDirectory();
+  String UNIX_DIRECTORY_VALUE = "httpd/unix-directory";
+  MediaType UNIX_DIRECTORY = new MediaType(UNIX_DIRECTORY_VALUE);
 
-  Date getCreationAt();
+  URI getHref();
+
+  String getName();
 
   Date getLastModifiedAt();
 

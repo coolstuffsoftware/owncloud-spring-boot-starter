@@ -28,7 +28,6 @@ import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.converter.xml.MappingJackson2XmlHttpMessageConverter;
-import org.springframework.web.context.annotation.SessionScope;
 
 import software.coolstuff.springframework.owncloud.service.api.OwncloudResourceService;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudUserModificationService;
@@ -68,7 +67,6 @@ class OwncloudRestAutoConfiguration {
   }
 
   @Bean
-  @SessionScope
   public OwncloudResourceService owncloudResourceService(
       RestTemplateBuilder builder,
       OwncloudRestProperties properties) throws MalformedURLException {

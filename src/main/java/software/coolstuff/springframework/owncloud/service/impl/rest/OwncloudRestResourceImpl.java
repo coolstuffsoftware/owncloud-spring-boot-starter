@@ -1,5 +1,5 @@
 /*
-   Copyright (C) 2016 by the original Authors.
+   Copyright (C) 2017 by the original Authors.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -15,17 +15,34 @@
    along with this program; if not, write to the Free Software Foundation,
    Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 */
-package software.coolstuff.springframework.owncloud.exception.resource;
+package software.coolstuff.springframework.owncloud.service.impl.rest;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.ResponseStatus;
+import java.net.URI;
+import java.util.Date;
+
+import org.springframework.http.MediaType;
+
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.Setter;
+import software.coolstuff.springframework.owncloud.model.OwncloudResource;
 
 /**
  * @author mufasa1976
+ *
  */
-@ResponseStatus(code = HttpStatus.UNSUPPORTED_MEDIA_TYPE, reason = "No Directory Resource")
-public class OwncloudNoDirectoryResourceException extends OwncloudResourceException {
+@Data
+@AllArgsConstructor
+@Setter(AccessLevel.PACKAGE)
+@Builder
+class OwncloudRestResourceImpl implements OwncloudResource {
 
-  private static final long serialVersionUID = -5042081519645219826L;
+  private URI href;
+  private String name;
+  private Date lastModifiedAt;
+  private MediaType mediaType;
+  private String eTag;
 
 }

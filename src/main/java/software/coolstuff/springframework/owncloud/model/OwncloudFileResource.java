@@ -22,11 +22,6 @@ package software.coolstuff.springframework.owncloud.model;
  */
 public interface OwncloudFileResource extends OwncloudResource {
 
-  @Override
-  default boolean isDirectory() {
-    return false;
-  }
-
   Long getContentLength();
 
 }

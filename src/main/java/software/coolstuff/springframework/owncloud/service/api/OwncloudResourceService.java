@@ -19,7 +19,7 @@ package software.coolstuff.springframework.owncloud.service.api;
 
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.file.Path;
+import java.net.URI;
 import java.util.List;
 
 import software.coolstuff.springframework.owncloud.exception.resource.OwncloudResourceException;
@@ -34,13 +34,13 @@ public interface OwncloudResourceService {
 
   List<OwncloudResource> listRoot() throws OwncloudResourceException;
 
-  List<OwncloudResource> list(Path relativeTo) throws OwncloudResourceException;
+  List<OwncloudResource> list(URI relativeTo) throws OwncloudResourceException;
 
-  OwncloudResource find(Path path) throws OwncloudResourceException;
+  OwncloudResource find(URI path) throws OwncloudResourceException;
 
-  OwncloudFileResource createFile(Path file) throws OwncloudResourceException;
+  OwncloudFileResource createFile(URI file) throws OwncloudResourceException;
 
-  OwncloudResource createDirectory(Path directory) throws OwncloudResourceException;
+  OwncloudResource createDirectory(URI directory) throws OwncloudResourceException;
 
   void delete(OwncloudResource resource) throws OwncloudResourceException;
 

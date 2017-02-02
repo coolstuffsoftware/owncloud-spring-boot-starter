@@ -25,4 +25,19 @@ public abstract class OwncloudResourceException extends Exception {
 
   private static final long serialVersionUID = -7920186346125342618L;
 
+  protected OwncloudResourceException() {
+    super();
+  }
+
+  protected OwncloudResourceException(String message) {
+    super(message);
+  }
+
+  protected OwncloudResourceException(Throwable throwable) {
+    super(throwable);
+  }
+
+  protected OwncloudResourceException(String message, Throwable throwable) {
+    super(message, throwable);
+  }
 }

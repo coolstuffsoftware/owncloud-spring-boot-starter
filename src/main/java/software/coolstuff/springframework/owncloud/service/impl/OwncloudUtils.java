@@ -43,7 +43,7 @@ public final class OwncloudUtils {
     if (owncloudResource == null) {
       return null;
     }
-    if (owncloudResource.isDirectory() || !ClassUtils.isAssignable(owncloudResource.getClass(), OwncloudFileResource.class)) {
+    if (!ClassUtils.isAssignable(owncloudResource.getClass(), OwncloudFileResource.class)) {
       throw new OwncloudNoFileResourceException();
     }
     return (OwncloudFileResource) owncloudResource;
