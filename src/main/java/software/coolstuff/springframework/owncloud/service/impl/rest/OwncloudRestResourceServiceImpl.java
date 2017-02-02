@@ -196,8 +196,7 @@ class OwncloudRestResourceServiceImpl implements OwncloudResourceService {
 
   @Override
   public OwncloudResource find(URI path) throws OwncloudResourceException {
-    // TODO Auto-generated method stub
-    return null;
+    return list(path).get(0);
   }
 
   @Override
