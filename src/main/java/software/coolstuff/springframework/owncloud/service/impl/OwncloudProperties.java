@@ -79,7 +79,23 @@ public abstract class OwncloudProperties {
       private TimeUnit refreshAfterWriteTimeUnit;
     }
 
+    /**
+     * Cache Properties for the Sardine-Cache.
+     *
+     * The Sardine-Cache will be used to store any created Sardine-Implementation
+     * to the authenticated User, which has requested the Sardine-Interface.
+     */
     private CacheProperties cache = new CacheProperties();
+
+    /**
+     * Should the root of the Search-Path (on list-Methods) be renamed to .
+     */
+    private boolean renameSearchPathToDot = true;
+
+    /**
+     * Add .. to the List of returned OwncloudResources (on list-Methods)
+     */
+    private boolean addRelativeDownPath = true;
 
   }
 

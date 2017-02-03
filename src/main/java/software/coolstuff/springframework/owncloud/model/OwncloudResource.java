@@ -28,9 +28,6 @@ import org.springframework.http.MediaType;
  */
 public interface OwncloudResource {
 
-  String UNIX_DIRECTORY_VALUE = "httpd/unix-directory";
-  MediaType UNIX_DIRECTORY = new MediaType(UNIX_DIRECTORY_VALUE);
-
   URI getHref();
 
   String getName();
