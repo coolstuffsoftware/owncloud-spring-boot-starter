@@ -17,8 +17,6 @@
 */
 package software.coolstuff.springframework.owncloud.service.impl;
 
-import java.util.concurrent.TimeUnit;
-
 import lombok.Data;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudUserModificationService;
 
@@ -64,33 +62,6 @@ public abstract class OwncloudProperties {
    */
   @Data
   public static class ResourceServiceProperties {
-
-    @Data
-    public static class CacheProperties {
-      private Integer concurrencyLevel;
-      private Long expireAfterAccess;
-      private TimeUnit expireAfterAccessTimeUnit = TimeUnit.SECONDS;
-      private Long expireAfterWrite;
-      private TimeUnit expireAfterWriteTimeUnit = TimeUnit.SECONDS;
-      private Integer initialCapacity;
-      private Long maximumSize;
-      private Long maximumWeight;
-      private Long refreshAfterWrite;
-      private TimeUnit refreshAfterWriteTimeUnit;
-    }
-
-    /**
-     * Cache Properties for the Sardine-Cache.
-     *
-     * The Sardine-Cache will be used to store any created Sardine-Implementation
-     * to the authenticated User, which has requested the Sardine-Interface.
-     */
-    private CacheProperties cache = new CacheProperties();
-
-    /**
-     * Should the root of the Search-Path (on list-Methods) be renamed to .
-     */
-    private boolean renameSearchPathToDot = true;
 
     /**
      * Add .. to the List of returned OwncloudResources (on list-Methods)

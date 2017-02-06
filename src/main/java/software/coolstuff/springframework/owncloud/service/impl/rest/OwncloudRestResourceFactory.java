@@ -18,32 +18,38 @@
 package software.coolstuff.springframework.owncloud.service.impl.rest;
 
 import java.net.URI;
-import java.util.Date;
+import java.util.List;
 
-import org.springframework.http.MediaType;
+import com.github.sardine.DavResource;
 
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.Setter;
-import software.coolstuff.springframework.owncloud.model.OwncloudResource;
 
 /**
  * @author mufasa1976
- *
  */
-@Data
-@AllArgsConstructor
-@Setter(AccessLevel.PACKAGE)
-@Builder
-class OwncloudRestResourceImpl implements OwncloudResource, OwncloudNameModifyingRestResource {
+public interface OwncloudRestResourceFactory {
 
-  private URI href;
-  @Setter(AccessLevel.PUBLIC)
-  private String name;
-  private Date lastModifiedAt;
-  private MediaType mediaType;
-  private String eTag;
+  String getRestTemplateRootUri();
+
+  URI resolveAsDirectoryURI(URI relativeTo, String username);
+
+  URI resolveAsFileURI(URI relativeTo, String username);
+
+  boolean isNotResolvedToRootURI(URI path, String username);
+
+  boolean isResolvedToRootURI(URI path, String username);
+
+  OwncloudNameModifyingRestResource createResourceFrom(DavResource davResource, OwncloudResourceConversionProperties conversionProperties);
+
+  List<OwncloudNameModifyingRestResource> createResourcesFrom(List<DavResource> davResources, OwncloudResourceConversionProperties conversionProperties);
+
+  @Data
+  @Builder
+  public class OwncloudResourceConversionProperties {
+    private final String username;
+    private URI searchPath;
+    private String renamedSearchPath;
+  }
 
 }

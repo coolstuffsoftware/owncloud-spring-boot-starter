@@ -67,9 +67,13 @@ class OwncloudRestAutoConfiguration {
   }
 
   @Bean
-  public OwncloudResourceService owncloudResourceService(
-      RestTemplateBuilder builder,
-      OwncloudRestProperties properties) throws MalformedURLException {
-    return new OwncloudRestResourceServiceImpl(builder, properties);
+  public OwncloudRestResourceFactory owncloudRestResourceFactory(OwncloudRestProperties properties) throws MalformedURLException {
+    return new OwncloudRestResourceFactoryImpl(properties);
+  }
+
+  @Bean
+  public OwncloudResourceService owncloudResourceService(RestTemplateBuilder builder, OwncloudRestProperties properties) throws MalformedURLException {
+    OwncloudRestResourceFactory resourceFactory = owncloudRestResourceFactory(properties);
+    return new OwncloudRestResourceServiceImpl(builder, resourceFactory, properties);
   }
 }

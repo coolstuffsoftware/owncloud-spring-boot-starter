@@ -17,6 +17,10 @@
 */
 package software.coolstuff.springframework.owncloud.service.impl.rest;
 
+import java.util.concurrent.TimeUnit;
+
+import javax.validation.constraints.NotNull;
+
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import lombok.Data;
@@ -29,5 +33,32 @@ import software.coolstuff.springframework.owncloud.service.impl.OwncloudProperti
 @ToString(callSuper = true)
 @ConfigurationProperties("owncloud")
 class OwncloudRestProperties extends OwncloudProperties {
+
+  @Data
+  @EqualsAndHashCode(callSuper = true)
+  @ToString(callSuper = true)
+  static class ResourceServiceProperties extends OwncloudProperties.ResourceServiceProperties {
+
+    @Data
+    public static class CacheProperties {
+      @NotNull
+      private Class<? extends SardineCacheLoader> cacheLoaderClass = SardineCacheLoader.class;
+      private Integer concurrencyLevel;
+      private Long expireAfterAccess;
+      private TimeUnit expireAfterAccessTimeUnit = TimeUnit.SECONDS;
+      private Long expireAfterWrite;
+      private TimeUnit expireAfterWriteTimeUnit = TimeUnit.SECONDS;
+      private Integer initialCapacity;
+      private Long maximumSize;
+      private Long maximumWeight;
+      private Long refreshAfterWrite;
+      private TimeUnit refreshAfterWriteTimeUnit;
+    }
+
+    private CacheProperties cache = new CacheProperties();
+
+  }
+
+  private ResourceServiceProperties resourceService = new ResourceServiceProperties();
 
 }
