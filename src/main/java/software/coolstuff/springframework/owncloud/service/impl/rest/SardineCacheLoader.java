@@ -34,7 +34,7 @@ import software.coolstuff.springframework.owncloud.service.impl.OwncloudUtils;
  * @author mufasa1976
  */
 @Slf4j
-class SardineCacheLoader extends CacheLoader<String, Sardine> {
+public class SardineCacheLoader extends CacheLoader<String, Sardine> {
 
   @Override
   public Sardine load(String username) throws Exception {

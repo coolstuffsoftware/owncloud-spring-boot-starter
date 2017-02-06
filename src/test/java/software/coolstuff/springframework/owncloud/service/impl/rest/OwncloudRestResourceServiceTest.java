@@ -17,11 +17,37 @@
 */
 package software.coolstuff.springframework.owncloud.service.impl.rest;
 
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
 
+import com.github.sardine.Sardine;
+
 import software.coolstuff.springframework.owncloud.service.AbstractOwncloudResourceServiceTest;
+import software.coolstuff.springframework.owncloud.service.api.OwncloudResourceService;
 
 @ActiveProfiles("REST-RESOURCE-SERVICE")
 public class OwncloudRestResourceServiceTest extends AbstractOwncloudResourceServiceTest {
 
+  @MockBean
+  private SardineCacheLoader sardineCacheLoader;
+
+  @Mock
+  private Sardine sardine;
+
+  @Autowired
+  private OwncloudResourceService resourceService;
+
+  @Before
+  public void setUp() throws Exception {
+    Mockito.when(sardineCacheLoader.createInstance(Mockito.anyString(), Mockito.anyString()))
+        .thenReturn(sardine);
+  }
+
+  @Test
+  public void testXXX() throws Exception {}
 }

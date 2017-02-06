@@ -19,8 +19,6 @@ package software.coolstuff.springframework.owncloud.service.impl.rest;
 
 import java.util.concurrent.TimeUnit;
 
-import javax.validation.constraints.NotNull;
-
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import lombok.Data;
@@ -41,8 +39,6 @@ class OwncloudRestProperties extends OwncloudProperties {
 
     @Data
     public static class CacheProperties {
-      @NotNull
-      private Class<? extends SardineCacheLoader> cacheLoaderClass = SardineCacheLoader.class;
       private Integer concurrencyLevel;
       private Long expireAfterAccess;
       private TimeUnit expireAfterAccessTimeUnit = TimeUnit.SECONDS;

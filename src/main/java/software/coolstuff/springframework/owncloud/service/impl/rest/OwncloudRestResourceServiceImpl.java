@@ -26,8 +26,10 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.annotation.PostConstruct;
+
 import org.apache.http.HttpStatus;
-import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.converter.ByteArrayHttpMessageConverter;
@@ -62,7 +64,11 @@ class OwncloudRestResourceServiceImpl implements OwncloudResourceService {
   private final RestOperations restOperations;
   private final OwncloudRestProperties properties;
   private final OwncloudRestResourceFactory resourceFactory;
-  private final LoadingCache<String, Sardine> sardineCache;
+
+  private LoadingCache<String, Sardine> sardineCache;
+
+  @Autowired
+  private SardineCacheLoader sardineCacheLoader;
 
   public OwncloudRestResourceServiceImpl(
       final RestTemplateBuilder builder,
@@ -74,10 +80,14 @@ class OwncloudRestResourceServiceImpl implements OwncloudResourceService {
         .messageConverters(new ByteArrayHttpMessageConverter())
         .rootUri(resourceFactory.getRestTemplateRootUri())
         .build();
-    sardineCache = buildCache(properties);
   }
 
-  protected LoadingCache<String, Sardine> buildCache(final OwncloudRestProperties properties) {
+  @PostConstruct
+  public void afterPropertiesSet() throws Exception {
+    sardineCache = buildCache();
+  }
+
+  protected LoadingCache<String, Sardine> buildCache() {
     CacheProperties cacheProperties = properties.getResourceService().getCache();
     CacheBuilder<Object, Object> builder = CacheBuilder.newBuilder();
     if (cacheProperties.getConcurrencyLevel() != null) {
@@ -101,11 +111,7 @@ class OwncloudRestResourceServiceImpl implements OwncloudResourceService {
     if (cacheProperties.getRefreshAfterWrite() != null && cacheProperties.getRefreshAfterWriteTimeUnit() != null) {
       builder.refreshAfterWrite(cacheProperties.getRefreshAfterWrite(), cacheProperties.getRefreshAfterWriteTimeUnit());
     }
-    return builder.build(createSardineCacheLoader(cacheProperties));
-  }
-
-  private SardineCacheLoader createSardineCacheLoader(OwncloudRestProperties.ResourceServiceProperties.CacheProperties cacheProperties) {
-    return BeanUtils.instantiateClass(cacheProperties.getCacheLoaderClass(), SardineCacheLoader.class);
+    return builder.build(sardineCacheLoader);
   }
 
   @Override

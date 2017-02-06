@@ -76,4 +76,10 @@ class OwncloudRestAutoConfiguration {
     OwncloudRestResourceFactory resourceFactory = owncloudRestResourceFactory(properties);
     return new OwncloudRestResourceServiceImpl(builder, resourceFactory, properties);
   }
+
+  @Bean
+  @ConditionalOnMissingBean(SardineCacheLoader.class)
+  public SardineCacheLoader sardineCacheLoader() {
+    return new SardineCacheLoader();
+  }
 }
