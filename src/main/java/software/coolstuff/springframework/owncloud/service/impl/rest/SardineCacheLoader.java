@@ -22,7 +22,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import com.github.sardine.Sardine;
-import com.github.sardine.impl.SardineException;
 import com.github.sardine.impl.SardineImpl;
 import com.google.common.cache.CacheLoader;
 
@@ -47,11 +46,7 @@ public class SardineCacheLoader extends CacheLoader<String, Sardine> {
       log.error(errorMessage);
       throw new IllegalStateException(errorMessage);
     }
-    return createInstance(authentication.getName(), (String) authentication.getCredentials());
-  }
-
-  protected Sardine createInstance(String username, String password) throws SardineException {
-    return new SardineImpl(username, password);
+    return new SardineImpl(authentication.getName(), (String) authentication.getCredentials());
   }
 
 }

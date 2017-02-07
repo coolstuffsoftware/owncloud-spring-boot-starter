@@ -1,10 +1,10 @@
 package software.coolstuff.springframework.owncloud.service.impl;
 
+import java.util.Optional;
+
 import org.apache.commons.lang3.ClassUtils;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-
-import com.google.common.base.Optional;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -66,9 +66,9 @@ public final class OwncloudUtils {
    */
   public static boolean isDirectory(OwncloudResource owncloudResource) {
     return UNIX_DIRECTORY.equals(
-        Optional.fromNullable(owncloudResource)
-            .transform(resource -> resource.getMediaType().toString())
-            .orNull());
+        Optional.ofNullable(owncloudResource)
+            .map(resource -> resource.getMediaType().toString())
+            .orElse(null));
   }
 
   public static MediaType getDirectoryMediaType() {

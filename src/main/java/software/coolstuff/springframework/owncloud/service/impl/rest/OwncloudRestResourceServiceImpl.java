@@ -25,6 +25,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import javax.annotation.PostConstruct;
 
@@ -41,7 +42,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 import com.github.sardine.DavResource;
 import com.github.sardine.Sardine;
 import com.github.sardine.impl.SardineException;
-import com.google.common.base.Optional;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.LoadingCache;
 
@@ -164,9 +164,9 @@ class OwncloudRestResourceServiceImpl implements OwncloudResourceService {
   }
 
   private void throwMappedSardineException(URI uri, SardineException sardineException) throws OwncloudResourceException {
-    int statusCode = Optional.fromNullable(sardineException)
-        .transform(exception -> exception.getStatusCode())
-        .or(HttpStatus.SC_OK);
+    int statusCode = Optional.ofNullable(sardineException)
+        .map(exception -> exception.getStatusCode())
+        .orElse(HttpStatus.SC_OK);
     switch (statusCode) {
       case HttpStatus.SC_OK:
         return;
