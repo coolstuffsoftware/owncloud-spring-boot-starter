@@ -17,6 +17,8 @@
 */
 package software.coolstuff.springframework.owncloud.service.impl.local;
 
+import java.nio.file.Path;
+
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import lombok.Data;
@@ -35,7 +37,7 @@ class OwncloudLocalProperties extends OwncloudProperties {
   @ToString(callSuper = true)
   static class ResourceServiceProperties extends OwncloudProperties.ResourceServiceProperties {
 
-    private String location;
+    private Path location;
 
   }
 

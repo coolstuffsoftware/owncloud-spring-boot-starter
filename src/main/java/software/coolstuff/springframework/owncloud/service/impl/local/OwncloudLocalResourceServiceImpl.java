@@ -21,14 +21,18 @@ import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
+import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
-import lombok.val;
 import software.coolstuff.springframework.owncloud.exception.resource.OwncloudResourceException;
 import software.coolstuff.springframework.owncloud.model.OwncloudFileResource;
 import software.coolstuff.springframework.owncloud.model.OwncloudResource;
@@ -46,9 +50,9 @@ class OwncloudLocalResourceServiceImpl implements OwncloudResourceService {
   protected void afterPropertiesSet() throws Exception {
     OwncloudLocalProperties.ResourceServiceProperties webdavProperties = properties.getResourceService();
     Validate.notNull(webdavProperties);
-    Validate.notEmpty(webdavProperties.getLocation());
+    Validate.notNull(webdavProperties.getLocation());
 
-    val location = new File(webdavProperties.getLocation());
+    File location = webdavProperties.getLocation().toFile();
     Validate.isTrue(location.exists());
     Validate.isTrue(location.isDirectory());
     Validate.isTrue(location.canRead()); // List Files within Directory
@@ -57,13 +61,34 @@ class OwncloudLocalResourceServiceImpl implements OwncloudResourceService {
   }
 
   @Override
-  public List<OwncloudResource> listRoot() throws OwncloudResourceException {
-    // TODO Auto-generated method stub
-    return null;
+  public List<OwncloudResource> list(URI relativeTo) throws OwncloudResourceException {
+    File resolvedLocation = resolveLocation(relativeTo);
+    List<OwncloudResource> resources = new ArrayList<>();
+    if (resolvedLocation.isDirectory()) {
+      for (File fileInDirectory : resolvedLocation.listFiles()) {
+        resources.add(createResourceFrom(fileInDirectory));
+      }
+    } else {
+      resources.add(createResourceFrom(resolvedLocation));
+    }
+    return resources;
   }
 
-  @Override
-  public List<OwncloudResource> list(URI relativeTo) throws OwncloudResourceException {
+  private File resolveLocation(URI relativeTo) {
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    Path location = properties.getResourceService().getLocation();
+    location = location.resolve(authentication.getName());
+    File userDirectory = location.toFile();
+    if (!userDirectory.exists()) {
+      userDirectory.mkdirs();
+    }
+    if (relativeTo == null || StringUtils.isBlank(relativeTo.getPath())) {
+      return userDirectory;
+    }
+    return location.resolve(relativeTo.getPath()).toFile();
+  }
+
+  private OwncloudResource createResourceFrom(File resolvedLocation) {
     // TODO Auto-generated method stub
     return null;
   }

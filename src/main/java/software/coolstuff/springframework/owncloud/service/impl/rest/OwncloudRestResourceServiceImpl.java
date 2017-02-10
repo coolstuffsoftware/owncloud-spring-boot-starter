@@ -115,11 +115,6 @@ class OwncloudRestResourceServiceImpl implements OwncloudResourceService {
   }
 
   @Override
-  public List<OwncloudResource> listRoot() throws OwncloudResourceException {
-    return list(null);
-  }
-
-  @Override
   public List<OwncloudResource> list(URI relativeTo) throws OwncloudResourceException {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     URI searchPath = resourceFactory.resolveAsDirectoryURI(relativeTo, authentication.getName());

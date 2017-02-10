@@ -32,7 +32,9 @@ import software.coolstuff.springframework.owncloud.model.OwncloudResource;
  */
 public interface OwncloudResourceService {
 
-  List<OwncloudResource> listRoot() throws OwncloudResourceException;
+  default List<OwncloudResource> listRoot() throws OwncloudResourceException {
+    return list(null);
+  }
 
   List<OwncloudResource> list(URI relativeTo) throws OwncloudResourceException;
 
