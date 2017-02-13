@@ -125,7 +125,9 @@ class OwncloudRestResourceServiceImpl implements OwncloudResourceService {
         .build();
     List<OwncloudResource> resources = new ArrayList<>();
     try {
-      resources.addAll(resourceFactory.createResourcesFrom(getSardine().list(searchPath.toString()), conversionProperties));
+      Sardine sardine = getSardine();
+      List<DavResource> davResources = sardine.list(searchPath.toString());
+      resources.addAll(resourceFactory.createResourcesFrom(davResources, conversionProperties));
       if (properties.getResourceService().isAddRelativeDownPath() && resourceFactory.isNotResolvedToRootURI(searchPath, authentication.getName())) {
         searchPath = URI.create(
             UriComponentsBuilder.fromUri(searchPath.normalize())
@@ -137,7 +139,7 @@ class OwncloudRestResourceServiceImpl implements OwncloudResourceService {
             .renamedSearchPath("..")
             .username(authentication.getName())
             .build();
-        resources.addAll(resourceFactory.createResourcesFrom(getSardine().list(searchPath.toString(), 0), conversionProperties));
+        resources.addAll(resourceFactory.createResourcesFrom(sardine.list(searchPath.toString(), 0), conversionProperties));
       }
     } catch (SardineException e) {
       throwMappedSardineException(URI.create(searchPath.toString()), e);

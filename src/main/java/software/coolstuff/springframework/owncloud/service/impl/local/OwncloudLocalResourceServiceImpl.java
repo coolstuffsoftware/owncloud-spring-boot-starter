@@ -216,7 +216,7 @@ class OwncloudLocalResourceServiceImpl implements OwncloudResourceService {
                 .map(path -> createResourceFrom(path))
                 .collect(Collectors.toList()));
       } catch (IOException e) {
-        throw new OwncloudResourceException() {
+        throw new OwncloudResourceException(e) {
           private static final long serialVersionUID = -4406347844686894254L;
         };
       }
