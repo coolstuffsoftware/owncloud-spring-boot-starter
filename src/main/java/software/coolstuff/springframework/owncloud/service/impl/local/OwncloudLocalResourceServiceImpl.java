@@ -37,6 +37,8 @@ import software.coolstuff.springframework.owncloud.exception.resource.OwncloudRe
 import software.coolstuff.springframework.owncloud.model.OwncloudFileResource;
 import software.coolstuff.springframework.owncloud.model.OwncloudResource;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudResourceService;
+import software.coolstuff.springframework.owncloud.service.impl.local.OwncloudLocalProperties.ResourceServiceProperties;
+import software.coolstuff.springframework.owncloud.service.impl.local.OwncloudLocalProperties.ResourceServiceProperties.MessageDigestAlgorithm;
 
 /**
  * @author mufasa1976
@@ -46,18 +48,29 @@ class OwncloudLocalResourceServiceImpl implements OwncloudResourceService {
   @Autowired
   private OwncloudLocalProperties properties;
 
+  @Autowired(required = false)
+  private List<OwncloudLocalResourceFileWatcherListener> fileWatcherListeners;
+
   @PostConstruct
   protected void afterPropertiesSet() throws Exception {
     OwncloudLocalProperties.ResourceServiceProperties webdavProperties = properties.getResourceService();
     Validate.notNull(webdavProperties);
     Validate.notNull(webdavProperties.getLocation());
 
-    File location = webdavProperties.getLocation().toFile();
-    Validate.isTrue(location.exists());
-    Validate.isTrue(location.isDirectory());
-    Validate.isTrue(location.canRead()); // List Files within Directory
-    Validate.isTrue(location.canExecute()); // can change into Directory
-    Validate.isTrue(location.canWrite()); // can create or delete Files within Directory
+    Path baseLocation = webdavProperties.getLocation();
+    checkPrivileges(baseLocation);
+
+    MessageDigestAlgorithm messageDigestAlgorithm = webdavProperties.getMessageDigestAlgorithm();
+    Validate.notNull(messageDigestAlgorithm);
+  }
+
+  protected void checkPrivileges(Path baseLocation) {
+    File baseDirectory = baseLocation.toFile();
+    Validate.isTrue(baseDirectory.exists());
+    Validate.isTrue(baseDirectory.isDirectory());
+    Validate.isTrue(baseDirectory.canRead()); // List Files within Directory
+    Validate.isTrue(baseDirectory.canExecute()); // can change into Directory
+    Validate.isTrue(baseDirectory.canWrite()); // can create or delete Files within Directory
   }
 
   @Override
@@ -76,7 +89,8 @@ class OwncloudLocalResourceServiceImpl implements OwncloudResourceService {
 
   private File resolveLocation(URI relativeTo) {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-    Path location = properties.getResourceService().getLocation();
+    ResourceServiceProperties webdavProperties = properties.getResourceService();
+    Path location = webdavProperties.getLocation();
     location = location.resolve(authentication.getName());
     File userDirectory = location.toFile();
     if (!userDirectory.exists()) {
@@ -88,7 +102,7 @@ class OwncloudLocalResourceServiceImpl implements OwncloudResourceService {
     return location.resolve(relativeTo.getPath()).toFile();
   }
 
-  private OwncloudResource createResourceFrom(File resolvedLocation) {
+  private OwncloudResource createResourceFrom(File resolvedLocation) throws OwncloudResourceException {
     // TODO Auto-generated method stub
     return null;
   }

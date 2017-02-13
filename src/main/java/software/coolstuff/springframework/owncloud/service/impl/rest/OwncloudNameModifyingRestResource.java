@@ -23,7 +23,7 @@ import software.coolstuff.springframework.owncloud.model.OwncloudResource;
  * @author mufasa1976
  *
  */
-public interface OwncloudNameModifyingRestResource extends OwncloudResource {
+interface OwncloudNameModifyingRestResource extends OwncloudResource {
 
   void setName(String name);
 

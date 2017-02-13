@@ -1,5 +1,5 @@
 /*
-   Copyright (C) 2017 by the original Authors.
+   Copyright (C) 2016 by the original Authors.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -15,34 +15,15 @@
    along with this program; if not, write to the Free Software Foundation,
    Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 */
-package software.coolstuff.springframework.owncloud.service.impl.rest;
+package software.coolstuff.springframework.owncloud.service.impl.local;
 
-import java.net.URI;
-import java.util.Date;
-
-import org.springframework.http.MediaType;
-
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.Setter;
+import software.coolstuff.springframework.owncloud.model.OwncloudResource;
 
 /**
  * @author mufasa1976
- *
  */
-@Data
-@AllArgsConstructor
-@Setter(AccessLevel.PACKAGE)
-@Builder
-class OwncloudRestResourceImpl implements OwncloudNameModifyingRestResource {
+interface OwncloudNameModifyingLocalResource extends OwncloudResource {
 
-  private URI href;
-  @Setter(AccessLevel.PUBLIC)
-  private String name;
-  private Date lastModifiedAt;
-  private MediaType mediaType;
-  private String eTag;
+  void setName(String name);
 
 }

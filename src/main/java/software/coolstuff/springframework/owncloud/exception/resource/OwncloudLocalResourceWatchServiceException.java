@@ -1,5 +1,5 @@
 /*
-   Copyright (C) 2017 by the original Authors.
+   Copyright (C) 2016 by the original Authors.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -15,34 +15,25 @@
    along with this program; if not, write to the Free Software Foundation,
    Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 */
-package software.coolstuff.springframework.owncloud.service.impl.rest;
-
-import java.net.URI;
-import java.util.Date;
-
-import org.springframework.http.MediaType;
-
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.Setter;
+package software.coolstuff.springframework.owncloud.exception.resource;
 
 /**
  * @author mufasa1976
- *
  */
-@Data
-@AllArgsConstructor
-@Setter(AccessLevel.PACKAGE)
-@Builder
-class OwncloudRestResourceImpl implements OwncloudNameModifyingRestResource {
+public class OwncloudLocalResourceWatchServiceException extends RuntimeException {
 
-  private URI href;
-  @Setter(AccessLevel.PUBLIC)
-  private String name;
-  private Date lastModifiedAt;
-  private MediaType mediaType;
-  private String eTag;
+  private static final long serialVersionUID = 6589210364113987145L;
+
+  public OwncloudLocalResourceWatchServiceException(String message) {
+    super(message);
+  }
+
+  public OwncloudLocalResourceWatchServiceException(String message, Throwable cause) {
+    super(message, cause);
+  }
+
+  public OwncloudLocalResourceWatchServiceException(Throwable cause) {
+    super(cause);
+  }
 
 }

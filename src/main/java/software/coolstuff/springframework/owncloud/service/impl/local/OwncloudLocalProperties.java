@@ -18,11 +18,16 @@
 package software.coolstuff.springframework.owncloud.service.impl.local;
 
 import java.nio.file.Path;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+
+import javax.validation.constraints.NotNull;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 import software.coolstuff.springframework.owncloud.service.impl.OwncloudProperties;
 
@@ -37,7 +42,22 @@ class OwncloudLocalProperties extends OwncloudProperties {
   @ToString(callSuper = true)
   static class ResourceServiceProperties extends OwncloudProperties.ResourceServiceProperties {
 
+    @RequiredArgsConstructor
+    static enum MessageDigestAlgorithm {
+
+      MD5("MD5");
+
+      private final String algorithm;
+
+      public MessageDigest getMessageDigest() throws NoSuchAlgorithmException {
+        return MessageDigest.getInstance(this.algorithm);
+      }
+
+    }
+
     private Path location;
+    @NotNull
+    private MessageDigestAlgorithm messageDigestAlgorithm = MessageDigestAlgorithm.MD5;
 
   }
 
