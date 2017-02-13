@@ -130,7 +130,7 @@ class OwncloudRestResourceServiceImpl implements OwncloudResourceService {
   }
 
   @Override
-  public List<OwncloudResource> list(URI relativeTo) throws OwncloudResourceException {
+  public List<OwncloudResource> list(URI relativeTo) {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     URI searchPath = resolveAsDirectoryURI(relativeTo, authentication.getName());
     URI rootPath = getResolvedRootUri(authentication.getName());
@@ -281,7 +281,7 @@ class OwncloudRestResourceServiceImpl implements OwncloudResourceService {
   }
 
   @Override
-  public OwncloudResource find(URI path) throws OwncloudResourceException {
+  public OwncloudResource find(URI path) {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     URI searchPath = resolveAsDirectoryURI(path, authentication.getName());
     val conversionProperties = OwncloudResourceConversionProperties.builder()
@@ -307,30 +307,30 @@ class OwncloudRestResourceServiceImpl implements OwncloudResourceService {
   }
 
   @Override
-  public OwncloudFileResource createFile(URI file) throws OwncloudResourceException {
+  public OwncloudFileResource createFile(URI file) {
     // TODO Auto-generated method stub
     return null;
   }
 
   @Override
-  public OwncloudResource createDirectory(URI directory) throws OwncloudResourceException {
+  public OwncloudResource createDirectory(URI directory) {
     // TODO Auto-generated method stub
     return null;
   }
 
   @Override
-  public void delete(OwncloudResource resource) throws OwncloudResourceException {
+  public void delete(OwncloudResource resource) {
     // TODO Auto-generated method stub
 
   }
 
   @Override
-  public InputStream getInputStream(OwncloudFileResource resource) throws OwncloudResourceException {
+  public InputStream getInputStream(OwncloudFileResource resource) {
     return restOperations.execute(resource.getHref(), HttpMethod.GET, null, response -> response.getBody());
   }
 
   @Override
-  public OutputStream getOutputStream(OwncloudFileResource resource) throws OwncloudResourceException {
+  public OutputStream getOutputStream(OwncloudFileResource resource) {
     return new ContentOutputStream(restOperations, resource.getHref());
   }
 

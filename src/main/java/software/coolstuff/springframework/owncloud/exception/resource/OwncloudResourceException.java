@@ -21,7 +21,7 @@ package software.coolstuff.springframework.owncloud.exception.resource;
  * @author mufasa1976
  *
  */
-public abstract class OwncloudResourceException extends Exception {
+public abstract class OwncloudResourceException extends RuntimeException {
 
   private static final long serialVersionUID = -7920186346125342618L;
 

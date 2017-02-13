@@ -61,7 +61,7 @@ class OwncloudLocalProperties extends OwncloudProperties {
     @Data
     static class FileWatcherThreadProperties {
       @NotNull
-      private String name = "OwncloudLocalResourceFileWatcher";
+      private String name = "Owncloud local Resources File Watcher";
 
       @Min(Thread.MIN_PRIORITY)
       @Max(Thread.MAX_PRIORITY)

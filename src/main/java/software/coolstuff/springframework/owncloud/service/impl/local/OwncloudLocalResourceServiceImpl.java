@@ -37,6 +37,7 @@ import java.nio.file.WatchService;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.security.MessageDigest;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,6 +53,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
@@ -97,7 +99,7 @@ class OwncloudLocalResourceServiceImpl implements OwncloudResourceService {
     Validate.notNull(messageDigestAlgorithm);
     messageDigest = messageDigestAlgorithm.getMessageDigest();
 
-    fileWatcherThread = new Thread(this::run);
+    fileWatcherThread = new Thread(this::runThread);
     fileWatcherThread.setName(resourceProperties.getFileWatcherThread().getName());
     fileWatcherThread.setPriority(resourceProperties.getFileWatcherThread().getPriority());
     fileWatcherThread.start();
@@ -107,6 +109,7 @@ class OwncloudLocalResourceServiceImpl implements OwncloudResourceService {
   public void destroy() throws Exception {
     stopFileWatcherThread = true;
     if (fileWatcherThread != null && fileWatcherThread.isAlive()) {
+      log.info("Shutting down FileWatcher Thread {}", fileWatcherThread.getName());
       fileWatcherThread.join();
     }
   }
@@ -119,7 +122,8 @@ class OwncloudLocalResourceServiceImpl implements OwncloudResourceService {
     Validate.isTrue(Files.isWritable(baseLocation)); // can create or delete Files within Directory
   }
 
-  private void run() {
+  private void runThread() {
+    log.info("Starting FileWatcher Thread {}", Thread.currentThread().getName());
     ResourceServiceProperties resourceProperties = properties.getResourceService();
     try (WatchService watchService = resourceProperties.getLocation().getFileSystem().newWatchService()) {
       registerExistingDirectories(watchService);
@@ -127,6 +131,7 @@ class OwncloudLocalResourceServiceImpl implements OwncloudResourceService {
     } catch (IOException e) {
       throw new OwncloudLocalResourceWatchServiceException(e);
     }
+    log.info("FileWatcher Thread {} has been shut down", Thread.currentThread().getName());
   }
 
   private void registerExistingDirectories(WatchService watchService) {
@@ -165,7 +170,8 @@ class OwncloudLocalResourceServiceImpl implements OwncloudResourceService {
       try {
         WatchKey watchKey = watchService.poll(pollingProperties.getTimeout(), pollingProperties.getTimeUnit());
         if (watchKey != null && watchKey.isValid()) {
-          performFileChange(watchKey);
+          performFileChange(watchKey, watchService);
+          watchKey.reset();
         }
       } catch (InterruptedException e) {
         stopFileWatcherThread = true;
@@ -174,39 +180,54 @@ class OwncloudLocalResourceServiceImpl implements OwncloudResourceService {
     }
   }
 
-  private void performFileChange(WatchKey watchKey) {
+  private void performFileChange(WatchKey watchKey, WatchService watchService) {
     for (WatchEvent<?> watchEvent : watchKey.pollEvents()) {
       if (ENTRY_CREATE.equals(watchEvent.kind()) || ENTRY_MODIFY.equals(watchEvent.kind())) {
-        performNewOrChangedFile((Path) watchEvent.context());
+        performNewOrChangedFile(resolve((Path) watchKey.watchable(), (Path) watchEvent.context()), watchService);
       } else if (ENTRY_DELETE.equals(watchEvent.kind())) {
-        performRemovedFile((Path) watchEvent.context());
+        performRemovedFile(resolve((Path) watchKey.watchable(), (Path) watchEvent.context()));
       }
     }
   }
 
-  private void performNewOrChangedFile(Path path) {
-    if (Files.isDirectory(path)) {
-      if (!checksums.containsKey(path.toAbsolutePath().normalize())) {
-        checksums.put(path.toAbsolutePath().normalize(), new HashMap<>());
+  private Path resolve(Path parent, Path path) {
+    return Optional.ofNullable(parent)
+        .map(newPath -> newPath.resolve(path).normalize())
+        .orElse(path.normalize());
+  }
+
+  private void performNewOrChangedFile(Path path, WatchService watchService) {
+    try {
+      if (Files.isDirectory(path.toAbsolutePath())) {
+        if (!checksums.containsKey(path.toAbsolutePath().normalize())) {
+          path.register(watchService, ENTRY_CREATE, ENTRY_MODIFY, ENTRY_DELETE);
+          checksums.put(path.toAbsolutePath().normalize(), new HashMap<>());
+        }
+        return;
       }
-      return;
+      log.info("Calculate the Checksum of File {}", path.toAbsolutePath());
+      String checksum = createFileChecksum(path);
+      checksums.get(path.getParent().toAbsolutePath().normalize()).put(path.toAbsolutePath().normalize(), checksum);
+    } catch (Exception e) {
+      log.error(String.format("Error occured while perforing new or changed Path %s", path.toAbsolutePath()), e);
     }
-    log.info("Calculate the Checksum of File {}", path);
-    String checksum = createFileChecksum(path);
-    checksums.get(path.getParent().toAbsolutePath().normalize()).put(path.toAbsolutePath().normalize(), checksum);
   }
 
   private void performRemovedFile(Path path) {
-    if (Files.isDirectory(path)) {
-      checksums.remove(path.toAbsolutePath().normalize());
-    } else {
-      Optional.ofNullable(checksums.get(path.getParent().toAbsolutePath().normalize()))
-          .ifPresent(map -> map.remove(path.toAbsolutePath().normalize()));
+    try {
+      if (Files.isDirectory(path.toAbsolutePath())) {
+        checksums.remove(path.toAbsolutePath().normalize());
+      } else {
+        Optional.ofNullable(checksums.get(path.toAbsolutePath().normalize().getParent()))
+            .ifPresent(map -> map.remove(path.toAbsolutePath().normalize()));
+      }
+    } catch (Exception e) {
+      log.error(String.format("Error occured while perforing removed Path %s", path.toAbsolutePath()), e);
     }
   }
 
   @Override
-  public List<OwncloudResource> list(URI relativeTo) throws OwncloudResourceException {
+  public List<OwncloudResource> list(URI relativeTo) {
     Path location = resolveLocation(relativeTo);
     List<OwncloudResource> resources = new ArrayList<>();
     if (Files.isDirectory(location)) {
@@ -226,7 +247,7 @@ class OwncloudLocalResourceServiceImpl implements OwncloudResourceService {
     return resources;
   }
 
-  private Path resolveLocation(URI relativeTo) throws OwncloudResourceException {
+  private Path resolveLocation(URI relativeTo) {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     ResourceServiceProperties webdavProperties = properties.getResourceService();
     Path location = webdavProperties.getLocation();
@@ -246,42 +267,67 @@ class OwncloudLocalResourceServiceImpl implements OwncloudResourceService {
     return location.resolve(relativeTo.getPath());
   }
 
-  private OwncloudResource createResourceFrom(Path path) {
+  private OwncloudModifyingLocalResource createResourceFrom(Path path) {
+    try {
+      ResourceServiceProperties resourceProperties = properties.getResourceService();
+      Path rootPath = resourceProperties.getLocation();
+      Path relativePath = rootPath.toAbsolutePath().relativize(path.toAbsolutePath());
+      String name = path.getFileName().toString();
+      if (Files.isSameFile(rootPath, path)) {
+        name = "/";
+      }
+      MediaType mediaType = MediaType.valueOf(Files.probeContentType(path));
+      OwncloudModifyingLocalResource resource = OwncloudLocalResourceImpl.builder()
+          .href(relativePath.toUri())
+          .name(name)
+          .mediaType(mediaType)
+          .lastModifiedAt(new Date(Files.getLastModifiedTime(path).toMillis()))
+          .build();
+      if (Files.isDirectory(path)) {
+        return resource;
+      }
+      return OwncloudLocalFileResourceImpl.fileBuilder()
+          .owncloudResource(resource)
+          .contentLength(Files.size(path))
+          .build();
+    } catch (IOException e) {
+      throw new OwncloudResourceException(e) {
+        private static final long serialVersionUID = 7484650505520708669L;
+      };
+    }
+  }
+
+  @Override
+  public OwncloudResource find(URI path) {
     // TODO Auto-generated method stub
     return null;
   }
 
   @Override
-  public OwncloudResource find(URI path) throws OwncloudResourceException {
+  public OwncloudFileResource createFile(URI file) {
     // TODO Auto-generated method stub
     return null;
   }
 
   @Override
-  public OwncloudFileResource createFile(URI file) throws OwncloudResourceException {
+  public OwncloudResource createDirectory(URI directory) {
     // TODO Auto-generated method stub
     return null;
   }
 
   @Override
-  public OwncloudResource createDirectory(URI directory) throws OwncloudResourceException {
+  public void delete(OwncloudResource resource) {
+    // TODO Auto-generated method stub
+  }
+
+  @Override
+  public InputStream getInputStream(OwncloudFileResource resource) {
     // TODO Auto-generated method stub
     return null;
   }
 
   @Override
-  public void delete(OwncloudResource resource) throws OwncloudResourceException {
-    // TODO Auto-generated method stub
-  }
-
-  @Override
-  public InputStream getInputStream(OwncloudFileResource resource) throws OwncloudResourceException {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  @Override
-  public OutputStream getOutputStream(OwncloudFileResource resource) throws OwncloudResourceException {
+  public OutputStream getOutputStream(OwncloudFileResource resource) {
     // TODO Auto-generated method stub
     return null;
   }

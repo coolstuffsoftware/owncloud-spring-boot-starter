@@ -22,7 +22,6 @@ import java.io.OutputStream;
 import java.net.URI;
 import java.util.List;
 
-import software.coolstuff.springframework.owncloud.exception.resource.OwncloudResourceException;
 import software.coolstuff.springframework.owncloud.model.OwncloudFileResource;
 import software.coolstuff.springframework.owncloud.model.OwncloudResource;
 
@@ -32,22 +31,22 @@ import software.coolstuff.springframework.owncloud.model.OwncloudResource;
  */
 public interface OwncloudResourceService {
 
-  default List<OwncloudResource> listRoot() throws OwncloudResourceException {
+  default List<OwncloudResource> listRoot() {
     return list(null);
   }
 
-  List<OwncloudResource> list(URI relativeTo) throws OwncloudResourceException;
+  List<OwncloudResource> list(URI relativeTo);
 
-  OwncloudResource find(URI path) throws OwncloudResourceException;
+  OwncloudResource find(URI path);
 
-  OwncloudFileResource createFile(URI file) throws OwncloudResourceException;
+  OwncloudFileResource createFile(URI file);
 
-  OwncloudResource createDirectory(URI directory) throws OwncloudResourceException;
+  OwncloudResource createDirectory(URI directory);
 
-  void delete(OwncloudResource resource) throws OwncloudResourceException;
+  void delete(OwncloudResource resource);
 
-  InputStream getInputStream(OwncloudFileResource resource) throws OwncloudResourceException;
+  InputStream getInputStream(OwncloudFileResource resource);
 
-  OutputStream getOutputStream(OwncloudFileResource resource) throws OwncloudResourceException;
+  OutputStream getOutputStream(OwncloudFileResource resource);
 
 }
