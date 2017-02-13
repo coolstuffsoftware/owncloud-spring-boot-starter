@@ -211,9 +211,10 @@ class OwncloudLocalResourceServiceImpl implements OwncloudResourceService {
     List<OwncloudResource> resources = new ArrayList<>();
     if (Files.isDirectory(location)) {
       try {
-        resources = Files.list(location)
-            .map(path -> createResourceFrom(path))
-            .collect(Collectors.toList());
+        resources.addAll(
+            Files.list(location)
+                .map(path -> createResourceFrom(path))
+                .collect(Collectors.toList()));
       } catch (IOException e) {
         throw new OwncloudResourceException() {
           private static final long serialVersionUID = -4406347844686894254L;
