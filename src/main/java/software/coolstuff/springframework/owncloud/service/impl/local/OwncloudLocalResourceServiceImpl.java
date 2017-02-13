@@ -42,7 +42,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
-import java.util.stream.Stream;
+import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -210,11 +210,13 @@ class OwncloudLocalResourceServiceImpl implements OwncloudResourceService {
     Path location = resolveLocation(relativeTo);
     List<OwncloudResource> resources = new ArrayList<>();
     if (Files.isDirectory(location)) {
-      try (Stream<Path> stream = Files.list(location)) {
-        stream.forEach(file -> resources.add(createResourceFrom(file)));
+      try {
+        resources = Files.list(location)
+            .map(path -> createResourceFrom(path))
+            .collect(Collectors.toList());
       } catch (IOException e) {
-        throw new OwncloudResourceException(e) {
-          private static final long serialVersionUID = -9132618099762709179L;
+        throw new OwncloudResourceException() {
+          private static final long serialVersionUID = -4406347844686894254L;
         };
       }
     } else {
