@@ -20,7 +20,10 @@ package software.coolstuff.springframework.owncloud.service.impl.local;
 import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.concurrent.TimeUnit;
 
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -55,10 +58,29 @@ class OwncloudLocalProperties extends OwncloudProperties {
 
     }
 
+    @Data
+    static class FileWatcherThreadProperties {
+      @NotNull
+      private String name = "OwncloudLocalResourceFileWatcher";
+
+      @Min(Thread.MIN_PRIORITY)
+      @Max(Thread.MAX_PRIORITY)
+      private int priority = Thread.NORM_PRIORITY;
+    }
+
+    @Data
+    static class FileWatchPollProperties {
+      @Min(1L)
+      private long timeout = 5;
+      @NotNull
+      private TimeUnit timeUnit = TimeUnit.SECONDS;
+    }
+
     private Path location;
+    private FileWatcherThreadProperties fileWatcherThread = new FileWatcherThreadProperties();
+    private FileWatchPollProperties polling = new FileWatchPollProperties();
     @NotNull
     private MessageDigestAlgorithm messageDigestAlgorithm = MessageDigestAlgorithm.MD5;
-
   }
 
   private ResourceServiceProperties resourceService = new ResourceServiceProperties();
