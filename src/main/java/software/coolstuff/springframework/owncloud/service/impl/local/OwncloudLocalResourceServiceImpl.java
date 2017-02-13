@@ -231,7 +231,7 @@ class OwncloudLocalResourceServiceImpl implements OwncloudResourceService {
     ResourceServiceProperties webdavProperties = properties.getResourceService();
     Path location = webdavProperties.getLocation();
     location = location.resolve(authentication.getName());
-    if (!Files.notExists(location)) {
+    if (Files.notExists(location)) {
       try {
         Files.createDirectories(location);
       } catch (IOException e) {
