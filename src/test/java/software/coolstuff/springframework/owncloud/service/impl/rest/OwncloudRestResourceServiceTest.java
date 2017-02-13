@@ -41,6 +41,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import com.github.sardine.DavResource;
 import com.github.sardine.Sardine;
@@ -59,9 +60,6 @@ public class OwncloudRestResourceServiceTest extends AbstractOwncloudResourceSer
 
   @MockBean
   private Sardine sardine;
-
-  @Autowired
-  private OwncloudRestResourceFactory resourceFactory;
 
   @Autowired
   private OwncloudResourceService resourceService;
@@ -96,9 +94,25 @@ public class OwncloudRestResourceServiceTest extends AbstractOwncloudResourceSer
 
   private String getResourcePath(URI searchPath) {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-    return Optional.ofNullable(resourceFactory.resolveAsDirectoryURI(searchPath, authentication.getName()))
+    return Optional.ofNullable(resolveAsDirectoryURI(searchPath, authentication.getName()))
         .map(uri -> uri.toString())
         .orElse(null);
+  }
+
+  private URI resolveAsDirectoryURI(URI relativeTo, String username) {
+    URI resolvedRootUri = getResolvedRootUri(username);
+    if (relativeTo == null || StringUtils.isBlank(relativeTo.getPath())) {
+      return resolvedRootUri;
+    }
+    return URI.create(
+        UriComponentsBuilder.fromUri(resolvedRootUri)
+            .path(relativeTo.getPath())
+            .path("/")
+            .toUriString());
+  }
+
+  private URI getResolvedRootUri(String username) {
+    return ((OwncloudRestResourceServiceImpl) resourceService).getResolvedRootUri(username);
   }
 
   private DavResource createDavResource(
@@ -108,7 +122,7 @@ public class OwncloudRestResourceServiceTest extends AbstractOwncloudResourceSer
       String displayName,
       Locale locale) throws URISyntaxException {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-    URI prefixedHref = resourceFactory.resolveAsFileURI(URI.create(href), authentication.getName());
+    URI prefixedHref = resolveAsFileURI(URI.create(href), authentication.getName());
     String contentLanguage = Optional.ofNullable(locale)
         .map(loc -> loc.getLanguage())
         .orElse(null);
@@ -121,6 +135,13 @@ public class OwncloudRestResourceServiceTest extends AbstractOwncloudResourceSer
         UUID.randomUUID().toString(),
         displayName,
         contentLanguage);
+  }
+
+  private URI resolveAsFileURI(URI relativeTo, String username) {
+    return URI.create(
+        UriComponentsBuilder.fromUri(getResolvedRootUri(username))
+            .path(relativeTo.getPath())
+            .toUriString());
   }
 
   private void compare(List<OwncloudResource> actualResources, List<DavResource> expectedResources, DavResource superResource) {
@@ -140,7 +161,7 @@ public class OwncloudRestResourceServiceTest extends AbstractOwncloudResourceSer
     OwncloudResource actualSuperResource = null;
     List<OwncloudResource> unexpectedResources = new ArrayList<>();
     for (OwncloudResource actualResource : actualResources) {
-      URI uri = resourceFactory.resolveAsFileURI(actualResource.getHref(), authentication.getName());
+      URI uri = resolveAsFileURI(actualResource.getHref(), authentication.getName());
       uri = URI.create(uri.getPath());
       if (!mappedExpectedResources.containsKey(uri)) {
         if ("..".equals(actualResource.getName())) {
@@ -157,7 +178,7 @@ public class OwncloudRestResourceServiceTest extends AbstractOwncloudResourceSer
       if (searchPath != null && searchPath.equals(actualResource.getHref())) {
         compare(actualResource, expectedResource, ".");
       } else {
-        if (resourceFactory.isResolvedToRootURI(actualResource.getHref(), authentication.getName())) {
+        if (isResolvedToRootURI(actualResource.getHref(), authentication.getName())) {
           compare(actualResource, expectedResource, ".");
         } else {
           compare(actualResource, expectedResource, null);
@@ -172,15 +193,23 @@ public class OwncloudRestResourceServiceTest extends AbstractOwncloudResourceSer
     }
   }
 
+  private boolean isResolvedToRootURI(URI path, String username) {
+    URI resolvedRootUri = getResolvedRootUri(username);
+    if (path.isAbsolute()) {
+      return resolvedRootUri.equals(path);
+    }
+    return resolvedRootUri.equals(resolveAsDirectoryURI(path, username));
+  }
+
   private void compare(OwncloudResource actualResource, DavResource expectedResource, String expectedName) {
     assertThat(expectedResource).isNotNull();
     assertThat(actualResource).isNotNull();
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     URI uri = null;
     if (OwncloudUtils.isDirectory(actualResource)) {
-      uri = resourceFactory.resolveAsDirectoryURI(actualResource.getHref(), authentication.getName());
+      uri = resolveAsDirectoryURI(actualResource.getHref(), authentication.getName());
     } else {
-      uri = resourceFactory.resolveAsFileURI(actualResource.getHref(), authentication.getName());
+      uri = resolveAsFileURI(actualResource.getHref(), authentication.getName());
     }
     uri = URI.create(uri.getPath());
     assertThat(uri).isEqualTo(expectedResource.getHref());
@@ -196,7 +225,7 @@ public class OwncloudRestResourceServiceTest extends AbstractOwncloudResourceSer
 
   private boolean isSuperUriExpected(URI searchPath) {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-    return searchPath != null && resourceFactory.isNotResolvedToRootURI(searchPath, authentication.getName()) && properties.getResourceService().isAddRelativeDownPath();
+    return searchPath != null && !isResolvedToRootURI(searchPath, authentication.getName()) && properties.getResourceService().isAddRelativeDownPath();
   }
 
   @Test

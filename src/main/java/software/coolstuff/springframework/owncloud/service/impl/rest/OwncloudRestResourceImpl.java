@@ -36,7 +36,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @Setter(AccessLevel.PACKAGE)
 @Builder
-class OwncloudRestResourceImpl implements OwncloudNameModifyingRestResource {
+class OwncloudRestResourceImpl implements OwncloudModifyingRestResource {
 
   private URI href;
   @Setter(AccessLevel.PUBLIC)
