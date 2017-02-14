@@ -26,7 +26,9 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.FileNameMap;
 import java.net.URI;
+import java.net.URLConnection;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -56,6 +58,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import lombok.Builder;
 import lombok.Getter;
@@ -66,8 +69,8 @@ import software.coolstuff.springframework.owncloud.exception.resource.OwncloudRe
 import software.coolstuff.springframework.owncloud.model.OwncloudFileResource;
 import software.coolstuff.springframework.owncloud.model.OwncloudResource;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudResourceService;
+import software.coolstuff.springframework.owncloud.service.impl.OwncloudUtils;
 import software.coolstuff.springframework.owncloud.service.impl.local.OwncloudLocalProperties.ResourceServiceProperties;
-import software.coolstuff.springframework.owncloud.service.impl.local.OwncloudLocalProperties.ResourceServiceProperties.FileWatchPollProperties;
 import software.coolstuff.springframework.owncloud.service.impl.local.OwncloudLocalProperties.ResourceServiceProperties.MessageDigestAlgorithm;
 
 /**
@@ -82,7 +85,6 @@ class OwncloudLocalResourceServiceImpl implements OwncloudResourceService {
   private MessageDigest messageDigest;
 
   private Thread fileWatcherThread;
-  private boolean stopFileWatcherThread = false;
 
   private final Map<Path, Map<Path, String>> checksums = new HashMap<>();
 
@@ -107,9 +109,9 @@ class OwncloudLocalResourceServiceImpl implements OwncloudResourceService {
 
   @PreDestroy
   public void destroy() throws Exception {
-    stopFileWatcherThread = true;
     if (fileWatcherThread != null && fileWatcherThread.isAlive()) {
       log.info("Shutting down FileWatcher Thread {}", fileWatcherThread.getName());
+      fileWatcherThread.interrupt();
       fileWatcherThread.join();
     }
   }
@@ -164,17 +166,14 @@ class OwncloudLocalResourceServiceImpl implements OwncloudResourceService {
   }
 
   private void watchDirectoryChanges(WatchService watchService) {
-    ResourceServiceProperties resourceProperties = properties.getResourceService();
-    FileWatchPollProperties pollingProperties = resourceProperties.getPolling();
-    while (!stopFileWatcherThread) {
+    for (;;) {
       try {
-        WatchKey watchKey = watchService.poll(pollingProperties.getTimeout(), pollingProperties.getTimeUnit());
+        WatchKey watchKey = watchService.take();
         if (watchKey != null && watchKey.isValid()) {
           performFileChange(watchKey, watchService);
           watchKey.reset();
         }
       } catch (InterruptedException e) {
-        stopFileWatcherThread = true;
         return;
       }
     }
@@ -271,17 +270,36 @@ class OwncloudLocalResourceServiceImpl implements OwncloudResourceService {
     try {
       ResourceServiceProperties resourceProperties = properties.getResourceService();
       Path rootPath = resourceProperties.getLocation();
+      Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+      rootPath = rootPath.resolve(authentication.getName());
       Path relativePath = rootPath.toAbsolutePath().relativize(path.toAbsolutePath());
+      URI href = URI.create(
+          UriComponentsBuilder
+              .fromPath("/")
+              .path(relativePath.toString())
+              .toUriString());
       String name = path.getFileName().toString();
       if (Files.isSameFile(rootPath, path)) {
         name = "/";
       }
-      MediaType mediaType = MediaType.valueOf(Files.probeContentType(path));
+      MediaType mediaType = MediaType.APPLICATION_OCTET_STREAM;
+      if (Files.isDirectory(path)) {
+        mediaType = OwncloudUtils.getDirectoryMediaType();
+      } else {
+        FileNameMap fileNameMap = URLConnection.getFileNameMap();
+        String contentType = fileNameMap.getContentTypeFor(path.getFileName().toString());
+        if (StringUtils.isNotBlank(contentType)) {
+          mediaType = MediaType.valueOf(contentType);
+        }
+      }
+      Date lastModifiedAt = Date.from(Files.getLastModifiedTime(path).toInstant());
+      String checksum = getChecksum(path);
       OwncloudModifyingLocalResource resource = OwncloudLocalResourceImpl.builder()
-          .href(relativePath.toUri())
+          .href(href)
           .name(name)
+          .eTag(checksum)
           .mediaType(mediaType)
-          .lastModifiedAt(new Date(Files.getLastModifiedTime(path).toMillis()))
+          .lastModifiedAt(lastModifiedAt)
           .build();
       if (Files.isDirectory(path)) {
         return resource;
@@ -295,6 +313,19 @@ class OwncloudLocalResourceServiceImpl implements OwncloudResourceService {
         private static final long serialVersionUID = 7484650505520708669L;
       };
     }
+  }
+
+  private String getChecksum(Path path) {
+    if (Files.isDirectory(path)) {
+      return getDirectoryChecksum(path);
+    }
+    return checksums
+        .get(path.getParent().toAbsolutePath().normalize())
+        .get(path.toAbsolutePath().normalize());
+  }
+
+  private String getDirectoryChecksum(Path path) {
+    return null;
   }
 
   @Override
