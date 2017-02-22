@@ -17,6 +17,10 @@
 */
 package software.coolstuff.springframework.owncloud.service.impl.local;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+
+import org.apache.commons.lang3.Validate;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import lombok.AccessLevel;
@@ -29,6 +33,14 @@ final class OwncloudLocalUtils {
     if (user == null) {
       throw new UsernameNotFoundException(username);
     }
+  }
+
+  public static void checkPrivilegesOnDirectory(Path location) {
+    Validate.isTrue(Files.exists(location));
+    Validate.isTrue(Files.isDirectory(location));
+    Validate.isTrue(Files.isReadable(location)); // List Files within Directory
+    Validate.isTrue(Files.isExecutable(location)); // can change into Directory
+    Validate.isTrue(Files.isWritable(location)); // can create or delete Files within Directory
   }
 
 }
