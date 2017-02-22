@@ -22,6 +22,7 @@ import static java.nio.file.StandardWatchEventKinds.ENTRY_DELETE;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY;
 
 import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -36,7 +37,9 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.security.MessageDigest;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import javax.annotation.PostConstruct;
@@ -69,11 +72,12 @@ class OwncloudLocalResourceChecksumServiceImpl implements OwncloudLocalResourceC
   private Thread fileWatcherThread;
   private MessageDigest messageDigest;
 
-  private final Map<Path, Map<Path, String>> checksums = new HashMap<>();
+  private final Map<Path, String> checksums = new HashMap<>();
 
-  @PreDestroy
+  @PostConstruct
   public void afterPropertiesSet() throws Exception {
     ResourceServiceProperties resourceProperties = properties.getResourceService();
+    OwncloudLocalUtils.checkPrivilegesOnDirectory(resourceProperties.getLocation());
 
     MessageDigestAlgorithm messageDigestAlgorithm = resourceProperties.getMessageDigestAlgorithm();
     Validate.notNull(messageDigestAlgorithm);
@@ -86,7 +90,7 @@ class OwncloudLocalResourceChecksumServiceImpl implements OwncloudLocalResourceC
     fileWatcherThread.start();
   }
 
-  @PostConstruct
+  @PreDestroy
   public void destroy() throws Exception {
     if (fileWatcherThread != null && fileWatcherThread.isAlive()) {
       log.info("Shutting down FileWatcher Thread {}", fileWatcherThread.getName());
@@ -115,10 +119,37 @@ class OwncloudLocalResourceChecksumServiceImpl implements OwncloudLocalResourceC
       val fileVisitor = InitializingFileVisitor.builder()
           .watchService(watchService)
           .fileDigest(this::createFileChecksum)
+          .directoryDigest(this::createDirectoryChecksum)
           .build();
       log.debug("Get the Checksums of all Files and Directories under Path {}", resourceProperties.getLocation());
       Files.walkFileTree(resourceProperties.getLocation(), fileVisitor);
       checksums.putAll(fileVisitor.getChecksums());
+    } catch (IOException e) {
+      throw new OwncloudLocalResourceWatchServiceException(e);
+    }
+  }
+
+  private String createChecksum(Path path) {
+    if (Files.isDirectory(path)) {
+      return createDirectoryChecksum(path, checksums);
+    }
+    return createFileChecksum(path);
+  }
+
+  private String createDirectoryChecksum(Path path, Map<Path, String> checksums) {
+    try (ByteArrayOutputStream stream = new ByteArrayOutputStream()) {
+      for (Entry<Path, String> checksumEntry : checksums.entrySet()) {
+        Path filePath = checksumEntry.getKey();
+        String fileChecksum = checksumEntry.getValue();
+        if (Files.isSameFile(path, filePath.getParent())) {
+          stream.write(fileChecksum.getBytes());
+        }
+      }
+      synchronized (messageDigest) {
+        messageDigest.reset();
+        messageDigest.update(stream.toByteArray());
+        return Hex.encodeHexString(messageDigest.digest());
+      }
     } catch (IOException e) {
       throw new OwncloudLocalResourceWatchServiceException(e);
     }
@@ -154,9 +185,9 @@ class OwncloudLocalResourceChecksumServiceImpl implements OwncloudLocalResourceC
   private void performFileChange(WatchKey watchKey, WatchService watchService) {
     for (WatchEvent<?> watchEvent : watchKey.pollEvents()) {
       if (ENTRY_CREATE.equals(watchEvent.kind()) || ENTRY_MODIFY.equals(watchEvent.kind())) {
-        performNewOrChangedFile(resolve((Path) watchKey.watchable(), (Path) watchEvent.context()), watchService);
+        performNewOrChangedPath(resolve((Path) watchKey.watchable(), (Path) watchEvent.context()), watchService);
       } else if (ENTRY_DELETE.equals(watchEvent.kind())) {
-        performRemovedFile(resolve((Path) watchKey.watchable(), (Path) watchEvent.context()));
+        performRemovedPath(resolve((Path) watchKey.watchable(), (Path) watchEvent.context()));
       }
     }
   }
@@ -167,34 +198,29 @@ class OwncloudLocalResourceChecksumServiceImpl implements OwncloudLocalResourceC
         .orElse(path.normalize());
   }
 
-  private void performNewOrChangedFile(Path path, WatchService watchService) {
+  private void performNewOrChangedPath(Path path, WatchService watchService) {
     try {
       if (Files.isDirectory(path.toAbsolutePath())) {
         if (!checksums.containsKey(path.toAbsolutePath().normalize())) {
           path.register(watchService, ENTRY_CREATE, ENTRY_MODIFY, ENTRY_DELETE);
-          checksums.put(path.toAbsolutePath().normalize(), new HashMap<>());
         }
-        return;
       }
       log.info("Calculate the Checksum of File {}", path.toAbsolutePath());
-      String checksum = createFileChecksum(path);
-      checksums.get(path.getParent().toAbsolutePath().normalize()).put(path.toAbsolutePath().normalize(), checksum);
+      String checksum = createChecksum(path);
+      checksums.put(path.toAbsolutePath().normalize(), checksum);
+      // TODO: change the parents
     } catch (Exception e) {
       log.error(String.format("Error occured while perforing new or changed Path %s", path.toAbsolutePath()), e);
     }
   }
 
-  private void performRemovedFile(Path path) {
-    try {
-      if (Files.isDirectory(path.toAbsolutePath())) {
-        checksums.remove(path.toAbsolutePath().normalize());
-      } else {
-        Optional.ofNullable(checksums.get(path.toAbsolutePath().normalize().getParent()))
-            .ifPresent(map -> map.remove(path.toAbsolutePath().normalize()));
-      }
-    } catch (Exception e) {
-      log.error(String.format("Error occured while perforing removed Path %s", path.toAbsolutePath()), e);
-    }
+  private void performRemovedPath(Path path) {
+    checksums.remove(path.toAbsolutePath().normalize());
+  }
+
+  @Override
+  public String getChecksum(Path path) throws OwncloudResourceException {
+    return checksums.get(path.toAbsolutePath().normalize());
   }
 
   @Slf4j
@@ -202,48 +228,36 @@ class OwncloudLocalResourceChecksumServiceImpl implements OwncloudLocalResourceC
 
     private final WatchService watchService;
     private final Function<Path, String> fileDigest;
+    private final BiFunction<Path, Map<Path, String>, String> directoryDigest;
 
     @Getter
-    private final Map<Path, Map<Path, String>> checksums = new HashMap<>();
+    private final Map<Path, String> checksums = new HashMap<>();
 
     @Builder
     private InitializingFileVisitor(
         final WatchService watchService,
-        final Function<Path, String> fileDigest) {
+        final Function<Path, String> fileDigest,
+        final BiFunction<Path, Map<Path, String>, String> directoryDigest) {
       this.watchService = watchService;
       this.fileDigest = fileDigest;
-    }
-
-    @Override
-    public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
-      dir.register(watchService, ENTRY_CREATE, ENTRY_MODIFY, ENTRY_DELETE);
-      checksums.put(dir.toAbsolutePath().normalize(), new HashMap<>());
-      return FileVisitResult.CONTINUE;
+      this.directoryDigest = directoryDigest;
     }
 
     @Override
     public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
       log.info("Calculate the Checksum of File {}", file);
       String checksum = fileDigest.apply(file);
-      checksums.get(file.getParent().toAbsolutePath().normalize()).put(file.toAbsolutePath().normalize(), checksum);
+      checksums.put(file.toAbsolutePath().normalize(), checksum);
+      return FileVisitResult.CONTINUE;
+    }
+
+    @Override
+    public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+      dir.register(watchService, ENTRY_CREATE, ENTRY_MODIFY, ENTRY_DELETE);
+      String checksum = directoryDigest.apply(dir, checksums);
+      checksums.put(dir.toAbsolutePath().normalize(), checksum);
       return FileVisitResult.CONTINUE;
     }
 
   }
-
-  @Override
-  public String getChecksum(Path path) throws OwncloudResourceException {
-    if (Files.isDirectory(path)) {
-      return getDirectoryChecksum(path);
-    }
-    return checksums
-        .get(path.getParent().toAbsolutePath().normalize())
-        .get(path.toAbsolutePath().normalize());
-  }
-
-  private String getDirectoryChecksum(Path path) {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
 }
