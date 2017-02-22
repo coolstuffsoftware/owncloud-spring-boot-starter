@@ -89,14 +89,18 @@ class OwncloudLocalUserDataServiceImpl implements OwncloudLocalUserDataService, 
     users.clear();
 
     log.debug("Read the Users as a Map");
-    for (OwncloudLocalUserData.User user : resourceData.getUsers()) {
-      users.put(user.getUsername(), user);
+    if (CollectionUtils.isNotEmpty(resourceData.getUsers())) {
+      for (OwncloudLocalUserData.User user : resourceData.getUsers()) {
+        users.put(user.getUsername(), user);
+      }
     }
 
     log.trace("Clear the Groups Map");
     groups.clear();
     log.debug("Read the Groups as a Map");
-    groups.addAll(resourceData.getGroups());
+    if (CollectionUtils.isNotEmpty(resourceData.getGroups())) {
+      groups.addAll(resourceData.getGroups());
+    }
 
     log.info("User Information from Resource Location {} successfully loaded", properties.getLocation());
   }

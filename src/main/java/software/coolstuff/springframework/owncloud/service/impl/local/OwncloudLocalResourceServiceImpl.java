@@ -231,10 +231,17 @@ class OwncloudLocalResourceServiceImpl implements OwncloudResourceService {
     List<OwncloudResource> resources = new ArrayList<>();
     if (Files.isDirectory(location)) {
       try {
-        resources.addAll(
-            Files.list(location)
-                .map(path -> createResourceFrom(path))
-                .collect(Collectors.toList()));
+        resources.add(createResourceFrom(location));
+        if (Files.isDirectory(location)) {
+          resources.addAll(
+              Files.list(location)
+                  .map(path -> createResourceFrom(path))
+                  .collect(Collectors.toList()));
+          if (isNotRootDirectory(location)) {
+            location = location.resolve("..");
+            resources.add(createResourceFrom(location));
+          }
+        }
       } catch (IOException e) {
         throw new OwncloudResourceException(e) {
           private static final long serialVersionUID = -4406347844686894254L;
@@ -247,10 +254,7 @@ class OwncloudLocalResourceServiceImpl implements OwncloudResourceService {
   }
 
   private Path resolveLocation(URI relativeTo) {
-    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-    ResourceServiceProperties webdavProperties = properties.getResourceService();
-    Path location = webdavProperties.getLocation();
-    location = location.resolve(authentication.getName());
+    Path location = getRootLocationOfAuthenticatedUser();
     if (Files.notExists(location)) {
       try {
         Files.createDirectories(location);
@@ -266,12 +270,17 @@ class OwncloudLocalResourceServiceImpl implements OwncloudResourceService {
     return location.resolve(relativeTo.getPath());
   }
 
+  private Path getRootLocationOfAuthenticatedUser() {
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    ResourceServiceProperties resourceProperties = properties.getResourceService();
+    Path location = resourceProperties.getLocation();
+    location = location.resolve(authentication.getName());
+    return location;
+  }
+
   private OwncloudModifyingLocalResource createResourceFrom(Path path) {
     try {
-      ResourceServiceProperties resourceProperties = properties.getResourceService();
-      Path rootPath = resourceProperties.getLocation();
-      Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-      rootPath = rootPath.resolve(authentication.getName());
+      Path rootPath = getRootLocationOfAuthenticatedUser();
       Path relativePath = rootPath.toAbsolutePath().relativize(path.toAbsolutePath());
       URI href = URI.create(
           UriComponentsBuilder
@@ -326,6 +335,24 @@ class OwncloudLocalResourceServiceImpl implements OwncloudResourceService {
 
   private String getDirectoryChecksum(Path path) {
     return null;
+  }
+
+  private boolean isNotRootDirectory(Path location) {
+    return !isRootDirectory(location);
+  }
+
+  private boolean isRootDirectory(Path location) {
+    if (!Files.isDirectory(location)) {
+      return false;
+    }
+    Path rootLocation = getRootLocationOfAuthenticatedUser();
+    try {
+      return Files.isSameFile(location, rootLocation);
+    } catch (IOException e) {
+      throw new OwncloudResourceException(e) {
+        private static final long serialVersionUID = 6416480160654068104L;
+      };
+    }
   }
 
   @Override
