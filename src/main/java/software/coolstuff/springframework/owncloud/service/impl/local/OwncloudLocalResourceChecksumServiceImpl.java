@@ -187,7 +187,7 @@ class OwncloudLocalResourceChecksumServiceImpl implements OwncloudLocalResourceC
       if (ENTRY_CREATE.equals(watchEvent.kind()) || ENTRY_MODIFY.equals(watchEvent.kind())) {
         performNewOrChangedPath(resolve((Path) watchKey.watchable(), (Path) watchEvent.context()), watchService);
       } else if (ENTRY_DELETE.equals(watchEvent.kind())) {
-        performRemovedPath(resolve((Path) watchKey.watchable(), (Path) watchEvent.context()));
+        performRemovedPath(resolve((Path) watchKey.watchable(), (Path) watchEvent.context()), watchService);
       }
     }
   }
@@ -200,6 +200,9 @@ class OwncloudLocalResourceChecksumServiceImpl implements OwncloudLocalResourceC
 
   private void performNewOrChangedPath(Path path, WatchService watchService) {
     try {
+      if (isRootPath(path)) {
+        return;
+      }
       if (Files.isDirectory(path.toAbsolutePath())) {
         if (!checksums.containsKey(path.toAbsolutePath().normalize())) {
           path.register(watchService, ENTRY_CREATE, ENTRY_MODIFY, ENTRY_DELETE);
@@ -208,14 +211,25 @@ class OwncloudLocalResourceChecksumServiceImpl implements OwncloudLocalResourceC
       log.info("Calculate the Checksum of File {}", path.toAbsolutePath());
       String checksum = createChecksum(path);
       checksums.put(path.toAbsolutePath().normalize(), checksum);
-      // TODO: change the parents
+      performNewOrChangedPath(path.getParent(), watchService);
     } catch (Exception e) {
       log.error(String.format("Error occured while perforing new or changed Path %s", path.toAbsolutePath()), e);
     }
   }
 
-  private void performRemovedPath(Path path) {
+  private boolean isRootPath(Path path) {
+    ResourceServiceProperties resourceProperties = properties.getResourceService();
+    Path rootPath = resourceProperties.getLocation();
+    try {
+      return Files.isSameFile(path.toAbsolutePath().normalize(), rootPath.toAbsolutePath().normalize());
+    } catch (IOException e) {
+      throw new OwncloudLocalResourceWatchServiceException(e);
+    }
+  }
+
+  private void performRemovedPath(Path path, WatchService watchService) {
     checksums.remove(path.toAbsolutePath().normalize());
+    performNewOrChangedPath(path.getParent(), watchService);
   }
 
   @Override

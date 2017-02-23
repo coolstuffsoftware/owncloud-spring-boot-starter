@@ -75,6 +75,7 @@ class OwncloudLocalResourceServiceImpl implements OwncloudResourceService {
     if (Files.isDirectory(location)) {
       try {
         OwncloudModifyingLocalResource actualDirectory = createResourceFrom(location);
+        resources.add(actualDirectory);
         if (Files.isDirectory(location)) {
           resources.addAll(
               Files.list(location)
@@ -83,12 +84,11 @@ class OwncloudLocalResourceServiceImpl implements OwncloudResourceService {
           if (isNotRootDirectory(location)) {
             actualDirectory.setName(".");
             if (properties.getResourceService().isAddRelativeDownPath()) {
-              location = location.resolve("..");
+              location = location.resolve("..").normalize();
               resources.add(createResourceFrom(location));
             }
           }
         }
-        resources.add(actualDirectory);
       } catch (IOException e) {
         throw new OwncloudResourceException(e) {
           private static final long serialVersionUID = -4406347844686894254L;
@@ -135,9 +135,6 @@ class OwncloudLocalResourceServiceImpl implements OwncloudResourceService {
               .path(relativePath.toString())
               .toUriString());
       String name = path.getFileName().toString();
-      if (Files.isSameFile(rootPath, path)) {
-        name = "/";
-      }
       MediaType mediaType = MediaType.APPLICATION_OCTET_STREAM;
       if (Files.isDirectory(path)) {
         mediaType = OwncloudUtils.getDirectoryMediaType();
@@ -150,6 +147,10 @@ class OwncloudLocalResourceServiceImpl implements OwncloudResourceService {
       }
       Date lastModifiedAt = Date.from(Files.getLastModifiedTime(path).toInstant());
       String checksum = checksumService.getChecksum(path);
+      if (Files.isSameFile(rootPath, path)) {
+        name = "/";
+        checksum = null;
+      }
       OwncloudModifyingLocalResource resource = OwncloudLocalResourceImpl.builder()
           .href(href)
           .name(name)

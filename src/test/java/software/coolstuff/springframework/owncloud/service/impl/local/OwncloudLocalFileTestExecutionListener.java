@@ -87,7 +87,7 @@ public class OwncloudLocalFileTestExecutionListener extends AbstractOwncloudTest
   }
 
   @SuppressWarnings("unchecked")
-  private OwncloudProperties loadProperties(String[] activeProfiles) throws IOException, FileNotFoundException {
+  private OwncloudProperties loadProperties(String[] activeProfiles) throws IOException {
     Yaml yaml = new Yaml();
     for (String activeProfile : activeProfiles) {
       String propertyFilename = PROPERTY_FILE_PREFIX + activeProfile + PROPERTY_FILE_SUFFIX;
@@ -101,9 +101,6 @@ public class OwncloudLocalFileTestExecutionListener extends AbstractOwncloudTest
             case "location":
               owncloudProperties.setLocation((String) property.getValue());
               break;
-            case "user-service":
-            case "userService":
-              continue;
             case "user-service.enable-modifications":
             case "userService.enable-modifications":
             case "user-service.enableModifications":
@@ -114,7 +111,7 @@ public class OwncloudLocalFileTestExecutionListener extends AbstractOwncloudTest
               owncloudProperties.getUserService().setEnableModifications((Boolean) property.getValue());
               break;
             default:
-              throw new IllegalArgumentException("Invalid Property owncloud." + property.getKey());
+              continue;
           }
         }
         Validate.notNull(owncloudProperties.getLocation());
