@@ -21,14 +21,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
@@ -47,6 +45,7 @@ import com.github.sardine.DavResource;
 import com.github.sardine.Sardine;
 import com.google.common.collect.Lists;
 
+import lombok.val;
 import software.coolstuff.springframework.owncloud.model.OwncloudResource;
 import software.coolstuff.springframework.owncloud.service.AbstractOwncloudResourceServiceTest;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudResourceService;
@@ -62,7 +61,7 @@ public class OwncloudRestResourceServiceTest extends AbstractOwncloudResourceSer
   private Sardine sardine;
 
   @Autowired
-  private OwncloudResourceService resourceService;
+  private OwncloudRestResourceServiceImpl resourceService;
 
   @Autowired
   private OwncloudRestProperties properties;
@@ -82,42 +81,19 @@ public class OwncloudRestResourceServiceTest extends AbstractOwncloudResourceSer
   @Test
   @WithMockUser(username = "user", password = "s3cr3t")
   public void test_listRoot_OK() throws Exception {
+    List<OwncloudResource> expected = prepare_listRoot_OK();
+    List<OwncloudResource> resources = resourceService.listRoot();
+    assertThat(resources).containsAll(expected);
+  }
+
+  protected List<OwncloudResource> prepare_listRoot_OK() throws Exception {
     List<DavResource> expectedResources = Lists.newArrayList(
         createDavResource("/", OwncloudUtils.getDirectoryMediaType(), null, "/", null),
         createDavResource("/resource1", MediaType.APPLICATION_PDF, Long.valueOf(1234), "resource1", Locale.GERMAN));
     Mockito
         .when(sardine.list(getResourcePath()))
         .thenReturn(expectedResources);
-
-    List<OwncloudResource> resources = resourceService.listRoot();
-    compare(resources, expectedResources, null);
-  }
-
-  private String getResourcePath() {
-    return getResourcePath(null);
-  }
-
-  private String getResourcePath(URI searchPath) {
-    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-    return Optional.ofNullable(resolveAsDirectoryURI(searchPath, authentication.getName()))
-        .map(uri -> uri.toString())
-        .orElse(null);
-  }
-
-  private URI resolveAsDirectoryURI(URI relativeTo, String username) {
-    URI resolvedRootUri = getResolvedRootUri(username);
-    if (relativeTo == null || StringUtils.isBlank(relativeTo.getPath())) {
-      return resolvedRootUri;
-    }
-    return URI.create(
-        UriComponentsBuilder.fromUri(resolvedRootUri)
-            .path(relativeTo.getPath())
-            .path("/")
-            .toUriString());
-  }
-
-  private URI getResolvedRootUri(String username) {
-    return ((OwncloudRestResourceServiceImpl) resourceService).getResolvedRootUri(username);
+    return createFrom(null, expectedResources);
   }
 
   private DavResource createDavResource(
@@ -140,116 +116,6 @@ public class OwncloudRestResourceServiceTest extends AbstractOwncloudResourceSer
         UUID.randomUUID().toString(),
         displayName,
         contentLanguage);
-  }
-
-  private URI resolveAsFileURI(URI relativeTo, String username) {
-    return URI.create(
-        UriComponentsBuilder.fromUri(getResolvedRootUri(username))
-            .path(relativeTo.getPath())
-            .toUriString());
-  }
-
-  private void compare(List<OwncloudResource> actualResources, List<DavResource> expectedResources, DavResource superResource) {
-    compare(null, actualResources, expectedResources, superResource);
-  }
-
-  private void compare(URI searchPath, List<OwncloudResource> actualResources, List<DavResource> expectedResources, DavResource expectedSuperResource) {
-    assertThat(actualResources).isNotNull();
-    assertThat(actualResources).isNotEmpty();
-
-    Map<URI, DavResource> mappedExpectedResources = new HashMap<>();
-    for (DavResource davResource : expectedResources) {
-      mappedExpectedResources.put(davResource.getHref(), davResource);
-    }
-
-    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-    OwncloudResource actualSuperResource = null;
-    List<OwncloudResource> unexpectedResources = new ArrayList<>();
-    for (OwncloudResource actualResource : actualResources) {
-      URI uri = resolveAsFileURI(actualResource.getHref(), authentication.getName());
-      uri = URI.create(uri.getPath());
-      if (!mappedExpectedResources.containsKey(uri)) {
-        if ("..".equals(actualResource.getName())) {
-          actualSuperResource = actualResource;
-          continue;
-        }
-        unexpectedResources.add(actualResource);
-        continue;
-      }
-
-      DavResource expectedResource = mappedExpectedResources.get(uri);
-      mappedExpectedResources.remove(uri);
-
-      if (searchPath != null && searchPath.equals(actualResource.getHref())) {
-        compare(actualResource, expectedResource, ".");
-      } else {
-        if (isResolvedToRootURI(actualResource.getHref(), authentication.getName())) {
-          compare(actualResource, expectedResource, ".");
-        } else {
-          compare(actualResource, expectedResource, null);
-        }
-      }
-    }
-    assertThat(mappedExpectedResources).isEmpty();
-    assertThat(unexpectedResources).isEmpty();
-
-    if (isSuperUriExpected(searchPath)) {
-      compare(actualSuperResource, expectedSuperResource, "..");
-    }
-  }
-
-  private boolean isResolvedToRootURI(URI path, String username) {
-    URI resolvedRootUri = getResolvedRootUri(username);
-    if (path.isAbsolute()) {
-      return resolvedRootUri.equals(path);
-    }
-    return resolvedRootUri.equals(resolveAsDirectoryURI(path, username));
-  }
-
-  private void compare(OwncloudResource actualResource, DavResource expectedResource, String expectedName) {
-    assertThat(expectedResource).isNotNull();
-    assertThat(actualResource).isNotNull();
-    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-    URI uri = null;
-    if (OwncloudUtils.isDirectory(actualResource)) {
-      uri = resolveAsDirectoryURI(actualResource.getHref(), authentication.getName());
-    } else {
-      uri = resolveAsFileURI(actualResource.getHref(), authentication.getName());
-    }
-    uri = URI.create(uri.getPath());
-    assertThat(uri).isEqualTo(expectedResource.getHref());
-    if (StringUtils.isNotBlank(expectedName)) {
-      assertThat(actualResource.getName()).isEqualTo(expectedName);
-    } else {
-      assertThat(actualResource.getName()).isEqualTo(expectedResource.getName());
-    }
-    assertThat(actualResource.getETag()).isEqualTo(expectedResource.getEtag());
-    assertThat(actualResource.getMediaType().toString()).isEqualTo(expectedResource.getContentType());
-    assertThat(actualResource.getLastModifiedAt()).isEqualTo(expectedResource.getModified());
-  }
-
-  private boolean isSuperUriExpected(URI searchPath) {
-    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-    return searchPath != null && !isResolvedToRootURI(searchPath, authentication.getName()) && properties.getResourceService().isAddRelativeDownPath();
-  }
-
-  @Test
-  @WithMockUser(username = "user", password = "s3cr3t")
-  public void test_list_OK() throws Exception {
-    URI searchPath = URI.create("/directory/directory/");
-    List<DavResource> expectedResources = Lists.newArrayList(
-        createDavResource("/directory/directory/", OwncloudUtils.getDirectoryMediaType(), null, "/", null),
-        createDavResource("/directory/directory/resource1", MediaType.APPLICATION_PDF, Long.valueOf(1234), "resource1", Locale.GERMAN));
-    Mockito
-        .when(sardine.list(getResourcePath(searchPath)))
-        .thenReturn(expectedResources);
-    DavResource superResource = createDavResource("/directory/", OwncloudUtils.getDirectoryMediaType(), null, "..", null);
-    Mockito
-        .when(sardine.list(getResourcePath(URI.create("/directory/")), 0))
-        .thenReturn(Lists.newArrayList(superResource));
-
-    List<OwncloudResource> resources = resourceService.list(searchPath);
-    compare(searchPath, resources, expectedResources, superResource);
   }
 
   private static class OwncloudDavResource extends DavResource {
@@ -276,5 +142,101 @@ public class OwncloudRestResourceServiceTest extends AbstractOwncloudResourceSer
           null,
           null);
     }
+  }
+
+  private URI resolveAsFileURI(URI relativeTo, String username) {
+    return URI.create(
+        UriComponentsBuilder.fromUri(resourceService.getResolvedRootUri(username))
+            .path(relativeTo.getPath())
+            .toUriString());
+  }
+
+  private String getResourcePath() {
+    return getResourcePath(null);
+  }
+
+  private String getResourcePath(URI searchPath) {
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    return Optional.ofNullable(resolveAsDirectoryURI(searchPath, authentication.getName()))
+        .map(uri -> uri.toString())
+        .orElse(null);
+  }
+
+  private URI resolveAsDirectoryURI(URI relativeTo, String username) {
+    URI resolvedRootUri = resourceService.getResolvedRootUri(username);
+    if (relativeTo == null || StringUtils.isBlank(relativeTo.getPath())) {
+      return resolvedRootUri;
+    }
+    return URI.create(
+        UriComponentsBuilder.fromUri(resolvedRootUri)
+            .path(relativeTo.getPath())
+            .path("/")
+            .toUriString());
+  }
+
+  private List<OwncloudResource> createFrom(URI relativeTo, List<DavResource> davResources) {
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    URI rootUri = resourceService.getResolvedRootUri(authentication.getName());
+    URI searchPath = resolveSearchPath(relativeTo, rootUri);
+    val conversionProperties = OwncloudRestResourceServiceImpl.OwncloudResourceConversionProperties.builder()
+        .rootPath(rootUri)
+        .searchPath(searchPath)
+        .renamedSearchPath(".")
+        .build();
+    return davResources.stream()
+        .map(davResource -> resourceService.createOwncloudResourceFrom(davResource, conversionProperties))
+        .map(owncloudResource -> resourceService.renameOwncloudResource(owncloudResource, conversionProperties))
+        .collect(Collectors.toList());
+  }
+
+  private URI resolveSearchPath(URI relativeTo, URI rootUri) {
+    URI searchPath = URI.create(
+        UriComponentsBuilder.fromUri(rootUri)
+            .path(Optional.ofNullable(relativeTo).map(uri -> uri.getPath()).orElse("/"))
+            .toUriString());
+    return searchPath;
+  }
+
+  @Test
+  @WithMockUser(username = "user", password = "s3cr3t")
+  public void test_list_OK() throws Exception {
+    URI searchPath = URI.create("/directory/directory/");
+    List<OwncloudResource> expected = prepare_list_OK(searchPath);
+    List<OwncloudResource> resources = resourceService.list(searchPath);
+    assertThat(resources).containsAll(expected);
+  }
+
+  protected List<OwncloudResource> prepare_list_OK(URI searchPath) throws Exception {
+    List<DavResource> davResources = Lists.newArrayList(
+        createDavResource("/directory/directory/", OwncloudUtils.getDirectoryMediaType(), null, "/", null),
+        createDavResource("/directory/directory/resource1", MediaType.APPLICATION_PDF, Long.valueOf(1234), "resource1", Locale.GERMAN));
+    Mockito
+        .when(sardine.list(getResourcePath(searchPath)))
+        .thenReturn(davResources);
+    DavResource davSuperResource = createDavResource("/directory/", OwncloudUtils.getDirectoryMediaType(), null, "..", null);
+    Mockito
+        .when(sardine.list(getResourcePath(URI.create("/directory/")), 0))
+        .thenReturn(Lists.newArrayList(davSuperResource));
+
+    List<OwncloudResource> expectedResources = createFrom(searchPath, davResources);
+
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    URI rootUri = resourceService.getResolvedRootUri(authentication.getName());
+    URI superSearchPath = resolveSearchPath(
+        URI.create(
+            UriComponentsBuilder.fromUri(searchPath)
+                .path("/../")
+                .toUriString())
+            .normalize(),
+        rootUri);
+    val conversionProperties = OwncloudRestResourceServiceImpl.OwncloudResourceConversionProperties.builder()
+        .rootPath(rootUri)
+        .searchPath(superSearchPath)
+        .renamedSearchPath("..")
+        .build();
+    OwncloudModifyingRestResource owncloudSuperResource = resourceService.createOwncloudResourceFrom(davSuperResource, conversionProperties);
+    owncloudSuperResource = resourceService.renameOwncloudResource(owncloudSuperResource, conversionProperties);
+    expectedResources.add(owncloudSuperResource);
+    return expectedResources;
   }
 }

@@ -176,7 +176,7 @@ class OwncloudRestResourceServiceImpl implements OwncloudResourceService {
     return resources;
   }
 
-  private URI resolveAsDirectoryURI(URI relativeTo, String username) {
+  public URI resolveAsDirectoryURI(URI relativeTo, String username) {
     URI resolvedRootUri = getResolvedRootUri(username);
     if (relativeTo == null || StringUtils.isBlank(relativeTo.getPath())) {
       return resolvedRootUri;
@@ -210,7 +210,7 @@ class OwncloudRestResourceServiceImpl implements OwncloudResourceService {
     private String renamedSearchPath;
   }
 
-  protected OwncloudModifyingRestResource createOwncloudResourceFrom(DavResource davResource, OwncloudResourceConversionProperties conversionProperties) {
+  public OwncloudModifyingRestResource createOwncloudResourceFrom(DavResource davResource, OwncloudResourceConversionProperties conversionProperties) {
     MediaType mediaType = MediaType.valueOf(davResource.getContentType());
     URI rootPath = conversionProperties.getRootPath();
     URI href = rootPath.resolve(davResource.getHref());
@@ -236,7 +236,7 @@ class OwncloudRestResourceServiceImpl implements OwncloudResourceService {
         .build();
   }
 
-  private OwncloudModifyingRestResource renameOwncloudResource(OwncloudModifyingRestResource resource, OwncloudResourceConversionProperties conversionProperties) {
+  public OwncloudModifyingRestResource renameOwncloudResource(OwncloudModifyingRestResource resource, OwncloudResourceConversionProperties conversionProperties) {
     if (StringUtils.isBlank(conversionProperties.getRenamedSearchPath())) {
       return resource;
     }
