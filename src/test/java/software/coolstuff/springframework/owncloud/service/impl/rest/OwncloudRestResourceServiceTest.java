@@ -79,14 +79,7 @@ public class OwncloudRestResourceServiceTest extends AbstractOwncloudResourceSer
     return OwncloudRestResourceServiceImpl.class;
   }
 
-  @Test
-  @WithMockUser(username = "user", password = "s3cr3t")
-  public void test_listRoot_OK() throws Exception {
-    List<OwncloudResource> expected = prepare_listRoot_OK();
-    List<OwncloudResource> resources = resourceService.listRoot();
-    assertThat(resources).containsAll(expected);
-  }
-
+  @Override
   protected List<OwncloudResource> prepare_listRoot_OK() throws Exception {
     List<OwncloudResource> expectedOwncloudResources = Lists.newArrayList(
         OwncloudRestResourceImpl.builder()

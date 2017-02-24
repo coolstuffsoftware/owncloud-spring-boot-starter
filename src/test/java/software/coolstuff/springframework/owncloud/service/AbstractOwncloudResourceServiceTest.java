@@ -19,6 +19,8 @@ package software.coolstuff.springframework.owncloud.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.List;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +37,7 @@ import org.springframework.test.context.TestExecutionListeners;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import software.coolstuff.springframework.owncloud.config.VelocityConfiguration;
+import software.coolstuff.springframework.owncloud.model.OwncloudResource;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudResourceService;
 
 @RunWith(SpringRunner.class)
@@ -65,4 +68,13 @@ public abstract class AbstractOwncloudResourceServiceTest {
 
   protected abstract Class<? extends OwncloudResourceService> getImplementationClass();
 
+  @Test
+  @WithMockUser(username = "user", password = "s3cr3t")
+  public void test_listRoot_OK() throws Exception {
+    List<OwncloudResource> expected = prepare_listRoot_OK();
+    List<OwncloudResource> resources = resourceService.listRoot();
+    assertThat(resources).containsAll(expected);
+  }
+
+  protected abstract List<OwncloudResource> prepare_listRoot_OK() throws Exception;
 }
