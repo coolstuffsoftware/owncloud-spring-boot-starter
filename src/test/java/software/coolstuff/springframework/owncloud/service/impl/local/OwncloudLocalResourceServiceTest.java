@@ -32,9 +32,7 @@ import java.util.UUID;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.mockito.Matchers;
 import org.mockito.Mockito;
-import org.mockito.internal.matchers.CompareEqual;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
@@ -80,7 +78,7 @@ public class OwncloudLocalResourceServiceTest extends AbstractOwncloudResourceSe
   }
 
   private OwncloudResource createDirectory(Path relativePath, String renameTo) throws IOException {
-    Path resourcePath = resolveRelativePath(relativePath);
+    Path resourcePath = resolveRelativePath(relativePath).normalize();
     Files.createDirectories(resourcePath);
     String uriPath = Optional.ofNullable(relativePath)
         .map(path -> path.normalize())
@@ -97,7 +95,7 @@ public class OwncloudLocalResourceServiceTest extends AbstractOwncloudResourceSe
         .orElse(relativePath.getFileName().toString());
     String checksum = UUID.randomUUID().toString();
     Mockito
-        .when(checksumService.getChecksum(Matchers.argThat(new CompareEqual<>(resourcePath))))
+        .when(checksumService.getChecksum(resourcePath))
         .thenReturn(checksum);
     return OwncloudLocalResourceImpl.builder()
         .eTag(checksum)
@@ -118,7 +116,7 @@ public class OwncloudLocalResourceServiceTest extends AbstractOwncloudResourceSe
   }
 
   private OwncloudResource createFile(Path relativePath, MediaType mediaType) throws IOException {
-    Path resourcePath = resolveRelativePath(relativePath);
+    Path resourcePath = resolveRelativePath(relativePath).normalize();
     try (Writer writer = new BufferedWriter(new FileWriter(resourcePath.toFile()))) {
       IOUtils.write(FILE_CONTENT, writer);
     }
@@ -129,7 +127,7 @@ public class OwncloudLocalResourceServiceTest extends AbstractOwncloudResourceSe
     String fileName = relativePath.getFileName().toString();
     String checksum = UUID.randomUUID().toString();
     Mockito
-        .when(checksumService.getChecksum(Matchers.argThat(new CompareEqual<>(resourcePath))))
+        .when(checksumService.getChecksum(resourcePath))
         .thenReturn(checksum);
     return OwncloudLocalFileResourceImpl.fileBuilder()
         .owncloudResource(OwncloudLocalResourceImpl.builder()
