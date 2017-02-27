@@ -18,15 +18,23 @@
 package software.coolstuff.springframework.owncloud.service.impl.local;
 
 import java.nio.file.Path;
+import java.util.function.Consumer;
 
 import software.coolstuff.springframework.owncloud.exception.resource.OwncloudResourceException;
 
 /**
  * @author mufasa1976
  */
-@FunctionalInterface
 interface OwncloudLocalResourceChecksumService {
 
   String getChecksum(Path path) throws OwncloudResourceException;
+
+  void registerChangeListener(Consumer<Path> listener);
+
+  void registerDeleteListener(Consumer<Path> listener);
+
+  void clearChangeListener();
+
+  void clearDeleteListener();
 
 }

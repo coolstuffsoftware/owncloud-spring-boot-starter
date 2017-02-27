@@ -35,11 +35,14 @@ import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.security.MessageDigest;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 import javax.annotation.PostConstruct;
@@ -71,6 +74,9 @@ class OwncloudLocalResourceChecksumServiceImpl implements OwncloudLocalResourceC
 
   private Thread fileWatcherThread;
   private MessageDigest messageDigest;
+
+  private final List<Consumer<Path>> changeListeners = new ArrayList<>();
+  private final List<Consumer<Path>> deleteListeners = new ArrayList<>();
 
   private final Map<Path, String> checksums = new HashMap<>();
 
@@ -205,12 +211,15 @@ class OwncloudLocalResourceChecksumServiceImpl implements OwncloudLocalResourceC
       }
       if (Files.isDirectory(path.toAbsolutePath())) {
         if (!checksums.containsKey(path.toAbsolutePath().normalize())) {
+          log.info("Watch Directory {} for changes", path);
           path.register(watchService, ENTRY_CREATE, ENTRY_MODIFY, ENTRY_DELETE);
         }
       }
       log.info("Calculate the Checksum of File {}", path.toAbsolutePath());
       String checksum = createChecksum(path);
       checksums.put(path.toAbsolutePath().normalize(), checksum);
+      changeListeners.stream()
+          .forEach(consumer -> consumer.accept(path));
       performNewOrChangedPath(path.getParent(), watchService);
     } catch (Exception e) {
       log.error(String.format("Error occured while perforing new or changed Path %s", path.toAbsolutePath()), e);
@@ -229,12 +238,34 @@ class OwncloudLocalResourceChecksumServiceImpl implements OwncloudLocalResourceC
 
   private void performRemovedPath(Path path, WatchService watchService) {
     checksums.remove(path.toAbsolutePath().normalize());
+    deleteListeners.stream()
+        .forEach(consumer -> consumer.accept(path));
     performNewOrChangedPath(path.getParent(), watchService);
   }
 
   @Override
   public String getChecksum(Path path) throws OwncloudResourceException {
     return checksums.get(path.toAbsolutePath().normalize());
+  }
+
+  @Override
+  public void registerChangeListener(Consumer<Path> listener) {
+    changeListeners.add(listener);
+  }
+
+  @Override
+  public void registerDeleteListener(Consumer<Path> listener) {
+    deleteListeners.add(listener);
+  }
+
+  @Override
+  public void clearChangeListener() {
+    changeListeners.clear();
+  }
+
+  @Override
+  public void clearDeleteListener() {
+    deleteListeners.clear();
   }
 
   @Slf4j
