@@ -77,16 +77,16 @@ class OwncloudLocalResourceServiceImpl implements OwncloudResourceService {
         OwncloudModifyingLocalResource actualDirectory = createResourceFrom(location);
         resources.add(actualDirectory);
         if (Files.isDirectory(location)) {
+          actualDirectory.setName(".");
           resources.addAll(
               Files.list(location)
                   .map(path -> createResourceFrom(path))
                   .collect(Collectors.toList()));
-          if (isNotRootDirectory(location)) {
-            actualDirectory.setName(".");
-            if (properties.getResourceService().isAddRelativeDownPath()) {
-              location = location.resolve("..").normalize();
-              resources.add(createResourceFrom(location));
-            }
+          if (properties.getResourceService().isAddRelativeDownPath() && isNotRootDirectory(location)) {
+            location = location.resolve("..").normalize();
+            OwncloudModifyingLocalResource superDirectory = createResourceFrom(location);
+            superDirectory.setName("..");
+            resources.add(superDirectory);
           }
         }
       } catch (IOException e) {
@@ -114,7 +114,11 @@ class OwncloudLocalResourceServiceImpl implements OwncloudResourceService {
     if (relativeTo == null || StringUtils.isBlank(relativeTo.getPath())) {
       return location;
     }
-    return location.resolve(relativeTo.getPath());
+    String relativeToPath = relativeTo.getPath();
+    if (StringUtils.startsWith(relativeToPath, "/")) {
+      relativeToPath = relativeToPath.substring(1);
+    }
+    return location.resolve(relativeToPath);
   }
 
   private Path getRootLocationOfAuthenticatedUser() {
@@ -137,6 +141,10 @@ class OwncloudLocalResourceServiceImpl implements OwncloudResourceService {
       String name = path.getFileName().toString();
       MediaType mediaType = MediaType.APPLICATION_OCTET_STREAM;
       if (Files.isDirectory(path)) {
+        href = URI.create(
+            UriComponentsBuilder.fromUri(href)
+                .path("/")
+                .toUriString());
         mediaType = OwncloudUtils.getDirectoryMediaType();
       } else {
         FileNameMap fileNameMap = URLConnection.getFileNameMap();

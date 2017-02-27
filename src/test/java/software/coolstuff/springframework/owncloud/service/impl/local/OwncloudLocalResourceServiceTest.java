@@ -17,37 +17,28 @@
 */
 package software.coolstuff.springframework.owncloud.service.impl.local;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
+import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Date;
+import java.sql.Date;
 import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestExecutionListeners;
-import org.springframework.web.util.UriComponentsBuilder;
 
-import com.google.common.collect.Lists;
-
-import software.coolstuff.springframework.owncloud.model.OwncloudResource;
 import software.coolstuff.springframework.owncloud.service.AbstractOwncloudResourceServiceTest;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudResourceService;
-import software.coolstuff.springframework.owncloud.service.impl.OwncloudUtils;
 import software.coolstuff.springframework.owncloud.service.impl.local.OwncloudLocalProperties.ResourceServiceProperties;
 
 @ActiveProfiles("LOCAL-RESOURCE-SERVICE")
@@ -70,75 +61,64 @@ public class OwncloudLocalResourceServiceTest extends AbstractOwncloudResourceSe
   }
 
   @Override
-  protected List<OwncloudResource> prepare_listRoot_OK() throws Exception {
-    List<OwncloudResource> expectedOwncloudResources = Lists.newArrayList(
-        createDirectory(Paths.get("."), "."),
-        createFile(Paths.get("resource1.pdf"), MediaType.APPLICATION_PDF));
-    return expectedOwncloudResources;
+  protected void prepare_listRoot_OK(List<OwncloudTestResourceImpl> expectedResources) throws Exception {
+    expectedResources.stream().forEach(this::createResource);
+    expectedResources.stream().forEach(this::modifyResourceInformationBasedOnPathInformation);
   }
 
-  private OwncloudResource createDirectory(Path relativePath, String renameTo) throws IOException {
-    Path resourcePath = resolveRelativePath(relativePath).normalize();
-    Files.createDirectories(resourcePath);
-    String uriPath = Optional.ofNullable(relativePath)
-        .map(path -> path.normalize())
-        .map(path -> path.toString())
-        .orElse("/");
-    if (StringUtils.isBlank(uriPath)) {
-      uriPath = "/";
+  private void createResource(OwncloudTestResourceImpl owncloudResource) {
+    Path resourcePath = resolveRelativePath(Paths.get(owncloudResource.getHref().getPath()));
+    try {
+      Mockito
+          .when(checksumService.getChecksum(resourcePath))
+          .thenReturn(owncloudResource.getBackendETag());
+      if (owncloudResource instanceof OwncloudTestFileResourceImpl) {
+        createFile(resourcePath, (OwncloudTestFileResourceImpl) owncloudResource);
+      } else {
+        if (!Files.exists(resourcePath)) {
+          Files.createDirectories(resourcePath);
+        } else if (!Files.isDirectory(resourcePath)) {
+          throw new IllegalStateException("Path " + resourcePath + " is not a Directory");
+        }
+      }
+    } catch (IOException e) {
+      e.printStackTrace(System.err);
+      throw new IllegalStateException("Error while preparing Resource " + resourcePath + ". Cause: " + e.toString(), e);
     }
-    URI href = URI.create(
-        UriComponentsBuilder
-            .fromPath(uriPath)
-            .toUriString());
-    String directoryName = Optional.ofNullable(renameTo)
-        .orElse(relativePath.getFileName().toString());
-    String checksum = UUID.randomUUID().toString();
-    Mockito
-        .when(checksumService.getChecksum(resourcePath))
-        .thenReturn(checksum);
-    return OwncloudLocalResourceImpl.builder()
-        .eTag(checksum)
-        .href(href)
-        .lastModifiedAt(new Date())
-        .mediaType(OwncloudUtils.getDirectoryMediaType())
-        .name(directoryName)
-        .build();
   }
 
   private Path resolveRelativePath(Path relativePath) {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     ResourceServiceProperties resourceProperties = properties.getResourceService();
-    Path resourcePath = resourceProperties.getLocation()
-        .resolve(authentication.getName())
-        .resolve(relativePath);
-    return resourcePath;
+    Path basePath = resourceProperties.getLocation()
+        .resolve(authentication.getName());
+    if (relativePath.isAbsolute()) {
+      String relativizedPath = StringUtils.substring(relativePath.toString(), File.pathSeparator.length());
+      return basePath.resolve(relativizedPath);
+    }
+    return basePath.resolve(relativePath);
   }
 
-  private OwncloudResource createFile(Path relativePath, MediaType mediaType) throws IOException {
-    Path resourcePath = resolveRelativePath(relativePath).normalize();
-    try (Writer writer = new BufferedWriter(new FileWriter(resourcePath.toFile()))) {
+  private void createFile(Path resourcePath, OwncloudTestFileResourceImpl owncloudResource) throws IOException {
+    try (Writer writer = Files.newBufferedWriter(resourcePath)) {
       IOUtils.write(FILE_CONTENT, writer);
     }
-    URI href = URI.create(
-        UriComponentsBuilder
-            .fromPath(relativePath.normalize().toString())
-            .toUriString());
-    String fileName = relativePath.getFileName().toString();
-    String checksum = UUID.randomUUID().toString();
-    Mockito
-        .when(checksumService.getChecksum(resourcePath))
-        .thenReturn(checksum);
-    return OwncloudLocalFileResourceImpl.fileBuilder()
-        .owncloudResource(OwncloudLocalResourceImpl.builder()
-            .eTag(checksum)
-            .href(href)
-            .lastModifiedAt(new Date())
-            .mediaType(mediaType)
-            .name(fileName)
-            .build())
-        .contentLength(Long.valueOf(FILE_CONTENT.length()))
-        .build();
+  }
+
+  private void modifyResourceInformationBasedOnPathInformation(OwncloudTestResourceImpl owncloudResource) {
+    Path resourcePath = resolveRelativePath(Paths.get(owncloudResource.getHref().getPath()));
+    try {
+      owncloudResource.setLastModifiedAt(Date.from(Files.getLastModifiedTime(resourcePath).toInstant()));
+    } catch (IOException e) {
+      e.printStackTrace(System.err);
+      throw new IllegalStateException("Error while getting last modified time of Resource " + resourcePath, e);
+    }
+  }
+
+  @Override
+  protected void prepare_list_OK(URI searchPath, List<OwncloudTestResourceImpl> expectedResources) throws Exception {
+    expectedResources.stream().forEach(this::createResource);
+    expectedResources.stream().forEach(this::modifyResourceInformationBasedOnPathInformation);
   }
 
 }

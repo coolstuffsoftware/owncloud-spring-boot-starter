@@ -87,6 +87,10 @@ public class OwncloudRestResourceServiceTest extends AbstractOwncloudResourceSer
         .map(loc -> loc.getLanguage())
         .orElse(null);
     String name = owncloudResource.getBackendName();
+    String eTag = owncloudResource.getBackendETag();
+    if (isRoot(owncloudResource.getHref())) {
+      eTag = null;
+    }
     try {
       return new OwncloudDavResource(
           prefixedHref.getPath(),
@@ -94,7 +98,7 @@ public class OwncloudRestResourceServiceTest extends AbstractOwncloudResourceSer
           owncloudResource.getLastModifiedAt(),
           owncloudResource.getMediaType().toString(),
           (owncloudResource instanceof OwncloudFileResource ? ((OwncloudFileResource) owncloudResource).getContentLength() : null),
-          owncloudResource.getBackendETag(),
+          eTag,
           name,
           contentLanguage);
     } catch (URISyntaxException e) {
@@ -112,6 +116,10 @@ public class OwncloudRestResourceServiceTest extends AbstractOwncloudResourceSer
 
   private URI getResolvedRootUri(String username) {
     return ((OwncloudRestResourceServiceImpl) resourceService).getResolvedRootUri(username);
+  }
+
+  private boolean isRoot(URI searchPath) {
+    return "/".equals(searchPath.getPath());
   }
 
   private static class OwncloudDavResource extends DavResource {
@@ -190,6 +198,7 @@ public class OwncloudRestResourceServiceTest extends AbstractOwncloudResourceSer
   }
 
   private boolean isNotRoot(URI searchPath) {
-    return !"/".equals(searchPath.getPath());
+    return !isRoot(searchPath);
   }
+
 }

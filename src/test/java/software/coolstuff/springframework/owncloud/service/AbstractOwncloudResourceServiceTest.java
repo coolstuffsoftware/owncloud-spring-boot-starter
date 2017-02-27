@@ -48,8 +48,8 @@ import com.google.common.collect.Lists;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
@@ -107,34 +107,34 @@ public abstract class AbstractOwncloudResourceServiceTest {
                 .eTag(uuid)
                 .href(URI.create("/resource1"))
                 .lastModifiedAt(new Date())
-                .mediaType(MediaType.APPLICATION_PDF)
+                .mediaType(MediaType.APPLICATION_OCTET_STREAM)
                 .name("resource1")
                 .build())
-            .contentLength(Long.valueOf(1234))
+            .contentLength(Long.valueOf(14))
             .build());
     prepare_listRoot_OK(expected);
     List<OwncloudResource> resources = resourceService.listRoot();
     compareResult(resources, expected);
   }
 
-  @Data
-  @EqualsAndHashCode(of = "eTag")
-  @Setter(AccessLevel.PACKAGE)
+  @Getter
   @NoArgsConstructor
   @AllArgsConstructor(access = AccessLevel.PRIVATE)
   @Builder
+  @ToString
   public static class OwncloudTestResourceImpl implements OwncloudResource {
     private URI href;
     private String name;
     private String backendName;
+    @Setter
     private Date lastModifiedAt;
     private MediaType mediaType;
     private String eTag;
     private String backendETag;
   }
 
-  @Data
-  @EqualsAndHashCode(callSuper = true, exclude = "contentLength")
+  @Getter
+  @EqualsAndHashCode(callSuper = true)
   @ToString(callSuper = true)
   public static class OwncloudTestFileResourceImpl extends OwncloudTestResourceImpl implements OwncloudFileResource {
 
@@ -199,10 +199,10 @@ public abstract class AbstractOwncloudResourceServiceTest {
                 .eTag(uuidResource)
                 .href(appendPath(searchPath, "/resource1"))
                 .lastModifiedAt(new Date())
-                .mediaType(MediaType.APPLICATION_PDF)
+                .mediaType(MediaType.APPLICATION_OCTET_STREAM)
                 .name("resource1")
                 .build())
-            .contentLength(Long.valueOf(1234))
+            .contentLength(Long.valueOf(14))
             .build(),
         OwncloudTestResourceImpl.builder()
             .backendETag(uuidSuperPath)

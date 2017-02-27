@@ -17,11 +17,8 @@
 */
 package software.coolstuff.springframework.owncloud.service.impl.local;
 
-import lombok.AccessLevel;
 import lombok.Builder;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.Setter;
+import lombok.Getter;
 import lombok.ToString;
 import software.coolstuff.springframework.owncloud.model.OwncloudFileResource;
 import software.coolstuff.springframework.owncloud.model.OwncloudResource;
@@ -29,10 +26,8 @@ import software.coolstuff.springframework.owncloud.model.OwncloudResource;
 /**
  * @author mufasa1976
  */
-@Data
-@EqualsAndHashCode(callSuper = true, exclude = "contentLength")
+@Getter
 @ToString(callSuper = true)
-@Setter(AccessLevel.PACKAGE)
 class OwncloudLocalFileResourceImpl extends OwncloudLocalResourceImpl implements OwncloudFileResource {
 
   private Long contentLength;

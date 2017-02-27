@@ -20,24 +20,27 @@ package software.coolstuff.springframework.owncloud.service.impl.local;
 import java.net.URI;
 import java.util.Date;
 
+import org.apache.commons.lang3.ClassUtils;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.springframework.http.MediaType;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
+import software.coolstuff.springframework.owncloud.model.OwncloudResource;
 
 /**
  * @author mufasa1976
  *
  */
-@Data
-@EqualsAndHashCode(of = "eTag")
-@AllArgsConstructor
-@Setter(AccessLevel.PACKAGE)
+@Getter
+@AllArgsConstructor(access = AccessLevel.PROTECTED)
 @Builder
+@ToString
 class OwncloudLocalResourceImpl implements OwncloudModifyingLocalResource {
 
   private URI href;
@@ -46,5 +49,25 @@ class OwncloudLocalResourceImpl implements OwncloudModifyingLocalResource {
   private Date lastModifiedAt;
   private MediaType mediaType;
   private String eTag;
+
+  @Override
+  public int hashCode() {
+    return new HashCodeBuilder()
+        .append(eTag)
+        .append(href)
+        .toHashCode();
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (obj == null || !ClassUtils.isAssignable(obj.getClass(), OwncloudResource.class)) {
+      return false;
+    }
+    OwncloudResource otherObj = (OwncloudResource) obj;
+    return new EqualsBuilder()
+        .append(eTag, otherObj.getETag())
+        .append(href, otherObj.getHref())
+        .isEquals();
+  }
 
 }
