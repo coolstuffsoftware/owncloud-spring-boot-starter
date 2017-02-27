@@ -21,7 +21,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.net.URI;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -91,7 +90,7 @@ public abstract class AbstractOwncloudResourceServiceTest {
   @WithMockUser(username = "user", password = "s3cr3t")
   public void test_listRoot_OK() throws Exception {
     String uuid = UUID.randomUUID().toString();
-    List<OwncloudTestResourceImpl> expected = Lists.newArrayList(
+    List<OwncloudTestResourceImpl> expectedResources = Lists.newArrayList(
         OwncloudTestResourceImpl.builder()
             .backendETag(UUID.randomUUID().toString())
             .backendName("user")
@@ -112,9 +111,9 @@ public abstract class AbstractOwncloudResourceServiceTest {
                 .build())
             .contentLength(Long.valueOf(14))
             .build());
-    prepare_listRoot_OK(expected);
+    prepare_listRoot_OK(expectedResources);
     List<OwncloudResource> resources = resourceService.listRoot();
-    compareResult(resources, expected);
+    assertThat(resources).containsOnlyElementsOf(expectedResources);
   }
 
   @Getter
@@ -156,25 +155,6 @@ public abstract class AbstractOwncloudResourceServiceTest {
 
   protected abstract void prepare_listRoot_OK(List<OwncloudTestResourceImpl> expectedResources) throws Exception;
 
-  private void compareResult(List<OwncloudResource> actualResources, List<OwncloudTestResourceImpl> expectedResources) {
-    assertThat(actualResources).hasSameSizeAs(expectedResources);
-    for (OwncloudResource actualResource : actualResources) {
-      OwncloudResource expectedResource = getExpectedResource(actualResource, expectedResources);
-      assertThat(actualResource).isEqualToComparingFieldByField(expectedResource);
-    }
-  }
-
-  private OwncloudResource getExpectedResource(OwncloudResource actualResource, List<OwncloudTestResourceImpl> expectedResources) {
-    for (Iterator<OwncloudTestResourceImpl> expectedResourceIterator = expectedResources.iterator(); expectedResourceIterator.hasNext();) {
-      OwncloudTestResourceImpl expectedResource = expectedResourceIterator.next();
-      if (actualResource.equals(expectedResource)) {
-        expectedResourceIterator.remove();
-        return expectedResource;
-      }
-    }
-    throw new IllegalStateException("No expected Resource found for actual Resource " + actualResource);
-  }
-
   @Test
   @WithMockUser(username = "user", password = "s3cr3t")
   public void test_list_OK() throws Exception {
@@ -182,7 +162,7 @@ public abstract class AbstractOwncloudResourceServiceTest {
     String uuidSearchPath = UUID.randomUUID().toString();
     String uuidResource = UUID.randomUUID().toString();
     String uuidSuperPath = UUID.randomUUID().toString();
-    List<OwncloudTestResourceImpl> expected = Lists.newArrayList(
+    List<OwncloudTestResourceImpl> expectedResources = Lists.newArrayList(
         OwncloudTestResourceImpl.builder()
             .backendETag(uuidSearchPath)
             .backendName("directory")
@@ -213,9 +193,9 @@ public abstract class AbstractOwncloudResourceServiceTest {
             .mediaType(OwncloudUtils.getDirectoryMediaType())
             .name("..")
             .build());
-    prepare_list_OK(searchPath, expected);
+    prepare_list_OK(searchPath, expectedResources);
     List<OwncloudResource> resources = resourceService.list(searchPath);
-    compareResult(resources, expected);
+    assertThat(resources).containsOnlyElementsOf(expectedResources);
   }
 
   protected abstract void prepare_list_OK(URI searchPath, List<OwncloudTestResourceImpl> expectedOwncloudResources) throws Exception;
