@@ -30,7 +30,7 @@ import software.coolstuff.springframework.owncloud.model.OwncloudResource;
  * @author mufasa1976
  */
 @Data
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = true, exclude = "contentLength")
 @ToString(callSuper = true)
 @Setter(AccessLevel.PACKAGE)
 class OwncloudLocalFileResourceImpl extends OwncloudLocalResourceImpl implements OwncloudFileResource {

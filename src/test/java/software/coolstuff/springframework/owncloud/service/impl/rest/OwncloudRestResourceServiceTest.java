@@ -17,28 +17,22 @@
 */
 package software.coolstuff.springframework.owncloud.service.impl.rest;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
-import org.junit.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -47,10 +41,8 @@ import com.github.sardine.Sardine;
 import com.google.common.collect.Lists;
 
 import software.coolstuff.springframework.owncloud.model.OwncloudFileResource;
-import software.coolstuff.springframework.owncloud.model.OwncloudResource;
 import software.coolstuff.springframework.owncloud.service.AbstractOwncloudResourceServiceTest;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudResourceService;
-import software.coolstuff.springframework.owncloud.service.impl.OwncloudUtils;
 
 @ActiveProfiles("REST-RESOURCE-SERVICE")
 public class OwncloudRestResourceServiceTest extends AbstractOwncloudResourceServiceTest {
@@ -80,49 +72,21 @@ public class OwncloudRestResourceServiceTest extends AbstractOwncloudResourceSer
   }
 
   @Override
-  protected List<OwncloudResource> prepare_listRoot_OK() throws Exception {
-    List<OwncloudResource> expectedOwncloudResources = Lists.newArrayList(
-        OwncloudRestResourceImpl.builder()
-            .eTag(UUID.randomUUID().toString())
-            .href(URI.create("/"))
-            .lastModifiedAt(new Date())
-            .mediaType(OwncloudUtils.getDirectoryMediaType())
-            .name(".")
-            .build(),
-        OwncloudRestFileResourceImpl.fileBuilder()
-            .owncloudResource(OwncloudRestFileResourceImpl.builder()
-                .eTag(UUID.randomUUID().toString())
-                .href(URI.create("/resource1"))
-                .lastModifiedAt(new Date())
-                .mediaType(MediaType.APPLICATION_PDF)
-                .name("resource1")
-                .build())
-            .contentLength(Long.valueOf(1234))
-            .build());
+  protected void prepare_listRoot_OK(List<OwncloudTestResourceImpl> expectedOwncloudResources) throws Exception {
     List<DavResource> expectedDavResources = expectedOwncloudResources.stream()
-        .map(owncloudResource -> createDavResourceFrom(owncloudResource, Locale.GERMAN, "."))
+        .map(owncloudResource -> createDavResourceFrom(owncloudResource, Locale.GERMAN))
         .collect(Collectors.toList());
     Mockito
         .when(sardine.list(getResourcePath()))
         .thenReturn(expectedDavResources);
-    return expectedOwncloudResources;
   }
 
-  private DavResource createDavResourceFrom(OwncloudResource owncloudResource, Locale locale, String renameName) {
+  private DavResource createDavResourceFrom(OwncloudTestResourceImpl owncloudResource, Locale locale) {
     URI prefixedHref = resolveAsFileURI(owncloudResource.getHref());
     String contentLanguage = Optional.ofNullable(locale)
         .map(loc -> loc.getLanguage())
         .orElse(null);
-    String name = owncloudResource.getName();
-    if (StringUtils.equals(name, renameName)) {
-      String[] tokenizedPath = StringUtils.split(owncloudResource.getHref().getPath(), "/");
-      if (ArrayUtils.isNotEmpty(tokenizedPath)) {
-        name = tokenizedPath[tokenizedPath.length - 1];
-      } else {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        name = authentication.getName();
-      }
-    }
+    String name = owncloudResource.getBackendName();
     try {
       return new OwncloudDavResource(
           prefixedHref.getPath(),
@@ -130,7 +94,7 @@ public class OwncloudRestResourceServiceTest extends AbstractOwncloudResourceSer
           owncloudResource.getLastModifiedAt(),
           owncloudResource.getMediaType().toString(),
           (owncloudResource instanceof OwncloudFileResource ? ((OwncloudFileResource) owncloudResource).getContentLength() : null),
-          owncloudResource.getETag(),
+          owncloudResource.getBackendETag(),
           name,
           contentLanguage);
     } catch (URISyntaxException e) {
@@ -199,74 +163,30 @@ public class OwncloudRestResourceServiceTest extends AbstractOwncloudResourceSer
             .toUriString());
   }
 
-  @Test
-  @WithMockUser(username = "user", password = "s3cr3t")
-  public void test_list_OK() throws Exception {
-    URI searchPath = URI.create("/directory/directory/");
-    List<OwncloudResource> expected = prepare_list_OK(searchPath);
-    List<OwncloudResource> resources = resourceService.list(searchPath);
-    assertThat(resources).containsAll(expected);
-  }
-
-  protected List<OwncloudResource> prepare_list_OK(URI searchPath) throws Exception {
-    List<OwncloudResource> expectedOwncloudResources = Lists.newArrayList(
-        OwncloudRestResourceImpl.builder()
-            .eTag(UUID.randomUUID().toString())
-            .href(appendPath(searchPath, "/"))
-            .lastModifiedAt(new Date())
-            .mediaType(OwncloudUtils.getDirectoryMediaType())
-            .name(".")
-            .build(),
-        OwncloudRestFileResourceImpl.fileBuilder()
-            .owncloudResource(OwncloudRestResourceImpl.builder()
-                .eTag(UUID.randomUUID().toString())
-                .href(appendPath(searchPath, "/resource1"))
-                .lastModifiedAt(new Date())
-                .mediaType(MediaType.APPLICATION_PDF)
-                .name("resource1")
-                .build())
-            .contentLength(Long.valueOf(1234))
-            .build());
+  @Override
+  protected void prepare_list_OK(URI searchPath, List<OwncloudTestResourceImpl> expectedOwncloudResources) throws Exception {
     List<DavResource> expectedDavResources = expectedOwncloudResources.stream()
-        .map(owncloudResource -> createDavResourceFrom(owncloudResource, Locale.GERMAN, "."))
+        .filter(owncloudResource -> !StringUtils.equals(owncloudResource.getName(), ".."))
+        .map(owncloudResource -> createDavResourceFrom(owncloudResource, Locale.GERMAN))
         .collect(Collectors.toList());
     Mockito
         .when(sardine.list(getResourcePath(searchPath)))
         .thenReturn(expectedDavResources);
 
     if (isNotRoot(searchPath) && properties.getResourceService().isAddRelativeDownPath()) {
-      URI superSearchPath = URI.create(
-          UriComponentsBuilder.fromUri(searchPath)
-              .path("/../")
-              .toUriString())
-          .normalize();
-      OwncloudResource owncloudSuperResource = OwncloudRestResourceImpl.builder()
-          .eTag(UUID.randomUUID().toString())
-          .href(superSearchPath)
-          .lastModifiedAt(new Date())
-          .mediaType(OwncloudUtils.getDirectoryMediaType())
-          .name("..")
-          .build();
-      expectedOwncloudResources.add(owncloudSuperResource);
-      DavResource superDavResource = createDavResourceFrom(owncloudSuperResource, Locale.GERMAN, "..");
-      Mockito
-          .when(sardine.list(getResourcePath(URI.create("/directory/")), 0))
-          .thenReturn(Lists.newArrayList(superDavResource));
+      expectedOwncloudResources.stream()
+          .filter(owncloudResource -> StringUtils.equals(owncloudResource.getName(), ".."))
+          .forEach(owncloudResource -> {
+            try {
+              DavResource superDavResource = createDavResourceFrom(owncloudResource, Locale.GERMAN);
+              Mockito
+                  .when(sardine.list(getResourcePath(URI.create("/directory/")), 0))
+                  .thenReturn(Lists.newArrayList(superDavResource));
+            } catch (IOException e) {
+              throw new RuntimeException(e);
+            }
+          });
     }
-
-    return expectedOwncloudResources;
-  }
-
-  private URI appendPath(URI baseUri, String appendPath) {
-    if (baseUri == null) {
-      return Optional.ofNullable(appendPath)
-          .map(path -> URI.create(path))
-          .orElse(baseUri);
-    }
-    return URI.create(
-        UriComponentsBuilder.fromUri(baseUri)
-            .path(appendPath)
-            .toUriString());
   }
 
   private boolean isNotRoot(URI searchPath) {

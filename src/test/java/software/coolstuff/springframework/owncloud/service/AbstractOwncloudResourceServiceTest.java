@@ -19,7 +19,12 @@ package software.coolstuff.springframework.owncloud.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.net.URI;
+import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -31,14 +36,28 @@ import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.boot.test.mock.mockito.MockitoTestExecutionListener;
 import org.springframework.boot.test.mock.mockito.ResetMocksTestExecutionListener;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.test.context.support.WithSecurityContextTestExecutionListener;
 import org.springframework.test.context.TestExecutionListeners;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.web.util.UriComponentsBuilder;
 
+import com.google.common.collect.Lists;
+
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 import software.coolstuff.springframework.owncloud.config.VelocityConfiguration;
+import software.coolstuff.springframework.owncloud.model.OwncloudFileResource;
 import software.coolstuff.springframework.owncloud.model.OwncloudResource;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudResourceService;
+import software.coolstuff.springframework.owncloud.service.impl.OwncloudUtils;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(
@@ -71,10 +90,146 @@ public abstract class AbstractOwncloudResourceServiceTest {
   @Test
   @WithMockUser(username = "user", password = "s3cr3t")
   public void test_listRoot_OK() throws Exception {
-    List<OwncloudResource> expected = prepare_listRoot_OK();
+    String uuid = UUID.randomUUID().toString();
+    List<OwncloudTestResourceImpl> expected = Lists.newArrayList(
+        OwncloudTestResourceImpl.builder()
+            .backendETag(UUID.randomUUID().toString())
+            .backendName("user")
+            .href(URI.create("/"))
+            .lastModifiedAt(new Date())
+            .mediaType(OwncloudUtils.getDirectoryMediaType())
+            .name(".")
+            .build(),
+        OwncloudTestFileResourceImpl.fileBuilder()
+            .owncloudResource(OwncloudTestFileResourceImpl.builder()
+                .backendETag(uuid)
+                .backendName("resource1")
+                .eTag(uuid)
+                .href(URI.create("/resource1"))
+                .lastModifiedAt(new Date())
+                .mediaType(MediaType.APPLICATION_PDF)
+                .name("resource1")
+                .build())
+            .contentLength(Long.valueOf(1234))
+            .build());
+    prepare_listRoot_OK(expected);
     List<OwncloudResource> resources = resourceService.listRoot();
-    assertThat(resources).containsAll(expected);
+    compareResult(resources, expected);
   }
 
-  protected abstract List<OwncloudResource> prepare_listRoot_OK() throws Exception;
+  @Data
+  @EqualsAndHashCode(of = "eTag")
+  @Setter(AccessLevel.PACKAGE)
+  @NoArgsConstructor
+  @AllArgsConstructor(access = AccessLevel.PRIVATE)
+  @Builder
+  public static class OwncloudTestResourceImpl implements OwncloudResource {
+    private URI href;
+    private String name;
+    private String backendName;
+    private Date lastModifiedAt;
+    private MediaType mediaType;
+    private String eTag;
+    private String backendETag;
+  }
+
+  @Data
+  @EqualsAndHashCode(callSuper = true, exclude = "contentLength")
+  @ToString(callSuper = true)
+  public static class OwncloudTestFileResourceImpl extends OwncloudTestResourceImpl implements OwncloudFileResource {
+
+    private Long contentLength;
+
+    @Builder(builderMethodName = "fileBuilder")
+    private OwncloudTestFileResourceImpl(OwncloudTestResourceImpl owncloudResource, Long contentLength) {
+      super(
+          owncloudResource.getHref(),
+          owncloudResource.getName(),
+          owncloudResource.getBackendName(),
+          owncloudResource.getLastModifiedAt(),
+          owncloudResource.getMediaType(),
+          owncloudResource.getETag(),
+          owncloudResource.getBackendETag());
+      this.contentLength = contentLength;
+    }
+  }
+
+  protected abstract void prepare_listRoot_OK(List<OwncloudTestResourceImpl> expectedResources) throws Exception;
+
+  private void compareResult(List<OwncloudResource> actualResources, List<OwncloudTestResourceImpl> expectedResources) {
+    assertThat(actualResources).hasSameSizeAs(expectedResources);
+    for (OwncloudResource actualResource : actualResources) {
+      OwncloudResource expectedResource = getExpectedResource(actualResource, expectedResources);
+      assertThat(actualResource).isEqualToComparingFieldByField(expectedResource);
+    }
+  }
+
+  private OwncloudResource getExpectedResource(OwncloudResource actualResource, List<OwncloudTestResourceImpl> expectedResources) {
+    for (Iterator<OwncloudTestResourceImpl> expectedResourceIterator = expectedResources.iterator(); expectedResourceIterator.hasNext();) {
+      OwncloudTestResourceImpl expectedResource = expectedResourceIterator.next();
+      if (actualResource.equals(expectedResource)) {
+        expectedResourceIterator.remove();
+        return expectedResource;
+      }
+    }
+    throw new IllegalStateException("No expected Resource found for actual Resource " + actualResource);
+  }
+
+  @Test
+  @WithMockUser(username = "user", password = "s3cr3t")
+  public void test_list_OK() throws Exception {
+    URI searchPath = URI.create("/directory/directory/");
+    String uuidSearchPath = UUID.randomUUID().toString();
+    String uuidResource = UUID.randomUUID().toString();
+    String uuidSuperPath = UUID.randomUUID().toString();
+    List<OwncloudTestResourceImpl> expected = Lists.newArrayList(
+        OwncloudTestResourceImpl.builder()
+            .backendETag(uuidSearchPath)
+            .backendName("directory")
+            .eTag(uuidSearchPath)
+            .href(appendPath(searchPath, "/"))
+            .lastModifiedAt(new Date())
+            .mediaType(OwncloudUtils.getDirectoryMediaType())
+            .name(".")
+            .build(),
+        OwncloudTestFileResourceImpl.fileBuilder()
+            .owncloudResource(OwncloudTestResourceImpl.builder()
+                .backendETag(uuidResource)
+                .backendName("resource1")
+                .eTag(uuidResource)
+                .href(appendPath(searchPath, "/resource1"))
+                .lastModifiedAt(new Date())
+                .mediaType(MediaType.APPLICATION_PDF)
+                .name("resource1")
+                .build())
+            .contentLength(Long.valueOf(1234))
+            .build(),
+        OwncloudTestResourceImpl.builder()
+            .backendETag(uuidSuperPath)
+            .backendName("directory")
+            .eTag(uuidSuperPath)
+            .href(appendPath(searchPath, "/../"))
+            .lastModifiedAt(new Date())
+            .mediaType(OwncloudUtils.getDirectoryMediaType())
+            .name("..")
+            .build());
+    prepare_list_OK(searchPath, expected);
+    List<OwncloudResource> resources = resourceService.list(searchPath);
+    compareResult(resources, expected);
+  }
+
+  protected abstract void prepare_list_OK(URI searchPath, List<OwncloudTestResourceImpl> expectedOwncloudResources) throws Exception;
+
+  private URI appendPath(URI baseUri, String appendPath) {
+    if (baseUri == null) {
+      return Optional.ofNullable(appendPath)
+          .map(path -> URI.create(path).normalize())
+          .orElse(baseUri);
+    }
+    return URI.create(
+        UriComponentsBuilder.fromUri(baseUri)
+            .path(appendPath)
+            .toUriString())
+        .normalize();
+  }
 }
