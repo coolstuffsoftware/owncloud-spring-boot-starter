@@ -31,6 +31,7 @@ import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudResourceService;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudUserModificationService;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudUserQueryService;
+import software.coolstuff.springframework.owncloud.service.impl.local.OwncloudLocalProperties.ResourceServiceProperties;
 
 @Configuration
 @ConditionalOnClass(Jackson2ObjectMapperBuilder.class)
@@ -73,8 +74,10 @@ class OwncloudLocalAutoConfiguration {
 
   @Bean
   @ConditionalOnProperty("owncloud.resource-service.location")
-  public OwncloudLocalResourceChecksumService owncloudLocalResourceChecksumService() {
-    return new OwncloudLocalResourceChecksumServiceImpl();
+  public OwncloudLocalResourceChecksumService owncloudLocalResourceChecksumService(OwncloudLocalProperties properties) throws InstantiationException, IllegalAccessException {
+    ResourceServiceProperties resourceProperties = properties.getResourceService();
+    OwncloudLocalResourceChecksumService.ChecksumServiceStrategy checksumServiceStrategy = resourceProperties.getChecksumServiceStrategy();
+    return checksumServiceStrategy.newInstance();
   }
 
   @Bean

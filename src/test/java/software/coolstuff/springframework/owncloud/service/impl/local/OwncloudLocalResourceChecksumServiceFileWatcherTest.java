@@ -25,8 +25,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalTime;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.function.Consumer;
 
 import org.apache.commons.io.IOUtils;
@@ -51,6 +49,7 @@ import org.springframework.test.context.TestExecutionListeners;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import software.coolstuff.springframework.owncloud.service.impl.local.OwncloudLocalProperties.ResourceServiceProperties;
 
@@ -61,7 +60,7 @@ import software.coolstuff.springframework.owncloud.service.impl.local.OwncloudLo
 @SpringBootTest(
     webEnvironment = WebEnvironment.NONE,
     classes = {
-        OwncloudLocalResourceChecksumServiceTest.BeanConfiguration.class
+        OwncloudLocalResourceChecksumServiceFileWatcherTest.BeanConfiguration.class
     })
 @TestExecutionListeners({
     SpringBootDependencyInjectionTestExecutionListener.class,
@@ -70,28 +69,26 @@ import software.coolstuff.springframework.owncloud.service.impl.local.OwncloudLo
     WithSecurityContextTestExecutionListener.class,
     OwncloudLocalResourceServiceTestExecutionListener.class
 })
-@ActiveProfiles("LOCAL-CHECKSUM-SERVICE")
+@ActiveProfiles("LOCAL-FILEWATCHER-CHECKSUM-SERVICE")
 @Slf4j
-public class OwncloudLocalResourceChecksumServiceTest {
+public class OwncloudLocalResourceChecksumServiceFileWatcherTest {
 
   @Configuration
   @EnableConfigurationProperties(OwncloudLocalProperties.class)
   static class BeanConfiguration {
     @Bean
-    public OwncloudLocalResourceChecksumService checksumService() {
-      return new OwncloudLocalResourceChecksumServiceImpl();
+    public OwncloudLocalResourceChecksumService checksumService() throws InstantiationException, IllegalAccessException {
+      return OwncloudLocalResourceChecksumService.ChecksumServiceStrategy.FILE_WATCHER.newInstance();
     }
   }
 
-  private static final String RUN_TESTS = "testChecksumService";
+  private static final String RUN_TESTS = "testFileWatcherChecksumService";
 
   @Autowired
-  private OwncloudLocalResourceChecksumService checksumService;
+  private OwncloudLocalResourceChecksumServiceWithListenerRegistration checksumService;
 
   @Autowired
   private OwncloudLocalProperties properties;
-
-  private final Map<Path, Boolean> changedPaths = new HashMap<>();
 
   @BeforeClass
   public static void beforeClass() {
@@ -101,7 +98,6 @@ public class OwncloudLocalResourceChecksumServiceTest {
 
   @Before
   public void setUp() throws InterruptedException {
-    changedPaths.clear();
     checksumService.clearChangeListener();
     checksumService.clearDeleteListener();
   }
@@ -133,7 +129,7 @@ public class OwncloudLocalResourceChecksumServiceTest {
     Path file = rootDirectory.resolve("resource1.txt");
     WaitThread waitThread = registerListenerFor(file);
     createFileResource(file);
-    WaitThread.waitFor(waitThread);
+    waitThread.waitFor();
     checksum = checksumService.getChecksum(rootDirectory);
     assertThat(checksum).isNotEmpty();
     // the MD5-Checksum of the Root-Directory should never change
@@ -150,11 +146,8 @@ public class OwncloudLocalResourceChecksumServiceTest {
   private WaitThread registerListenerFor(Path path) {
     WaitThread waitThread = new WaitThread(path);
     waitThread.start();
-    changedPaths.put(path.toAbsolutePath().normalize(), false);
     Consumer<Path> listener = changedPath -> {
       if (changedPath.toAbsolutePath().normalize().equals(path.toAbsolutePath().normalize())) {
-        log.debug("Path {} has been changed", changedPath);
-        changedPaths.put(changedPath.toAbsolutePath().normalize(), true);
         waitThread.interrupt();
       }
     };
@@ -163,19 +156,22 @@ public class OwncloudLocalResourceChecksumServiceTest {
     return waitThread;
   }
 
+  @Setter
+  @Getter
   private static class WaitThread extends Thread {
 
-    @Getter
     private final Path path;
+    private String changeListenerId;
+    private String deleteListenerId;
 
     public WaitThread(final Path path) {
       this.path = path;
       setName("Wait for Changes on Path " + path.toAbsolutePath().toString());
     }
 
-    public static void waitFor(WaitThread waitThread) throws InterruptedException {
-      log.debug("Wait for changes on " + waitThread.getPath().toAbsolutePath().normalize());
-      waitThread.join();
+    public void waitFor() throws InterruptedException {
+      log.debug("Wait for changes on " + getPath().toAbsolutePath().normalize());
+      this.join();
     }
 
     @Override
@@ -200,7 +196,7 @@ public class OwncloudLocalResourceChecksumServiceTest {
     WaitThread waitThread = registerListenerFor(userRootDirectory);
     Files.createDirectories(userRootDirectory);
 
-    WaitThread.waitFor(waitThread);
+    waitThread.waitFor();
     String checksum = checksumService.getChecksum(userRootDirectory);
     assertThat(checksum).isNotEmpty();
     assertThat(checksum).isEqualTo("d41d8cd98f00b204e9800998ecf8427e");
@@ -213,7 +209,7 @@ public class OwncloudLocalResourceChecksumServiceTest {
     WaitThread waitThread = registerListenerFor(userRootDirectory);
     Files.createDirectories(userRootDirectory);
 
-    WaitThread.waitFor(waitThread);
+    waitThread.waitFor();
     String checksum = checksumService.getChecksum(userRootDirectory);
     assertThat(checksum).isNotEmpty();
     assertThat(checksum).isEqualTo("d41d8cd98f00b204e9800998ecf8427e");
@@ -221,7 +217,7 @@ public class OwncloudLocalResourceChecksumServiceTest {
     Path file = userRootDirectory.resolve("resource1.txt");
     waitThread = registerListenerFor(file);
     createFileResource(file);
-    WaitThread.waitFor(waitThread);
+    waitThread.waitFor();
     checksum = checksumService.getChecksum(userRootDirectory);
     assertThat(checksum).isNotEmpty();
     assertThat(checksum).isNotEqualTo("d41d8cd98f00b204e9800998ecf8427e");

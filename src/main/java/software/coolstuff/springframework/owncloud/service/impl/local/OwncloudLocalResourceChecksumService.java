@@ -18,8 +18,8 @@
 package software.coolstuff.springframework.owncloud.service.impl.local;
 
 import java.nio.file.Path;
-import java.util.function.Consumer;
 
+import lombok.RequiredArgsConstructor;
 import software.coolstuff.springframework.owncloud.exception.resource.OwncloudResourceException;
 
 /**
@@ -27,14 +27,23 @@ import software.coolstuff.springframework.owncloud.exception.resource.OwncloudRe
  */
 interface OwncloudLocalResourceChecksumService {
 
+  ChecksumServiceStrategy getStrategy();
+
   String getChecksum(Path path) throws OwncloudResourceException;
 
-  void registerChangeListener(Consumer<Path> listener);
+  void setChecksum(Path path, String checksum) throws OwncloudResourceException;
 
-  void registerDeleteListener(Consumer<Path> listener);
+  @RequiredArgsConstructor
+  static enum ChecksumServiceStrategy {
+    FILE_WATCHER(OwncloudLocalResourceChecksumServiceFileWatcherImpl.class),
+    REFRESH(OwncloudLocalResourceChecksumServiceRefreshingImpl.class),
+    MANUAL(OwncloudLocalResourceChecksumServiceManualImpl.class);
 
-  void clearChangeListener();
+    private final Class<? extends OwncloudLocalResourceChecksumService> checksumServiceClass;
 
-  void clearDeleteListener();
+    public OwncloudLocalResourceChecksumService newInstance() throws InstantiationException, IllegalAccessException {
+      return checksumServiceClass.newInstance();
+    }
+  }
 
 }

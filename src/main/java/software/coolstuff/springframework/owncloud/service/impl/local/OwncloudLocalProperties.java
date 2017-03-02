@@ -20,6 +20,7 @@ package software.coolstuff.springframework.owncloud.service.impl.local;
 import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.concurrent.TimeUnit;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
@@ -58,19 +59,45 @@ class OwncloudLocalProperties extends OwncloudProperties {
     }
 
     @Data
-    static class FileWatcherThreadProperties {
+    private static class ThreadProperties {
       @NotNull
-      private String name = "Owncloud local Resources File Watcher";
+      private String name;
 
       @Min(Thread.MIN_PRIORITY)
       @Max(Thread.MAX_PRIORITY)
       private int priority = Thread.NORM_PRIORITY;
     }
 
+    @Data
+    @EqualsAndHashCode(callSuper = true)
+    @ToString(callSuper = true)
+    static class FileWatcherThreadProperties extends ThreadProperties {
+      public FileWatcherThreadProperties() {
+        setName("Owncloud local Resources Checksum File Watcher");
+      }
+    }
+
+    @Data
+    @EqualsAndHashCode(callSuper = true)
+    @ToString(callSuper = true)
+    static class RefreshThreadProperties extends ThreadProperties {
+      public RefreshThreadProperties() {
+        setName("Owncloud local Resources Checksum Refresh");
+      }
+
+      @NotNull
+      private int refreshInterval = 5;
+      @NotNull
+      private TimeUnit refreshIntervalTimeUnit = TimeUnit.MINUTES;
+    }
+
     private Path location;
     private FileWatcherThreadProperties fileWatcherThread = new FileWatcherThreadProperties();
+    private RefreshThreadProperties refreshThread = new RefreshThreadProperties();
     @NotNull
     private MessageDigestAlgorithm messageDigestAlgorithm = MessageDigestAlgorithm.MD5;
+    @NotNull
+    private OwncloudLocalResourceChecksumService.ChecksumServiceStrategy checksumServiceStrategy = OwncloudLocalResourceChecksumService.ChecksumServiceStrategy.REFRESH;
   }
 
   private ResourceServiceProperties resourceService = new ResourceServiceProperties();
