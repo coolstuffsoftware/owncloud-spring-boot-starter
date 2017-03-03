@@ -17,25 +17,21 @@
 */
 package software.coolstuff.springframework.owncloud.service.impl.local;
 
-import java.nio.file.Path;
-import java.util.function.Consumer;
+import lombok.RequiredArgsConstructor;
 
 /**
  * @author mufasa1976
  *
  */
-interface OwncloudLocalResourceChecksumServiceWithListenerRegistration extends OwncloudLocalResourceChecksumService {
+@RequiredArgsConstructor
+enum OwncloudLocalResourceChecksumServiceStrategy {
+  FILE_WATCHER(OwncloudLocalResourceChecksumServiceFileWatcherImpl.class),
+  REFRESH(OwncloudLocalResourceChecksumServiceRefreshingImpl.class),
+  MANUAL(OwncloudLocalResourceChecksumServiceManualImpl.class);
 
-  String registerChangeListener(Consumer<Path> listener);
+  private final Class<? extends OwncloudLocalResourceChecksumService> checksumServiceClass;
 
-  String registerDeleteListener(Consumer<Path> listener);
-
-  void deregisterChangeListener(String id);
-
-  void deregisterDeleteListener(String id);
-
-  void clearChangeListener();
-
-  void clearDeleteListener();
-
+  public OwncloudLocalResourceChecksumService newInstance() throws InstantiationException, IllegalAccessException {
+    return checksumServiceClass.newInstance();
+  }
 }

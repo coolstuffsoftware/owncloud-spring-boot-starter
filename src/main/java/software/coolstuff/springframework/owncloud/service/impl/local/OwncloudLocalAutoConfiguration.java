@@ -42,6 +42,9 @@ class OwncloudLocalAutoConfiguration {
   @Autowired
   private Jackson2ObjectMapperBuilder jackson2ObjectMapperBuilder;
 
+  @Autowired
+  private OwncloudLocalProperties properties;
+
   @Bean
   public OwncloudUserQueryService owncloudUserQueryService() {
     return new OwncloudLocalUserQueryResourceImpl(owncloudLocalUserDataService());
@@ -73,10 +76,11 @@ class OwncloudLocalAutoConfiguration {
   }
 
   @Bean
+  @ConditionalOnMissingBean(OwncloudLocalResourceChecksumService.class)
   @ConditionalOnProperty("owncloud.resource-service.location")
-  public OwncloudLocalResourceChecksumService owncloudLocalResourceChecksumService(OwncloudLocalProperties properties) throws InstantiationException, IllegalAccessException {
+  public OwncloudLocalResourceChecksumService owncloudLocalResourceChecksumService() throws InstantiationException, IllegalAccessException {
     ResourceServiceProperties resourceProperties = properties.getResourceService();
-    OwncloudLocalResourceChecksumService.ChecksumServiceStrategy checksumServiceStrategy = resourceProperties.getChecksumServiceStrategy();
+    OwncloudLocalResourceChecksumServiceStrategy checksumServiceStrategy = resourceProperties.getChecksumServiceStrategy();
     return checksumServiceStrategy.newInstance();
   }
 

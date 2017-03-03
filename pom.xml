@@ -47,16 +47,18 @@
     <maven.compiler.target>${java.version}</maven.compiler.target>
 
     <!-- Dependency Versions -->
-    <spring-boot.version>1.4.3.RELEASE</spring-boot.version>
+    <spring-boot.version>1.5.1.RELEASE</spring-boot.version>
     <commons-lang3.version>3.5</commons-lang3.version>
     <guava.version>20.0</guava.version>
     <commons-io.version>2.5</commons-io.version>
     <commons-collections4.version>4.1</commons-collections4.version>
-    <commons-vfs.version>2.1</commons-vfs.version>
     <httpclient.version>4.5.2</httpclient.version>
     <sardine.version>5.7</sardine.version>
     <xmlunit.version>2.3.0</xmlunit.version>
     <lombok-plugin.version>1.16.12.0</lombok-plugin.version>
+    <velocity.version>1.7</velocity.version>
+    <velocity-tools.version>2.0</velocity-tools.version>
+    <assertj.version>2.5.0</assertj.version>
 
     <!-- Javadoc Properties -->
     <author>false</author>
@@ -96,6 +98,18 @@
         <version>${commons-collections4.version}</version>
       </dependency>
 
+      <!-- Apache Velocity -->
+      <dependency>
+        <groupId>org.apache.velocity</groupId>
+        <artifactId>velocity</artifactId>
+        <version>${velocity.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.velocity</groupId>
+        <artifactId>velocity-tools</artifactId>
+        <version>${velocity-tools.version}</version>
+      </dependency>
+
       <!-- Sardine WebDAV Library -->
       <dependency>
         <groupId>com.github.lookfirst</groupId>
@@ -115,6 +129,15 @@
         <groupId>org.xmlunit</groupId>
         <artifactId>xmlunit-core</artifactId>
         <version>${xmlunit.version}</version>
+      </dependency>
+
+      <!-- AssertJ -->
+      <!-- NOTE: This is just a Workaround because Version 2.6.0 -->
+      <!--       doesn't compare Collections correctly (Tests will fail) -->
+      <dependency>
+        <groupId>org.assertj</groupId>
+        <artifactId>assertj-core</artifactId>
+        <version>${assertj.version}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -469,7 +492,7 @@
               </environmentVariables>
             </configuration>
           </plugin>
-          
+
           <plugin>
             <artifactId>maven-clean-plugin</artifactId>
             <version>2.6.1</version>

@@ -1,5 +1,5 @@
 /*
-   Copyright (C) 2016 by the original Authors.
+   Copyright (C) 2017 by the original Authors.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -17,23 +17,17 @@
 */
 package software.coolstuff.springframework.owncloud.config;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Inherited;
+import static java.lang.annotation.ElementType.TYPE;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
+
 import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import org.springframework.security.test.context.support.WithSecurityContext;
+/**
+ * @author mufasa1976
+ */
+@Retention(RUNTIME)
+@Target(TYPE)
+public @interface IgnoreOnComponentScan {
 
-@Target({ ElementType.METHOD, ElementType.TYPE })
-@Retention(RetentionPolicy.RUNTIME)
-@Inherited
-@WithSecurityContext(factory = WithOwncloudMockUserFactory.class)
-public @interface WithOwncloudMockUser {
-
-  String value() default "user";
-
-  String username() default "";
-
-  String password() default "";
 }

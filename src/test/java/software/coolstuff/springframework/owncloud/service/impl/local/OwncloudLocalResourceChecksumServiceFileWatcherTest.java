@@ -51,6 +51,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import software.coolstuff.springframework.owncloud.config.IgnoreOnComponentScan;
 import software.coolstuff.springframework.owncloud.service.impl.local.OwncloudLocalProperties.ResourceServiceProperties;
 
 /**
@@ -75,17 +76,18 @@ public class OwncloudLocalResourceChecksumServiceFileWatcherTest {
 
   @Configuration
   @EnableConfigurationProperties(OwncloudLocalProperties.class)
-  static class BeanConfiguration {
+  @IgnoreOnComponentScan
+  public static class BeanConfiguration {
     @Bean
     public OwncloudLocalResourceChecksumService checksumService() throws InstantiationException, IllegalAccessException {
-      return OwncloudLocalResourceChecksumService.ChecksumServiceStrategy.FILE_WATCHER.newInstance();
+      return new OwncloudLocalResourceChecksumServiceFileWatcherImpl();
     }
   }
 
   private static final String RUN_TESTS = "testFileWatcherChecksumService";
 
   @Autowired
-  private OwncloudLocalResourceChecksumServiceWithListenerRegistration checksumService;
+  private OwncloudLocalResourceChecksumServiceWithFileWatcherListener checksumService;
 
   @Autowired
   private OwncloudLocalProperties properties;
@@ -98,8 +100,8 @@ public class OwncloudLocalResourceChecksumServiceFileWatcherTest {
 
   @Before
   public void setUp() throws InterruptedException {
-    checksumService.clearChangeListener();
-    checksumService.clearDeleteListener();
+    checksumService.clearChangeListeners();
+    checksumService.clearDeleteListeners();
   }
 
   @Test

@@ -19,31 +19,17 @@ package software.coolstuff.springframework.owncloud.service.impl.local;
 
 import java.nio.file.Path;
 
-import lombok.RequiredArgsConstructor;
 import software.coolstuff.springframework.owncloud.exception.resource.OwncloudResourceException;
 
 /**
  * @author mufasa1976
  */
-interface OwncloudLocalResourceChecksumService {
+public interface OwncloudLocalResourceChecksumService {
 
-  ChecksumServiceStrategy getStrategy();
+  OwncloudLocalResourceChecksumServiceStrategy getStrategy();
 
   String getChecksum(Path path) throws OwncloudResourceException;
 
-  void setChecksum(Path path, String checksum) throws OwncloudResourceException;
-
-  @RequiredArgsConstructor
-  static enum ChecksumServiceStrategy {
-    FILE_WATCHER(OwncloudLocalResourceChecksumServiceFileWatcherImpl.class),
-    REFRESH(OwncloudLocalResourceChecksumServiceRefreshingImpl.class),
-    MANUAL(OwncloudLocalResourceChecksumServiceManualImpl.class);
-
-    private final Class<? extends OwncloudLocalResourceChecksumService> checksumServiceClass;
-
-    public OwncloudLocalResourceChecksumService newInstance() throws InstantiationException, IllegalAccessException {
-      return checksumServiceClass.newInstance();
-    }
-  }
+  void recalculateChecksum(Path path) throws OwncloudResourceException;
 
 }

@@ -17,14 +17,34 @@
 */
 package software.coolstuff.springframework.owncloud.service.impl.local;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+
+import javax.annotation.PostConstruct;
+
+import lombok.val;
+import software.coolstuff.springframework.owncloud.service.impl.local.OwncloudLocalProperties.ResourceServiceProperties;
+
 /**
  * @author mufasa1976
  */
 class OwncloudLocalResourceChecksumServiceManualImpl extends AbstractOwncloudLocalResourceChecksumServiceImpl {
 
+  @PostConstruct
+  public void afterPropertiesSet() throws Exception {
+    ResourceServiceProperties resourceProperties = getResourceProperties();
+    Path rootDirectory = resourceProperties.getLocation();
+    val fileVisitor = InitializingFileVisitor.builder()
+        .checksums(getChecksums())
+        .fileDigest(this::createFileChecksum)
+        .directoryDigest(this::createDirectoryChecksum)
+        .build();
+    Files.walkFileTree(rootDirectory, fileVisitor);
+  }
+
   @Override
-  public ChecksumServiceStrategy getStrategy() {
-    return ChecksumServiceStrategy.MANUAL;
+  public OwncloudLocalResourceChecksumServiceStrategy getStrategy() {
+    return OwncloudLocalResourceChecksumServiceStrategy.MANUAL;
   }
 
 }

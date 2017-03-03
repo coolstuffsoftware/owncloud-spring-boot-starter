@@ -18,6 +18,7 @@
 package software.coolstuff.springframework.owncloud.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.fail;
 
 import java.net.URI;
 import java.util.Date;
@@ -35,6 +36,8 @@ import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.boot.test.mock.mockito.MockitoTestExecutionListener;
 import org.springframework.boot.test.mock.mockito.ResetMocksTestExecutionListener;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.ComponentScan.Filter;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.test.context.support.WithSecurityContextTestExecutionListener;
@@ -52,7 +55,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import software.coolstuff.springframework.owncloud.config.IgnoreOnComponentScan;
 import software.coolstuff.springframework.owncloud.config.VelocityConfiguration;
+import software.coolstuff.springframework.owncloud.exception.resource.OwncloudResourceNotFoundException;
 import software.coolstuff.springframework.owncloud.model.OwncloudFileResource;
 import software.coolstuff.springframework.owncloud.model.OwncloudResource;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudResourceService;
@@ -61,6 +66,9 @@ import software.coolstuff.springframework.owncloud.service.impl.OwncloudUtils;
 @RunWith(SpringRunner.class)
 @SpringBootTest(
     webEnvironment = WebEnvironment.NONE,
+    properties = {
+        "debug=true"
+    },
     classes = {
         VelocityConfiguration.class
     })
@@ -70,7 +78,9 @@ import software.coolstuff.springframework.owncloud.service.impl.OwncloudUtils;
     ResetMocksTestExecutionListener.class,
     WithSecurityContextTestExecutionListener.class,
 })
-@ComponentScan
+@ComponentScan(excludeFilters = {
+    @Filter(type = FilterType.ANNOTATION, classes = IgnoreOnComponentScan.class)
+})
 @RestClientTest(OwncloudResourceService.class)
 public abstract class AbstractOwncloudResourceServiceTest {
 
@@ -85,6 +95,25 @@ public abstract class AbstractOwncloudResourceServiceTest {
   }
 
   protected abstract Class<? extends OwncloudResourceService> getImplementationClass();
+
+  @Test
+  public void test_OwncloudTestResourceImpl_equalsTo_OwncloudResourceImpl() throws Exception {
+    String uuid = UUID.randomUUID().toString();
+    OwncloudResource expected = OwncloudTestResourceImpl.builder()
+        .backendETag(uuid)
+        .backendName("user")
+        .eTag(uuid)
+        .href(URI.create("https://owncloud.example.com/remote.php/dav/files/user/"))
+        .lastModifiedAt(new Date())
+        .mediaType(OwncloudUtils.getDirectoryMediaType())
+        .name(".")
+        .build();
+    OwncloudResource actual = prepare_OwncloudTestResourceImpl_equalsTo_OwncloudResourceImpl(expected);
+    assertThat(actual).isNotNull();
+    assertThat(actual).isEqualTo(expected);
+  }
+
+  protected abstract OwncloudResource prepare_OwncloudTestResourceImpl_equalsTo_OwncloudResourceImpl(OwncloudResource expected) throws Exception;
 
   @Test
   @WithMockUser(username = "user", password = "s3cr3t")
@@ -212,4 +241,16 @@ public abstract class AbstractOwncloudResourceServiceTest {
             .toUriString())
         .normalize();
   }
+
+  @Test(expected = OwncloudResourceNotFoundException.class)
+  @WithMockUser(username = "user", password = "s3cr3t")
+  public void test_list_NOK_FileNotFound() throws Exception {
+    URI searchPath = URI.create("/unknown");
+    prepare_list_NOK_FileNoutFound(searchPath);
+    resourceService.list(searchPath);
+    fail("Expected Exception " + OwncloudResourceNotFoundException.class.getName() + " has not been thrown");
+  }
+
+  protected abstract void prepare_list_NOK_FileNoutFound(URI searchPath) throws Exception;
+
 }

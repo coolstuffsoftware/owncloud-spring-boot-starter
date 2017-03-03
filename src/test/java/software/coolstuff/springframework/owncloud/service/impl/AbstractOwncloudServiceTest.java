@@ -53,6 +53,8 @@ import org.springframework.boot.test.autoconfigure.SpringBootDependencyInjection
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.ComponentScan.Filter;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -76,9 +78,11 @@ import lombok.Builder;
 import lombok.Data;
 import software.coolstuff.springframework.owncloud.config.AuthorityAppenderConfiguration;
 import software.coolstuff.springframework.owncloud.config.AuthorityMapperConfiguration;
+import software.coolstuff.springframework.owncloud.config.IgnoreOnComponentScan;
 import software.coolstuff.springframework.owncloud.config.VelocityConfiguration;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudGrantedAuthoritiesMapper;
 import software.coolstuff.springframework.owncloud.service.impl.local.OwncloudLocalFileTestExecutionListener;
+import software.coolstuff.springframework.owncloud.service.impl.local.OwncloudLocalResourceChecksumServiceFileWatcherTest;
 import software.coolstuff.springframework.owncloud.service.impl.rest.OwncloudRestService;
 import software.coolstuff.springframework.owncloud.service.impl.rest.OwncloudRestServiceTest;
 
@@ -95,7 +99,9 @@ import software.coolstuff.springframework.owncloud.service.impl.rest.OwncloudRes
     WithSecurityContextTestExecutionListener.class,
     OwncloudLocalFileTestExecutionListener.class
 })
-@ComponentScan
+@ComponentScan(excludeFilters = {
+    @Filter(type = FilterType.ANNOTATION, classes = IgnoreOnComponentScan.class)
+})
 public abstract class AbstractOwncloudServiceTest {
 
   private final static String DEFAULT_PATH = "/ocs/v1.php";

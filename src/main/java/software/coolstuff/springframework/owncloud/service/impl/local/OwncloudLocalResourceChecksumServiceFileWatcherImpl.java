@@ -30,11 +30,13 @@ import java.nio.file.WatchService;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
-import lombok.val;
+import org.apache.commons.lang3.Validate;
+
 import lombok.extern.slf4j.Slf4j;
 import software.coolstuff.springframework.owncloud.exception.resource.OwncloudLocalResourceWatchServiceException;
 import software.coolstuff.springframework.owncloud.service.impl.local.OwncloudLocalProperties.ResourceServiceProperties;
@@ -44,16 +46,24 @@ import software.coolstuff.springframework.owncloud.service.impl.local.OwncloudLo
  * @author mufasa1976
  */
 @Slf4j
-class OwncloudLocalResourceChecksumServiceFileWatcherImpl extends AbstractOwncloudLocalResourceChecksumServiceImpl {
+class OwncloudLocalResourceChecksumServiceFileWatcherImpl extends AbstractOwncloudLocalResourceChecksumServiceImpl implements OwncloudLocalResourceChecksumServiceWithFileWatcherListener {
 
+  private InitializingFileVisitor fileVisitor;
   private Thread fileWatcherThread;
 
-  private final Map<Path, String> checksums = new ConcurrentHashMap<>();
+  private final Map<String, Consumer<Path>> changeListeners = new ConcurrentHashMap<>();
+  private final Map<String, Consumer<Path>> deleteListeners = new ConcurrentHashMap<>();
 
   @PostConstruct
   public void afterPropertiesSet() throws Exception {
     ResourceServiceProperties resourceProperties = getResourceProperties();
     OwncloudLocalUtils.checkPrivilegesOnDirectory(resourceProperties.getLocation());
+
+    fileVisitor = InitializingFileVisitor.builder()
+        .checksums(getChecksums())
+        .fileDigest(this::createFileChecksum)
+        .directoryDigest(this::createDirectoryChecksum)
+        .build();
 
     FileWatcherThreadProperties fileWatcherThreadProperties = resourceProperties.getFileWatcherThread();
     fileWatcherThread = new Thread(this::fileWatcher);
@@ -77,13 +87,8 @@ class OwncloudLocalResourceChecksumServiceFileWatcherImpl extends AbstractOwnclo
   private void registerExistingDirectories(WatchService watchService) {
     try {
       ResourceServiceProperties resourceProperties = getResourceProperties();
-      val fileVisitor = InitializingFileVisitor.builder()
-          .checksums(checksums)
-          .watchService(watchService)
-          .fileDigest(this::createFileChecksum)
-          .directoryDigest(this::createDirectoryChecksum)
-          .build();
       log.debug("Get the Checksums of all Files and Directories under Path {}", resourceProperties.getLocation());
+      fileVisitor.setWatchService(watchService);
       Files.walkFileTree(resourceProperties.getLocation(), fileVisitor);
     } catch (IOException e) {
       throw new OwncloudLocalResourceWatchServiceException(e);
@@ -126,29 +131,22 @@ class OwncloudLocalResourceChecksumServiceFileWatcherImpl extends AbstractOwnclo
         return;
       }
       if (Files.isDirectory(path.toAbsolutePath())) {
-        if (!checksums.containsKey(path.toAbsolutePath().normalize())) {
+        if (notContainsKey(path.toAbsolutePath().normalize())) {
           log.info("Watch Directory {} for changes", path);
           path.register(watchService, ENTRY_CREATE, ENTRY_MODIFY, ENTRY_DELETE);
         }
       }
       log.info("Calculate the Checksum of File {}", path.toAbsolutePath());
       String checksum = createChecksum(path);
-      checksums.put(path.toAbsolutePath().normalize(), checksum);
+      setChecksum(path, checksum);
       synchronized (this) {
-        getChangeListeners().stream()
+        changeListeners.values().stream()
             .forEach(consumer -> consumer.accept(path));
       }
       performNewOrChangedPath(path.getParent(), watchService);
     } catch (Exception e) {
       log.error(String.format("Error occured while perforing new or changed Path %s", path.toAbsolutePath()), e);
     }
-  }
-
-  private String createChecksum(Path path) {
-    if (Files.isDirectory(path)) {
-      return createDirectoryChecksum(path, checksums);
-    }
-    return createFileChecksum(path);
   }
 
   private boolean isRootPath(Path path) {
@@ -162,9 +160,9 @@ class OwncloudLocalResourceChecksumServiceFileWatcherImpl extends AbstractOwnclo
   }
 
   private void performRemovedPath(Path path, WatchService watchService) {
-    checksums.remove(path.toAbsolutePath().normalize());
+    removeChecksum(path);
     synchronized (this) {
-      getDeleteListeners().stream()
+      deleteListeners.values().stream()
           .forEach(consumer -> consumer.accept(path));
     }
     performNewOrChangedPath(path.getParent(), watchService);
@@ -174,14 +172,51 @@ class OwncloudLocalResourceChecksumServiceFileWatcherImpl extends AbstractOwnclo
   public void destroy() throws Exception {
     if (fileWatcherThread != null && fileWatcherThread.isAlive()) {
       log.info("Shutting down FileWatcher Thread {}", fileWatcherThread.getName());
+      fileVisitor.setStopVisitor(true);
       fileWatcherThread.interrupt();
       fileWatcherThread.join();
     }
   }
 
   @Override
-  public ChecksumServiceStrategy getStrategy() {
-    return ChecksumServiceStrategy.FILE_WATCHER;
+  public OwncloudLocalResourceChecksumServiceStrategy getStrategy() {
+    return OwncloudLocalResourceChecksumServiceStrategy.FILE_WATCHER;
+  }
+
+  @Override
+  public String registerChangeListener(Consumer<Path> listener) {
+    String id = createListenerId();
+    changeListeners.put(id, listener);
+    return id;
+  }
+
+  @Override
+  public String registerDeleteListener(Consumer<Path> listener) {
+    String id = createListenerId();
+    deleteListeners.put(id, listener);
+    return id;
+  }
+
+  @Override
+  public void deregisterChangeListener(String id) {
+    Validate.notBlank(id);
+    changeListeners.remove(id);
+  }
+
+  @Override
+  public void deregisterDeleteListener(String id) {
+    Validate.notBlank(id);
+    deleteListeners.remove(id);
+  }
+
+  @Override
+  public void clearChangeListeners() {
+    changeListeners.clear();
+  }
+
+  @Override
+  public void clearDeleteListeners() {
+    deleteListeners.clear();
   }
 
 }

@@ -1,5 +1,5 @@
 /*
-   Copyright (C) 2016 by the original Authors.
+   Copyright (C) 2017 by the original Authors.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -15,25 +15,27 @@
    along with this program; if not, write to the Free Software Foundation,
    Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 */
-package software.coolstuff.springframework.owncloud.config;
+package software.coolstuff.springframework.owncloud.service.impl.local;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Inherited;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.nio.file.Path;
+import java.util.function.Consumer;
 
-import org.springframework.security.test.context.support.WithSecurityContext;
+/**
+ * @author mufasa1976
+ *
+ */
+interface OwncloudLocalResourceChecksumServiceWithFileWatcherListener extends OwncloudLocalResourceChecksumService {
 
-@Target({ ElementType.METHOD, ElementType.TYPE })
-@Retention(RetentionPolicy.RUNTIME)
-@Inherited
-@WithSecurityContext(factory = WithOwncloudMockUserFactory.class)
-public @interface WithOwncloudMockUser {
+  String registerChangeListener(Consumer<Path> listener);
 
-  String value() default "user";
+  String registerDeleteListener(Consumer<Path> listener);
 
-  String username() default "";
+  void deregisterChangeListener(String id);
 
-  String password() default "";
+  void deregisterDeleteListener(String id);
+
+  void clearChangeListeners();
+
+  void clearDeleteListeners();
+
 }

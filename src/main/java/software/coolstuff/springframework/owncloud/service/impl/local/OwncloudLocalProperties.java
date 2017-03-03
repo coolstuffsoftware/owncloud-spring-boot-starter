@@ -72,15 +72,18 @@ class OwncloudLocalProperties extends OwncloudProperties {
     @EqualsAndHashCode(callSuper = true)
     @ToString(callSuper = true)
     static class FileWatcherThreadProperties extends ThreadProperties {
+
       public FileWatcherThreadProperties() {
         setName("Owncloud local Resources Checksum File Watcher");
       }
+
     }
 
     @Data
     @EqualsAndHashCode(callSuper = true)
     @ToString(callSuper = true)
     static class RefreshThreadProperties extends ThreadProperties {
+
       public RefreshThreadProperties() {
         setName("Owncloud local Resources Checksum Refresh");
       }
@@ -97,7 +100,7 @@ class OwncloudLocalProperties extends OwncloudProperties {
     @NotNull
     private MessageDigestAlgorithm messageDigestAlgorithm = MessageDigestAlgorithm.MD5;
     @NotNull
-    private OwncloudLocalResourceChecksumService.ChecksumServiceStrategy checksumServiceStrategy = OwncloudLocalResourceChecksumService.ChecksumServiceStrategy.REFRESH;
+    private OwncloudLocalResourceChecksumServiceStrategy checksumServiceStrategy = OwncloudLocalResourceChecksumServiceStrategy.FILE_WATCHER;
   }
 
   private ResourceServiceProperties resourceService = new ResourceServiceProperties();

@@ -24,7 +24,7 @@ import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.sql.Date;
+import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.io.IOUtils;
@@ -37,6 +37,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestExecutionListeners;
 
+import software.coolstuff.springframework.owncloud.model.OwncloudResource;
 import software.coolstuff.springframework.owncloud.service.AbstractOwncloudResourceServiceTest;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudResourceService;
 import software.coolstuff.springframework.owncloud.service.impl.local.OwncloudLocalProperties.ResourceServiceProperties;
@@ -58,6 +59,17 @@ public class OwncloudLocalResourceServiceTest extends AbstractOwncloudResourceSe
   @Override
   protected Class<? extends OwncloudResourceService> getImplementationClass() {
     return OwncloudLocalResourceServiceImpl.class;
+  }
+
+  @Override
+  protected OwncloudResource prepare_OwncloudTestResourceImpl_equalsTo_OwncloudResourceImpl(OwncloudResource expected) throws Exception {
+    return OwncloudLocalResourceImpl.builder()
+        .eTag(expected.getETag())
+        .href(expected.getHref())
+        .lastModifiedAt(expected.getLastModifiedAt())
+        .mediaType(expected.getMediaType())
+        .name(expected.getName())
+        .build();
   }
 
   @Override
@@ -120,5 +132,8 @@ public class OwncloudLocalResourceServiceTest extends AbstractOwncloudResourceSe
     expectedResources.stream().forEach(this::createResource);
     expectedResources.stream().forEach(this::modifyResourceInformationBasedOnPathInformation);
   }
+
+  @Override
+  protected void prepare_list_NOK_FileNoutFound(URI searchPath) throws Exception {}
 
 }

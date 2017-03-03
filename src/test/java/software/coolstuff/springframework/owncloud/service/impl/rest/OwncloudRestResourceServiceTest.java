@@ -27,6 +27,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.HttpStatus;
 import org.junit.Before;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,9 +39,11 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import com.github.sardine.DavResource;
 import com.github.sardine.Sardine;
+import com.github.sardine.impl.SardineException;
 import com.google.common.collect.Lists;
 
 import software.coolstuff.springframework.owncloud.model.OwncloudFileResource;
+import software.coolstuff.springframework.owncloud.model.OwncloudResource;
 import software.coolstuff.springframework.owncloud.service.AbstractOwncloudResourceServiceTest;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudResourceService;
 
@@ -69,6 +72,17 @@ public class OwncloudRestResourceServiceTest extends AbstractOwncloudResourceSer
   @Override
   protected Class<? extends OwncloudResourceService> getImplementationClass() {
     return OwncloudRestResourceServiceImpl.class;
+  }
+
+  @Override
+  protected OwncloudResource prepare_OwncloudTestResourceImpl_equalsTo_OwncloudResourceImpl(OwncloudResource expected) throws Exception {
+    return OwncloudRestResourceImpl.builder()
+        .eTag(expected.getETag())
+        .href(expected.getHref())
+        .lastModifiedAt(expected.getLastModifiedAt())
+        .mediaType(expected.getMediaType())
+        .name(expected.getName())
+        .build();
   }
 
   @Override
@@ -199,6 +213,13 @@ public class OwncloudRestResourceServiceTest extends AbstractOwncloudResourceSer
 
   private boolean isNotRoot(URI searchPath) {
     return !isRoot(searchPath);
+  }
+
+  @Override
+  protected void prepare_list_NOK_FileNoutFound(URI searchPath) throws Exception {
+    Mockito
+        .when(sardine.list(getResourcePath(searchPath)))
+        .thenThrow(new SardineException("Resource not found", HttpStatus.SC_NOT_FOUND, "Resource not found"));
   }
 
 }

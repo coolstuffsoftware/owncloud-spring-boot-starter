@@ -24,6 +24,7 @@ import java.net.FileNameMap;
 import java.net.URI;
 import java.net.URLConnection;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Date;
@@ -41,6 +42,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import software.coolstuff.springframework.owncloud.exception.resource.OwncloudResourceException;
+import software.coolstuff.springframework.owncloud.exception.resource.OwncloudResourceNotFoundException;
 import software.coolstuff.springframework.owncloud.model.OwncloudFileResource;
 import software.coolstuff.springframework.owncloud.model.OwncloudResource;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudResourceService;
@@ -130,29 +132,29 @@ class OwncloudLocalResourceServiceImpl implements OwncloudResourceService {
   }
 
   private OwncloudModifyingLocalResource createResourceFrom(Path path) {
-    try {
-      Path rootPath = getRootLocationOfAuthenticatedUser();
-      Path relativePath = rootPath.toAbsolutePath().relativize(path.toAbsolutePath());
-      URI href = URI.create(
-          UriComponentsBuilder
-              .fromPath("/")
-              .path(relativePath.toString())
+    Path rootPath = getRootLocationOfAuthenticatedUser();
+    Path relativePath = rootPath.toAbsolutePath().relativize(path.toAbsolutePath());
+    URI href = URI.create(
+        UriComponentsBuilder
+            .fromPath("/")
+            .path(relativePath.toString())
+            .toUriString());
+    String name = path.getFileName().toString();
+    MediaType mediaType = MediaType.APPLICATION_OCTET_STREAM;
+    if (Files.isDirectory(path)) {
+      href = URI.create(
+          UriComponentsBuilder.fromUri(href)
+              .path("/")
               .toUriString());
-      String name = path.getFileName().toString();
-      MediaType mediaType = MediaType.APPLICATION_OCTET_STREAM;
-      if (Files.isDirectory(path)) {
-        href = URI.create(
-            UriComponentsBuilder.fromUri(href)
-                .path("/")
-                .toUriString());
-        mediaType = OwncloudUtils.getDirectoryMediaType();
-      } else {
-        FileNameMap fileNameMap = URLConnection.getFileNameMap();
-        String contentType = fileNameMap.getContentTypeFor(path.getFileName().toString());
-        if (StringUtils.isNotBlank(contentType)) {
-          mediaType = MediaType.valueOf(contentType);
-        }
+      mediaType = OwncloudUtils.getDirectoryMediaType();
+    } else {
+      FileNameMap fileNameMap = URLConnection.getFileNameMap();
+      String contentType = fileNameMap.getContentTypeFor(path.getFileName().toString());
+      if (StringUtils.isNotBlank(contentType)) {
+        mediaType = MediaType.valueOf(contentType);
       }
+    }
+    try {
       Date lastModifiedAt = Date.from(Files.getLastModifiedTime(path).toInstant());
       String checksum = checksumService.getChecksum(path);
       if (Files.isSameFile(rootPath, path)) {
@@ -173,6 +175,8 @@ class OwncloudLocalResourceServiceImpl implements OwncloudResourceService {
           .owncloudResource(resource)
           .contentLength(Files.size(path))
           .build();
+    } catch (NoSuchFileException e) {
+      throw new OwncloudResourceNotFoundException(href);
     } catch (IOException e) {
       throw new OwncloudResourceException(e) {
         private static final long serialVersionUID = 7484650505520708669L;

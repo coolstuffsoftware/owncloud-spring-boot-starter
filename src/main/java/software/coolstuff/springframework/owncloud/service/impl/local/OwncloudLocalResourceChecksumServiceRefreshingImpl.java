@@ -20,7 +20,10 @@ package software.coolstuff.springframework.owncloud.service.impl.local;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -33,17 +36,20 @@ import software.coolstuff.springframework.owncloud.service.impl.local.OwncloudLo
  * @author mufasa1976
  */
 @Slf4j
-class OwncloudLocalResourceChecksumServiceRefreshingImpl extends AbstractOwncloudLocalResourceChecksumServiceImpl {
+class OwncloudLocalResourceChecksumServiceRefreshingImpl extends AbstractOwncloudLocalResourceChecksumServiceImpl implements OwncloudLocalResourceChecksumServiceWithRefreshListener {
 
   private InitializingFileVisitor fileVisitor;
   private Thread refreshThread;
+
+  private Map<String, Consumer<Path>> refreshListeners = new ConcurrentHashMap<>();
 
   @PostConstruct
   public void afterPropertiesSet() throws Exception {
     fileVisitor = InitializingFileVisitor.builder()
         .checksums(getChecksums())
-        .fileDigest(this::createFileChecksum)
         .directoryDigest(this::createDirectoryChecksum)
+        .fileDigest(this::createFileChecksum)
+        .refreshListeners(refreshListeners)
         .build();
     ResourceServiceProperties resourceProperties = getResourceProperties();
     RefreshThreadProperties refreshThreadProperties = resourceProperties.getRefreshThread();
@@ -88,8 +94,25 @@ class OwncloudLocalResourceChecksumServiceRefreshingImpl extends AbstractOwnclou
   }
 
   @Override
-  public ChecksumServiceStrategy getStrategy() {
-    return ChecksumServiceStrategy.REFRESH;
+  public OwncloudLocalResourceChecksumServiceStrategy getStrategy() {
+    return OwncloudLocalResourceChecksumServiceStrategy.REFRESH;
+  }
+
+  @Override
+  public String registerRefreshListener(Consumer<Path> listener) {
+    String id = createListenerId();
+    refreshListeners.put(id, listener);
+    return id;
+  }
+
+  @Override
+  public void deregisterRefreshListener(String id) {
+    refreshListeners.remove(id);
+  }
+
+  @Override
+  public void clearRefreshListeners() {
+    refreshListeners.clear();
   }
 
 }
