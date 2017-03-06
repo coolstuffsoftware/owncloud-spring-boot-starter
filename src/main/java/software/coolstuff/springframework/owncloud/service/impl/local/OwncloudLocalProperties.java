@@ -20,10 +20,7 @@ package software.coolstuff.springframework.owncloud.service.impl.local;
 import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.concurrent.TimeUnit;
 
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -40,69 +37,26 @@ import software.coolstuff.springframework.owncloud.service.impl.OwncloudProperti
 @ConfigurationProperties("owncloud")
 class OwncloudLocalProperties extends OwncloudProperties {
 
+  @RequiredArgsConstructor
+  static enum MessageDigestAlgorithm {
+
+    MD5("MD5");
+
+    private final String algorithm;
+
+    public MessageDigest getMessageDigest() throws NoSuchAlgorithmException {
+      return MessageDigest.getInstance(this.algorithm);
+    }
+  }
+
   @Data
   @EqualsAndHashCode(callSuper = true)
   @ToString(callSuper = true)
   static class ResourceServiceProperties extends OwncloudProperties.ResourceServiceProperties {
-
-    @RequiredArgsConstructor
-    static enum MessageDigestAlgorithm {
-
-      MD5("MD5");
-
-      private final String algorithm;
-
-      public MessageDigest getMessageDigest() throws NoSuchAlgorithmException {
-        return MessageDigest.getInstance(this.algorithm);
-      }
-
-    }
-
-    @Data
-    private static class ThreadProperties {
-      @NotNull
-      private String name;
-
-      @Min(Thread.MIN_PRIORITY)
-      @Max(Thread.MAX_PRIORITY)
-      private int priority = Thread.NORM_PRIORITY;
-    }
-
-    @Data
-    @EqualsAndHashCode(callSuper = true)
-    @ToString(callSuper = true)
-    static class FileWatcherThreadProperties extends ThreadProperties {
-
-      public FileWatcherThreadProperties() {
-        setName("Owncloud local Resources Checksum File Watcher");
-      }
-
-    }
-
-    @Data
-    @EqualsAndHashCode(callSuper = true)
-    @ToString(callSuper = true)
-    static class RefreshThreadProperties extends ThreadProperties {
-
-      public RefreshThreadProperties() {
-        setName("Owncloud local Resources Checksum Refresh");
-      }
-
-      @NotNull
-      private int refreshInterval = 5;
-      @NotNull
-      private TimeUnit refreshIntervalTimeUnit = TimeUnit.MINUTES;
-    }
-
     private Path location;
-    private FileWatcherThreadProperties fileWatcherThread = new FileWatcherThreadProperties();
-    private RefreshThreadProperties refreshThread = new RefreshThreadProperties();
     @NotNull
     private MessageDigestAlgorithm messageDigestAlgorithm = MessageDigestAlgorithm.MD5;
-    @NotNull
-    private OwncloudLocalResourceChecksumServiceStrategy checksumServiceStrategy = OwncloudLocalResourceChecksumServiceStrategy.FILE_WATCHER;
   }
 
   private ResourceServiceProperties resourceService = new ResourceServiceProperties();
-
 }

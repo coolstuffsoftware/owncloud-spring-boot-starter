@@ -54,7 +54,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.ComponentScan.Filter;
-import org.springframework.context.annotation.FilterType;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -82,7 +81,6 @@ import software.coolstuff.springframework.owncloud.config.IgnoreOnComponentScan;
 import software.coolstuff.springframework.owncloud.config.VelocityConfiguration;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudGrantedAuthoritiesMapper;
 import software.coolstuff.springframework.owncloud.service.impl.local.OwncloudLocalFileTestExecutionListener;
-import software.coolstuff.springframework.owncloud.service.impl.local.OwncloudLocalResourceChecksumServiceFileWatcherTest;
 import software.coolstuff.springframework.owncloud.service.impl.rest.OwncloudRestService;
 import software.coolstuff.springframework.owncloud.service.impl.rest.OwncloudRestServiceTest;
 
@@ -100,7 +98,7 @@ import software.coolstuff.springframework.owncloud.service.impl.rest.OwncloudRes
     OwncloudLocalFileTestExecutionListener.class
 })
 @ComponentScan(excludeFilters = {
-    @Filter(type = FilterType.ANNOTATION, classes = IgnoreOnComponentScan.class)
+    @Filter(IgnoreOnComponentScan.class)
 })
 public abstract class AbstractOwncloudServiceTest {
 

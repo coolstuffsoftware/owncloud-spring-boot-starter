@@ -44,7 +44,7 @@ import lombok.extern.slf4j.Slf4j;
  * @author mufasa1976
  */
 @Slf4j
-public class OwncloudLocalResourceServiceTestExecutionListener extends AbstractTestExecutionListener {
+public class OwncloudLocalResourceServiceEmptyDirectoryTestExecutionListener extends AbstractTestExecutionListener {
 
   private final static String PROPERTY_FILE_PREFIX = "classpath:config/application-";
   private final static String PROPERTY_FILE_SUFFIX = ".yml";

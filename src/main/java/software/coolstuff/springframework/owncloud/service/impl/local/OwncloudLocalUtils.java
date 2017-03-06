@@ -27,7 +27,7 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-final class OwncloudLocalUtils {
+public final class OwncloudLocalUtils {
 
   public static void validateUserNotNull(OwncloudLocalUserData.User user, String username) {
     if (user == null) {

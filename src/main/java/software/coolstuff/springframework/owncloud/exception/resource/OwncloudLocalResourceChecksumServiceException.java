@@ -15,23 +15,30 @@
    along with this program; if not, write to the Free Software Foundation,
    Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 */
-package software.coolstuff.springframework.owncloud.service.impl.local;
-
-import lombok.RequiredArgsConstructor;
+package software.coolstuff.springframework.owncloud.exception.resource;
 
 /**
  * @author mufasa1976
  *
  */
-@RequiredArgsConstructor
-enum OwncloudLocalResourceChecksumServiceStrategy {
-  FILE_WATCHER(OwncloudLocalResourceChecksumServiceFileWatcherImpl.class),
-  REFRESH(OwncloudLocalResourceChecksumServiceRefreshingImpl.class),
-  MANUAL(OwncloudLocalResourceChecksumServiceManualImpl.class);
+public class OwncloudLocalResourceChecksumServiceException extends OwncloudResourceException {
 
-  private final Class<? extends OwncloudLocalResourceChecksumService> checksumServiceClass;
+  private static final long serialVersionUID = 1798988691091261737L;
 
-  public OwncloudLocalResourceChecksumService newInstance() throws InstantiationException, IllegalAccessException {
-    return checksumServiceClass.newInstance();
+  public OwncloudLocalResourceChecksumServiceException() {
+    super();
   }
+
+  public OwncloudLocalResourceChecksumServiceException(String message, Throwable throwable) {
+    super(message, throwable);
+  }
+
+  public OwncloudLocalResourceChecksumServiceException(String message) {
+    super(message);
+  }
+
+  public OwncloudLocalResourceChecksumServiceException(Throwable throwable) {
+    super(throwable);
+  }
+
 }

@@ -19,7 +19,6 @@ package software.coolstuff.springframework.owncloud.exception.resource;
 
 /**
  * @author mufasa1976
- *
  */
 public abstract class OwncloudResourceException extends RuntimeException {
 

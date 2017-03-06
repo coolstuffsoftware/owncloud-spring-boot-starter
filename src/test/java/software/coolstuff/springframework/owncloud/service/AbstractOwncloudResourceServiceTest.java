@@ -37,7 +37,6 @@ import org.springframework.boot.test.mock.mockito.MockitoTestExecutionListener;
 import org.springframework.boot.test.mock.mockito.ResetMocksTestExecutionListener;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.ComponentScan.Filter;
-import org.springframework.context.annotation.FilterType;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.test.context.support.WithSecurityContextTestExecutionListener;
@@ -79,7 +78,7 @@ import software.coolstuff.springframework.owncloud.service.impl.OwncloudUtils;
     WithSecurityContextTestExecutionListener.class,
 })
 @ComponentScan(excludeFilters = {
-    @Filter(type = FilterType.ANNOTATION, classes = IgnoreOnComponentScan.class)
+    @Filter(IgnoreOnComponentScan.class)
 })
 @RestClientTest(OwncloudResourceService.class)
 public abstract class AbstractOwncloudResourceServiceTest {

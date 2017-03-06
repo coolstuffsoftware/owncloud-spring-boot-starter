@@ -29,6 +29,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
@@ -156,15 +157,15 @@ class OwncloudLocalResourceServiceImpl implements OwncloudResourceService {
     }
     try {
       Date lastModifiedAt = Date.from(Files.getLastModifiedTime(path).toInstant());
-      String checksum = checksumService.getChecksum(path);
+      Optional<String> checksum = checksumService.getChecksum(path);
       if (Files.isSameFile(rootPath, path)) {
         name = "/";
-        checksum = null;
+        checksum = Optional.empty();
       }
       OwncloudModifyingLocalResource resource = OwncloudLocalResourceImpl.builder()
           .href(href)
           .name(name)
-          .eTag(checksum)
+          .eTag(checksum.orElse(null))
           .mediaType(mediaType)
           .lastModifiedAt(lastModifiedAt)
           .build();

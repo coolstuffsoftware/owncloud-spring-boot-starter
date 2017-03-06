@@ -26,6 +26,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -44,7 +45,7 @@ import software.coolstuff.springframework.owncloud.service.impl.local.OwncloudLo
 
 @ActiveProfiles("LOCAL-RESOURCE-SERVICE")
 @TestExecutionListeners({
-    OwncloudLocalResourceServiceTestExecutionListener.class
+    OwncloudLocalResourceServiceEmptyDirectoryTestExecutionListener.class
 })
 public class OwncloudLocalResourceServiceTest extends AbstractOwncloudResourceServiceTest {
 
@@ -83,7 +84,7 @@ public class OwncloudLocalResourceServiceTest extends AbstractOwncloudResourceSe
     try {
       Mockito
           .when(checksumService.getChecksum(resourcePath))
-          .thenReturn(owncloudResource.getBackendETag());
+          .thenReturn(Optional.ofNullable(owncloudResource.getBackendETag()));
       if (owncloudResource instanceof OwncloudTestFileResourceImpl) {
         createFile(resourcePath, (OwncloudTestFileResourceImpl) owncloudResource);
       } else {
