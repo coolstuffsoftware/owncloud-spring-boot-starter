@@ -21,9 +21,12 @@ import java.io.IOException;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.Validate;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestContext;
@@ -34,17 +37,24 @@ import lombok.extern.slf4j.Slf4j;
  * @author mufasa1976
  */
 @Slf4j
-public class OwncloudLocalResourceServiceEmptyDirectoryTestExecutionListener extends AbstractOwncloudLocalResourceServiceTestExecutionListener {
+public class OwncloudLocalResourceServiceCopyWebdavDirectoryTestExecutionListener extends AbstractOwncloudLocalResourceServiceTestExecutionListener {
+
+  private final static Path COPY_LOCATION = Paths.get("src", "test", "resources", "webdavTest");
 
   @Override
   public void beforeTestClass(TestContext testContext) throws Exception {
+    copyDirectory(testContext);
+  }
+
+  private void copyDirectory(TestContext testContext) throws IOException {
     Class<?> testClass = testContext.getTestClass();
     ActiveProfiles activeProfiles = AnnotationUtils.findAnnotation(testClass, ActiveProfiles.class);
     getResourceLocation(activeProfiles.value())
-        .ifPresent(this::createDirectory);
+        .ifPresent(this::copyDirectory);
   }
 
-  private void createDirectory(Path path) {
+  private void copyDirectory(Path path) {
+    Validate.notNull(COPY_LOCATION);
     try {
       if (!Files.exists(path)) {
         log.debug("Create Directory {}", path.toAbsolutePath().toString());
@@ -52,20 +62,30 @@ public class OwncloudLocalResourceServiceEmptyDirectoryTestExecutionListener ext
       } else if (!Files.isDirectory(path)) {
         throw new IllegalStateException(String.format("Path %s exists but is not a Directory", path.toAbsolutePath().toString()));
       }
+      FileUtils.copyDirectory(COPY_LOCATION.toFile(), path.toFile());
     } catch (IOException e) {
       throw new RuntimeException(String.format("IOException while creating Directory %s", path.toAbsolutePath().toString()), e);
     }
   }
 
   @Override
-  public void afterTestMethod(TestContext testContext) throws Exception {
+  public void beforeTestMethod(TestContext testContext) throws Exception {
+    copyDirectory(testContext);
+  }
+
+  @Override
+  public void afterTestClass(TestContext testContext) throws Exception {
+    cleanDirectory(testContext);
+  }
+
+  private void cleanDirectory(TestContext testContext) throws IOException {
     Class<?> testClass = testContext.getTestClass();
     ActiveProfiles activeProfiles = AnnotationUtils.findAnnotation(testClass, ActiveProfiles.class);
     getResourceLocation(activeProfiles.value())
-        .ifPresent(path -> deleteDirectoryContent(path, false));
+        .ifPresent(this::cleanDirectory);
   }
 
-  private void deleteDirectoryContent(Path directory, boolean removeRootDirectory) {
+  private void cleanDirectory(Path directory) {
     if (!Files.isDirectory(directory)) {
       return;
     }
@@ -87,16 +107,15 @@ public class OwncloudLocalResourceServiceEmptyDirectoryTestExecutionListener ext
           return FileVisitResult.CONTINUE;
         }
       });
+      Files.delete(directory);
     } catch (IOException e) {
       throw new RuntimeException(String.format("IOException while cleaning Directory %s", directory.toAbsolutePath().toString()), e);
     }
   }
 
   @Override
-  public void afterTestClass(TestContext testContext) throws Exception {
-    Class<?> testClass = testContext.getTestClass();
-    ActiveProfiles activeProfiles = AnnotationUtils.findAnnotation(testClass, ActiveProfiles.class);
-    getResourceLocation(activeProfiles.value())
-        .ifPresent(path -> deleteDirectoryContent(path, true));
+  public void afterTestMethod(TestContext testContext) throws Exception {
+    cleanDirectory(testContext);
   }
+
 }

@@ -1,4 +1,4 @@
 owncloud:
   location: classpath:/owncloud.xml
   resource-service:
-    location: target/test-classes/webdavTest
+    location: target/testWebDAV

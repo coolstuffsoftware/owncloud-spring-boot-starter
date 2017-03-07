@@ -23,15 +23,14 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.FileVisitResult;
+import java.nio.file.FileVisitor;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiFunction;
@@ -64,14 +63,27 @@ public class OwncloudLocalResourceChecksumServiceImpl implements OwncloudLocalRe
 
   private final Map<Path, String> checksums = new ConcurrentHashMap<>();
 
-  private InitializingFileVisitor fileVisitor;
+  private final InitializingFileVisitor fileVisitor;
   private MessageDigest messageDigest;
+
+  public OwncloudLocalResourceChecksumServiceImpl() {
+    fileVisitor = InitializingFileVisitor.builder()
+        .checksums(checksums)
+        .directoryDigest(this::createDirectoryChecksum)
+        .fileDigest(this::createFileChecksum)
+        .build();
+  }
 
   @PostConstruct
   public void afterPropertiesSet() throws Exception {
     ResourceServiceProperties resourceProperties = properties.getResourceService();
+    OwncloudLocalUtils.checkPrivilegesOnDirectory(resourceProperties.getLocation());
     setMessageDigest(resourceProperties);
-    initializeChecksums(resourceProperties);
+    Files.walkFileTree(resourceProperties.getLocation(), getFileVisitor());
+  }
+
+  protected final FileVisitor<Path> getFileVisitor() {
+    return fileVisitor;
   }
 
   private void setMessageDigest(ResourceServiceProperties resourceProperties) throws NoSuchAlgorithmException {
@@ -80,31 +92,33 @@ public class OwncloudLocalResourceChecksumServiceImpl implements OwncloudLocalRe
     messageDigest = messageDigestAlgorithm.getMessageDigest();
   }
 
-  private void initializeChecksums(ResourceServiceProperties resourceProperties) throws IOException {
-    OwncloudLocalUtils.checkPrivilegesOnDirectory(resourceProperties.getLocation());
-    fileVisitor = InitializingFileVisitor.builder()
-        .checksums(checksums)
-        .directoryDigest(this::createDirectoryChecksum)
-        .fileDigest(this::createFileChecksum)
-        .build();
-    Files.walkFileTree(resourceProperties.getLocation(), fileVisitor);
-  }
-
   private String createDirectoryChecksum(Path path, Map<Path, String> fileChecksums) {
     log.debug("Calculate the Checksum of Directory {}", path);
     try (ByteArrayOutputStream stream = new ByteArrayOutputStream()) {
-      for (Entry<Path, String> checksumEntry : fileChecksums.entrySet()) {
-        Path filePath = checksumEntry.getKey();
-        String fileChecksum = checksumEntry.getValue();
-        if (Files.isSameFile(path, filePath.getParent())) {
-          stream.write(fileChecksum.getBytes());
-        }
-      }
+      fileChecksums.entrySet().stream()
+          .filter(entry -> isSameFile(path, entry.getKey().getParent()))
+          .forEach(entry -> writeChecksumEntry(entry.getValue(), stream));
       synchronized (messageDigest) {
         messageDigest.reset();
         messageDigest.update(stream.toByteArray());
         return Hex.encodeHexString(messageDigest.digest());
       }
+    } catch (IOException e) {
+      throw new OwncloudLocalResourceChecksumServiceException(e);
+    }
+  }
+
+  private boolean isSameFile(Path source, Path destination) {
+    try {
+      return Files.isSameFile(source, destination);
+    } catch (IOException e) {
+      throw new OwncloudLocalResourceChecksumServiceException(e);
+    }
+  }
+
+  private void writeChecksumEntry(String checksum, ByteArrayOutputStream stream) {
+    try {
+      stream.write(checksum.getBytes());
     } catch (IOException e) {
       throw new OwncloudLocalResourceChecksumServiceException(e);
     }
@@ -149,6 +163,10 @@ public class OwncloudLocalResourceChecksumServiceImpl implements OwncloudLocalRe
     if (rootDirectory.equals(normalizedPath)) {
       return;
     }
+    checksums.keySet().stream()
+        .filter(checksumPath -> checksumPath.toAbsolutePath().normalize().getParent().equals(path.toAbsolutePath().normalize()))
+        .filter(Files::notExists)
+        .forEach(checksums::remove);;
     String checksum = createDirectoryChecksum(normalizedPath, checksums);
     checksums.put(normalizedPath, checksum);
     createDirectoryChecksumRecursively(normalizedPath.getParent());
@@ -158,7 +176,7 @@ public class OwncloudLocalResourceChecksumServiceImpl implements OwncloudLocalRe
   public void recalculateChecksums() throws OwncloudResourceException {
     ResourceServiceProperties resourceProperties = properties.getResourceService();
     try {
-      Files.walkFileTree(resourceProperties.getLocation(), fileVisitor);
+      Files.walkFileTree(resourceProperties.getLocation(), getFileVisitor());
     } catch (IOException e) {
       throw new OwncloudLocalResourceChecksumServiceException(e);
     }
@@ -182,13 +200,16 @@ public class OwncloudLocalResourceChecksumServiceImpl implements OwncloudLocalRe
       if (checksums != null) {
         this.checksums = checksums;
       } else {
-        this.checksums = new HashMap<>();
+        this.checksums = new ConcurrentHashMap<>();
       }
     }
 
-    @SuppressWarnings("unused")
-    public static class InitializingFileVisitorBuilder {
-      private boolean stopVisitor = false;
+    @Override
+    public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+      checksums.keySet().stream()
+          .filter(path -> path.toAbsolutePath().normalize().getParent().equals(dir.toAbsolutePath().normalize()))
+          .forEach(path -> checksums.remove(path.toAbsolutePath().normalize()));
+      return FileVisitResult.CONTINUE;
     }
 
     @Override
