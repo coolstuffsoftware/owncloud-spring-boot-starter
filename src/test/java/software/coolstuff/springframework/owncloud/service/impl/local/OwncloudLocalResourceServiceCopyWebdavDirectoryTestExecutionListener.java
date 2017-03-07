@@ -23,17 +23,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
-import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.Validate;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestContext;
 
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -59,19 +56,34 @@ public class OwncloudLocalResourceServiceCopyWebdavDirectoryTestExecutionListene
   private void copyDirectory(Path path) {
     Validate.notNull(COPY_LOCATION);
     try {
-      if (!Files.exists(path)) {
-        log.debug("Create Directory {}", path.toAbsolutePath().toString());
-        Files.createDirectories(path);
-      } else if (!Files.isDirectory(path)) {
-        throw new IllegalStateException(String.format("Path %s exists but is not a Directory", path.toAbsolutePath().toString()));
-      }
-      CopyFileVisitor fileVisitor = CopyFileVisitor.builder()
-          .source(COPY_LOCATION)
-          .target(path)
-          .build();
-      fileVisitor.copy();
+      createTargetDirectory(path);
+      FileUtils.copyDirectory(COPY_LOCATION.toFile(), path.toFile());
+      Path emptyDirectory = path.resolve("user2");
+      addOrCheckForEmptyDirectory(emptyDirectory);
     } catch (IOException e) {
       throw new RuntimeException(String.format("IOException while creating Directory %s", path.toAbsolutePath().toString()), e);
+    }
+  }
+
+  private void createTargetDirectory(Path path) throws IOException {
+    if (!Files.exists(path)) {
+      log.debug("Create Directory {}", path.toAbsolutePath().toString());
+      Files.createDirectories(path);
+    } else if (!Files.isDirectory(path)) {
+      throw new IllegalStateException(String.format("Path %s exists but is not a Directory", path.toAbsolutePath().toString()));
+    }
+  }
+
+  private void addOrCheckForEmptyDirectory(Path path) throws IOException {
+    if (!Files.exists(path)) {
+      Files.createDirectories(path);
+    } else if (!Files.isDirectory(path)) {
+      throw new IllegalStateException(String.format("Path %s exists but is not a Directory", path.toAbsolutePath().toString()));
+    } else {
+      Files.list(path)
+          .forEach(p -> {
+            throw new IllegalStateException(String.format("Directory %s is not empty", path));
+          });
     }
   }
 
@@ -123,41 +135,6 @@ public class OwncloudLocalResourceServiceCopyWebdavDirectoryTestExecutionListene
   @Override
   public void afterTestMethod(TestContext testContext) throws Exception {
     cleanDirectory(testContext);
-  }
-
-  @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-  @Builder
-  private static class CopyFileVisitor extends SimpleFileVisitor<Path> {
-
-    private final Path source;
-    private final Path target;
-
-    public void copy() throws IOException {
-      Files.walkFileTree(source, this);
-    }
-
-    @Override
-    public FileVisitResult preVisitDirectory(Path sourceDir, BasicFileAttributes attrs) throws IOException {
-      Path targetDir = resolve(sourceDir);
-      if (!Files.exists(targetDir)) {
-        Files.createDirectories(targetDir);
-      } else if (!Files.isDirectory(targetDir)) {
-        throw new IOException("targetDir " + targetDir + " is not a Directory");
-      }
-      return FileVisitResult.CONTINUE;
-    }
-
-    private Path resolve(Path path) {
-      Path relativePath = source.relativize(path);
-      return target.resolve(relativePath);
-    }
-
-    @Override
-    public FileVisitResult visitFile(Path sourceFile, BasicFileAttributes attrs) throws IOException {
-      Path targetFile = resolve(sourceFile);
-      Files.copy(sourceFile, targetFile, StandardCopyOption.REPLACE_EXISTING);
-      return FileVisitResult.CONTINUE;
-    }
   }
 
 }
