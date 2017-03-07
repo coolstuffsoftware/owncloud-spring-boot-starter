@@ -59,7 +59,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import lombok.Builder;
 import lombok.Getter;
 import software.coolstuff.springframework.owncloud.config.IgnoreOnComponentScan;
-import software.coolstuff.springframework.owncloud.exception.resource.OwncloudResourceException;
+import software.coolstuff.springframework.owncloud.exception.resource.OwncloudLocalResourceChecksumServiceException;
 import software.coolstuff.springframework.owncloud.service.impl.local.OwncloudLocalProperties.ResourceServiceProperties;
 
 /**
@@ -106,7 +106,7 @@ public class OwncloudLocalResourceChecksumServiceTest {
   }
 
   @Test
-  public void test_ChecksumOfRootDirectory() throws Exception {
+  public void testChecksumOfRootDirectory() throws Exception {
     Path rootDirectory = resolvePath(null);
     String expectedChecksum = calculateChecksum(rootDirectory);
     Optional<String> checksum = checksumService.getChecksum(rootDirectory);
@@ -177,7 +177,7 @@ public class OwncloudLocalResourceChecksumServiceTest {
   }
 
   @Test
-  public void test_ChecksumOfUserRootDirectory_OK() throws Exception {
+  public void testChecksumOfUserRootDirectory_OK() throws Exception {
     Path userRootDirectory = resolvePath(Paths.get("user1"));
     String expectedChecksum = calculateChecksum(userRootDirectory);
 
@@ -188,7 +188,7 @@ public class OwncloudLocalResourceChecksumServiceTest {
   }
 
   @Test
-  public void test_ChecksumOfUserRootDirectory_Empty() throws Exception {
+  public void testChecksumOfUserRootDirectory_Empty() throws Exception {
     Path userRootDirectory = resolvePath(Paths.get("user2"));
     String expectedChecksum = calculateChecksum(userRootDirectory);
 
@@ -199,7 +199,7 @@ public class OwncloudLocalResourceChecksumServiceTest {
   }
 
   @Test
-  public void test_ChecksumOfUserRootDirectory_NotExists() throws Exception {
+  public void testChecksumOfUserRootDirectory_NotExists() throws Exception {
     Path userRootDirectory = resolvePath(Paths.get("unknownUser"));
 
     Optional<String> checksum = checksumService.getChecksum(userRootDirectory);
@@ -254,7 +254,7 @@ public class OwncloudLocalResourceChecksumServiceTest {
     assertThat(checksumOfParentDirectory.get()).isEqualTo(expectedDirectoryChecksumAfterFileAdded);
   }
 
-  @Test(expected = OwncloudResourceException.class)
+  @Test(expected = OwncloudLocalResourceChecksumServiceException.class)
   public void testRecalculateChecksumOnMissingFile() throws Exception {
     Path file = resolvePath(Paths.get("user1", "directory", "notExists.txt"));
 
@@ -268,6 +268,8 @@ public class OwncloudLocalResourceChecksumServiceTest {
     String expectedDirectoryChecksumBeforeFileRemoved = calculateChecksum(file.getParent());
     Files.delete(file);
     String expectedDirectoryChecksumAfterFileRemoved = calculateChecksum(file.getParent());
+
+    assertThat(expectedDirectoryChecksumBeforeFileRemoved).isNotEqualTo(expectedDirectoryChecksumAfterFileRemoved);
 
     Optional<String> checksumOfFile = checksumService.getChecksum(file);
     assertThat(checksumOfFile.isPresent()).isTrue();
@@ -283,6 +285,37 @@ public class OwncloudLocalResourceChecksumServiceTest {
 
     checksumOfParentDirectory = checksumService.getChecksum(file.getParent());
     assertThat(checksumOfParentDirectory.get()).isEqualTo(expectedDirectoryChecksumAfterFileRemoved);
+  }
+
+  @Test
+  public void testRecalculateChecksums() throws Exception {
+    Path file = resolvePath(Paths.get("user1", "directory", "fileInDirectory.txt"));
+    String expectedFileChecksumBeforeChanges = calculateChecksum(file);
+    String expectedParentDirectoryChecksumBeforeChanges = calculateChecksum(file.getParent());
+
+    try (Writer writer = Files.newBufferedWriter(file)) {
+      IOUtils.write("And now there is a completly different Input", writer);
+    }
+    String expectedFileChecksumAfterChanges = calculateChecksum(file);
+    String expectedParentDirectoryChecksumAfterChanges = calculateChecksum(file.getParent());
+
+    assertThat(expectedFileChecksumBeforeChanges).isNotEqualTo(expectedFileChecksumAfterChanges);
+    assertThat(expectedParentDirectoryChecksumBeforeChanges).isNotEqualTo(expectedParentDirectoryChecksumAfterChanges);
+
+    Optional<String> checksumOfFile = checksumService.getChecksum(file);
+    assertThat(checksumOfFile.isPresent()).isTrue();
+    assertThat(checksumOfFile.get()).isEqualTo(expectedFileChecksumBeforeChanges);
+
+    Optional<String> checksumOfParentDirectory = checksumService.getChecksum(file.getParent());
+    assertThat(checksumOfParentDirectory.get()).isEqualTo(expectedParentDirectoryChecksumBeforeChanges);
+
+    checksumService.recalculateChecksums();
+
+    checksumOfFile = checksumService.getChecksum(file);
+    assertThat(checksumOfFile.get()).isEqualTo(expectedFileChecksumAfterChanges);
+
+    checksumOfParentDirectory = checksumService.getChecksum(file.getParent());
+    assertThat(checksumOfParentDirectory.get()).isEqualTo(expectedParentDirectoryChecksumAfterChanges);
   }
 
   @Configuration

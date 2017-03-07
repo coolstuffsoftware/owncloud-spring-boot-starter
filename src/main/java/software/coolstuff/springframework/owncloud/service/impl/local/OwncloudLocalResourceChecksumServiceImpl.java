@@ -44,7 +44,6 @@ import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import lombok.Builder;
-import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import software.coolstuff.springframework.owncloud.exception.resource.OwncloudLocalResourceChecksumServiceException;
 import software.coolstuff.springframework.owncloud.exception.resource.OwncloudResourceException;
@@ -96,7 +95,7 @@ public class OwncloudLocalResourceChecksumServiceImpl implements OwncloudLocalRe
     log.debug("Calculate the Checksum of Directory {}", path);
     try (ByteArrayOutputStream stream = new ByteArrayOutputStream()) {
       fileChecksums.entrySet().stream()
-          .filter(entry -> isSameFile(path, entry.getKey().getParent()))
+          .filter(entry -> isSamePath(path, entry.getKey().getParent()))
           .forEach(entry -> writeChecksumEntry(entry.getValue(), stream));
       synchronized (messageDigest) {
         messageDigest.reset();
@@ -108,7 +107,7 @@ public class OwncloudLocalResourceChecksumServiceImpl implements OwncloudLocalRe
     }
   }
 
-  private boolean isSameFile(Path source, Path destination) {
+  private boolean isSamePath(Path source, Path destination) {
     try {
       return Files.isSameFile(source, destination);
     } catch (IOException e) {
@@ -164,9 +163,9 @@ public class OwncloudLocalResourceChecksumServiceImpl implements OwncloudLocalRe
       return;
     }
     checksums.keySet().stream()
-        .filter(checksumPath -> checksumPath.toAbsolutePath().normalize().getParent().equals(path.toAbsolutePath().normalize()))
+        .filter(checksumPath -> isSamePath(checksumPath.getParent(), path))
         .filter(Files::notExists)
-        .forEach(checksums::remove);;
+        .forEach(checksums::remove);
     String checksum = createDirectoryChecksum(normalizedPath, checksums);
     checksums.put(normalizedPath, checksum);
     createDirectoryChecksumRecursively(normalizedPath.getParent());
@@ -187,7 +186,6 @@ public class OwncloudLocalResourceChecksumServiceImpl implements OwncloudLocalRe
     private final Function<Path, String> fileDigest;
     private final BiFunction<Path, Map<Path, String>, String> directoryDigest;
 
-    @Getter
     private final Map<Path, String> checksums;
 
     @Builder
@@ -197,11 +195,7 @@ public class OwncloudLocalResourceChecksumServiceImpl implements OwncloudLocalRe
         final Map<Path, String> checksums) {
       this.fileDigest = fileDigest;
       this.directoryDigest = directoryDigest;
-      if (checksums != null) {
-        this.checksums = checksums;
-      } else {
-        this.checksums = new ConcurrentHashMap<>();
-      }
+      this.checksums = checksums;
     }
 
     @Override
