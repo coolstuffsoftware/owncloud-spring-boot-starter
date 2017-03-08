@@ -38,4 +38,9 @@ public class OwncloudResourceNotFoundException extends OwncloudResourceException
   @Getter
   private final URI uri;
 
+  public OwncloudResourceNotFoundException(URI uri, Throwable e) {
+    super(e);
+    this.uri = uri;
+  }
+
 }

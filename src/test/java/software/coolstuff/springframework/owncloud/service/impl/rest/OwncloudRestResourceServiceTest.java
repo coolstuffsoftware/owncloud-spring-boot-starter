@@ -216,10 +216,35 @@ public class OwncloudRestResourceServiceTest extends AbstractOwncloudResourceSer
   }
 
   @Override
-  protected void prepare_list_NOK_FileNoutFound(URI searchPath) throws Exception {
+  protected void prepare_list_NOK_FileNotFound(URI searchPath) throws Exception {
     Mockito
         .when(sardine.list(getResourcePath(searchPath)))
         .thenThrow(new SardineException("Resource not found", HttpStatus.SC_NOT_FOUND, "Resource not found"));
+  }
+
+  @Override
+  protected void prepare_findFile_OK(URI searchPath, OwncloudTestFileResourceImpl expectedResource) throws Exception {
+    List<DavResource> davResources = Lists.newArrayList(
+        createDavResourceFrom(expectedResource, Locale.GERMAN));
+    Mockito
+        .when(sardine.list(getResourcePath(searchPath), 0))
+        .thenReturn(davResources);
+  }
+
+  @Override
+  protected void prepare_findFile_NotExists(URI searchPath) throws Exception {
+    Mockito
+        .when(sardine.list(getResourcePath(searchPath)))
+        .thenThrow(new SardineException("Resource not found", HttpStatus.SC_NOT_FOUND, "Resource not found"));
+  }
+
+  @Override
+  protected void prepare_findRootDirectory_OK(OwncloudTestResourceImpl expectedResource) throws Exception {
+    List<DavResource> davResources = Lists.newArrayList(
+        createDavResourceFrom(expectedResource, Locale.GERMAN));
+    Mockito
+        .when(sardine.list(getResourcePath(), 0))
+        .thenReturn(davResources);
   }
 
 }

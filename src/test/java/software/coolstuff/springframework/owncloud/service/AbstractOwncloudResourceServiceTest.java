@@ -38,6 +38,8 @@ import org.springframework.boot.test.mock.mockito.ResetMocksTestExecutionListene
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.ComponentScan.Filter;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.test.context.support.WithSecurityContextTestExecutionListener;
 import org.springframework.test.context.TestExecutionListeners;
@@ -65,9 +67,6 @@ import software.coolstuff.springframework.owncloud.service.impl.OwncloudUtils;
 @RunWith(SpringRunner.class)
 @SpringBootTest(
     webEnvironment = WebEnvironment.NONE,
-    properties = {
-        "debug=true"
-    },
     classes = {
         VelocityConfiguration.class
     })
@@ -245,11 +244,65 @@ public abstract class AbstractOwncloudResourceServiceTest {
   @WithMockUser(username = "user", password = "s3cr3t")
   public void test_list_NOK_FileNotFound() throws Exception {
     URI searchPath = URI.create("/unknown");
-    prepare_list_NOK_FileNoutFound(searchPath);
+    prepare_list_NOK_FileNotFound(searchPath);
     resourceService.list(searchPath);
     fail("Expected Exception " + OwncloudResourceNotFoundException.class.getName() + " has not been thrown");
   }
 
-  protected abstract void prepare_list_NOK_FileNoutFound(URI searchPath) throws Exception;
+  protected abstract void prepare_list_NOK_FileNotFound(URI searchPath) throws Exception;
+
+  @Test
+  @WithMockUser(username = "user", password = "s3cr3t")
+  public void test_findFile_OK() throws Exception {
+    URI searchPath = URI.create("/file.txt");
+    String eTag = UUID.randomUUID().toString();
+    OwncloudTestFileResourceImpl expectedResource = OwncloudTestFileResourceImpl.fileBuilder()
+        .owncloudResource(OwncloudTestResourceImpl.builder()
+            .backendETag(eTag)
+            .backendName("file.txt")
+            .eTag(eTag)
+            .href(searchPath)
+            .lastModifiedAt(new Date())
+            .mediaType(MediaType.TEXT_PLAIN)
+            .name("file.txt")
+            .build())
+        .contentLength(Long.valueOf(14))
+        .build();
+    prepare_findFile_OK(searchPath, expectedResource);
+    OwncloudResource resource = resourceService.find(searchPath);
+    assertThat(resource).isNotNull();
+    assertThat(resource).isEqualTo(expectedResource);
+  }
+
+  protected abstract void prepare_findFile_OK(URI searchPath, OwncloudTestFileResourceImpl expectedResource) throws Exception;
+
+  @Test(expected = OwncloudResourceNotFoundException.class)
+  @WithMockUser(username = "user", password = "s3cr3t")
+  public void test_findFile_NotExists() throws Exception {
+    URI searchPath = URI.create("/unknownFile.txt");
+    prepare_findFile_NotExists(searchPath);
+    resourceService.find(searchPath);
+    fail("Expected Exception " + OwncloudResourceNotFoundException.class.getName() + " has not been thrown");
+  }
+
+  protected abstract void prepare_findFile_NotExists(URI searchPath) throws Exception;
+
+  @Test
+  @WithMockUser(username = "user", password = "s3cr3t")
+  public void test_findRootDirectory_OK() throws Exception {
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    OwncloudTestResourceImpl expectedResource = OwncloudTestResourceImpl.builder()
+        .backendETag(UUID.randomUUID().toString())
+        .backendName(authentication.getName())
+        .eTag(null)
+        .href(URI.create("/"))
+        .lastModifiedAt(new Date())
+        .mediaType(OwncloudUtils.getDirectoryMediaType())
+        .name("/")
+        .build();
+    prepare_findRootDirectory_OK(expectedResource);
+  }
+
+  protected abstract void prepare_findRootDirectory_OK(OwncloudTestResourceImpl expectedResource) throws Exception;
 
 }

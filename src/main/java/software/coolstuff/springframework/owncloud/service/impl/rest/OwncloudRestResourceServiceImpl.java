@@ -17,26 +17,32 @@
 */
 package software.coolstuff.springframework.owncloud.service.impl.rest;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Base64;
+import java.util.Base64.Encoder;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
+import org.springframework.http.client.ClientHttpRequest;
 import org.springframework.http.converter.ByteArrayHttpMessageConverter;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -134,7 +140,7 @@ class OwncloudRestResourceServiceImpl implements OwncloudResourceService {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     URI searchPath = resolveAsDirectoryURI(relativeTo, authentication.getName());
     URI rootPath = getResolvedRootUri(authentication.getName());
-    List<OwncloudResource> resources = new ArrayList<>();
+    List<OwncloudResource> owncloudResources = new ArrayList<>();
     try {
       Sardine sardine = getSardine();
       List<DavResource> davResources = sardine.list(searchPath.toString());
@@ -143,7 +149,7 @@ class OwncloudRestResourceServiceImpl implements OwncloudResourceService {
           .searchPath(searchPath)
           .renamedSearchPath(".")
           .build();
-      resources.addAll(
+      owncloudResources.addAll(
           davResources.stream()
               .map(davResource -> createOwncloudResourceFrom(davResource, sarchPathConversionProperties))
               .map(modifyingResource -> renameOwncloudResource(modifyingResource, sarchPathConversionProperties))
@@ -160,7 +166,7 @@ class OwncloudRestResourceServiceImpl implements OwncloudResourceService {
             .renamedSearchPath("..")
             .build();
         davResources = sardine.list(searchPath.toString(), 0);
-        resources.addAll(
+        owncloudResources.addAll(
             davResources.stream()
                 .map(davResource -> createOwncloudResourceFrom(davResource, parentDirectoryConversionProperties))
                 .map(modifyingResource -> renameOwncloudResource(modifyingResource, parentDirectoryConversionProperties))
@@ -173,7 +179,7 @@ class OwncloudRestResourceServiceImpl implements OwncloudResourceService {
         private static final long serialVersionUID = 9123944573421981304L;
       };
     }
-    return resources;
+    return owncloudResources;
   }
 
   public URI resolveAsDirectoryURI(URI relativeTo, String username) {
@@ -219,7 +225,7 @@ class OwncloudRestResourceServiceImpl implements OwncloudResourceService {
       name = "/";
     }
     href = rootPath.relativize(href);
-    href = URI.create("/").resolve(href).normalize(); // prepend / to the href
+    href = URI.create("/").resolve(href).normalize(); // prepend "/" to the href
     OwncloudModifyingRestResource owncloudResource = OwncloudRestResourceImpl.builder()
         .href(href)
         .name(name)
@@ -288,11 +294,11 @@ class OwncloudRestResourceServiceImpl implements OwncloudResourceService {
         .rootPath(getResolvedRootUri(authentication.getName()))
         .searchPath(searchPath)
         .build();
-    OwncloudResource resource = null;
+    OwncloudResource owncloudResource = null;
     try {
       Sardine sardine = getSardine();
       List<DavResource> davResources = sardine.list(searchPath.toString(), 0);
-      resource = davResources.stream()
+      owncloudResource = davResources.stream()
           .findFirst()
           .map(davResource -> createOwncloudResourceFrom(davResource, conversionProperties))
           .orElseThrow(() -> new OwncloudResourceNotFoundException(path));
@@ -303,7 +309,7 @@ class OwncloudRestResourceServiceImpl implements OwncloudResourceService {
         private static final long serialVersionUID = 9123944573421981304L;
       };
     }
-    return resource;
+    return owncloudResource;
   }
 
   @Override
@@ -326,29 +332,87 @@ class OwncloudRestResourceServiceImpl implements OwncloudResourceService {
 
   @Override
   public InputStream getInputStream(OwncloudFileResource resource) {
-    return restOperations.execute(resource.getHref(), HttpMethod.GET, null, response -> response.getBody());
+    PipedInputStream inputStream = new PipedInputStream();
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    URI resolvedUri = resolveAsFileURI(resource.getHref(), authentication.getName());
+    PipedStreamThread pipedThread = PipedInputStreamThread.builder()
+        .authentication(authentication)
+        .pipedInputStream(inputStream)
+        .restOperations(restOperations)
+        .uri(resolvedUri)
+        .build();
+    pipedThread.startAndWaitForConnectedPipe();
+    return inputStream;
+  }
+
+  private URI resolveAsFileURI(URI relativeTo, String username) {
+    URI resolvedRootUri = getResolvedRootUri(username);
+    if (relativeTo == null || StringUtils.isBlank(relativeTo.getPath())) {
+      return resolvedRootUri;
+    }
+    return URI.create(
+        UriComponentsBuilder.fromUri(resolvedRootUri)
+            .path(relativeTo.getPath())
+            .toUriString())
+        .normalize();
+  }
+
+  private static void addMissingAuthorizationHeader(ClientHttpRequest clientHttpRequest, Authentication authentication) throws IOException {
+    HttpHeaders headers = clientHttpRequest.getHeaders();
+    if (headers.containsKey(HttpHeaders.AUTHORIZATION)) {
+      return;
+    }
+    Encoder base64Encoder = Base64.getEncoder();
+    String encodedCredentials = base64Encoder.encodeToString((authentication.getName() + ':' + (String) authentication.getCredentials()).getBytes());
+    headers.add(HttpHeaders.AUTHORIZATION, "Basic " + encodedCredentials);
   }
 
   @Override
   public OutputStream getOutputStream(OwncloudFileResource resource) {
-    return new ContentOutputStream(restOperations, resource.getHref());
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    URI uri = resolveAsFileURI(resource.getHref(), authentication.getName());
+    PipedOutputStream outputStream = new PipedOutputStream();
+    PipedOutputStreamThread outputStreamThread = PipedOutputStreamThread.builder()
+        .authentication(authentication)
+        .pipedOutputStream(outputStream)
+        .restOperations(restOperations)
+        .uri(uri)
+        .build();
+    outputStreamThread.start();
+    outputStreamThread.waitForConnectedPipe();
+    return outputStream;
   }
 
-  static class ContentOutputStream extends ByteArrayOutputStream {
+  private static class PipedOutputStreamThread extends PipedStreamThread {
 
-    private final RestOperations restOperations;
-    private final URI uri;
+    private final PipedOutputStream pipedOutputStream;
 
-    public ContentOutputStream(final RestOperations restOperations, final URI uri) {
-      super();
-      this.restOperations = restOperations;
-      this.uri = uri;
+    @Builder
+    private PipedOutputStreamThread(
+        final URI uri,
+        final Authentication authentication,
+        final PipedOutputStream pipedOutputStream,
+        final RestOperations restOperations) {
+      super(uri, authentication, restOperations);
+      this.pipedOutputStream = pipedOutputStream;
     }
 
     @Override
-    public void close() throws IOException {
-      super.close();
-      restOperations.put(uri, this.toByteArray());
+    public void run() {
+      setThreadName(HttpMethod.PUT);
+      try (InputStream input = new PipedInputStream(pipedOutputStream)) {
+        setPipeReadyAndStopWaitThread();
+        execute(HttpMethod.PUT, clientHttpRequest -> handleRequest(input, clientHttpRequest), null);
+      } catch (IOException e) {
+        throw new OwncloudResourceException(e) {
+          private static final long serialVersionUID = 5448658359993578985L;
+        };
+      }
+    }
+
+    private void handleRequest(InputStream input, ClientHttpRequest clientHttpRequest) throws IOException {
+      OwncloudRestResourceServiceImpl.addMissingAuthorizationHeader(clientHttpRequest, getAuthentication());
+      IOUtils.copy(input, clientHttpRequest.getBody());
     }
   }
 }

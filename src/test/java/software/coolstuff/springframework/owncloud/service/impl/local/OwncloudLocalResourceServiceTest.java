@@ -86,6 +86,7 @@ public class OwncloudLocalResourceServiceTest extends AbstractOwncloudResourceSe
           .when(checksumService.getChecksum(resourcePath))
           .thenReturn(Optional.ofNullable(owncloudResource.getBackendETag()));
       if (owncloudResource instanceof OwncloudTestFileResourceImpl) {
+        Files.createDirectories(resourcePath.getParent());
         createFile(resourcePath, (OwncloudTestFileResourceImpl) owncloudResource);
       } else {
         if (!Files.exists(resourcePath)) {
@@ -135,6 +136,20 @@ public class OwncloudLocalResourceServiceTest extends AbstractOwncloudResourceSe
   }
 
   @Override
-  protected void prepare_list_NOK_FileNoutFound(URI searchPath) throws Exception {}
+  protected void prepare_list_NOK_FileNotFound(URI searchPath) throws Exception {}
 
+  @Override
+  protected void prepare_findFile_OK(URI searchPath, OwncloudTestFileResourceImpl expectedResource) throws Exception {
+    createResource(expectedResource);
+    modifyResourceInformationBasedOnPathInformation(expectedResource);
+  }
+
+  @Override
+  protected void prepare_findFile_NotExists(URI searchPath) throws Exception {}
+
+  @Override
+  protected void prepare_findRootDirectory_OK(OwncloudTestResourceImpl expectedResource) throws Exception {
+    createResource(expectedResource);
+    modifyResourceInformationBasedOnPathInformation(expectedResource);
+  }
 }
