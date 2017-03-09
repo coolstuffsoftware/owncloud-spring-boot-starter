@@ -27,12 +27,12 @@ import org.springframework.web.client.RestOperations;
 /**
  * @author mufasa1976
  */
-interface PipedStreamThread {
+interface PipedStreamSynchronizer {
 
   void startAndWaitForConnectedPipe();
 
   @SuppressWarnings("rawtypes")
-  interface PipedThreadBuilder<T extends PipedThreadBuilder> {
+  interface PipedStreamSynchronizerBuilder<T extends PipedStreamSynchronizerBuilder> {
 
     T uri(URI uri);
 
@@ -40,16 +40,16 @@ interface PipedStreamThread {
 
     T restOperations(RestOperations restOperations);
 
-    PipedStreamThread build();
+    PipedStreamSynchronizer build();
 
   }
 
-  interface PipedInputStreamThreadBuilder extends PipedThreadBuilder<PipedInputStreamThreadBuilder> {
-    PipedInputStreamThreadBuilder pipedInputStream(PipedInputStream pipedInputStream);
+  interface PipedInputStreamSynchronizerBuilder extends PipedStreamSynchronizerBuilder<PipedInputStreamSynchronizerBuilder> {
+    PipedInputStreamSynchronizerBuilder pipedInputStream(PipedInputStream pipedInputStream);
   }
 
-  interface PipedOutputStreamThreadBuilder extends PipedThreadBuilder<PipedOutputStreamThreadBuilder> {
-    PipedOutputStreamThreadBuilder pipedOutputStream(PipedOutputStream pipedOutputStream);
+  interface PipedOutputStreamSynchronizerBuilder extends PipedStreamSynchronizerBuilder<PipedOutputStreamSynchronizerBuilder> {
+    PipedOutputStreamSynchronizerBuilder pipedOutputStream(PipedOutputStream pipedOutputStream);
   }
 
 }

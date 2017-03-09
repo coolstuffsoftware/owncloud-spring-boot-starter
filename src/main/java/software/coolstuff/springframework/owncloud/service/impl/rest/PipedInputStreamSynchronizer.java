@@ -37,11 +37,11 @@ import software.coolstuff.springframework.owncloud.exception.resource.OwncloudRe
 /**
  * @author mufasa1976
  */
-class PipedInputStreamThread extends AbstractPipedThreadImpl {
+class PipedInputStreamSynchronizer extends AbstractPipedStreamSynchronizerImpl {
 
   private final PipedInputStream pipedInputStream;
 
-  private PipedInputStreamThread(
+  private PipedInputStreamSynchronizer(
       final URI uri,
       final Authentication authentication,
       final RestOperations restOperations,
@@ -50,16 +50,20 @@ class PipedInputStreamThread extends AbstractPipedThreadImpl {
     this.pipedInputStream = pipedInputStream;
   }
 
-  public static PipedStreamThread.PipedInputStreamThreadBuilder builder() {
-    return new PipedInputStreamThreadBuilder();
+  public static PipedStreamSynchronizer.PipedInputStreamSynchronizerBuilder builder() {
+    return new PipedInputStreamSynchronizerBuilderImpl();
+  }
+
+  @Override
+  protected HttpMethod getHttpMethod() {
+    return HttpMethod.GET;
   }
 
   @Override
   public void createPipedStream() {
-    setThreadName(HttpMethod.GET);
     try (OutputStream output = new PipedOutputStream(pipedInputStream)) {
       setPipeReady();
-      execute(HttpMethod.GET, this::handleRequest, response -> IOUtils.copy(response.getBody(), output));
+      execute(this::handleRequest, response -> IOUtils.copy(response.getBody(), output));
     } catch (IOException e) {
       throw new OwncloudResourceException(e) {
         private static final long serialVersionUID = 5448658359993578985L;
@@ -68,49 +72,24 @@ class PipedInputStreamThread extends AbstractPipedThreadImpl {
   }
 
   private void handleRequest(ClientHttpRequest clientHttpRequest) throws IOException {
-    OwncloudRestResourceServiceImpl.addMissingAuthorizationHeader(clientHttpRequest, getAuthentication());
-    setKeepAlive(clientHttpRequest);
-  }
-
-  private void setKeepAlive(ClientHttpRequest clientHttpRequest) {
     HttpHeaders headers = clientHttpRequest.getHeaders();
     headers.add(HttpHeaders.CONNECTION, "keep-alive");
   }
 
   @NoArgsConstructor(access = AccessLevel.PRIVATE)
-  private static class PipedInputStreamThreadBuilder implements PipedStreamThread.PipedInputStreamThreadBuilder {
-    private URI uri;
-    private Authentication authentication;
-    private RestOperations restOperations;
+  private static class PipedInputStreamSynchronizerBuilderImpl extends AbstractPipedStreamSynchronizationBuilderImpl<PipedStreamSynchronizer.PipedInputStreamSynchronizerBuilder>
+      implements PipedStreamSynchronizer.PipedInputStreamSynchronizerBuilder {
     private PipedInputStream pipedInputStream;
 
     @Override
-    public PipedStreamThread.PipedInputStreamThreadBuilder uri(URI uri) {
-      this.uri = uri;
-      return this;
-    }
-
-    @Override
-    public PipedStreamThread.PipedInputStreamThreadBuilder authentication(Authentication authentication) {
-      this.authentication = authentication;
-      return this;
-    }
-
-    @Override
-    public PipedStreamThread.PipedInputStreamThreadBuilder restOperations(RestOperations restOperations) {
-      this.restOperations = restOperations;
-      return this;
-    }
-
-    @Override
-    public PipedStreamThread.PipedInputStreamThreadBuilder pipedInputStream(PipedInputStream pipedInputStream) {
+    public PipedStreamSynchronizer.PipedInputStreamSynchronizerBuilder pipedInputStream(PipedInputStream pipedInputStream) {
       this.pipedInputStream = pipedInputStream;
       return this;
     }
 
     @Override
-    public PipedStreamThread build() {
-      return new PipedInputStreamThread(uri, authentication, restOperations, pipedInputStream);
+    public PipedStreamSynchronizer build() {
+      return new PipedInputStreamSynchronizer(getUri(), getAuthentication(), getRestOperations(), pipedInputStream);
     }
 
   }

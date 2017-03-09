@@ -26,23 +26,17 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Base64;
-import java.util.Base64.Encoder;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
-import org.springframework.http.client.ClientHttpRequest;
 import org.springframework.http.converter.ByteArrayHttpMessageConverter;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -335,13 +329,13 @@ class OwncloudRestResourceServiceImpl implements OwncloudResourceService {
     PipedInputStream inputStream = new PipedInputStream();
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     URI resolvedUri = resolveAsFileURI(resource.getHref(), authentication.getName());
-    PipedStreamThread pipedThread = PipedInputStreamThread.builder()
+    PipedStreamSynchronizer pipedStreamSynchronizer = PipedInputStreamSynchronizer.builder()
         .authentication(authentication)
         .pipedInputStream(inputStream)
         .restOperations(restOperations)
         .uri(resolvedUri)
         .build();
-    pipedThread.startAndWaitForConnectedPipe();
+    pipedStreamSynchronizer.startAndWaitForConnectedPipe();
     return inputStream;
   }
 
@@ -357,62 +351,18 @@ class OwncloudRestResourceServiceImpl implements OwncloudResourceService {
         .normalize();
   }
 
-  private static void addMissingAuthorizationHeader(ClientHttpRequest clientHttpRequest, Authentication authentication) throws IOException {
-    HttpHeaders headers = clientHttpRequest.getHeaders();
-    if (headers.containsKey(HttpHeaders.AUTHORIZATION)) {
-      return;
-    }
-    Encoder base64Encoder = Base64.getEncoder();
-    String encodedCredentials = base64Encoder.encodeToString((authentication.getName() + ':' + (String) authentication.getCredentials()).getBytes());
-    headers.add(HttpHeaders.AUTHORIZATION, "Basic " + encodedCredentials);
-  }
-
   @Override
   public OutputStream getOutputStream(OwncloudFileResource resource) {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     URI uri = resolveAsFileURI(resource.getHref(), authentication.getName());
     PipedOutputStream outputStream = new PipedOutputStream();
-    PipedOutputStreamThread outputStreamThread = PipedOutputStreamThread.builder()
+    PipedStreamSynchronizer pipedStreamSynchronizer = PipedOutputStreamSynchronizer.builder()
         .authentication(authentication)
         .pipedOutputStream(outputStream)
         .restOperations(restOperations)
         .uri(uri)
         .build();
-    outputStreamThread.start();
-    outputStreamThread.waitForConnectedPipe();
+    pipedStreamSynchronizer.startAndWaitForConnectedPipe();
     return outputStream;
-  }
-
-  private static class PipedOutputStreamThread extends PipedStreamThread {
-
-    private final PipedOutputStream pipedOutputStream;
-
-    @Builder
-    private PipedOutputStreamThread(
-        final URI uri,
-        final Authentication authentication,
-        final PipedOutputStream pipedOutputStream,
-        final RestOperations restOperations) {
-      super(uri, authentication, restOperations);
-      this.pipedOutputStream = pipedOutputStream;
-    }
-
-    @Override
-    public void run() {
-      setThreadName(HttpMethod.PUT);
-      try (InputStream input = new PipedInputStream(pipedOutputStream)) {
-        setPipeReadyAndStopWaitThread();
-        execute(HttpMethod.PUT, clientHttpRequest -> handleRequest(input, clientHttpRequest), null);
-      } catch (IOException e) {
-        throw new OwncloudResourceException(e) {
-          private static final long serialVersionUID = 5448658359993578985L;
-        };
-      }
-    }
-
-    private void handleRequest(InputStream input, ClientHttpRequest clientHttpRequest) throws IOException {
-      OwncloudRestResourceServiceImpl.addMissingAuthorizationHeader(clientHttpRequest, getAuthentication());
-      IOUtils.copy(input, clientHttpRequest.getBody());
-    }
   }
 }
