@@ -22,17 +22,16 @@ import java.io.OutputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.net.URI;
+import java.util.function.BiFunction;
 
-import org.apache.commons.io.IOUtils;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.client.ClientHttpRequest;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.client.RestOperations;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import software.coolstuff.springframework.owncloud.exception.resource.OwncloudResourceException;
+import software.coolstuff.springframework.owncloud.model.OwncloudFileResource;
 
 /**
  * @author mufasa1976
@@ -42,11 +41,13 @@ class PipedInputStreamSynchronizer extends AbstractPipedStreamSynchronizerImpl {
   private final PipedInputStream pipedInputStream;
 
   private PipedInputStreamSynchronizer(
-      final URI uri,
       final Authentication authentication,
+      final OwncloudFileResource owncloudFileResource,
+      final OwncloudRestProperties owncloudRestProperties,
       final RestOperations restOperations,
+      final BiFunction<URI, String, URI> uriResolver,
       final PipedInputStream pipedInputStream) {
-    super(uri, authentication, restOperations);
+    super(authentication, owncloudFileResource, owncloudRestProperties, restOperations, uriResolver);
     this.pipedInputStream = pipedInputStream;
   }
 
@@ -63,17 +64,12 @@ class PipedInputStreamSynchronizer extends AbstractPipedStreamSynchronizerImpl {
   public void createPipedStream() {
     try (OutputStream output = new PipedOutputStream(pipedInputStream)) {
       setPipeReady();
-      execute(this::handleRequest, response -> IOUtils.copy(response.getBody(), output));
+      execute(null, response -> copy(response.getBody(), output));
     } catch (IOException e) {
       throw new OwncloudResourceException(e) {
         private static final long serialVersionUID = 5448658359993578985L;
       };
     }
-  }
-
-  private void handleRequest(ClientHttpRequest clientHttpRequest) throws IOException {
-    HttpHeaders headers = clientHttpRequest.getHeaders();
-    headers.add(HttpHeaders.CONNECTION, "keep-alive");
   }
 
   @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -89,7 +85,13 @@ class PipedInputStreamSynchronizer extends AbstractPipedStreamSynchronizerImpl {
 
     @Override
     public PipedStreamSynchronizer build() {
-      return new PipedInputStreamSynchronizer(getUri(), getAuthentication(), getRestOperations(), pipedInputStream);
+      return new PipedInputStreamSynchronizer(
+          getAuthentication(),
+          getOwncloudFileResource(),
+          getOwncloudRestProperties(),
+          getRestOperations(),
+          getUriResolver(),
+          pipedInputStream);
     }
 
   }

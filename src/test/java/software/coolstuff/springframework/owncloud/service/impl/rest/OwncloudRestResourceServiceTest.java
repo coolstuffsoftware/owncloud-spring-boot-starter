@@ -35,6 +35,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.github.sardine.DavResource;
@@ -61,6 +62,9 @@ public class OwncloudRestResourceServiceTest extends AbstractOwncloudResourceSer
 
   @Autowired
   private OwncloudRestProperties properties;
+
+  @Autowired
+  private MockRestServiceServer mockServer;
 
   @Before
   public void setUp() throws Exception {

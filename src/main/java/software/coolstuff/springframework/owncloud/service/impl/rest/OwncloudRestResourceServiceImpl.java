@@ -328,12 +328,13 @@ class OwncloudRestResourceServiceImpl implements OwncloudResourceService {
   public InputStream getInputStream(OwncloudFileResource resource) {
     PipedInputStream inputStream = new PipedInputStream();
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-    URI resolvedUri = resolveAsFileURI(resource.getHref(), authentication.getName());
     PipedStreamSynchronizer pipedStreamSynchronizer = PipedInputStreamSynchronizer.builder()
         .authentication(authentication)
+        .owncloudFileResource(resource)
+        .owncloudRestProperties(properties)
         .pipedInputStream(inputStream)
         .restOperations(restOperations)
-        .uri(resolvedUri)
+        .uriResolver(this::resolveAsFileURI)
         .build();
     pipedStreamSynchronizer.startAndWaitForConnectedPipe();
     return inputStream;
@@ -353,14 +354,15 @@ class OwncloudRestResourceServiceImpl implements OwncloudResourceService {
 
   @Override
   public OutputStream getOutputStream(OwncloudFileResource resource) {
-    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-    URI uri = resolveAsFileURI(resource.getHref(), authentication.getName());
     PipedOutputStream outputStream = new PipedOutputStream();
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     PipedStreamSynchronizer pipedStreamSynchronizer = PipedOutputStreamSynchronizer.builder()
         .authentication(authentication)
+        .owncloudFileResource(resource)
+        .owncloudRestProperties(properties)
         .pipedOutputStream(outputStream)
         .restOperations(restOperations)
-        .uri(uri)
+        .uriResolver(this::resolveAsFileURI)
         .build();
     pipedStreamSynchronizer.startAndWaitForConnectedPipe();
     return outputStream;

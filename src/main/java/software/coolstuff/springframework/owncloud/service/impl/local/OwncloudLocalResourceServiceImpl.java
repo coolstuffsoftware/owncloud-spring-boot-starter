@@ -245,8 +245,14 @@ class OwncloudLocalResourceServiceImpl implements OwncloudResourceService {
 
   @Override
   public InputStream getInputStream(OwncloudFileResource resource) {
-    // TODO Auto-generated method stub
-    return null;
+    Path location = resolveLocation(resource.getHref());
+    try {
+      return Files.newInputStream(location);
+    } catch (IOException e) {
+      throw new OwncloudResourceException(e) {
+        private static final long serialVersionUID = 4718394753732515113L;
+      };
+    }
   }
 
   @Override

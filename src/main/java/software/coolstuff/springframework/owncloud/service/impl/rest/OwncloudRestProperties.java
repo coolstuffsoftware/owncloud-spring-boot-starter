@@ -19,6 +19,8 @@ package software.coolstuff.springframework.owncloud.service.impl.rest;
 
 import java.util.concurrent.TimeUnit;
 
+import javax.validation.constraints.Min;
+
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import lombok.Data;
@@ -52,7 +54,8 @@ class OwncloudRestProperties extends OwncloudProperties {
     }
 
     private CacheProperties cache = new CacheProperties();
-
+    @Min(1)
+    private int pipedStreamBufferSize = 2048;
   }
 
   private ResourceServiceProperties resourceService = new ResourceServiceProperties();

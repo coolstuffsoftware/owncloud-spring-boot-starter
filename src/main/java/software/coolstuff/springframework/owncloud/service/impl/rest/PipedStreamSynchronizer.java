@@ -20,9 +20,12 @@ package software.coolstuff.springframework.owncloud.service.impl.rest;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.net.URI;
+import java.util.function.BiFunction;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.web.client.RestOperations;
+
+import software.coolstuff.springframework.owncloud.model.OwncloudFileResource;
 
 /**
  * @author mufasa1976
@@ -34,11 +37,15 @@ interface PipedStreamSynchronizer {
   @SuppressWarnings("rawtypes")
   interface PipedStreamSynchronizerBuilder<T extends PipedStreamSynchronizerBuilder> {
 
-    T uri(URI uri);
-
     T authentication(Authentication authentication);
 
+    T owncloudFileResource(OwncloudFileResource owncloudFileResource);
+
+    T owncloudRestProperties(OwncloudRestProperties owncloudRestProperties);
+
     T restOperations(RestOperations restOperations);
+
+    T uriResolver(BiFunction<URI, String, URI> uriResolver);
 
     PipedStreamSynchronizer build();
 
