@@ -19,9 +19,6 @@ package software.coolstuff.springframework.owncloud.service.impl.rest;
 
 import java.io.InputStream;
 
-/**
- * @author mufasa1976
- */
 interface PipedInputStreamSynchronizer {
 
   InputStream getInputStream();

@@ -36,9 +36,6 @@ import lombok.Setter;
 import software.coolstuff.springframework.owncloud.exception.resource.OwncloudRestResourceException;
 import software.coolstuff.springframework.owncloud.model.OwncloudFileResource;
 
-/**
- * @author mufasa1976
- */
 class PipedOutputStreamSynchronizerImpl extends AbstractPipedStreamSynchronizerImpl implements PipedOutputStreamSynchronizer {
 
   private final SynchronizedPipedOutputStream pipedOutputStream;

@@ -22,9 +22,6 @@ import java.util.Optional;
 
 import software.coolstuff.springframework.owncloud.exception.resource.OwncloudResourceException;
 
-/**
- * @author mufasa1976
- */
 interface OwncloudLocalResourceChecksumService {
 
   Optional<String> getChecksum(Path path) throws OwncloudResourceException;

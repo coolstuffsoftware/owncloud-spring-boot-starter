@@ -33,10 +33,6 @@ import lombok.Setter;
 import lombok.ToString;
 import software.coolstuff.springframework.owncloud.model.OwncloudResource;
 
-/**
- * @author mufasa1976
- *
- */
 @Getter
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 @Builder

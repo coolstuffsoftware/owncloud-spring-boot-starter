@@ -19,6 +19,7 @@ package software.coolstuff.springframework.owncloud.service.impl.rest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.header;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
@@ -28,6 +29,8 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Base64;
+import java.util.Base64.Encoder;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -40,6 +43,7 @@ import org.junit.Before;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -59,7 +63,7 @@ import software.coolstuff.springframework.owncloud.service.AbstractOwncloudResou
 import software.coolstuff.springframework.owncloud.service.api.OwncloudResourceService;
 
 @ActiveProfiles("REST-RESOURCE-SERVICE")
-public class OwncloudRestResourceServiceTest extends AbstractOwncloudResourceServiceTest {
+public class OwncloudRestResourceServiceTest extends AbstractOwncloudResourceServiceTest implements OwncloudRestServiceTest {
 
   private final static String DEFAULT_PATH = "/remote.php/dav/files/{username}";
 
@@ -83,7 +87,12 @@ public class OwncloudRestResourceServiceTest extends AbstractOwncloudResourceSer
         .when(sardineCacheLoader.load(Mockito.anyString()))
         .thenReturn(sardine);
     assertThat(resourceService.getClass()).isAssignableFrom(OwncloudRestResourceServiceImpl.class);
-    mockServer = MockRestServiceServer.createServer(((OwncloudRestResourceServiceImpl) resourceService).getRestTemplate());
+    mockServer = MockRestServiceServer.createServer(owncloudService().getRestTemplate());
+  }
+
+  @Override
+  public OwncloudRestService owncloudService() {
+    return (OwncloudRestService) resourceService;
   }
 
   @Override
@@ -269,12 +278,14 @@ public class OwncloudRestResourceServiceTest extends AbstractOwncloudResourceSer
     mockServer
         .expect(requestToWithPrefix(owncloudFileResource))
         .andExpect(method(HttpMethod.GET))
+        .andExpect(header(HttpHeaders.AUTHORIZATION, getBasicAuthorizationHeader()))
+        .andExpect(header(HttpHeaders.CONNECTION, "keep-alive"))
         .andRespond(withSuccess(owncloudFileResource.getTestFileContent(), owncloudFileResource.getMediaType()));
   }
 
   private RequestMatcher requestToWithPrefix(OwncloudResource owncloudResource) throws MalformedURLException {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-    checkResourceLocation();
+    checkRestLocation();
     URI uri = URI.create(UriComponentsBuilder.fromHttpUrl(properties.getLocation())
         .path(StringUtils.replace(DEFAULT_PATH, "{username}", authentication.getName()))
         .path(owncloudResource.getHref().getPath())
@@ -282,7 +293,7 @@ public class OwncloudRestResourceServiceTest extends AbstractOwncloudResourceSer
     return requestTo(uri);
   }
 
-  private void checkResourceLocation() {
+  private void checkRestLocation() {
     if (isResourceLocation()) {
       fail("The specified Location is not a REST Location");
     }
@@ -290,6 +301,13 @@ public class OwncloudRestResourceServiceTest extends AbstractOwncloudResourceSer
 
   private boolean isResourceLocation() {
     return StringUtils.startsWith(properties.getLocation(), "file:") || StringUtils.startsWith(properties.getLocation(), "classpath:");
+  }
+
+  private String getBasicAuthorizationHeader() {
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    Encoder base64Encoder = Base64.getEncoder();
+    String encodedCredentials = base64Encoder.encodeToString((authentication.getName() + ':' + (String) authentication.getCredentials()).getBytes());
+    return "Basic " + encodedCredentials;
   }
 
   @Override
@@ -302,6 +320,8 @@ public class OwncloudRestResourceServiceTest extends AbstractOwncloudResourceSer
     mockServer
         .expect(requestToWithPrefix(owncloudFileResource))
         .andExpect(method(HttpMethod.GET))
+        .andExpect(header(HttpHeaders.AUTHORIZATION, getBasicAuthorizationHeader()))
+        .andExpect(header(HttpHeaders.CONNECTION, "keep-alive"))
         .andRespond(withStatus(org.springframework.http.HttpStatus.NOT_FOUND));
   }
 }

@@ -39,9 +39,6 @@ import software.coolstuff.springframework.owncloud.exception.resource.OwncloudRe
 import software.coolstuff.springframework.owncloud.exception.resource.OwncloudRestResourceException;
 import software.coolstuff.springframework.owncloud.model.OwncloudFileResource;
 
-/**
- * @author mufasa1976
- */
 class PipedInputStreamSynchronizerImpl extends AbstractPipedStreamSynchronizerImpl implements PipedInputStreamSynchronizer {
 
   private final SynchronizedPipedInputStream pipedInputStream = new SynchronizedPipedInputStream();

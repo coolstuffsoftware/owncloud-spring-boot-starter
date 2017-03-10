@@ -50,12 +50,8 @@ import software.coolstuff.springframework.owncloud.exception.resource.OwncloudRe
 import software.coolstuff.springframework.owncloud.service.impl.local.OwncloudLocalProperties.MessageDigestAlgorithm;
 import software.coolstuff.springframework.owncloud.service.impl.local.OwncloudLocalProperties.ResourceServiceProperties;
 
-/**
- * @author mufasa1976
- *
- */
 @Slf4j
-public class OwncloudLocalResourceChecksumServiceImpl implements OwncloudLocalResourceChecksumService {
+class OwncloudLocalResourceChecksumServiceImpl implements OwncloudLocalResourceChecksumService {
 
   @Autowired
   private OwncloudLocalProperties properties;

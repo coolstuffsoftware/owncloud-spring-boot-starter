@@ -29,11 +29,8 @@ import lombok.extern.slf4j.Slf4j;
 import software.coolstuff.springframework.owncloud.exception.auth.OwncloudInvalidAuthenticationObjectException;
 import software.coolstuff.springframework.owncloud.service.impl.OwncloudUtils;
 
-/**
- * @author mufasa1976
- */
 @Slf4j
-public class SardineCacheLoader extends CacheLoader<String, Sardine> {
+class SardineCacheLoader extends CacheLoader<String, Sardine> {
 
   @Override
   public Sardine load(String username) throws Exception {

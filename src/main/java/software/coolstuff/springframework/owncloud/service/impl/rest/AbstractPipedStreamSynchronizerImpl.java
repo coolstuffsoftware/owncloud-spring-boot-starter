@@ -46,9 +46,6 @@ import lombok.extern.slf4j.Slf4j;
 import software.coolstuff.springframework.owncloud.model.OwncloudFileResource;
 import software.coolstuff.springframework.owncloud.service.impl.rest.OwncloudRestProperties.ResourceServiceProperties;
 
-/**
- * @author mufasa1976
- */
 @Slf4j
 abstract class AbstractPipedStreamSynchronizerImpl {
 

@@ -44,9 +44,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import lombok.Builder;
 import lombok.extern.slf4j.Slf4j;
-import software.coolstuff.springframework.owncloud.exception.resource.OwncloudResourceException;
+import software.coolstuff.springframework.owncloud.exception.resource.OwncloudLocalResourceException;
 import software.coolstuff.springframework.owncloud.exception.resource.OwncloudResourceNotFoundException;
 import software.coolstuff.springframework.owncloud.model.OwncloudFileResource;
 import software.coolstuff.springframework.owncloud.model.OwncloudResource;
@@ -54,9 +53,6 @@ import software.coolstuff.springframework.owncloud.service.api.OwncloudResourceS
 import software.coolstuff.springframework.owncloud.service.impl.OwncloudUtils;
 import software.coolstuff.springframework.owncloud.service.impl.local.OwncloudLocalProperties.ResourceServiceProperties;
 
-/**
- * @author mufasa1976
- */
 @Slf4j
 class OwncloudLocalResourceServiceImpl implements OwncloudResourceService {
 
@@ -99,9 +95,7 @@ class OwncloudLocalResourceServiceImpl implements OwncloudResourceService {
               .collect(Collectors.toList()));
       appendParentDirectoryOf(location, owncloudResources);
     } catch (IOException e) {
-      throw new OwncloudResourceException(e) {
-        private static final long serialVersionUID = -4406347844686894254L;
-      };
+      throw new OwncloudLocalResourceException(e);
     }
   }
 
@@ -124,9 +118,7 @@ class OwncloudLocalResourceServiceImpl implements OwncloudResourceService {
       try {
         Files.createDirectories(location);
       } catch (IOException e) {
-        throw new OwncloudResourceException(e) {
-          private static final long serialVersionUID = 6574659306271631711L;
-        };
+        throw new OwncloudLocalResourceException(e);
       }
     }
     if (relativeTo == null || StringUtils.isBlank(relativeTo.getPath())) {
@@ -195,9 +187,7 @@ class OwncloudLocalResourceServiceImpl implements OwncloudResourceService {
     } catch (NoSuchFileException e) {
       throw new OwncloudResourceNotFoundException(href, getUsername());
     } catch (IOException e) {
-      throw new OwncloudResourceException(e) {
-        private static final long serialVersionUID = 7484650505520708669L;
-      };
+      throw new OwncloudLocalResourceException(e);
     }
   }
 
@@ -218,9 +208,7 @@ class OwncloudLocalResourceServiceImpl implements OwncloudResourceService {
     try {
       return Files.isSameFile(location, rootLocation);
     } catch (IOException e) {
-      throw new OwncloudResourceException(e) {
-        private static final long serialVersionUID = 6416480160654068104L;
-      };
+      throw new OwncloudLocalResourceException(e);
     }
   }
 
@@ -258,9 +246,7 @@ class OwncloudLocalResourceServiceImpl implements OwncloudResourceService {
     } catch (NoSuchFileException e) {
       throw new OwncloudResourceNotFoundException(resource.getHref(), getUsername());
     } catch (IOException e) {
-      throw new OwncloudResourceException(e) {
-        private static final long serialVersionUID = 4718394753732515113L;
-      };
+      throw new OwncloudLocalResourceException(e);
     }
   }
 
@@ -268,28 +254,20 @@ class OwncloudLocalResourceServiceImpl implements OwncloudResourceService {
   public OutputStream getOutputStream(OwncloudFileResource resource) {
     Path location = resolveLocation(resource.getHref());
     try {
-      return ContentOutputStream.builder()
-          .checksumService(checksumService)
-          .path(location)
-          .build();
+      return new ContentOutputStream(location);
     } catch (FileNotFoundException e) {
       log.error(String.format("File %s has not been found", location), e);
       throw new OwncloudResourceNotFoundException(resource.getHref(), getUsername());
     }
   }
 
-  private static class ContentOutputStream extends FileOutputStream {
+  private class ContentOutputStream extends FileOutputStream {
 
     private final Path path;
-    private final OwncloudLocalResourceChecksumService checksumService;
 
-    @Builder
-    public ContentOutputStream(
-        final Path path,
-        final OwncloudLocalResourceChecksumService checksumService) throws FileNotFoundException {
+    public ContentOutputStream(final Path path) throws FileNotFoundException {
       super(path.toFile());
       this.path = path;
-      this.checksumService = checksumService;
     }
 
     @Override

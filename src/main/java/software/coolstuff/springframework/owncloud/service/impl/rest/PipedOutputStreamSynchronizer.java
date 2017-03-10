@@ -19,9 +19,6 @@ package software.coolstuff.springframework.owncloud.service.impl.rest;
 
 import java.io.OutputStream;
 
-/**
- * @author mufasa1976
- */
 interface PipedOutputStreamSynchronizer {
 
   OutputStream getOutputStream();

@@ -23,10 +23,6 @@ import lombok.ToString;
 import software.coolstuff.springframework.owncloud.model.OwncloudFileResource;
 import software.coolstuff.springframework.owncloud.model.OwncloudResource;
 
-/**
- * @author mufasa1976
- *
- */
 @Getter
 @ToString(callSuper = true)
 public class OwncloudRestFileResourceImpl extends OwncloudRestResourceImpl implements OwncloudFileResource {

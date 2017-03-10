@@ -62,11 +62,8 @@ import software.coolstuff.springframework.owncloud.service.api.OwncloudResourceS
 import software.coolstuff.springframework.owncloud.service.impl.OwncloudUtils;
 import software.coolstuff.springframework.owncloud.service.impl.rest.OwncloudRestProperties.ResourceServiceProperties.CacheProperties;
 
-/**
- * @author mufasa1976
- */
 @Slf4j
-class OwncloudRestResourceServiceImpl implements OwncloudResourceService {
+class OwncloudRestResourceServiceImpl implements OwncloudResourceService, OwncloudRestService {
 
   private static final String URI_SUFFIX = "/remote.php/dav/files/{username}/";
 
@@ -98,7 +95,8 @@ class OwncloudRestResourceServiceImpl implements OwncloudResourceService {
     return StringUtils.stripEnd(url.toString(), "/") + "/" + StringUtils.stripStart(suffix, "/");
   }
 
-  RestTemplate getRestTemplate() {
+  @Override
+  public RestTemplate getRestTemplate() {
     return (RestTemplate) restOperations;
   }
 
