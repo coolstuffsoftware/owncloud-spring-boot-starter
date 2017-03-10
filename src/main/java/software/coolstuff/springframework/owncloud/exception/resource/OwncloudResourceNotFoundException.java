@@ -43,4 +43,9 @@ public class OwncloudResourceNotFoundException extends OwncloudResourceException
     this.uri = uri;
   }
 
+  @Override
+  public String getMessage() {
+    return "Error while accessing Resource " + uri;
+  }
+
 }

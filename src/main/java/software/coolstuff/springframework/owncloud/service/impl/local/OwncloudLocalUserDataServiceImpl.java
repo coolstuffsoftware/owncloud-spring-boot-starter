@@ -136,7 +136,7 @@ class OwncloudLocalUserDataServiceImpl implements OwncloudLocalUserDataService, 
     OwncloudLocalUserData resourceData = new OwncloudLocalUserData();
     log.debug("Add Users to the Synchronization Structure {}", OwncloudLocalUserData.class.getName());
     resourceData.setUsers(users.values());
-    log.debug("Add Gropus to the Synchronization Structure {}", OwncloudLocalUserData.class.getName());
+    log.debug("Add Groups to the Synchronization Structure {}", OwncloudLocalUserData.class.getName());
     resourceData.setGroups(groups);
 
     File file = resource.getFile();

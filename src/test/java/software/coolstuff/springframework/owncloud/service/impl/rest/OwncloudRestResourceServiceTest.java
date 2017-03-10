@@ -17,7 +17,15 @@
 */
 package software.coolstuff.springframework.owncloud.service.impl.rest;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.fail;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
+
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Date;
@@ -32,10 +40,12 @@ import org.junit.Before;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.client.MockRestServiceServer;
+import org.springframework.test.web.client.RequestMatcher;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.github.sardine.DavResource;
@@ -51,6 +61,8 @@ import software.coolstuff.springframework.owncloud.service.api.OwncloudResourceS
 @ActiveProfiles("REST-RESOURCE-SERVICE")
 public class OwncloudRestResourceServiceTest extends AbstractOwncloudResourceServiceTest {
 
+  private final static String DEFAULT_PATH = "/remote.php/dav/files/{username}";
+
   @MockBean
   private SardineCacheLoader sardineCacheLoader;
 
@@ -63,7 +75,6 @@ public class OwncloudRestResourceServiceTest extends AbstractOwncloudResourceSer
   @Autowired
   private OwncloudRestProperties properties;
 
-  @Autowired
   private MockRestServiceServer mockServer;
 
   @Before
@@ -71,6 +82,8 @@ public class OwncloudRestResourceServiceTest extends AbstractOwncloudResourceSer
     Mockito
         .when(sardineCacheLoader.load(Mockito.anyString()))
         .thenReturn(sardine);
+    assertThat(resourceService.getClass()).isAssignableFrom(OwncloudRestResourceServiceImpl.class);
+    mockServer = MockRestServiceServer.createServer(((OwncloudRestResourceServiceImpl) resourceService).getRestTemplate());
   }
 
   @Override
@@ -251,4 +264,44 @@ public class OwncloudRestResourceServiceTest extends AbstractOwncloudResourceSer
         .thenReturn(davResources);
   }
 
+  @Override
+  protected void prepare_getInputStream_OK(OwncloudTestFileResourceImpl owncloudFileResource) throws Exception {
+    mockServer
+        .expect(requestToWithPrefix(owncloudFileResource))
+        .andExpect(method(HttpMethod.GET))
+        .andRespond(withSuccess(owncloudFileResource.getTestFileContent(), owncloudFileResource.getMediaType()));
+  }
+
+  private RequestMatcher requestToWithPrefix(OwncloudResource owncloudResource) throws MalformedURLException {
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    checkResourceLocation();
+    URI uri = URI.create(UriComponentsBuilder.fromHttpUrl(properties.getLocation())
+        .path(StringUtils.replace(DEFAULT_PATH, "{username}", authentication.getName()))
+        .path(owncloudResource.getHref().getPath())
+        .toUriString());
+    return requestTo(uri);
+  }
+
+  private void checkResourceLocation() {
+    if (isResourceLocation()) {
+      fail("The specified Location is not a REST Location");
+    }
+  }
+
+  private boolean isResourceLocation() {
+    return StringUtils.startsWith(properties.getLocation(), "file:") || StringUtils.startsWith(properties.getLocation(), "classpath:");
+  }
+
+  @Override
+  protected void check_getInputStream_OK() throws Exception {
+    mockServer.verify();
+  }
+
+  @Override
+  protected void prepare_getInputStream_NOK_FileNotFound(OwncloudTestFileResourceImpl owncloudFileResource) throws Exception {
+    mockServer
+        .expect(requestToWithPrefix(owncloudFileResource))
+        .andExpect(method(HttpMethod.GET))
+        .andRespond(withStatus(org.springframework.http.HttpStatus.NOT_FOUND));
+  }
 }

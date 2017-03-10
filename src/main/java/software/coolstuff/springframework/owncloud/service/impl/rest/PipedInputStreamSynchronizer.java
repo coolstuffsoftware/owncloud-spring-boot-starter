@@ -17,82 +17,17 @@
 */
 package software.coolstuff.springframework.owncloud.service.impl.rest;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
-import java.net.URI;
-import java.util.function.BiFunction;
-
-import org.springframework.http.HttpMethod;
-import org.springframework.security.core.Authentication;
-import org.springframework.web.client.RestOperations;
-
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
-import software.coolstuff.springframework.owncloud.exception.resource.OwncloudResourceException;
-import software.coolstuff.springframework.owncloud.model.OwncloudFileResource;
+import java.io.InputStream;
 
 /**
  * @author mufasa1976
  */
-class PipedInputStreamSynchronizer extends AbstractPipedStreamSynchronizerImpl {
+interface PipedInputStreamSynchronizer {
 
-  private final PipedInputStream pipedInputStream;
+  InputStream getInputStream();
 
-  private PipedInputStreamSynchronizer(
-      final Authentication authentication,
-      final OwncloudFileResource owncloudFileResource,
-      final OwncloudRestProperties owncloudRestProperties,
-      final RestOperations restOperations,
-      final BiFunction<URI, String, URI> uriResolver,
-      final PipedInputStream pipedInputStream) {
-    super(authentication, owncloudFileResource, owncloudRestProperties, restOperations, uriResolver);
-    this.pipedInputStream = pipedInputStream;
+  static PipedInputStreamSynchronizerImpl.PipedInputStreamSynchronizerBuilder build() {
+    return PipedInputStreamSynchronizerImpl.builder();
   }
 
-  public static PipedStreamSynchronizer.PipedInputStreamSynchronizerBuilder builder() {
-    return new PipedInputStreamSynchronizerBuilderImpl();
-  }
-
-  @Override
-  protected HttpMethod getHttpMethod() {
-    return HttpMethod.GET;
-  }
-
-  @Override
-  public void createPipedStream() {
-    try (OutputStream output = new PipedOutputStream(pipedInputStream)) {
-      setPipeReady();
-      execute(null, response -> copy(response.getBody(), output));
-    } catch (IOException e) {
-      throw new OwncloudResourceException(e) {
-        private static final long serialVersionUID = 5448658359993578985L;
-      };
-    }
-  }
-
-  @NoArgsConstructor(access = AccessLevel.PRIVATE)
-  private static class PipedInputStreamSynchronizerBuilderImpl extends AbstractPipedStreamSynchronizationBuilderImpl<PipedStreamSynchronizer.PipedInputStreamSynchronizerBuilder>
-      implements PipedStreamSynchronizer.PipedInputStreamSynchronizerBuilder {
-    private PipedInputStream pipedInputStream;
-
-    @Override
-    public PipedStreamSynchronizer.PipedInputStreamSynchronizerBuilder pipedInputStream(PipedInputStream pipedInputStream) {
-      this.pipedInputStream = pipedInputStream;
-      return this;
-    }
-
-    @Override
-    public PipedStreamSynchronizer build() {
-      return new PipedInputStreamSynchronizer(
-          getAuthentication(),
-          getOwncloudFileResource(),
-          getOwncloudRestProperties(),
-          getRestOperations(),
-          getUriResolver(),
-          pipedInputStream);
-    }
-
-  }
 }

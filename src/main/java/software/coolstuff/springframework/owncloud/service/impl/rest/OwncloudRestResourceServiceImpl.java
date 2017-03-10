@@ -20,8 +20,6 @@ package software.coolstuff.springframework.owncloud.service.impl.rest;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
@@ -41,6 +39,7 @@ import org.springframework.http.converter.ByteArrayHttpMessageConverter;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.client.RestOperations;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.github.sardine.DavResource;
@@ -95,6 +94,10 @@ class OwncloudRestResourceServiceImpl implements OwncloudResourceService {
       return url.toString();
     }
     return StringUtils.stripEnd(url.toString(), "/") + "/" + StringUtils.stripStart(suffix, "/");
+  }
+
+  RestTemplate getRestTemplate() {
+    return (RestTemplate) restOperations;
   }
 
   @PostConstruct
@@ -326,18 +329,15 @@ class OwncloudRestResourceServiceImpl implements OwncloudResourceService {
 
   @Override
   public InputStream getInputStream(OwncloudFileResource resource) {
-    PipedInputStream inputStream = new PipedInputStream();
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-    PipedStreamSynchronizer pipedStreamSynchronizer = PipedInputStreamSynchronizer.builder()
+    PipedInputStreamSynchronizer pipedInputStreamSynchronizer = PipedInputStreamSynchronizer.build()
         .authentication(authentication)
         .owncloudFileResource(resource)
         .owncloudRestProperties(properties)
-        .pipedInputStream(inputStream)
         .restOperations(restOperations)
         .uriResolver(this::resolveAsFileURI)
         .build();
-    pipedStreamSynchronizer.startAndWaitForConnectedPipe();
-    return inputStream;
+    return pipedInputStreamSynchronizer.getInputStream();
   }
 
   private URI resolveAsFileURI(URI relativeTo, String username) {
@@ -354,17 +354,14 @@ class OwncloudRestResourceServiceImpl implements OwncloudResourceService {
 
   @Override
   public OutputStream getOutputStream(OwncloudFileResource resource) {
-    PipedOutputStream outputStream = new PipedOutputStream();
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-    PipedStreamSynchronizer pipedStreamSynchronizer = PipedOutputStreamSynchronizer.builder()
+    PipedOutputStreamSynchronizer pipedOutputStreamSynchronizer = PipedOutputStreamSynchronizer.builder()
         .authentication(authentication)
         .owncloudFileResource(resource)
         .owncloudRestProperties(properties)
-        .pipedOutputStream(outputStream)
         .restOperations(restOperations)
         .uriResolver(this::resolveAsFileURI)
         .build();
-    pipedStreamSynchronizer.startAndWaitForConnectedPipe();
-    return outputStream;
+    return pipedOutputStreamSynchronizer.getOutputStream();
   }
 }

@@ -49,8 +49,6 @@ import software.coolstuff.springframework.owncloud.service.impl.local.OwncloudLo
 })
 public class OwncloudLocalResourceServiceTest extends AbstractOwncloudResourceServiceTest {
 
-  private final static String FILE_CONTENT = "This is a Test";
-
   @Autowired
   private OwncloudLocalProperties properties;
 
@@ -113,9 +111,9 @@ public class OwncloudLocalResourceServiceTest extends AbstractOwncloudResourceSe
     return basePath.resolve(relativePath);
   }
 
-  private void createFile(Path resourcePath, OwncloudTestFileResourceImpl owncloudResource) throws IOException {
+  private void createFile(Path resourcePath, OwncloudTestFileResourceImpl owncloudFileResource) throws IOException {
     try (Writer writer = Files.newBufferedWriter(resourcePath)) {
-      IOUtils.write(FILE_CONTENT, writer);
+      IOUtils.write(owncloudFileResource.getTestFileContent(), writer);
     }
   }
 
@@ -152,4 +150,15 @@ public class OwncloudLocalResourceServiceTest extends AbstractOwncloudResourceSe
     createResource(expectedResource);
     modifyResourceInformationBasedOnPathInformation(expectedResource);
   }
+
+  @Override
+  protected void prepare_getInputStream_OK(OwncloudTestFileResourceImpl owncloudFileResource) throws Exception {
+    createResource(owncloudFileResource);
+  };
+
+  @Override
+  protected void check_getInputStream_OK() throws Exception {}
+
+  @Override
+  protected void prepare_getInputStream_NOK_FileNotFound(OwncloudTestFileResourceImpl owncloudFileResource) throws Exception {}
 }

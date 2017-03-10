@@ -248,6 +248,8 @@ class OwncloudLocalResourceServiceImpl implements OwncloudResourceService {
     Path location = resolveLocation(resource.getHref());
     try {
       return Files.newInputStream(location);
+    } catch (NoSuchFileException e) {
+      throw new OwncloudResourceNotFoundException(resource.getHref());
     } catch (IOException e) {
       throw new OwncloudResourceException(e) {
         private static final long serialVersionUID = 4718394753732515113L;

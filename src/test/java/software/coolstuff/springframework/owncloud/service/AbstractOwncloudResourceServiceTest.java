@@ -20,12 +20,14 @@ package software.coolstuff.springframework.owncloud.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
 
+import java.io.InputStream;
 import java.net.URI;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -76,11 +78,12 @@ import software.coolstuff.springframework.owncloud.service.impl.OwncloudUtils;
     ResetMocksTestExecutionListener.class,
     WithSecurityContextTestExecutionListener.class,
 })
-@ComponentScan(excludeFilters = {
-    @Filter(IgnoreOnComponentScan.class)
-})
+@ComponentScan(excludeFilters = @Filter(IgnoreOnComponentScan.class))
 @RestClientTest(OwncloudResourceService.class)
 public abstract class AbstractOwncloudResourceServiceTest {
+
+  private static final String TEST_FILE_LOCATION = "file:src/test/resources/webdavTest/{username}/";
+  private static final String TEST_FILE_CONTENT = "This is a Test";
 
   @Autowired
   private OwncloudResourceService resourceService;
@@ -96,11 +99,11 @@ public abstract class AbstractOwncloudResourceServiceTest {
 
   @Test
   public void test_OwncloudTestResourceImpl_equalsTo_OwncloudResourceImpl() throws Exception {
-    String uuid = UUID.randomUUID().toString();
+    String eTag = UUID.randomUUID().toString();
     OwncloudResource expected = OwncloudTestResourceImpl.builder()
-        .backendETag(uuid)
+        .backendETag(eTag)
         .backendName("user")
-        .eTag(uuid)
+        .eTag(eTag)
         .href(URI.create("https://owncloud.example.com/remote.php/dav/files/user/"))
         .lastModifiedAt(new Date())
         .mediaType(OwncloudUtils.getDirectoryMediaType())
@@ -116,7 +119,7 @@ public abstract class AbstractOwncloudResourceServiceTest {
   @Test
   @WithMockUser(username = "user", password = "s3cr3t")
   public void test_listRoot_OK() throws Exception {
-    String uuid = UUID.randomUUID().toString();
+    String eTag = UUID.randomUUID().toString();
     List<OwncloudTestResourceImpl> expectedResources = Lists.newArrayList(
         OwncloudTestResourceImpl.builder()
             .backendETag(UUID.randomUUID().toString())
@@ -128,19 +131,23 @@ public abstract class AbstractOwncloudResourceServiceTest {
             .build(),
         OwncloudTestFileResourceImpl.fileBuilder()
             .owncloudResource(OwncloudTestFileResourceImpl.builder()
-                .backendETag(uuid)
+                .backendETag(eTag)
                 .backendName("resource1")
-                .eTag(uuid)
+                .eTag(eTag)
                 .href(URI.create("/resource1"))
                 .lastModifiedAt(new Date())
                 .mediaType(MediaType.APPLICATION_OCTET_STREAM)
                 .name("resource1")
                 .build())
-            .contentLength(Long.valueOf(14))
+            .testFileContent(TEST_FILE_CONTENT)
             .build());
     prepare_listRoot_OK(expectedResources);
     List<OwncloudResource> resources = resourceService.listRoot();
     assertThat(resources).containsOnlyElementsOf(expectedResources);
+  }
+
+  private long getTestFileContentLength() {
+    return TEST_FILE_CONTENT.length();
   }
 
   @Getter
@@ -164,10 +171,10 @@ public abstract class AbstractOwncloudResourceServiceTest {
   @ToString(callSuper = true)
   public static class OwncloudTestFileResourceImpl extends OwncloudTestResourceImpl implements OwncloudFileResource {
 
-    private Long contentLength;
+    private String testFileContent;
 
     @Builder(builderMethodName = "fileBuilder")
-    private OwncloudTestFileResourceImpl(OwncloudTestResourceImpl owncloudResource, Long contentLength) {
+    private OwncloudTestFileResourceImpl(OwncloudTestResourceImpl owncloudResource, String testFileContent) {
       super(
           owncloudResource.getHref(),
           owncloudResource.getName(),
@@ -176,7 +183,12 @@ public abstract class AbstractOwncloudResourceServiceTest {
           owncloudResource.getMediaType(),
           owncloudResource.getETag(),
           owncloudResource.getBackendETag());
-      this.contentLength = contentLength;
+      this.testFileContent = testFileContent;
+    }
+
+    @Override
+    public Long getContentLength() {
+      return Long.valueOf(testFileContent.length());
     }
   }
 
@@ -186,14 +198,14 @@ public abstract class AbstractOwncloudResourceServiceTest {
   @WithMockUser(username = "user", password = "s3cr3t")
   public void test_list_OK() throws Exception {
     URI searchPath = URI.create("/directory/directory/");
-    String uuidSearchPath = UUID.randomUUID().toString();
-    String uuidResource = UUID.randomUUID().toString();
-    String uuidSuperPath = UUID.randomUUID().toString();
+    String eTagSearchPath = UUID.randomUUID().toString();
+    String eTagFileResource = UUID.randomUUID().toString();
+    String eTagSuperPath = UUID.randomUUID().toString();
     List<OwncloudTestResourceImpl> expectedResources = Lists.newArrayList(
         OwncloudTestResourceImpl.builder()
-            .backendETag(uuidSearchPath)
+            .backendETag(eTagSearchPath)
             .backendName("directory")
-            .eTag(uuidSearchPath)
+            .eTag(eTagSearchPath)
             .href(appendPath(searchPath, "/"))
             .lastModifiedAt(new Date())
             .mediaType(OwncloudUtils.getDirectoryMediaType())
@@ -201,20 +213,20 @@ public abstract class AbstractOwncloudResourceServiceTest {
             .build(),
         OwncloudTestFileResourceImpl.fileBuilder()
             .owncloudResource(OwncloudTestResourceImpl.builder()
-                .backendETag(uuidResource)
+                .backendETag(eTagFileResource)
                 .backendName("resource1")
-                .eTag(uuidResource)
+                .eTag(eTagFileResource)
                 .href(appendPath(searchPath, "/resource1"))
                 .lastModifiedAt(new Date())
                 .mediaType(MediaType.APPLICATION_OCTET_STREAM)
                 .name("resource1")
                 .build())
-            .contentLength(Long.valueOf(14))
+            .testFileContent(TEST_FILE_CONTENT)
             .build(),
         OwncloudTestResourceImpl.builder()
-            .backendETag(uuidSuperPath)
+            .backendETag(eTagSuperPath)
             .backendName("directory")
-            .eTag(uuidSuperPath)
+            .eTag(eTagSuperPath)
             .href(appendPath(searchPath, "/../"))
             .lastModifiedAt(new Date())
             .mediaType(OwncloudUtils.getDirectoryMediaType())
@@ -266,7 +278,7 @@ public abstract class AbstractOwncloudResourceServiceTest {
             .mediaType(MediaType.TEXT_PLAIN)
             .name("file.txt")
             .build())
-        .contentLength(Long.valueOf(14))
+        .testFileContent(TEST_FILE_CONTENT)
         .build();
     prepare_findFile_OK(searchPath, expectedResource);
     OwncloudResource resource = resourceService.find(searchPath);
@@ -291,7 +303,7 @@ public abstract class AbstractOwncloudResourceServiceTest {
   @WithMockUser(username = "user", password = "s3cr3t")
   public void test_findRootDirectory_OK() throws Exception {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-    OwncloudTestResourceImpl expectedResource = OwncloudTestResourceImpl.builder()
+    OwncloudTestResourceImpl expected = OwncloudTestResourceImpl.builder()
         .backendETag(UUID.randomUUID().toString())
         .backendName(authentication.getName())
         .eTag(null)
@@ -300,9 +312,56 @@ public abstract class AbstractOwncloudResourceServiceTest {
         .mediaType(OwncloudUtils.getDirectoryMediaType())
         .name("/")
         .build();
-    prepare_findRootDirectory_OK(expectedResource);
+    prepare_findRootDirectory_OK(expected);
+    OwncloudResource actual = resourceService.find(null);
+    assertThat(actual).isNotNull();
+    assertThat(actual).isEqualTo(expected);
   }
 
   protected abstract void prepare_findRootDirectory_OK(OwncloudTestResourceImpl expectedResource) throws Exception;
+
+  @Test
+  @WithMockUser(username = "user1", password = "s3cr3t")
+  public void test_getInputStream_OK() throws Exception {
+    URI href = URI.create("/directory/fileInDirectory.txt");
+    OwncloudTestFileResourceImpl owncloudFileResource = OwncloudTestFileResourceImpl.fileBuilder()
+        .owncloudResource(OwncloudTestResourceImpl.builder()
+            .href(href)
+            .mediaType(MediaType.TEXT_PLAIN)
+            .build())
+        .testFileContent(TEST_FILE_CONTENT)
+        .build();
+    prepare_getInputStream_OK(owncloudFileResource);
+    try (InputStream actualInput = resourceService.getInputStream(owncloudFileResource)) {
+      byte[] actual = IOUtils.toByteArray(actualInput);
+      byte[] expected = owncloudFileResource.getTestFileContent().getBytes();
+      assertThat(actual).isEqualTo(expected);
+    }
+    check_getInputStream_OK();
+  }
+
+  protected abstract void prepare_getInputStream_OK(OwncloudTestFileResourceImpl owncloudFileResource) throws Exception;
+
+  protected abstract void check_getInputStream_OK() throws Exception;
+
+  @Test(expected = OwncloudResourceNotFoundException.class)
+  @WithMockUser(username = "user1", password = "s3cr3t")
+  public void test_getInputStream_NOK_FileNotFound() throws Exception {
+    URI href = URI.create("/directory/notExists.txt");
+    OwncloudTestFileResourceImpl owncloudFileResource = OwncloudTestFileResourceImpl.fileBuilder()
+        .owncloudResource(OwncloudTestResourceImpl.builder()
+            .href(href)
+            .mediaType(MediaType.TEXT_PLAIN)
+            .build())
+        .testFileContent(TEST_FILE_CONTENT)
+        .build();
+    prepare_getInputStream_NOK_FileNotFound(owncloudFileResource);
+    try (InputStream input = resourceService.getInputStream(owncloudFileResource)) {
+      input.read(); // we have to read at least one byte
+    }
+    fail("OwncloudResourceNotFoundException should be thrown");
+  }
+
+  protected abstract void prepare_getInputStream_NOK_FileNotFound(OwncloudTestFileResourceImpl owncloudFileResource) throws Exception;
 
 }

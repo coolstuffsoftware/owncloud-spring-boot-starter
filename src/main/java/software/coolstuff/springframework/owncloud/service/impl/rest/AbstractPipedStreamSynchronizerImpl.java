@@ -23,27 +23,34 @@ import java.io.OutputStream;
 import java.net.URI;
 import java.util.Base64;
 import java.util.Base64.Encoder;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CyclicBarrier;
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
 
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.client.ClientHttpRequest;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RequestCallback;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestOperations;
 
 import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 import software.coolstuff.springframework.owncloud.model.OwncloudFileResource;
 import software.coolstuff.springframework.owncloud.service.impl.rest.OwncloudRestProperties.ResourceServiceProperties;
 
 /**
  * @author mufasa1976
  */
-abstract class AbstractPipedStreamSynchronizerImpl implements PipedStreamSynchronizer {
+@Slf4j
+abstract class AbstractPipedStreamSynchronizerImpl {
 
   private static final int DEFAULT_BUFFER_SIZE = 2048;
 
@@ -62,6 +69,8 @@ abstract class AbstractPipedStreamSynchronizerImpl implements PipedStreamSynchro
   @Getter(AccessLevel.PROTECTED)
   private boolean interrupted;
   private final CyclicBarrier pipeSync = new CyclicBarrier(2);
+
+  private final Map<Class<? extends RestClientException>, Consumer<RestClientException>> restClientExceptionHandlers = new HashMap<>();
 
   protected AbstractPipedStreamSynchronizerImpl(
       final Authentication authentication,
@@ -92,21 +101,27 @@ abstract class AbstractPipedStreamSynchronizerImpl implements PipedStreamSynchro
   protected void setPipeReady() {
     try {
       pipeSync.await();
-    } catch (Exception e) {}
+    } catch (Exception e) {
+      log.error("Error while waiting for PipedStream-Barrier", e);
+      throw new RuntimeException(e);
+    }
   }
 
-  @Override
-  public final void startAndWaitForConnectedPipe() {
+  protected final void startThreadAndWaitForConnectedPipe() {
     if (isThreadExistsAndIsAlive()) {
       return;
     }
     this.interrupted = false;
     thread = new Thread(this::createPipedStream);
     thread.setName(getHttpMethod() + " " + getResolvedURI());
+    thread.setUncaughtExceptionHandler(this::handleUncaughtException);
     thread.start();
     try {
       pipeSync.await();
-    } catch (Exception e) {}
+    } catch (Exception e) {
+      log.error("Error while waiting for PipedStream-Barrier", e);
+      throw new RuntimeException(e);
+    }
   }
 
   private boolean isThreadExistsAndIsAlive() {
@@ -117,34 +132,57 @@ abstract class AbstractPipedStreamSynchronizerImpl implements PipedStreamSynchro
 
   protected abstract HttpMethod getHttpMethod();
 
-  private URI getResolvedURI() {
+  protected URI getResolvedURI() {
     URI href = owncloudFileResource.getHref();
     return uriResolver
         .map(resolver -> resolver.apply(href, authentication.getName()))
         .orElse(href);
   }
 
-  protected void execute(RequestCallback requestCallback, VoidResponseExtractor responseExtractor) {
-    if (responseExtractor == null) {
-      execute(requestCallback);
-      return;
-    }
-    restOperations.execute(
-        getResolvedURI(),
-        getHttpMethod(),
-        clientHttpRequest -> wrapRequestCallback(clientHttpRequest, requestCallback),
-        response -> {
-          responseExtractor.extractData(response);
-          return null;
-        });
+  private void handleUncaughtException(Thread thread, Throwable cause) {
+    log.error("Error while executing " + thread.getName(), cause);
   }
 
-  protected void execute(RequestCallback requestCallback) {
-    restOperations.execute(
-        getResolvedURI(),
-        getHttpMethod(),
-        clientHttpRequest -> wrapRequestCallback(clientHttpRequest, requestCallback),
-        null);
+  protected void execute(
+      RequestCallback requestCallback,
+      VoidResponseExtractor responseExtractor,
+      Consumer<RestClientException> restClientExceptionHandler) {
+    if (responseExtractor == null) {
+      execute(requestCallback, restClientExceptionHandler);
+      return;
+    }
+    try {
+      restOperations.execute(
+          getResolvedURI(),
+          getHttpMethod(),
+          clientHttpRequest -> wrapRequestCallback(clientHttpRequest, requestCallback),
+          response -> {
+            responseExtractor.extractData(response);
+            return null;
+          });
+    } catch (HttpClientErrorException restClientException) {
+      if (restClientExceptionHandler != null) {
+        restClientExceptionHandler.accept(restClientException);
+      }
+      throw restClientException;
+    }
+  }
+
+  protected void execute(
+      RequestCallback requestCallback,
+      Consumer<RestClientException> restClientExceptionHandler) {
+    try {
+      restOperations.execute(
+          getResolvedURI(),
+          getHttpMethod(),
+          clientHttpRequest -> wrapRequestCallback(clientHttpRequest, requestCallback),
+          null);
+    } catch (RestClientException restClientException) {
+      if (restClientExceptionHandler != null) {
+        restClientExceptionHandler.accept(restClientException);
+      }
+      throw restClientException;
+    }
   }
 
   private void wrapRequestCallback(ClientHttpRequest clientHttpRequest, RequestCallback requestCallback) throws IOException {
@@ -191,46 +229,37 @@ abstract class AbstractPipedStreamSynchronizerImpl implements PipedStreamSynchro
     return resourceProperties.getPipedStreamBufferSize();
   }
 
-  @SuppressWarnings({ "rawtypes", "unchecked" })
-  @Getter(AccessLevel.PROTECTED)
-  protected abstract static class AbstractPipedStreamSynchronizationBuilderImpl<T extends PipedStreamSynchronizer.PipedStreamSynchronizerBuilder>
-      implements PipedStreamSynchronizer.PipedStreamSynchronizerBuilder<T> {
+  protected void registerRestClientExceptionHandler(
+      Class<? extends RestClientException> restClientExceptionClass,
+      Consumer<RestClientException> restClientExceptionHandler) {
+    restClientExceptionHandlers.put(restClientExceptionClass, restClientExceptionHandler);
+  }
 
-    private Authentication authentication;
-    private OwncloudFileResource owncloudFileResource;
-    private OwncloudRestProperties owncloudRestProperties;
-    private RestOperations restOperations;
-    private BiFunction<URI, String, URI> uriResolver;
-
-    @Override
-    public T authentication(Authentication authentication) {
-      this.authentication = authentication;
-      return (T) this;
+  protected void handleRestClientException(RestClientException restClientException) {
+    Consumer<RestClientException> exceptionHandler = getRestClientExceptionHandler(restClientException);
+    if (exceptionHandler != null) {
+      exceptionHandler.accept(restClientException);
     }
+    throw restClientException;
+  }
 
-    @Override
-    public T owncloudFileResource(OwncloudFileResource owncloudFileResource) {
-      this.owncloudFileResource = owncloudFileResource;
-      return (T) this;
+  private Consumer<RestClientException> getRestClientExceptionHandler(RestClientException restClientException) {
+    if (restClientException == null) {
+      return null;
     }
+    Class<? extends RestClientException> restClientExceptionClass = restClientException.getClass();
+    return getRestClientExceptionHandler(restClientExceptionClass);
+  }
 
-    @Override
-    public T owncloudRestProperties(OwncloudRestProperties owncloudRestProperties) {
-      this.owncloudRestProperties = owncloudRestProperties;
-      return (T) this;
+  @SuppressWarnings("unchecked")
+  private Consumer<RestClientException> getRestClientExceptionHandler(Class<? extends RestClientException> restClientExceptionClass) {
+    if (restClientExceptionClass == RestClientException.class) {
+      return null;
     }
-
-    @Override
-    public T restOperations(RestOperations restOperations) {
-      this.restOperations = restOperations;
-      return (T) this;
+    if (restClientExceptionHandlers.containsKey(restClientExceptionClass)) {
+      return restClientExceptionHandlers.get(restClientExceptionClass);
     }
-
-    @Override
-    public T uriResolver(BiFunction<URI, String, URI> uriResolver) {
-      this.uriResolver = uriResolver;
-      return (T) this;
-    }
+    return getRestClientExceptionHandler((Class<? extends RestClientException>) restClientExceptionClass.getSuperclass());
   }
 
 }
