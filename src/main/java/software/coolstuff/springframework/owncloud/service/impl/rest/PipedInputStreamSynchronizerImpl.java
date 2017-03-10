@@ -34,9 +34,9 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestOperations;
 
 import lombok.Builder;
-import lombok.RequiredArgsConstructor;
-import software.coolstuff.springframework.owncloud.exception.resource.OwncloudResourceException;
+import lombok.Setter;
 import software.coolstuff.springframework.owncloud.exception.resource.OwncloudResourceNotFoundException;
+import software.coolstuff.springframework.owncloud.exception.resource.OwncloudRestResourceException;
 import software.coolstuff.springframework.owncloud.model.OwncloudFileResource;
 
 /**
@@ -45,6 +45,21 @@ import software.coolstuff.springframework.owncloud.model.OwncloudFileResource;
 class PipedInputStreamSynchronizerImpl extends AbstractPipedStreamSynchronizerImpl implements PipedInputStreamSynchronizer {
 
   private final SynchronizedPipedInputStream pipedInputStream = new SynchronizedPipedInputStream();
+
+  @Builder
+  private static PipedInputStreamSynchronizer build(
+      final Authentication authentication,
+      final OwncloudFileResource owncloudFileResource,
+      final OwncloudRestProperties owncloudRestProperties,
+      final RestOperations restOperations,
+      final BiFunction<URI, String, URI> uriResolver) {
+    return new PipedInputStreamSynchronizerImpl(
+        authentication,
+        owncloudFileResource,
+        owncloudRestProperties,
+        restOperations,
+        uriResolver);
+  }
 
   private PipedInputStreamSynchronizerImpl(
       final Authentication authentication,
@@ -62,24 +77,13 @@ class PipedInputStreamSynchronizerImpl extends AbstractPipedStreamSynchronizerIm
   }
 
   private void handleHttpStatusCodeException(HttpStatusCodeException httpStatusCodeException) {
-    if (httpStatusCodeException.getStatusCode() == HttpStatus.NOT_FOUND) {
-      throw new OwncloudResourceNotFoundException(getResolvedURI());
+    HttpStatus httpStatus = httpStatusCodeException.getStatusCode();
+    switch (httpStatus) {
+      case NOT_FOUND:
+        throw new OwncloudResourceNotFoundException(getUnresolvedUri(), getUsername());
+      default:
+        break;
     }
-  }
-
-  @Builder
-  private static PipedInputStreamSynchronizer build(
-      final Authentication authentication,
-      final OwncloudFileResource owncloudFileResource,
-      final OwncloudRestProperties owncloudRestProperties,
-      final RestOperations restOperations,
-      final BiFunction<URI, String, URI> uriResolver) {
-    return new PipedInputStreamSynchronizerImpl(
-        authentication,
-        owncloudFileResource,
-        owncloudRestProperties,
-        restOperations,
-        uriResolver);
   }
 
   @Override
@@ -91,11 +95,9 @@ class PipedInputStreamSynchronizerImpl extends AbstractPipedStreamSynchronizerIm
   protected void createPipedStream() {
     try (OutputStream output = new PipedOutputStream(pipedInputStream)) {
       setPipeReady();
-      execute(null, response -> copy(response.getBody(), output), pipedInputStream::setRestClientException);
+      execute(null, response -> copy(response.getBody(), output), Optional.of(pipedInputStream::setRestClientException));
     } catch (IOException e) {
-      throw new OwncloudResourceException(e) {
-        private static final long serialVersionUID = 5448658359993578985L;
-      };
+      throw new OwncloudRestResourceException(e);
     }
   }
 
@@ -105,19 +107,15 @@ class PipedInputStreamSynchronizerImpl extends AbstractPipedStreamSynchronizerIm
     return pipedInputStream;
   }
 
-  @RequiredArgsConstructor
   private class SynchronizedPipedInputStream extends PipedInputStream {
 
-    private Optional<RestClientException> restClientException = Optional.empty();
-
-    public void setRestClientException(RestClientException restClientException) {
-      this.restClientException = Optional.of(restClientException);
-    }
+    @Setter
+    private RestClientException restClientException;
 
     @Override
     public void close() throws IOException {
       super.close();
-      restClientException.ifPresent(restClientException -> handleRestClientException(restClientException));
+      handleRestClientException(restClientException);
     }
 
   }

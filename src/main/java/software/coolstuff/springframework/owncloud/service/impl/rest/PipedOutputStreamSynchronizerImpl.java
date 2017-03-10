@@ -32,7 +32,8 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestOperations;
 
 import lombok.Builder;
-import software.coolstuff.springframework.owncloud.exception.resource.OwncloudResourceException;
+import lombok.Setter;
+import software.coolstuff.springframework.owncloud.exception.resource.OwncloudRestResourceException;
 import software.coolstuff.springframework.owncloud.model.OwncloudFileResource;
 
 /**
@@ -76,11 +77,9 @@ class PipedOutputStreamSynchronizerImpl extends AbstractPipedStreamSynchronizerI
   protected void createPipedStream() {
     try (InputStream input = new PipedInputStream(pipedOutputStream)) {
       setPipeReady();
-      execute(clientHttpRequest -> copy(input, clientHttpRequest.getBody()), pipedOutputStream::setRestClientException);
+      execute(clientHttpRequest -> copy(input, clientHttpRequest.getBody()), Optional.of(pipedOutputStream::setRestClientException));
     } catch (IOException e) {
-      throw new OwncloudResourceException(e) {
-        private static final long serialVersionUID = 5448658359993578985L;
-      };
+      throw new OwncloudRestResourceException(e);
     }
   }
 
@@ -92,16 +91,13 @@ class PipedOutputStreamSynchronizerImpl extends AbstractPipedStreamSynchronizerI
 
   private class SynchronizedPipedOutputStream extends PipedOutputStream {
 
-    private Optional<RestClientException> restClientException = Optional.empty();
-
-    public void setRestClientException(RestClientException restClientException) {
-      this.restClientException = Optional.of(restClientException);
-    }
+    @Setter
+    private RestClientException restClientException;
 
     @Override
     public void close() throws IOException {
       super.close();
-      restClientException.ifPresent(restClientException -> handleRestClientException(restClientException));
+      handleRestClientException(restClientException);
     }
   }
 }

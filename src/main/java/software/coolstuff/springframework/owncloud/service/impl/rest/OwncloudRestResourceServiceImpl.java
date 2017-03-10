@@ -54,10 +54,12 @@ import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 import software.coolstuff.springframework.owncloud.exception.resource.OwncloudResourceException;
 import software.coolstuff.springframework.owncloud.exception.resource.OwncloudResourceNotFoundException;
+import software.coolstuff.springframework.owncloud.exception.resource.OwncloudRestResourceException;
 import software.coolstuff.springframework.owncloud.exception.resource.OwncloudSardineCacheException;
 import software.coolstuff.springframework.owncloud.model.OwncloudFileResource;
 import software.coolstuff.springframework.owncloud.model.OwncloudResource;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudResourceService;
+import software.coolstuff.springframework.owncloud.service.impl.OwncloudUtils;
 import software.coolstuff.springframework.owncloud.service.impl.rest.OwncloudRestProperties.ResourceServiceProperties.CacheProperties;
 
 /**
@@ -136,10 +138,10 @@ class OwncloudRestResourceServiceImpl implements OwncloudResourceService {
   public List<OwncloudResource> list(URI relativeTo) {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     URI searchPath = resolveAsDirectoryURI(relativeTo, authentication.getName());
-    URI rootPath = getResolvedRootUri(authentication.getName());
     List<OwncloudResource> owncloudResources = new ArrayList<>();
     try {
       Sardine sardine = getSardine();
+      URI rootPath = getResolvedRootUri(authentication.getName());
       List<DavResource> davResources = sardine.list(searchPath.toString());
       val sarchPathConversionProperties = OwncloudResourceConversionProperties.builder()
           .rootPath(rootPath)
@@ -151,7 +153,7 @@ class OwncloudRestResourceServiceImpl implements OwncloudResourceService {
               .map(davResource -> createOwncloudResourceFrom(davResource, sarchPathConversionProperties))
               .map(modifyingResource -> renameOwncloudResource(modifyingResource, sarchPathConversionProperties))
               .collect(Collectors.toList()));
-      if (properties.getResourceService().isAddRelativeDownPath() && isNotResolvedToRootURI(searchPath, authentication.getName())) {
+      if (isAddSuperResourceToCollection(searchPath, owncloudResources)) {
         searchPath = URI.create(
             UriComponentsBuilder.fromUri(searchPath.normalize())
                 .path("/../")
@@ -170,11 +172,9 @@ class OwncloudRestResourceServiceImpl implements OwncloudResourceService {
                 .collect(Collectors.toList()));
       }
     } catch (SardineException e) {
-      throwMappedSardineException(URI.create(searchPath.toString()), e);
+      throwMappedSardineException(URI.create(searchPath.toString()), authentication, e);
     } catch (IOException e) {
-      throw new OwncloudResourceException(e) {
-        private static final long serialVersionUID = 9123944573421981304L;
-      };
+      throw new OwncloudRestResourceException(e);
     }
     return owncloudResources;
   }
@@ -266,7 +266,22 @@ class OwncloudRestResourceServiceImpl implements OwncloudResourceService {
     return resolvedRootUri.equals(resolveAsDirectoryURI(path, username));
   }
 
-  private void throwMappedSardineException(URI uri, SardineException sardineException) throws OwncloudResourceException {
+  private boolean isAddSuperResourceToCollection(URI searchPath, List<OwncloudResource> owncloudResources) {
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    return properties.getResourceService().isAddRelativeDownPath()
+        && isNotResolvedToRootURI(searchPath, authentication.getName())
+        && containsNotOnlyOneFileResource(owncloudResources);
+  }
+
+  private boolean containsNotOnlyOneFileResource(List<OwncloudResource> owncloudResources) {
+    return !containsOnlyOneFileResource(owncloudResources);
+  }
+
+  private boolean containsOnlyOneFileResource(List<OwncloudResource> owncloudResources) {
+    return owncloudResources.size() == 1 && !OwncloudUtils.isDirectory(owncloudResources.get(0));
+  }
+
+  private void throwMappedSardineException(URI uri, Authentication authentication, SardineException sardineException) throws OwncloudResourceException {
     int statusCode = Optional.ofNullable(sardineException)
         .map(exception -> exception.getStatusCode())
         .orElse(HttpStatus.SC_OK);
@@ -274,12 +289,10 @@ class OwncloudRestResourceServiceImpl implements OwncloudResourceService {
       case HttpStatus.SC_OK:
         return;
       case HttpStatus.SC_NOT_FOUND:
-        throw new OwncloudResourceNotFoundException(uri);
+        throw new OwncloudResourceNotFoundException(uri, authentication.getName());
       default:
         log.error("Unmapped HTTP-Status {}. Reason-Phrase: {}", statusCode, sardineException.getResponsePhrase());
-        throw new OwncloudResourceException("Unmapped returned HTTP-Status " + statusCode) {
-          private static final long serialVersionUID = 1738301120302156213L;
-        };
+        throw new OwncloudRestResourceException("Unmapped returned HTTP-Status " + statusCode, sardineException);
     }
   }
 
@@ -298,13 +311,11 @@ class OwncloudRestResourceServiceImpl implements OwncloudResourceService {
       owncloudResource = davResources.stream()
           .findFirst()
           .map(davResource -> createOwncloudResourceFrom(davResource, conversionProperties))
-          .orElseThrow(() -> new OwncloudResourceNotFoundException(path));
+          .orElseThrow(() -> new OwncloudResourceNotFoundException(path, authentication.getName()));
     } catch (SardineException e) {
-      throwMappedSardineException(URI.create(path.toString()), e);
+      throwMappedSardineException(URI.create(path.toString()), authentication, e);
     } catch (IOException e) {
-      throw new OwncloudResourceException(e) {
-        private static final long serialVersionUID = 9123944573421981304L;
-      };
+      throw new OwncloudRestResourceException(e);
     }
     return owncloudResource;
   }

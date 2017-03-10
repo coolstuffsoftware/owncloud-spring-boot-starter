@@ -17,16 +17,30 @@
 */
 package software.coolstuff.springframework.owncloud.exception.resource;
 
+import java.net.URI;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
+
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 /**
  * @author mufasa1976
  *
  */
 @ResponseStatus(HttpStatus.CONFLICT)
+@RequiredArgsConstructor
 public class OwncloudResourceAlreadyExistsException extends OwncloudResourceException {
 
   private static final long serialVersionUID = 3921619841200839146L;
 
+  @Getter
+  private final URI uri;
+  private final String username;
+
+  @Override
+  public String getMessage() {
+    return "Resource " + uri + " already exists for User " + username;
+  }
 }

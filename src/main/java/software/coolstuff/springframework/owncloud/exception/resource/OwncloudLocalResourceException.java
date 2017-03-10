@@ -17,30 +17,19 @@
 */
 package software.coolstuff.springframework.owncloud.exception.resource;
 
-import java.net.URI;
-
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.ResponseStatus;
-
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-
 /**
  * @author mufasa1976
  */
-@ResponseStatus(HttpStatus.NOT_FOUND)
-@RequiredArgsConstructor
-public class OwncloudResourceNotFoundException extends OwncloudResourceException {
+public class OwncloudLocalResourceException extends OwncloudResourceException {
 
-  private static final long serialVersionUID = 5485512179312773554L;
+  private static final long serialVersionUID = 4711308341542197128L;
 
-  @Getter
-  private final URI uri;
-  private final String username;
+  public OwncloudLocalResourceException(String message, Throwable throwable) {
+    super(message, throwable);
+  }
 
-  @Override
-  public String getMessage() {
-    return "Error while accessing Resource " + uri + " for User " + username;
+  public OwncloudLocalResourceException(Throwable throwable) {
+    super(throwable);
   }
 
 }

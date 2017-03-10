@@ -45,6 +45,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import lombok.Builder;
+import lombok.extern.slf4j.Slf4j;
 import software.coolstuff.springframework.owncloud.exception.resource.OwncloudResourceException;
 import software.coolstuff.springframework.owncloud.exception.resource.OwncloudResourceNotFoundException;
 import software.coolstuff.springframework.owncloud.model.OwncloudFileResource;
@@ -56,6 +57,7 @@ import software.coolstuff.springframework.owncloud.service.impl.local.OwncloudLo
 /**
  * @author mufasa1976
  */
+@Slf4j
 class OwncloudLocalResourceServiceImpl implements OwncloudResourceService {
 
   @Autowired
@@ -191,12 +193,17 @@ class OwncloudLocalResourceServiceImpl implements OwncloudResourceService {
           .contentLength(Files.size(path))
           .build();
     } catch (NoSuchFileException e) {
-      throw new OwncloudResourceNotFoundException(href);
+      throw new OwncloudResourceNotFoundException(href, getUsername());
     } catch (IOException e) {
       throw new OwncloudResourceException(e) {
         private static final long serialVersionUID = 7484650505520708669L;
       };
     }
+  }
+
+  private String getUsername() {
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    return authentication.getName();
   }
 
   private boolean isNotRootDirectory(Path location) {
@@ -221,7 +228,7 @@ class OwncloudLocalResourceServiceImpl implements OwncloudResourceService {
   public OwncloudResource find(URI path) {
     Path location = resolveLocation(path);
     if (Files.notExists(location)) {
-      throw new OwncloudResourceNotFoundException(path);
+      throw new OwncloudResourceNotFoundException(path, getUsername());
     }
     return createOwncloudResourceFrom(location);
   }
@@ -249,7 +256,7 @@ class OwncloudLocalResourceServiceImpl implements OwncloudResourceService {
     try {
       return Files.newInputStream(location);
     } catch (NoSuchFileException e) {
-      throw new OwncloudResourceNotFoundException(resource.getHref());
+      throw new OwncloudResourceNotFoundException(resource.getHref(), getUsername());
     } catch (IOException e) {
       throw new OwncloudResourceException(e) {
         private static final long serialVersionUID = 4718394753732515113L;
@@ -266,7 +273,8 @@ class OwncloudLocalResourceServiceImpl implements OwncloudResourceService {
           .path(location)
           .build();
     } catch (FileNotFoundException e) {
-      throw new OwncloudResourceNotFoundException(resource.getHref(), e);
+      log.error(String.format("File %s has not been found", location), e);
+      throw new OwncloudResourceNotFoundException(resource.getHref(), getUsername());
     }
   }
 

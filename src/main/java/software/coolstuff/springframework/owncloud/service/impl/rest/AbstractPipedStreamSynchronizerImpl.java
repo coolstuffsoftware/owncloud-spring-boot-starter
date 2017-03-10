@@ -98,6 +98,10 @@ abstract class AbstractPipedStreamSynchronizerImpl {
     thread.interrupt();
   }
 
+  protected String getUsername() {
+    return authentication.getName();
+  }
+
   protected void setPipeReady() {
     try {
       pipeSync.await();
@@ -133,10 +137,14 @@ abstract class AbstractPipedStreamSynchronizerImpl {
   protected abstract HttpMethod getHttpMethod();
 
   protected URI getResolvedURI() {
-    URI href = owncloudFileResource.getHref();
+    URI unresolvedUri = getUnresolvedUri();
     return uriResolver
-        .map(resolver -> resolver.apply(href, authentication.getName()))
-        .orElse(href);
+        .map(resolver -> resolver.apply(unresolvedUri, authentication.getName()))
+        .orElse(unresolvedUri);
+  }
+
+  protected URI getUnresolvedUri() {
+    return owncloudFileResource.getHref();
   }
 
   private void handleUncaughtException(Thread thread, Throwable cause) {
@@ -146,7 +154,7 @@ abstract class AbstractPipedStreamSynchronizerImpl {
   protected void execute(
       RequestCallback requestCallback,
       VoidResponseExtractor responseExtractor,
-      Consumer<RestClientException> restClientExceptionHandler) {
+      Optional<Consumer<RestClientException>> restClientExceptionHandler) {
     if (responseExtractor == null) {
       execute(requestCallback, restClientExceptionHandler);
       return;
@@ -161,16 +169,14 @@ abstract class AbstractPipedStreamSynchronizerImpl {
             return null;
           });
     } catch (HttpClientErrorException restClientException) {
-      if (restClientExceptionHandler != null) {
-        restClientExceptionHandler.accept(restClientException);
-      }
+      restClientExceptionHandler.ifPresent(consumer -> consumer.accept(restClientException));
       throw restClientException;
     }
   }
 
   protected void execute(
       RequestCallback requestCallback,
-      Consumer<RestClientException> restClientExceptionHandler) {
+      Optional<Consumer<RestClientException>> restClientExceptionHandler) {
     try {
       restOperations.execute(
           getResolvedURI(),
@@ -178,9 +184,7 @@ abstract class AbstractPipedStreamSynchronizerImpl {
           clientHttpRequest -> wrapRequestCallback(clientHttpRequest, requestCallback),
           null);
     } catch (RestClientException restClientException) {
-      if (restClientExceptionHandler != null) {
-        restClientExceptionHandler.accept(restClientException);
-      }
+      restClientExceptionHandler.ifPresent(consumer -> consumer.accept(restClientException));
       throw restClientException;
     }
   }
@@ -236,28 +240,29 @@ abstract class AbstractPipedStreamSynchronizerImpl {
   }
 
   protected void handleRestClientException(RestClientException restClientException) {
-    Consumer<RestClientException> exceptionHandler = getRestClientExceptionHandler(restClientException);
-    if (exceptionHandler != null) {
-      exceptionHandler.accept(restClientException);
+    if (restClientException == null) {
+      return;
     }
+    Optional<Consumer<RestClientException>> exceptionHandler = getRestClientExceptionHandler(restClientException);
+    exceptionHandler.ifPresent(consumer -> consumer.accept(restClientException));
     throw restClientException;
   }
 
-  private Consumer<RestClientException> getRestClientExceptionHandler(RestClientException restClientException) {
+  private Optional<Consumer<RestClientException>> getRestClientExceptionHandler(RestClientException restClientException) {
     if (restClientException == null) {
-      return null;
+      return Optional.empty();
     }
     Class<? extends RestClientException> restClientExceptionClass = restClientException.getClass();
     return getRestClientExceptionHandler(restClientExceptionClass);
   }
 
   @SuppressWarnings("unchecked")
-  private Consumer<RestClientException> getRestClientExceptionHandler(Class<? extends RestClientException> restClientExceptionClass) {
+  private Optional<Consumer<RestClientException>> getRestClientExceptionHandler(Class<? extends RestClientException> restClientExceptionClass) {
     if (restClientExceptionClass == RestClientException.class) {
-      return null;
+      return Optional.empty();
     }
     if (restClientExceptionHandlers.containsKey(restClientExceptionClass)) {
-      return restClientExceptionHandlers.get(restClientExceptionClass);
+      return Optional.of(restClientExceptionHandlers.get(restClientExceptionClass));
     }
     return getRestClientExceptionHandler((Class<? extends RestClientException>) restClientExceptionClass.getSuperclass());
   }
