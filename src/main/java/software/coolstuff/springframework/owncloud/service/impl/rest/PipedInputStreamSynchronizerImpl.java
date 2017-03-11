@@ -23,7 +23,6 @@ import java.io.OutputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.net.URI;
-import java.util.Optional;
 import java.util.function.BiFunction;
 
 import org.springframework.http.HttpMethod;
@@ -92,7 +91,11 @@ class PipedInputStreamSynchronizerImpl extends AbstractPipedStreamSynchronizerIm
   protected void createPipedStream() {
     try (OutputStream output = new PipedOutputStream(pipedInputStream)) {
       setPipeReady();
-      execute(null, response -> copy(response.getBody(), output), Optional.of(pipedInputStream::setRestClientException));
+      ExecutionEnvironment executionEnvironment = ExecutionEnvironment.builder()
+          .responseExtractor(response -> copy(response.getBody(), output))
+          .restClientExceptionHandler(pipedInputStream::setRestClientException)
+          .build();
+      execute(executionEnvironment);
     } catch (IOException e) {
       throw new OwncloudRestResourceException(e);
     }

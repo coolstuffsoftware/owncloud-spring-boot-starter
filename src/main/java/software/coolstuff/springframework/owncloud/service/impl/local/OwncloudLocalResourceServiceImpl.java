@@ -271,9 +271,13 @@ class OwncloudLocalResourceServiceImpl implements OwncloudResourceService {
     }
 
     @Override
-    public void close() throws IOException {
-      super.close();
-      checksumService.recalculateChecksum(path);
+    public void close() {
+      try {
+        super.close();
+        checksumService.recalculateChecksum(path);
+      } catch (IOException e) {
+        throw new OwncloudLocalResourceException(e);
+      }
     }
 
   }

@@ -23,19 +23,21 @@ import java.io.OutputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.net.URI;
-import java.util.Optional;
 import java.util.function.BiFunction;
 
 import org.springframework.http.HttpMethod;
+import org.springframework.http.client.ClientHttpRequest;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestOperations;
 
 import lombok.Builder;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import software.coolstuff.springframework.owncloud.exception.resource.OwncloudRestResourceException;
 import software.coolstuff.springframework.owncloud.model.OwncloudFileResource;
 
+@Slf4j
 class PipedOutputStreamSynchronizerImpl extends AbstractPipedStreamSynchronizerImpl implements PipedOutputStreamSynchronizer {
 
   private final SynchronizedPipedOutputStream pipedOutputStream;
@@ -74,10 +76,20 @@ class PipedOutputStreamSynchronizerImpl extends AbstractPipedStreamSynchronizerI
   protected void createPipedStream() {
     try (InputStream input = new PipedInputStream(pipedOutputStream)) {
       setPipeReady();
-      execute(clientHttpRequest -> copy(input, clientHttpRequest.getBody()), Optional.of(pipedOutputStream::setRestClientException));
+      ExecutionEnvironment executionEnvironment = ExecutionEnvironment.builder()
+          .requestCallback(clientHttpRequest -> setMediaTypeAndCopy(input, clientHttpRequest))
+          .restClientExceptionHandler(pipedOutputStream::setRestClientException)
+          .afterExecutionCallback(this::waitForPipeReady)
+          .build();
+      execute(executionEnvironment);
     } catch (IOException e) {
       throw new OwncloudRestResourceException(e);
     }
+  }
+
+  private void setMediaTypeAndCopy(InputStream input, ClientHttpRequest clientHttpRequest) throws IOException {
+    addContentTypeHeader(clientHttpRequest);
+    copy(input, clientHttpRequest.getBody());
   }
 
   @Override
@@ -94,6 +106,7 @@ class PipedOutputStreamSynchronizerImpl extends AbstractPipedStreamSynchronizerI
     @Override
     public void close() throws IOException {
       super.close();
+      setPipeReady();
       handleRestClientException(restClientException);
     }
   }

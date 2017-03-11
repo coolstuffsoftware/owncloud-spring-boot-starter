@@ -17,8 +17,11 @@
 */
 package software.coolstuff.springframework.owncloud.service.impl.local;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Writer;
 import java.net.URI;
 import java.nio.file.Files;
@@ -161,4 +164,28 @@ public class OwncloudLocalResourceServiceTest extends AbstractOwncloudResourceSe
 
   @Override
   protected void prepare_getInputStream_NOK_FileNotFound(OwncloudTestFileResourceImpl owncloudFileResource) throws Exception {}
+
+  @Override
+  protected void prepare_getOutputStream_OK(OwncloudTestFileResourceImpl owncloudFileResource) throws Exception {}
+
+  @Override
+  protected void check_getOutputStream_OK(OwncloudTestFileResourceImpl owncloudFileResource) throws Exception {
+    Path resourcePath = resolveRelativePath(Paths.get(owncloudFileResource.getHref().getPath()));
+    assertThat(resourcePath).exists();
+    try (InputStream input = Files.newInputStream(resourcePath)) {
+      String actual = new String(IOUtils.toByteArray(input));
+      assertThat(actual).isEqualTo(owncloudFileResource.getTestFileContent());
+    }
+  }
+
+  @Override
+  protected void prepare_getOutputStream_NOK_Unauthorized(OwncloudTestFileResourceImpl owncloudFileResource) throws Exception {
+    Path resourcePath = resolveRelativePath(Paths.get(owncloudFileResource.getHref().getPath()));
+    Mockito
+        .doThrow(IOException.class)
+        .when(checksumService).recalculateChecksum(resourcePath);
+  };
+
+  @Override
+  protected void check_getOutputStream_NOK_Unauthorized(OwncloudTestFileResourceImpl owncloudFileResource) throws Exception {}
 }

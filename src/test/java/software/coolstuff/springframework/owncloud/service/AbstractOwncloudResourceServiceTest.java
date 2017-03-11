@@ -21,7 +21,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
 
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URI;
+import java.nio.charset.Charset;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -60,6 +62,7 @@ import lombok.Setter;
 import lombok.ToString;
 import software.coolstuff.springframework.owncloud.config.IgnoreOnComponentScan;
 import software.coolstuff.springframework.owncloud.config.VelocityConfiguration;
+import software.coolstuff.springframework.owncloud.exception.resource.OwncloudResourceException;
 import software.coolstuff.springframework.owncloud.exception.resource.OwncloudResourceNotFoundException;
 import software.coolstuff.springframework.owncloud.model.OwncloudFileResource;
 import software.coolstuff.springframework.owncloud.model.OwncloudResource;
@@ -332,8 +335,8 @@ public abstract class AbstractOwncloudResourceServiceTest {
         .testFileContent(TEST_FILE_CONTENT)
         .build();
     prepare_getInputStream_OK(owncloudFileResource);
-    try (InputStream actualInput = resourceService.getInputStream(owncloudFileResource)) {
-      byte[] actual = IOUtils.toByteArray(actualInput);
+    try (InputStream input = resourceService.getInputStream(owncloudFileResource)) {
+      byte[] actual = IOUtils.toByteArray(input);
       byte[] expected = owncloudFileResource.getTestFileContent().getBytes();
       assertThat(actual).isEqualTo(expected);
     }
@@ -349,10 +352,11 @@ public abstract class AbstractOwncloudResourceServiceTest {
   public void test_getInputStream_NOK_FileNotFound() throws Exception {
     URI href = URI.create("/directory/notExists.txt");
     OwncloudTestFileResourceImpl owncloudFileResource = OwncloudTestFileResourceImpl.fileBuilder()
-        .owncloudResource(OwncloudTestResourceImpl.builder()
-            .href(href)
-            .mediaType(MediaType.TEXT_PLAIN)
-            .build())
+        .owncloudResource(
+            OwncloudTestResourceImpl.builder()
+                .href(href)
+                .mediaType(MediaType.TEXT_PLAIN)
+                .build())
         .testFileContent(TEST_FILE_CONTENT)
         .build();
     prepare_getInputStream_NOK_FileNotFound(owncloudFileResource);
@@ -364,4 +368,49 @@ public abstract class AbstractOwncloudResourceServiceTest {
 
   protected abstract void prepare_getInputStream_NOK_FileNotFound(OwncloudTestFileResourceImpl owncloudFileResource) throws Exception;
 
+  @Test
+  @WithMockUser(username = "user1", password = "s3cr3t")
+  public void test_getOutputStream_OK() throws Exception {
+    URI href = URI.create("/createdFile.txt");
+    OwncloudTestFileResourceImpl owncloudFileResource = OwncloudTestFileResourceImpl.fileBuilder()
+        .owncloudResource(
+            OwncloudTestResourceImpl.builder()
+                .href(href)
+                .mediaType(MediaType.TEXT_PLAIN)
+                .build())
+        .testFileContent(TEST_FILE_CONTENT)
+        .build();
+    prepare_getOutputStream_OK(owncloudFileResource);
+    try (OutputStream output = resourceService.getOutputStream(owncloudFileResource)) {
+      IOUtils.write(owncloudFileResource.getTestFileContent(), output, Charset.forName("utf8"));
+    }
+    check_getOutputStream_OK(owncloudFileResource);
+  }
+
+  protected abstract void prepare_getOutputStream_OK(OwncloudTestFileResourceImpl owncloudFileResource) throws Exception;
+
+  protected abstract void check_getOutputStream_OK(OwncloudTestFileResourceImpl owncloudFileResource) throws Exception;
+
+  @Test(expected = OwncloudResourceException.class)
+  @WithMockUser(username = "user1", password = "s3cr3t")
+  public void test_getOutputStream_NOK_Unauthorized() throws Exception {
+    URI href = URI.create("/createdFile.txt");
+    OwncloudTestFileResourceImpl owncloudFileResource = OwncloudTestFileResourceImpl.fileBuilder()
+        .owncloudResource(
+            OwncloudTestResourceImpl.builder()
+                .href(href)
+                .mediaType(MediaType.TEXT_PLAIN)
+                .build())
+        .testFileContent(TEST_FILE_CONTENT)
+        .build();
+    prepare_getOutputStream_NOK_Unauthorized(owncloudFileResource);
+    try (OutputStream output = resourceService.getOutputStream(owncloudFileResource)) {
+      output.write(1); // at least try to write 1 Byte
+    }
+    check_getOutputStream_NOK_Unauthorized(owncloudFileResource);
+  }
+
+  protected abstract void prepare_getOutputStream_NOK_Unauthorized(OwncloudTestFileResourceImpl owncloudFileResource) throws Exception;
+
+  protected abstract void check_getOutputStream_NOK_Unauthorized(OwncloudTestFileResourceImpl owncloudFileResource) throws Exception;
 }

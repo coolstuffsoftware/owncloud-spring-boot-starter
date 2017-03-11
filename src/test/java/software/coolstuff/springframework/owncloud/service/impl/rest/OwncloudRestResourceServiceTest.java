@@ -19,6 +19,7 @@ package software.coolstuff.springframework.owncloud.service.impl.rest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.content;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.header;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
@@ -38,13 +39,13 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.HttpStatus;
 import org.junit.Before;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.ActiveProfiles;
@@ -137,7 +138,7 @@ public class OwncloudRestResourceServiceTest extends AbstractOwncloudResourceSer
           owncloudResource.getLastModifiedAt(),
           owncloudResource.getLastModifiedAt(),
           owncloudResource.getMediaType().toString(),
-          (owncloudResource instanceof OwncloudFileResource ? ((OwncloudFileResource) owncloudResource).getContentLength() : null),
+          owncloudResource instanceof OwncloudFileResource ? ((OwncloudFileResource) owncloudResource).getContentLength() : null,
           eTag,
           name,
           contentLanguage);
@@ -245,7 +246,7 @@ public class OwncloudRestResourceServiceTest extends AbstractOwncloudResourceSer
   protected void prepare_list_NOK_FileNotFound(URI searchPath) throws Exception {
     Mockito
         .when(sardine.list(getResourcePath(searchPath)))
-        .thenThrow(new SardineException("Resource not found", HttpStatus.SC_NOT_FOUND, "Resource not found"));
+        .thenThrow(new SardineException("Resource not found", HttpStatus.NOT_FOUND.value(), "Resource not found"));
   }
 
   @Override
@@ -261,7 +262,7 @@ public class OwncloudRestResourceServiceTest extends AbstractOwncloudResourceSer
   protected void prepare_findFile_NotExists(URI searchPath) throws Exception {
     Mockito
         .when(sardine.list(getResourcePath(searchPath)))
-        .thenThrow(new SardineException("Resource not found", HttpStatus.SC_NOT_FOUND, "Resource not found"));
+        .thenThrow(new SardineException("Resource not found", HttpStatus.NOT_FOUND.value(), "Resource not found"));
   }
 
   @Override
@@ -322,6 +323,40 @@ public class OwncloudRestResourceServiceTest extends AbstractOwncloudResourceSer
         .andExpect(method(HttpMethod.GET))
         .andExpect(header(HttpHeaders.AUTHORIZATION, getBasicAuthorizationHeader()))
         .andExpect(header(HttpHeaders.CONNECTION, "keep-alive"))
-        .andRespond(withStatus(org.springframework.http.HttpStatus.NOT_FOUND));
+        .andRespond(withStatus(HttpStatus.NOT_FOUND));
+  }
+
+  @Override
+  protected void prepare_getOutputStream_OK(OwncloudTestFileResourceImpl owncloudFileResource) throws Exception {
+    mockServer
+        .expect(requestToWithPrefix(owncloudFileResource))
+        .andExpect(method(HttpMethod.PUT))
+        .andExpect(header(HttpHeaders.AUTHORIZATION, getBasicAuthorizationHeader()))
+        .andExpect(header(HttpHeaders.CONNECTION, "keep-alive"))
+        .andExpect(content().contentType(owncloudFileResource.getMediaType()))
+        .andExpect(content().string(owncloudFileResource.getTestFileContent()))
+        .andRespond(withSuccess());
+  }
+
+  @Override
+  protected void check_getOutputStream_OK(OwncloudTestFileResourceImpl owncloudFileResource) throws Exception {
+    mockServer.verify();
+  }
+
+  @Override
+  protected void prepare_getOutputStream_NOK_Unauthorized(OwncloudTestFileResourceImpl owncloudFileResource) throws Exception {
+    mockServer
+        .expect(requestToWithPrefix(owncloudFileResource))
+        .andExpect(method(HttpMethod.PUT))
+        .andExpect(header(HttpHeaders.AUTHORIZATION, getBasicAuthorizationHeader()))
+        .andExpect(header(HttpHeaders.CONNECTION, "keep-alive"))
+        .andExpect(content().contentType(owncloudFileResource.getMediaType()))
+        .andExpect(content().bytes(new byte[] { 1 }))
+        .andRespond(withStatus(HttpStatus.UNAUTHORIZED));
+  };
+
+  @Override
+  protected void check_getOutputStream_NOK_Unauthorized(OwncloudTestFileResourceImpl owncloudFileResource) throws Exception {
+    mockServer.verify();
   }
 }

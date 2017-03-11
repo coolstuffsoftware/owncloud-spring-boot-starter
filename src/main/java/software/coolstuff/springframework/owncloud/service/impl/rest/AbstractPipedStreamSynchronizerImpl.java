@@ -30,19 +30,24 @@ import java.util.concurrent.CyclicBarrier;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 
+import org.apache.commons.lang3.Validate;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.http.client.ClientHttpRequest;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RequestCallback;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestOperations;
 
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import software.coolstuff.springframework.owncloud.exception.resource.OwncloudResourcePipeSynchronizationException;
+import software.coolstuff.springframework.owncloud.exception.resource.OwncloudRestResourceException;
 import software.coolstuff.springframework.owncloud.model.OwncloudFileResource;
 import software.coolstuff.springframework.owncloud.service.impl.rest.OwncloudRestProperties.ResourceServiceProperties;
 
@@ -54,6 +59,11 @@ abstract class AbstractPipedStreamSynchronizerImpl {
   @FunctionalInterface
   static interface VoidResponseExtractor {
     void extractData(ClientHttpResponse clientHttpResponse) throws IOException;
+  }
+
+  @FunctionalInterface
+  static interface ConsumerWithoutArgument {
+    void apply();
   }
 
   private final Authentication authentication;
@@ -85,6 +95,7 @@ abstract class AbstractPipedStreamSynchronizerImpl {
   @Override
   protected void finalize() throws Throwable {
     if (thread != null && thread.isAlive()) {
+      log.debug("Stop Thread {}", thread.getName());
       interrupt(thread);
       thread.join();
     }
@@ -101,10 +112,11 @@ abstract class AbstractPipedStreamSynchronizerImpl {
 
   protected void setPipeReady() {
     try {
+      log.debug("Release the Cyclic Barrier for the synchronized piped Stream");
       pipeSync.await();
     } catch (Exception e) {
       log.error("Error while waiting for PipedStream-Barrier", e);
-      throw new RuntimeException(e);
+      throw new OwncloudResourcePipeSynchronizationException(e);
     }
   }
 
@@ -112,17 +124,17 @@ abstract class AbstractPipedStreamSynchronizerImpl {
     if (isThreadExistsAndIsAlive()) {
       return;
     }
+    startBackgroundThread();
+    waitForPipeReady();
+  }
+
+  private void startBackgroundThread() {
     this.interrupted = false;
     thread = new Thread(this::createPipedStream);
     thread.setName(getHttpMethod() + " " + getResolvedURI());
     thread.setUncaughtExceptionHandler(this::handleUncaughtException);
+    log.debug("Start the Background Thread {}", thread.getName());
     thread.start();
-    try {
-      pipeSync.await();
-    } catch (Exception e) {
-      log.error("Error while waiting for PipedStream-Barrier", e);
-      throw new RuntimeException(e);
-    }
   }
 
   private boolean isThreadExistsAndIsAlive() {
@@ -148,41 +160,59 @@ abstract class AbstractPipedStreamSynchronizerImpl {
     log.error("Error while executing " + thread.getName(), cause);
   }
 
-  protected void execute(
-      RequestCallback requestCallback,
-      VoidResponseExtractor responseExtractor,
-      Optional<Consumer<RestClientException>> restClientExceptionHandler) {
-    if (responseExtractor == null) {
-      execute(requestCallback, restClientExceptionHandler);
-      return;
-    }
+  protected void waitForPipeReady() {
     try {
-      restOperations.execute(
-          getResolvedURI(),
-          getHttpMethod(),
-          clientHttpRequest -> wrapRequestCallback(clientHttpRequest, requestCallback),
-          response -> {
-            responseExtractor.extractData(response);
-            return null;
-          });
-    } catch (HttpClientErrorException restClientException) {
-      restClientExceptionHandler.ifPresent(consumer -> consumer.accept(restClientException));
-      throw restClientException;
+      log.debug("Wait for the Background Thread of the synchronized piped Stream");
+      pipeSync.await();
+    } catch (Exception e) {
+      log.error("Error while waiting for PipedStream-Barrier", e);
+      throw new OwncloudResourcePipeSynchronizationException(e);
     }
   }
 
-  protected void execute(
-      RequestCallback requestCallback,
-      Optional<Consumer<RestClientException>> restClientExceptionHandler) {
+  protected void execute(ExecutionEnvironment executionEnvironment) {
+    Validate.notNull(executionEnvironment);
+    Optional<ConsumerWithoutArgument> afterExecutionCallback = executionEnvironment.getAfterExecutionCallback();
     try {
+      RequestCallback requestCallback = executionEnvironment.getRequestCallback();
+      VoidResponseExtractor responseExtractor = executionEnvironment.getResponseExtractor();
+      URI uri = getResolvedURI();
+      HttpMethod httpMethod = getHttpMethod();
+      log.debug("Execute {} on {}", httpMethod, uri);
       restOperations.execute(
-          getResolvedURI(),
-          getHttpMethod(),
+          uri,
+          httpMethod,
           clientHttpRequest -> wrapRequestCallback(clientHttpRequest, requestCallback),
-          null);
+          response -> {
+            if (responseExtractor != null) {
+              responseExtractor.extractData(response);
+            }
+            return null;
+          });
     } catch (RestClientException restClientException) {
+      Optional<Consumer<RestClientException>> restClientExceptionHandler = executionEnvironment.getRestClientExceptionHandler();
       restClientExceptionHandler.ifPresent(consumer -> consumer.accept(restClientException));
       throw restClientException;
+    } finally {
+      afterExecutionCallback.ifPresent(consumer -> consumer.apply());
+    }
+  }
+
+  @Getter
+  @AllArgsConstructor(access = AccessLevel.PRIVATE)
+  @Builder
+  static class ExecutionEnvironment {
+    private final RequestCallback requestCallback;
+    private VoidResponseExtractor responseExtractor;
+    private Consumer<RestClientException> restClientExceptionHandler;
+    private ConsumerWithoutArgument afterExecutionCallback;
+
+    public Optional<Consumer<RestClientException>> getRestClientExceptionHandler() {
+      return Optional.ofNullable(restClientExceptionHandler);
+    }
+
+    public Optional<ConsumerWithoutArgument> getAfterExecutionCallback() {
+      return Optional.ofNullable(afterExecutionCallback);
     }
   }
 
@@ -195,11 +225,13 @@ abstract class AbstractPipedStreamSynchronizerImpl {
   }
 
   private void addKeepAliveConnectionHeader(ClientHttpRequest clientHttpRequest) {
+    log.debug("Set the Connection Header to keep-alive");
     HttpHeaders headers = clientHttpRequest.getHeaders();
     headers.add(HttpHeaders.CONNECTION, "keep-alive");
   }
 
   private void addAuthorizationHeader(ClientHttpRequest clientHttpRequest) {
+    log.debug("Set the Authorization Header for User {}", authentication.getName());
     HttpHeaders headers = clientHttpRequest.getHeaders();
     if (headers.containsKey(HttpHeaders.AUTHORIZATION)) {
       return;
@@ -209,11 +241,23 @@ abstract class AbstractPipedStreamSynchronizerImpl {
     headers.add(HttpHeaders.AUTHORIZATION, "Basic " + encodedCredentials);
   }
 
+  protected void addContentTypeHeader(ClientHttpRequest clientHttpRequest) {
+    MediaType mediaType = owncloudFileResource.getMediaType();
+    if (mediaType == null) {
+      return;
+    }
+
+    log.debug("Set the ContentType Header to {}", mediaType.toString());
+    HttpHeaders headers = clientHttpRequest.getHeaders();
+    headers.add(HttpHeaders.CONTENT_TYPE, mediaType.toString());
+  }
+
   protected void copy(InputStream input, OutputStream output) throws IOException {
     byte[] buffer = new byte[getBufferSize()];
     for (int length = 0; (length = input.read(buffer)) != -1;) {
       output.write(buffer, 0, length);
       if (isInterrupted()) {
+        log.warn("Background Thread has been interrupted -> stop the Copy Process");
         return;
       }
     }
@@ -240,9 +284,18 @@ abstract class AbstractPipedStreamSynchronizerImpl {
     if (restClientException == null) {
       return;
     }
+    log.debug("Look for any ExceptionHandler for an Exception of Class {}", restClientException.getClass().getName());
     Optional<Consumer<RestClientException>> exceptionHandler = getRestClientExceptionHandler(restClientException);
-    exceptionHandler.ifPresent(consumer -> consumer.accept(restClientException));
-    throw restClientException;
+    exceptionHandler.ifPresent(consumer -> {
+      log.debug("Handle Exception of Class {} (Child of {}) by a custom Exception Handler", restClientException.getClass().getName(), RestClientException.class.getName());
+      consumer.accept(restClientException);
+    });
+    log.error(
+        String.format("No specific ExceptionHandler for Exception of Class %s has been found -> wrap it into %s and throw it",
+            restClientException.getClass().getName(),
+            OwncloudRestResourceException.class.getSimpleName()),
+        restClientException);
+    throw new OwncloudRestResourceException(restClientException);
   }
 
   private Optional<Consumer<RestClientException>> getRestClientExceptionHandler(RestClientException restClientException) {
