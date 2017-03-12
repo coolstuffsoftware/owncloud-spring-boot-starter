@@ -77,5 +77,5 @@ NOTE: all Objects of this User (Files, Calendars, Addressbooks, ...) will also b
 | `DELETE groups/{groupname}``
 | Removes a Group from Owncloud
 
-NOTE: all Memberships to this Group will also be removed. Also all Shares (Files, Calendars, Addressbooks, ...)
+NOTE: all Memberships of this Group will also be removed. Also all Shares (Files, Calendars, Addressbooks, ...)
 |===
