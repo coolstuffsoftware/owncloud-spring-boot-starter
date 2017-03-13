@@ -17,12 +17,12 @@
 */
 package software.coolstuff.springframework.owncloud.service.impl.rest;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.content;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.header;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.withNoContent;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
@@ -39,6 +39,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
+import org.junit.After;
 import org.junit.Before;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -88,18 +89,17 @@ public class OwncloudRestResourceServiceTest extends AbstractOwncloudResourceSer
     Mockito
         .when(sardineCacheLoader.load(Mockito.anyString()))
         .thenReturn(sardine);
-    assertThat(resourceService.getClass()).isAssignableFrom(OwncloudRestResourceServiceImpl.class);
     mockServer = MockRestServiceServer.createServer(owncloudService().getRestTemplate());
+  }
+
+  @After
+  public void testDown() throws Exception {
+    mockServer.verify();
   }
 
   @Override
   public OwncloudRestService owncloudService() {
     return (OwncloudRestService) resourceService;
-  }
-
-  @Override
-  protected Class<? extends OwncloudResourceService> getImplementationClass() {
-    return OwncloudRestResourceServiceImpl.class;
   }
 
   @Override
@@ -157,7 +157,7 @@ public class OwncloudRestResourceServiceTest extends AbstractOwncloudResourceSer
   }
 
   private URI getResolvedRootUri(String username) {
-    return ((OwncloudRestResourceServiceImpl) resourceService).getResolvedRootUri(username);
+    return ((OwncloudResolveRootUriService) resourceService).getResolvedRootUri(username);
   }
 
   private boolean isRoot(URI searchPath) {
@@ -376,6 +376,48 @@ public class OwncloudRestResourceServiceTest extends AbstractOwncloudResourceSer
 
   @Override
   protected void check_getOutputStream_OK_CreateNewFile(URI href, MediaType mediaType, String testFileContent) throws Exception {
+    mockServer.verify();
+  }
+
+  @Override
+  protected void prepare_deleteFile_OK(OwncloudTestResourceImpl owncloudFileResource) throws Exception {
+    mockServer
+        .expect(requestToWithPrefix(owncloudFileResource.getHref()))
+        .andExpect(method(HttpMethod.DELETE))
+        .andExpect(header(HttpHeaders.AUTHORIZATION, getBasicAuthorizationHeader()))
+        .andRespond(withNoContent());
+  }
+
+  @Override
+  protected void check_deleteFile_OK(OwncloudTestResourceImpl owncloudFileResource) throws Exception {
+    mockServer.verify();
+  }
+
+  @Override
+  protected void prepare_deleteFile_NOK_FileNotExists(OwncloudTestResourceImpl owncloudFileResource) throws Exception {
+    mockServer
+        .expect(requestToWithPrefix(owncloudFileResource.getHref()))
+        .andExpect(method(HttpMethod.DELETE))
+        .andExpect(header(HttpHeaders.AUTHORIZATION, getBasicAuthorizationHeader()))
+        .andRespond(withStatus(HttpStatus.NOT_FOUND));
+  }
+
+  @Override
+  protected void check_deleteFile_NOK_FileNotExists(OwncloudTestResourceImpl owncloudFileResource) throws Exception {
+    mockServer.verify();
+  }
+
+  @Override
+  protected void prepare_deleteFile_NOK_OtherError(OwncloudTestResourceImpl owncloudFileResource) throws Exception {
+    mockServer
+        .expect(requestToWithPrefix(owncloudFileResource.getHref()))
+        .andExpect(method(HttpMethod.DELETE))
+        .andExpect(header(HttpHeaders.AUTHORIZATION, getBasicAuthorizationHeader()))
+        .andRespond(withStatus(HttpStatus.UNAUTHORIZED));
+  }
+
+  @Override
+  protected void check_deleteFile_NOK_OtherError(OwncloudTestResourceImpl owncloudFileResource) throws Exception {
     mockServer.verify();
   }
 }

@@ -41,13 +41,6 @@ public abstract class AbstractOwncloudUserQueryServiceTest extends AbstractOwncl
   private OwncloudUserQueryService userQueryService;
 
   @Test
-  public void testCorrectClass() {
-    Assert.assertEquals(getUserQueryServiceClass(), userQueryService.getClass());
-  }
-
-  protected abstract Class<? extends OwncloudUserQueryService> getUserQueryServiceClass();
-
-  @Test
   @WithOwncloudMockUser(username = "user1", password = "password")
   public void testFindAllUsers() throws Exception {
     prepareTestFindAllUsers("user1", "user2");
@@ -156,11 +149,13 @@ public abstract class AbstractOwncloudUserQueryServiceTest extends AbstractOwncl
   protected void prepareTestFindAllMembersOfGroup_GroupWithoutMembers(String groupname) throws Exception {}
 
   @Test(expected = NullPointerException.class)
+  @WithOwncloudMockUser(username = "user1", password = "password")
   public void testFindAllMembersOfGroup_NoGroup() {
     userQueryService.findAllMembersOfGroup(null);
   }
 
   @Test(expected = IllegalArgumentException.class)
+  @WithOwncloudMockUser(username = "user1", password = "password")
   public void testFindAllMembersOfGroup_BlankGroup() {
     userQueryService.findAllMembersOfGroup("");
   }
@@ -200,11 +195,13 @@ public abstract class AbstractOwncloudUserQueryServiceTest extends AbstractOwncl
   protected void prepareTestFindOneUser_UnknownUser(String user) throws Exception {}
 
   @Test(expected = NullPointerException.class)
+  @WithOwncloudMockUser(username = "user1", password = "password")
   public void testFindOneUser_NoUser() {
     userQueryService.findOneUser(null);
   }
 
   @Test(expected = IllegalArgumentException.class)
+  @WithOwncloudMockUser(username = "user1", password = "password")
   public void testFindOneUser_BlankUser() {
     userQueryService.findOneUser("");
   }

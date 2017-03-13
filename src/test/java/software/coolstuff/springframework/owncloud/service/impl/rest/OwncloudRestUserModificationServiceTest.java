@@ -234,7 +234,7 @@ public class OwncloudRestUserModificationServiceTest extends AbstractOwncloudUse
       }
     }
 
-    MockRestServiceServer queryServer = createServer((OwncloudRestUserQueryServiceImpl) userQueryService);
+    MockRestServiceServer queryServer = createServer((OwncloudRestService) userQueryService);
     respondUser(
         RestRequest.builder()
             .server(queryServer)

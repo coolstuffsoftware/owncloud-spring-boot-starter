@@ -21,10 +21,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
-import java.util.Base64;
-import java.util.Base64.Encoder;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CyclicBarrier;
 import java.util.function.BiFunction;
@@ -47,7 +43,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import software.coolstuff.springframework.owncloud.exception.resource.OwncloudResourcePipeSynchronizationException;
-import software.coolstuff.springframework.owncloud.exception.resource.OwncloudRestResourceException;
 import software.coolstuff.springframework.owncloud.model.OwncloudFileResource;
 import software.coolstuff.springframework.owncloud.service.impl.rest.OwncloudRestProperties.ResourceServiceProperties;
 
@@ -76,8 +71,6 @@ abstract class AbstractPipedStreamSynchronizerImpl {
   @Getter(AccessLevel.PROTECTED)
   private boolean interrupted;
   private final CyclicBarrier pipeSync = new CyclicBarrier(2);
-
-  private final Map<Class<? extends RestClientException>, Consumer<RestClientException>> restClientExceptionHandlers = new HashMap<>();
 
   protected AbstractPipedStreamSynchronizerImpl(
       final Authentication authentication,
@@ -217,7 +210,7 @@ abstract class AbstractPipedStreamSynchronizerImpl {
   }
 
   private void wrapRequestCallback(ClientHttpRequest clientHttpRequest, RequestCallback requestCallback) throws IOException {
-    addAuthorizationHeader(clientHttpRequest);
+    OwncloudRestUtils.addAuthorizationHeader(clientHttpRequest.getHeaders(), authentication);
     addKeepAliveConnectionHeader(clientHttpRequest);
     if (requestCallback != null) {
       requestCallback.doWithRequest(clientHttpRequest);
@@ -228,17 +221,6 @@ abstract class AbstractPipedStreamSynchronizerImpl {
     log.debug("Set the Connection Header to keep-alive");
     HttpHeaders headers = clientHttpRequest.getHeaders();
     headers.add(HttpHeaders.CONNECTION, "keep-alive");
-  }
-
-  private void addAuthorizationHeader(ClientHttpRequest clientHttpRequest) {
-    log.debug("Set the Authorization Header for User {}", authentication.getName());
-    HttpHeaders headers = clientHttpRequest.getHeaders();
-    if (headers.containsKey(HttpHeaders.AUTHORIZATION)) {
-      return;
-    }
-    Encoder base64Encoder = Base64.getEncoder();
-    String encodedCredentials = base64Encoder.encodeToString((authentication.getName() + ':' + (String) authentication.getCredentials()).getBytes());
-    headers.add(HttpHeaders.AUTHORIZATION, "Basic " + encodedCredentials);
   }
 
   protected void addContentTypeHeader(ClientHttpRequest clientHttpRequest) {
@@ -273,48 +255,4 @@ abstract class AbstractPipedStreamSynchronizerImpl {
     ResourceServiceProperties resourceProperties = owncloudRestProperties.getResourceService();
     return resourceProperties.getPipedStreamBufferSize();
   }
-
-  protected void registerRestClientExceptionHandler(
-      Class<? extends RestClientException> restClientExceptionClass,
-      Consumer<RestClientException> restClientExceptionHandler) {
-    restClientExceptionHandlers.put(restClientExceptionClass, restClientExceptionHandler);
-  }
-
-  protected void handleRestClientException(RestClientException restClientException) {
-    if (restClientException == null) {
-      return;
-    }
-    log.debug("Look for any ExceptionHandler for an Exception of Class {}", restClientException.getClass().getName());
-    Optional<Consumer<RestClientException>> exceptionHandler = getRestClientExceptionHandler(restClientException);
-    exceptionHandler.ifPresent(consumer -> {
-      log.debug("Handle Exception of Class {} (Child of {}) by a custom Exception Handler", restClientException.getClass().getName(), RestClientException.class.getName());
-      consumer.accept(restClientException);
-    });
-    log.error(
-        String.format("No specific ExceptionHandler for Exception of Class %s has been found -> wrap it into %s and throw it",
-            restClientException.getClass().getName(),
-            OwncloudRestResourceException.class.getSimpleName()),
-        restClientException);
-    throw new OwncloudRestResourceException(restClientException);
-  }
-
-  private Optional<Consumer<RestClientException>> getRestClientExceptionHandler(RestClientException restClientException) {
-    if (restClientException == null) {
-      return Optional.empty();
-    }
-    Class<? extends RestClientException> restClientExceptionClass = restClientException.getClass();
-    return getRestClientExceptionHandler(restClientExceptionClass);
-  }
-
-  @SuppressWarnings("unchecked")
-  private Optional<Consumer<RestClientException>> getRestClientExceptionHandler(Class<? extends RestClientException> restClientExceptionClass) {
-    if (restClientExceptionClass == RestClientException.class) {
-      return Optional.empty();
-    }
-    if (restClientExceptionHandlers.containsKey(restClientExceptionClass)) {
-      return Optional.of(restClientExceptionHandlers.get(restClientExceptionClass));
-    }
-    return getRestClientExceptionHandler((Class<? extends RestClientException>) restClientExceptionClass.getSuperclass());
-  }
-
 }

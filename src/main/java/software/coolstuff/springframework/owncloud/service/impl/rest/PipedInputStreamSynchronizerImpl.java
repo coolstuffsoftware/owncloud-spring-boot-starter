@@ -23,18 +23,15 @@ import java.io.OutputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.net.URI;
+import java.util.Optional;
 import java.util.function.BiFunction;
 
 import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestOperations;
 
 import lombok.Builder;
-import lombok.Setter;
-import software.coolstuff.springframework.owncloud.exception.resource.OwncloudResourceNotFoundException;
 import software.coolstuff.springframework.owncloud.exception.resource.OwncloudRestResourceException;
 import software.coolstuff.springframework.owncloud.model.OwncloudFileResource;
 
@@ -69,17 +66,6 @@ class PipedInputStreamSynchronizerImpl extends AbstractPipedStreamSynchronizerIm
         owncloudRestProperties,
         restOperations,
         uriResolver);
-    registerRestClientExceptionHandler(HttpStatusCodeException.class, restClientException -> handleHttpStatusCodeException((HttpStatusCodeException) restClientException));
-  }
-
-  private void handleHttpStatusCodeException(HttpStatusCodeException httpStatusCodeException) {
-    HttpStatus httpStatus = httpStatusCodeException.getStatusCode();
-    switch (httpStatus) {
-      case NOT_FOUND:
-        throw new OwncloudResourceNotFoundException(getUnresolvedUri(), getUsername());
-      default:
-        break;
-    }
   }
 
   @Override
@@ -109,13 +95,23 @@ class PipedInputStreamSynchronizerImpl extends AbstractPipedStreamSynchronizerIm
 
   private class SynchronizedPipedInputStream extends PipedInputStream {
 
-    @Setter
-    private RestClientException restClientException;
+    private Optional<RestClientException> restClientException = Optional.empty();
+
+    public void setRestClientException(RestClientException restClientException) {
+      this.restClientException = Optional.ofNullable(restClientException);
+    }
 
     @Override
     public void close() throws IOException {
       super.close();
-      handleRestClientException(restClientException);
+      restClientException.ifPresent(restClientException -> {
+        RestClientExceptionHandlerEnvironment exceptionHandlerEnvironment = RestClientExceptionHandlerEnvironment.builder()
+            .restClientException(restClientException)
+            .requestURI(getUnresolvedUri())
+            .username(getUsername())
+            .build();
+        OwncloudRestUtils.handleRestClientException(exceptionHandlerEnvironment);
+      });
     }
 
   }

@@ -42,9 +42,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestExecutionListeners;
 
+import software.coolstuff.springframework.owncloud.exception.resource.OwncloudLocalResourceChecksumServiceException;
 import software.coolstuff.springframework.owncloud.model.OwncloudResource;
 import software.coolstuff.springframework.owncloud.service.AbstractOwncloudResourceServiceTest;
-import software.coolstuff.springframework.owncloud.service.api.OwncloudResourceService;
 import software.coolstuff.springframework.owncloud.service.impl.local.OwncloudLocalProperties.ResourceServiceProperties;
 
 @ActiveProfiles("LOCAL-RESOURCE-SERVICE")
@@ -58,11 +58,6 @@ public class OwncloudLocalResourceServiceTest extends AbstractOwncloudResourceSe
 
   @MockBean
   private OwncloudLocalResourceChecksumService checksumService;
-
-  @Override
-  protected Class<? extends OwncloudResourceService> getImplementationClass() {
-    return OwncloudLocalResourceServiceImpl.class;
-  }
 
   @Override
   protected OwncloudResource prepare_OwncloudTestResourceImpl_equalsTo_OwncloudResourceImpl(OwncloudResource expected) throws Exception {
@@ -210,6 +205,36 @@ public class OwncloudLocalResourceServiceTest extends AbstractOwncloudResourceSe
       String actual = new String(IOUtils.toByteArray(input));
       assertThat(actual).isEqualTo(testFileContent);
     }
-
   }
+
+  @Override
+  protected void prepare_deleteFile_OK(OwncloudTestResourceImpl owncloudFileResource) throws Exception {
+    createResource(owncloudFileResource);
+    Path resourcePath = resolveRelativePath(Paths.get(owncloudFileResource.getHref().getPath()));
+    assertThat(resourcePath).exists();
+  }
+
+  @Override
+  protected void check_deleteFile_OK(OwncloudTestResourceImpl owncloudFileResource) throws Exception {
+    Path resourcePath = resolveRelativePath(Paths.get(owncloudFileResource.getHref().getPath()));
+    assertThat(resourcePath).doesNotExist();
+  }
+
+  @Override
+  protected void prepare_deleteFile_NOK_FileNotExists(OwncloudTestResourceImpl owncloudFileResource) throws Exception {}
+
+  @Override
+  protected void check_deleteFile_NOK_FileNotExists(OwncloudTestResourceImpl owncloudFileResource) throws Exception {}
+
+  @Override
+  protected void prepare_deleteFile_NOK_OtherError(OwncloudTestResourceImpl owncloudFileResource) throws Exception {
+    createResource(owncloudFileResource);
+    Path resourcePath = resolveRelativePath(Paths.get(owncloudFileResource.getHref().getPath()));
+    Mockito
+        .doThrow(OwncloudLocalResourceChecksumServiceException.class)
+        .when(checksumService).recalculateChecksum(resourcePath);
+  }
+
+  @Override
+  protected void check_deleteFile_NOK_OtherError(OwncloudTestResourceImpl owncloudFileResource) throws Exception {}
 }

@@ -34,10 +34,13 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
+import org.springframework.http.client.ClientHttpRequest;
 import org.springframework.http.converter.ByteArrayHttpMessageConverter;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestOperations;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -63,7 +66,7 @@ import software.coolstuff.springframework.owncloud.service.impl.OwncloudUtils;
 import software.coolstuff.springframework.owncloud.service.impl.rest.OwncloudRestProperties.ResourceServiceProperties.CacheProperties;
 
 @Slf4j
-class OwncloudRestResourceServiceImpl implements OwncloudResourceService, OwncloudRestService {
+class OwncloudRestResourceServiceImpl implements OwncloudResourceService, OwncloudRestService, OwncloudResolveRootUriService {
 
   private static final String URI_SUFFIX = "/remote.php/dav/files/{username}/";
 
@@ -190,6 +193,7 @@ class OwncloudRestResourceServiceImpl implements OwncloudResourceService, Ownclo
         .normalize();
   }
 
+  @Override
   public URI getResolvedRootUri(String username) {
     return URI.create(StringUtils.replace(rootUri, "{username}", username));
   }
@@ -326,8 +330,34 @@ class OwncloudRestResourceServiceImpl implements OwncloudResourceService, Ownclo
 
   @Override
   public void delete(OwncloudResource resource) {
-    // TODO Auto-generated method stub
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    URI resolvedUri = resolveAsFileURI(resource.getHref(), authentication.getName());
+    try {
+      restOperations.execute(resolvedUri, HttpMethod.DELETE, clientHttpRequest -> createRestCallback(clientHttpRequest, authentication), null);
+    } catch (RestClientException restClientException) {
+      RestClientExceptionHandlerEnvironment exceptionHandlerEnvironment = RestClientExceptionHandlerEnvironment.builder()
+          .restClientException(restClientException)
+          .requestURI(resource.getHref())
+          .username(authentication.getName())
+          .build();
+      OwncloudRestUtils.handleRestClientException(exceptionHandlerEnvironment);
+    }
+  }
 
+  private URI resolveAsFileURI(URI relativeTo, String username) {
+    URI resolvedRootUri = getResolvedRootUri(username);
+    if (relativeTo == null || StringUtils.isBlank(relativeTo.getPath())) {
+      return resolvedRootUri;
+    }
+    return URI.create(
+        UriComponentsBuilder.fromUri(resolvedRootUri)
+            .path(relativeTo.getPath())
+            .toUriString())
+        .normalize();
+  }
+
+  private void createRestCallback(ClientHttpRequest clientHttpRequest, Authentication authentication) throws IOException {
+    OwncloudRestUtils.addAuthorizationHeader(clientHttpRequest.getHeaders(), authentication);
   }
 
   @Override
@@ -341,18 +371,6 @@ class OwncloudRestResourceServiceImpl implements OwncloudResourceService, Ownclo
         .uriResolver(this::resolveAsFileURI)
         .build();
     return pipedInputStreamSynchronizer.getInputStream();
-  }
-
-  private URI resolveAsFileURI(URI relativeTo, String username) {
-    URI resolvedRootUri = getResolvedRootUri(username);
-    if (relativeTo == null || StringUtils.isBlank(relativeTo.getPath())) {
-      return resolvedRootUri;
-    }
-    return URI.create(
-        UriComponentsBuilder.fromUri(resolvedRootUri)
-            .path(relativeTo.getPath())
-            .toUriString())
-        .normalize();
   }
 
   @Override

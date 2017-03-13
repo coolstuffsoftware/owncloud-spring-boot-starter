@@ -23,6 +23,7 @@ import java.io.OutputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.net.URI;
+import java.util.Optional;
 import java.util.function.BiFunction;
 
 import org.springframework.http.HttpMethod;
@@ -32,7 +33,6 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestOperations;
 
 import lombok.Builder;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import software.coolstuff.springframework.owncloud.exception.resource.OwncloudRestResourceException;
 import software.coolstuff.springframework.owncloud.model.OwncloudFileResource;
@@ -100,14 +100,24 @@ class PipedOutputStreamSynchronizerImpl extends AbstractPipedStreamSynchronizerI
 
   private class SynchronizedPipedOutputStream extends PipedOutputStream {
 
-    @Setter
-    private RestClientException restClientException;
+    private Optional<RestClientException> restClientException = Optional.empty();
+
+    public void setRestClientException(RestClientException restClientException) {
+      this.restClientException = Optional.ofNullable(restClientException);
+    }
 
     @Override
     public void close() throws IOException {
       super.close();
       setPipeReady();
-      handleRestClientException(restClientException);
+      restClientException.ifPresent(restClientException -> {
+        RestClientExceptionHandlerEnvironment exceptionHandlerEnvironment = RestClientExceptionHandlerEnvironment.builder()
+            .restClientException(restClientException)
+            .requestURI(getUnresolvedUri())
+            .username(getUsername())
+            .build();
+        OwncloudRestUtils.handleRestClientException(exceptionHandlerEnvironment);
+      });
     }
   }
 }

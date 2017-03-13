@@ -26,8 +26,6 @@ import com.github.sardine.impl.SardineImpl;
 import com.google.common.cache.CacheLoader;
 
 import lombok.extern.slf4j.Slf4j;
-import software.coolstuff.springframework.owncloud.exception.auth.OwncloudInvalidAuthenticationObjectException;
-import software.coolstuff.springframework.owncloud.service.impl.OwncloudUtils;
 
 @Slf4j
 class SardineCacheLoader extends CacheLoader<String, Sardine> {
@@ -35,11 +33,8 @@ class SardineCacheLoader extends CacheLoader<String, Sardine> {
   @Override
   public Sardine load(String username) throws Exception {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-    if (OwncloudUtils.isAuthenticationClassNotSupported(authentication.getClass())) {
-      throw new OwncloudInvalidAuthenticationObjectException(authentication);
-    }
     if (!StringUtils.equals(username, authentication.getName())) {
-      final String errorMessage = String.format("requested Username %s is not equal the Username of the SecurityContextHolder %s", username, authentication.getName());
+      final String errorMessage = String.format("requested Username %s does not equal to the Username of the SecurityContextHolder %s", username, authentication.getName());
       log.error(errorMessage);
       throw new IllegalStateException(errorMessage);
     }

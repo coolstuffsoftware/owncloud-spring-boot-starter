@@ -45,11 +45,6 @@ public class OwncloudRestUserQueryServiceTest extends AbstractOwncloudUserQueryS
   }
 
   @Override
-  protected Class<? extends OwncloudUserQueryService> getUserQueryServiceClass() {
-    return OwncloudRestUserQueryServiceImpl.class;
-  }
-
-  @Override
   protected void prepareTestFindAllUsers(String... users) throws Exception {
     respondUsers(
         RestRequest.builder()

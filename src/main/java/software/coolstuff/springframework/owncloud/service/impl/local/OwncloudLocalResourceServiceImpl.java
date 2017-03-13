@@ -25,9 +25,12 @@ import java.io.OutputStream;
 import java.net.FileNameMap;
 import java.net.URI;
 import java.net.URLConnection;
+import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -229,7 +232,45 @@ class OwncloudLocalResourceServiceImpl implements OwncloudResourceService {
 
   @Override
   public void delete(OwncloudResource resource) {
-    // TODO Auto-generated method stub
+    Path path = resolveLocation(resource.getHref());
+    checkPathExists(path, resource);
+    try {
+      if (Files.isDirectory(path)) {
+        recursivlyDeleteDirectory(path);
+      } else {
+        Files.delete(path);
+      }
+    } catch (IOException e) {
+      throw new OwncloudLocalResourceException(e);
+    } finally {
+      checksumService.recalculateChecksum(path);
+    }
+  }
+
+  private void checkPathExists(Path path, OwncloudResource resource) {
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    if (Files.notExists(path)) {
+      throw new OwncloudResourceNotFoundException(resource.getHref(), authentication.getName());
+    }
+  }
+
+  private void recursivlyDeleteDirectory(Path path) throws IOException {
+    Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
+
+      @Override
+      public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+        Files.delete(file);
+        return FileVisitResult.CONTINUE;
+      }
+
+      @Override
+      public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+        Files.delete(dir);
+        return FileVisitResult.CONTINUE;
+      }
+
+    });
+    Files.delete(path);
   }
 
   @Override

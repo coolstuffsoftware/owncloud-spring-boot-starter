@@ -29,8 +29,8 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy;
 class OwncloudAutoConfiguration {
 
   @Bean
-  public OwncloudUserModificationChecker owncloudUserModificationChecker(OwncloudProperties owncloudProperties) {
-    return new OwncloudUserModificationChecker(owncloudProperties);
+  public OwncloudAuthenticationTypeChecker owncloudUserModificationChecker(OwncloudProperties owncloudProperties) {
+    return new OwncloudAuthenticationTypeChecker(owncloudProperties);
   }
 
   @Bean

@@ -39,6 +39,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.FormHttpMessageConverter;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.SpringSecurityMessageSource;
@@ -108,22 +109,10 @@ abstract class AbstractOwncloudRestServiceImpl implements OwncloudRestService {
 
   protected HttpHeaders prepareHeadersWithBasicAuthorization() {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-    if (!OwncloudUtils.isAuthenticationClassSupported(authentication.getClass())) {
+    if (OwncloudUtils.isAuthenticationClassNotSupported(authentication.getClass())) {
       throw new OwncloudInvalidAuthenticationObjectException(authentication);
     }
-    return prepareHeadersWithBasicAuthorization(authentication.getName(), (String) authentication.getCredentials());
-  }
-
-  private HttpHeaders prepareHeadersWithBasicAuthorization(String username, String password) {
-    Validate.notBlank(username);
-
-    final byte[] rawEncodedCredentials = Base64.getEncoder().encode((username + ":" + password).getBytes());
-    final String encodedCredentials = new String(rawEncodedCredentials);
-
-    HttpHeaders headers = new HttpHeaders();
-    log.trace("Use Basic Authorization with User {}", username);
-    headers.add(HttpHeaders.AUTHORIZATION, AUTHORIZATION_METHOD_PREFIX + encodedCredentials);
-    return headers;
+    return OwncloudRestUtils.addAuthorizationHeader(authentication);
   }
 
   protected String getLocation() {
@@ -131,7 +120,9 @@ abstract class AbstractOwncloudRestServiceImpl implements OwncloudRestService {
   }
 
   protected HttpEntity<String> emptyEntity(String username, String password) {
-    return new HttpEntity<>(prepareHeadersWithBasicAuthorization(username, password));
+    UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(username, password);
+    HttpHeaders headers = OwncloudRestUtils.addAuthorizationHeader(authenticationToken);
+    return new HttpEntity<>(headers);
   }
 
   protected HttpEntity<String> emptyEntity() {

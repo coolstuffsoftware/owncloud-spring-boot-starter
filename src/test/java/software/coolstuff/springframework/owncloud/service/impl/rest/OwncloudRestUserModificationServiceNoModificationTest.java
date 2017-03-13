@@ -23,6 +23,7 @@ import org.springframework.boot.test.autoconfigure.web.client.RestClientTest;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.test.context.ActiveProfiles;
 
+import software.coolstuff.springframework.owncloud.config.WithOwncloudMockUser;
 import software.coolstuff.springframework.owncloud.model.OwncloudModificationUser;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudUserModificationService;
 import software.coolstuff.springframework.owncloud.service.impl.AbstractOwncloudServiceTest;
@@ -40,21 +41,25 @@ public class OwncloudRestUserModificationServiceNoModificationTest extends Abstr
   }
 
   @Test(expected = AccessDeniedException.class)
+  @WithOwncloudMockUser(username = "user", password = "s3cr3t")
   public void testSaveUser() {
     userModificationService.saveUser(new OwncloudModificationUser("user99"));
   }
 
   @Test(expected = AccessDeniedException.class)
+  @WithOwncloudMockUser(username = "user", password = "s3cr3t")
   public void testCreateGroup() {
     userModificationService.createGroup("shouldBeAccessDenied");
   }
 
   @Test(expected = AccessDeniedException.class)
+  @WithOwncloudMockUser(username = "user", password = "s3cr3t")
   public void testDeleteGroup() {
     userModificationService.deleteGroup("shouldBeAccessDenied");
   }
 
   @Test(expected = AccessDeniedException.class)
+  @WithOwncloudMockUser(username = "user", password = "s3cr3t")
   public void testDeleteUser() {
     userModificationService.deleteUser("shouldBeAccessDenied");
   }

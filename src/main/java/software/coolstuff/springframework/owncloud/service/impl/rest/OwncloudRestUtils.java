@@ -21,14 +21,22 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Base64;
+import java.util.Base64.Encoder;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
+import org.springframework.http.HttpHeaders;
+import org.springframework.security.core.Authentication;
+import org.springframework.util.ClassUtils;
+import org.springframework.web.client.HttpStatusCodeException;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import software.coolstuff.springframework.owncloud.exception.resource.OwncloudResourceNotFoundException;
+import software.coolstuff.springframework.owncloud.exception.resource.OwncloudRestResourceException;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 @Slf4j
@@ -71,5 +79,54 @@ final class OwncloudRestUtils {
       return URI.create(locationURL.toString() + defaultPath).toString();
     }
     return locationURL.toString();
+  }
+
+  public static HttpHeaders addAuthorizationHeader(Authentication authentication) {
+    HttpHeaders headers = new HttpHeaders();
+    addAuthorizationHeader(headers, authentication);
+    return headers;
+  }
+
+  public static void addAuthorizationHeader(HttpHeaders headers, Authentication authentication) {
+    headers.add(HttpHeaders.AUTHORIZATION, encodeCredentialsForBasicAuthorization(authentication));
+  }
+
+  public static String encodeCredentialsForBasicAuthorization(Authentication authentication) {
+    Validate.notNull(authentication);
+    return encodeCredentialsForBasicAuthorization(authentication.getName(), authentication.getCredentials());
+  }
+
+  public static String encodeCredentialsForBasicAuthorization(String username, Object password) {
+    Validate.notBlank(username);
+    Validate.notNull(password);
+    Validate.isTrue(ClassUtils.isAssignable(CharSequence.class, password.getClass()));
+    Validate.notBlank((CharSequence) password);
+
+    Encoder base64Encoder = Base64.getEncoder();
+    String encodedCredentials = base64Encoder.encodeToString((username + ':' + password).getBytes());
+    log.trace("Use Basic Authorization with User {}", username);
+    return "Basic " + encodedCredentials;
+  }
+
+  public static void handleRestClientException(RestClientExceptionHandlerEnvironment environment) {
+    if (environment.getRestClientException() == null) {
+      return;
+    }
+
+    if (ClassUtils.isAssignable(HttpStatusCodeException.class, environment.getRestClientException().getClass())) {
+      handleHttpStatusCodeException(environment);
+    }
+
+    throw new OwncloudRestResourceException(environment.getRestClientException());
+  }
+
+  private static void handleHttpStatusCodeException(RestClientExceptionHandlerEnvironment environment) {
+    HttpStatusCodeException httpStatusCodeException = (HttpStatusCodeException) environment.getRestClientException();
+    switch (httpStatusCodeException.getStatusCode()) {
+      case NOT_FOUND:
+        throw new OwncloudResourceNotFoundException(environment.getRequestURI(), environment.getUsername());
+      default:
+        break;
+    }
   }
 }
