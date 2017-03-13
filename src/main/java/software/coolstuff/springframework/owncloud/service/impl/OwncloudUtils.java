@@ -54,7 +54,7 @@ public final class OwncloudUtils {
       return null;
     }
     if (isDirectory(owncloudResource) || !ClassUtils.isAssignable(owncloudResource.getClass(), OwncloudFileResource.class)) {
-      throw new OwncloudNoFileResourceException();
+      throw new OwncloudNoFileResourceException(owncloudResource.getHref());
     }
     return (OwncloudFileResource) owncloudResource;
   }

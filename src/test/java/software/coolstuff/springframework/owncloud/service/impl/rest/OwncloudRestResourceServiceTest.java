@@ -313,11 +313,6 @@ public class OwncloudRestResourceServiceTest extends AbstractOwncloudResourceSer
   }
 
   @Override
-  protected void check_getInputStream_OK() throws Exception {
-    mockServer.verify();
-  }
-
-  @Override
   protected void prepare_getInputStream_NOK_FileNotFound(OwncloudTestFileResourceImpl owncloudFileResource) throws Exception {
     mockServer
         .expect(requestToWithPrefix(owncloudFileResource.getHref()))
@@ -340,11 +335,6 @@ public class OwncloudRestResourceServiceTest extends AbstractOwncloudResourceSer
   }
 
   @Override
-  protected void check_getOutputStream_OK(OwncloudTestFileResourceImpl owncloudFileResource) throws Exception {
-    mockServer.verify();
-  }
-
-  @Override
   protected void prepare_getOutputStream_NOK_Unauthorized(OwncloudTestFileResourceImpl owncloudFileResource) throws Exception {
     mockServer
         .expect(requestToWithPrefix(owncloudFileResource.getHref()))
@@ -357,12 +347,10 @@ public class OwncloudRestResourceServiceTest extends AbstractOwncloudResourceSer
   };
 
   @Override
-  protected void check_getOutputStream_NOK_Unauthorized(OwncloudTestFileResourceImpl owncloudFileResource) throws Exception {
-    mockServer.verify();
-  }
-
-  @Override
   protected void prepare_getOutputStream_OK_CreateNewFile(URI href, MediaType mediaType, String testFileContent) throws Exception {
+    Mockito
+        .when(sardine.list(getResourcePath(href), 0))
+        .thenThrow(new SardineException("No File", HttpStatus.NOT_FOUND.value(), null));
     mockServer
         .expect(requestToWithPrefix(href))
         .andExpect(method(HttpMethod.PUT))
@@ -376,11 +364,11 @@ public class OwncloudRestResourceServiceTest extends AbstractOwncloudResourceSer
 
   @Override
   protected void check_getOutputStream_OK_CreateNewFile(URI href, MediaType mediaType, String testFileContent) throws Exception {
-    mockServer.verify();
+    Mockito.verify(sardine).list(getResourcePath(href), 0);
   }
 
   @Override
-  protected void prepare_deleteFile_OK(OwncloudTestResourceImpl owncloudFileResource) throws Exception {
+  protected void prepare_deleteFile_OK(OwncloudTestFileResourceImpl owncloudFileResource) throws Exception {
     mockServer
         .expect(requestToWithPrefix(owncloudFileResource.getHref()))
         .andExpect(method(HttpMethod.DELETE))
@@ -389,12 +377,7 @@ public class OwncloudRestResourceServiceTest extends AbstractOwncloudResourceSer
   }
 
   @Override
-  protected void check_deleteFile_OK(OwncloudTestResourceImpl owncloudFileResource) throws Exception {
-    mockServer.verify();
-  }
-
-  @Override
-  protected void prepare_deleteFile_NOK_FileNotExists(OwncloudTestResourceImpl owncloudFileResource) throws Exception {
+  protected void prepare_deleteFile_NOK_FileNotExists(OwncloudTestFileResourceImpl owncloudFileResource) throws Exception {
     mockServer
         .expect(requestToWithPrefix(owncloudFileResource.getHref()))
         .andExpect(method(HttpMethod.DELETE))
@@ -403,12 +386,7 @@ public class OwncloudRestResourceServiceTest extends AbstractOwncloudResourceSer
   }
 
   @Override
-  protected void check_deleteFile_NOK_FileNotExists(OwncloudTestResourceImpl owncloudFileResource) throws Exception {
-    mockServer.verify();
-  }
-
-  @Override
-  protected void prepare_deleteFile_NOK_OtherError(OwncloudTestResourceImpl owncloudFileResource) throws Exception {
+  protected void prepare_deleteFile_NOK_OtherError(OwncloudTestFileResourceImpl owncloudFileResource) throws Exception {
     mockServer
         .expect(requestToWithPrefix(owncloudFileResource.getHref()))
         .andExpect(method(HttpMethod.DELETE))
@@ -417,7 +395,12 @@ public class OwncloudRestResourceServiceTest extends AbstractOwncloudResourceSer
   }
 
   @Override
-  protected void check_deleteFile_NOK_OtherError(OwncloudTestResourceImpl owncloudFileResource) throws Exception {
-    mockServer.verify();
+  protected void prepare_deleteDirectory_OK(OwncloudTestResourceImpl owncloudResource) throws Exception {
+    mockServer
+        .expect(requestToWithPrefix(owncloudResource.getHref()))
+        .andExpect(method(HttpMethod.DELETE))
+        .andExpect(header(HttpHeaders.AUTHORIZATION, getBasicAuthorizationHeader()))
+        .andRespond(withNoContent());
   }
+
 }

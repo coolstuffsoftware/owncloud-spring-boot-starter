@@ -17,15 +17,26 @@
 */
 package software.coolstuff.springframework.owncloud.exception.resource;
 
+import java.net.URI;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
+
+import lombok.RequiredArgsConstructor;
 
 /**
  * @author mufasa1976
  */
+@RequiredArgsConstructor
 @ResponseStatus(code = HttpStatus.UNSUPPORTED_MEDIA_TYPE, reason = "No File Resource")
 public class OwncloudNoFileResourceException extends OwncloudResourceException {
 
   private static final long serialVersionUID = 1065113115546100775L;
 
+  private final URI uri;
+
+  @Override
+  public String getMessage() {
+    return String.format("Path %s is not a File Resource", uri.getPath());
+  }
 }

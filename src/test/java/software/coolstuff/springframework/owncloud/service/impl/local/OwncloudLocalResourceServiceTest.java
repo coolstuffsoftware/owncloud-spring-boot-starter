@@ -133,16 +133,10 @@ public class OwncloudLocalResourceServiceTest extends AbstractOwncloudResourceSe
   }
 
   @Override
-  protected void prepare_list_NOK_FileNotFound(URI searchPath) throws Exception {}
-
-  @Override
   protected void prepare_findFile_OK(URI searchPath, OwncloudTestFileResourceImpl expectedResource) throws Exception {
     createResource(expectedResource);
     modifyResourceInformationBasedOnPathInformation(expectedResource);
   }
-
-  @Override
-  protected void prepare_findFile_NotExists(URI searchPath) throws Exception {}
 
   @Override
   protected void prepare_findRootDirectory_OK(OwncloudTestResourceImpl expectedResource) throws Exception {
@@ -154,15 +148,6 @@ public class OwncloudLocalResourceServiceTest extends AbstractOwncloudResourceSe
   protected void prepare_getInputStream_OK(OwncloudTestFileResourceImpl owncloudFileResource) throws Exception {
     createResource(owncloudFileResource);
   };
-
-  @Override
-  protected void check_getInputStream_OK() throws Exception {}
-
-  @Override
-  protected void prepare_getInputStream_NOK_FileNotFound(OwncloudTestFileResourceImpl owncloudFileResource) throws Exception {}
-
-  @Override
-  protected void prepare_getOutputStream_OK(OwncloudTestFileResourceImpl owncloudFileResource) throws Exception {}
 
   @Override
   protected void check_getOutputStream_OK(OwncloudTestFileResourceImpl owncloudFileResource) throws Exception {
@@ -181,9 +166,6 @@ public class OwncloudLocalResourceServiceTest extends AbstractOwncloudResourceSe
         .doThrow(IOException.class)
         .when(checksumService).recalculateChecksum(resourcePath);
   };
-
-  @Override
-  protected void check_getOutputStream_NOK_Unauthorized(OwncloudTestFileResourceImpl owncloudFileResource) throws Exception {}
 
   @Override
   protected void prepare_getOutputStream_OK_CreateNewFile(URI href, MediaType mediaType, String testFileContent) throws Exception {
@@ -208,26 +190,20 @@ public class OwncloudLocalResourceServiceTest extends AbstractOwncloudResourceSe
   }
 
   @Override
-  protected void prepare_deleteFile_OK(OwncloudTestResourceImpl owncloudFileResource) throws Exception {
+  protected void prepare_deleteFile_OK(OwncloudTestFileResourceImpl owncloudFileResource) throws Exception {
     createResource(owncloudFileResource);
     Path resourcePath = resolveRelativePath(Paths.get(owncloudFileResource.getHref().getPath()));
     assertThat(resourcePath).exists();
   }
 
   @Override
-  protected void check_deleteFile_OK(OwncloudTestResourceImpl owncloudFileResource) throws Exception {
+  protected void check_deleteFile_OK(OwncloudTestFileResourceImpl owncloudFileResource) throws Exception {
     Path resourcePath = resolveRelativePath(Paths.get(owncloudFileResource.getHref().getPath()));
     assertThat(resourcePath).doesNotExist();
   }
 
   @Override
-  protected void prepare_deleteFile_NOK_FileNotExists(OwncloudTestResourceImpl owncloudFileResource) throws Exception {}
-
-  @Override
-  protected void check_deleteFile_NOK_FileNotExists(OwncloudTestResourceImpl owncloudFileResource) throws Exception {}
-
-  @Override
-  protected void prepare_deleteFile_NOK_OtherError(OwncloudTestResourceImpl owncloudFileResource) throws Exception {
+  protected void prepare_deleteFile_NOK_OtherError(OwncloudTestFileResourceImpl owncloudFileResource) throws Exception {
     createResource(owncloudFileResource);
     Path resourcePath = resolveRelativePath(Paths.get(owncloudFileResource.getHref().getPath()));
     Mockito
@@ -236,5 +212,19 @@ public class OwncloudLocalResourceServiceTest extends AbstractOwncloudResourceSe
   }
 
   @Override
-  protected void check_deleteFile_NOK_OtherError(OwncloudTestResourceImpl owncloudFileResource) throws Exception {}
+  protected void prepare_deleteDirectory_OK(OwncloudTestResourceImpl owncloudResource) throws Exception {
+    Path path = resolveRelativePath(Paths.get(owncloudResource.getHref().getPath()));
+    Files.createDirectories(path);
+    Files.createFile(path.resolve("someFile.txt"));
+    Files.createFile(path.resolve("someOtherFile.txt"));
+    Path subDirectory = Files.createDirectory(path.resolve("subDirectory"));
+    Files.createFile(subDirectory.resolve("someFileInSubdirectory.txt"));
+    Files.createFile(subDirectory.resolve("someOtherFileInSubdirectory.txt"));
+  }
+
+  @Override
+  protected void check_deleteDirectory_OK(OwncloudTestResourceImpl owncloudResource) throws Exception {
+    Path path = resolveRelativePath(Paths.get(owncloudResource.getHref().getPath()));
+    assertThat(path).doesNotExist();
+  }
 }

@@ -49,6 +49,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import lombok.extern.slf4j.Slf4j;
 import software.coolstuff.springframework.owncloud.exception.resource.OwncloudLocalResourceException;
+import software.coolstuff.springframework.owncloud.exception.resource.OwncloudNoFileResourceException;
 import software.coolstuff.springframework.owncloud.exception.resource.OwncloudResourceNotFoundException;
 import software.coolstuff.springframework.owncloud.model.OwncloudFileResource;
 import software.coolstuff.springframework.owncloud.model.OwncloudResource;
@@ -270,7 +271,6 @@ class OwncloudLocalResourceServiceImpl implements OwncloudResourceService {
       }
 
     });
-    Files.delete(path);
   }
 
   @Override
@@ -296,6 +296,8 @@ class OwncloudLocalResourceServiceImpl implements OwncloudResourceService {
     try {
       if (Files.notExists(location)) {
         Files.createFile(location);
+      } else if (Files.isDirectory(location)) {
+        throw new OwncloudNoFileResourceException(href);
       }
       return new ContentOutputStream(location);
     } catch (IOException e) {

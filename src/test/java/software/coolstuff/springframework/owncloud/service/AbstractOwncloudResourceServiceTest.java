@@ -107,7 +107,9 @@ public abstract class AbstractOwncloudResourceServiceTest {
     assertThat(actual).isEqualTo(expected);
   }
 
-  protected abstract OwncloudResource prepare_OwncloudTestResourceImpl_equalsTo_OwncloudResourceImpl(OwncloudResource expected) throws Exception;
+  protected OwncloudResource prepare_OwncloudTestResourceImpl_equalsTo_OwncloudResourceImpl(OwncloudResource expected) throws Exception {
+    return null;
+  }
 
   @Test
   @WithOwncloudMockUser(username = "user1", password = "s3cr3t")
@@ -181,7 +183,7 @@ public abstract class AbstractOwncloudResourceServiceTest {
     }
   }
 
-  protected abstract void prepare_listRoot_OK(List<OwncloudTestResourceImpl> expectedResources) throws Exception;
+  protected void prepare_listRoot_OK(List<OwncloudTestResourceImpl> expectedResources) throws Exception {}
 
   @Test
   @WithOwncloudMockUser(username = "user1", password = "s3cr3t")
@@ -226,7 +228,7 @@ public abstract class AbstractOwncloudResourceServiceTest {
     assertThat(resources).containsOnlyElementsOf(expectedResources);
   }
 
-  protected abstract void prepare_list_OK(URI searchPath, List<OwncloudTestResourceImpl> expectedOwncloudResources) throws Exception;
+  protected void prepare_list_OK(URI searchPath, List<OwncloudTestResourceImpl> expectedOwncloudResources) throws Exception {}
 
   private URI appendPath(URI baseUri, String appendPath) {
     if (baseUri == null) {
@@ -250,7 +252,7 @@ public abstract class AbstractOwncloudResourceServiceTest {
     fail("Expected Exception " + OwncloudResourceNotFoundException.class.getName() + " has not been thrown");
   }
 
-  protected abstract void prepare_list_NOK_FileNotFound(URI searchPath) throws Exception;
+  protected void prepare_list_NOK_FileNotFound(URI searchPath) throws Exception {}
 
   @Test
   @WithOwncloudMockUser(username = "user1", password = "s3cr3t")
@@ -275,7 +277,7 @@ public abstract class AbstractOwncloudResourceServiceTest {
     assertThat(resource).isEqualTo(expectedResource);
   }
 
-  protected abstract void prepare_findFile_OK(URI searchPath, OwncloudTestFileResourceImpl expectedResource) throws Exception;
+  protected void prepare_findFile_OK(URI searchPath, OwncloudTestFileResourceImpl expectedResource) throws Exception {}
 
   @Test(expected = OwncloudResourceNotFoundException.class)
   @WithOwncloudMockUser(username = "user1", password = "s3cr3t")
@@ -286,7 +288,7 @@ public abstract class AbstractOwncloudResourceServiceTest {
     fail("Expected Exception " + OwncloudResourceNotFoundException.class.getName() + " has not been thrown");
   }
 
-  protected abstract void prepare_findFile_NotExists(URI searchPath) throws Exception;
+  protected void prepare_findFile_NotExists(URI searchPath) throws Exception {}
 
   @Test
   @WithOwncloudMockUser(username = "user1", password = "s3cr3t")
@@ -307,7 +309,7 @@ public abstract class AbstractOwncloudResourceServiceTest {
     assertThat(actual).isEqualTo(expected);
   }
 
-  protected abstract void prepare_findRootDirectory_OK(OwncloudTestResourceImpl expectedResource) throws Exception;
+  protected void prepare_findRootDirectory_OK(OwncloudTestResourceImpl expectedResource) throws Exception {}
 
   @Test
   @WithOwncloudMockUser(username = "user1", password = "s3cr3t")
@@ -329,9 +331,9 @@ public abstract class AbstractOwncloudResourceServiceTest {
     check_getInputStream_OK();
   }
 
-  protected abstract void prepare_getInputStream_OK(OwncloudTestFileResourceImpl owncloudFileResource) throws Exception;
+  protected void prepare_getInputStream_OK(OwncloudTestFileResourceImpl owncloudFileResource) throws Exception {}
 
-  protected abstract void check_getInputStream_OK() throws Exception;
+  protected void check_getInputStream_OK() throws Exception {}
 
   @Test(expected = OwncloudResourceNotFoundException.class)
   @WithOwncloudMockUser(username = "user1", password = "s3cr3t")
@@ -352,7 +354,7 @@ public abstract class AbstractOwncloudResourceServiceTest {
     check_getInputStream_NOK_FileNotFound(owncloudFileResource);
   }
 
-  protected abstract void prepare_getInputStream_NOK_FileNotFound(OwncloudTestFileResourceImpl owncloudFileResource) throws Exception;
+  protected void prepare_getInputStream_NOK_FileNotFound(OwncloudTestFileResourceImpl owncloudFileResource) throws Exception {}
 
   protected void check_getInputStream_NOK_FileNotFound(OwncloudTestFileResourceImpl owncloudFileResource) {
     fail("OwncloudResourceNotFoundException should be thrown");
@@ -378,9 +380,9 @@ public abstract class AbstractOwncloudResourceServiceTest {
     }
   }
 
-  protected abstract void prepare_getOutputStream_OK(OwncloudTestFileResourceImpl owncloudFileResource) throws Exception;
+  protected void prepare_getOutputStream_OK(OwncloudTestFileResourceImpl owncloudFileResource) throws Exception {}
 
-  protected abstract void check_getOutputStream_OK(OwncloudTestFileResourceImpl owncloudFileResource) throws Exception;
+  protected void check_getOutputStream_OK(OwncloudTestFileResourceImpl owncloudFileResource) throws Exception {}
 
   @Test(expected = OwncloudResourceException.class)
   @WithOwncloudMockUser(username = "user1", password = "s3cr3t")
@@ -402,9 +404,9 @@ public abstract class AbstractOwncloudResourceServiceTest {
     }
   }
 
-  protected abstract void prepare_getOutputStream_NOK_Unauthorized(OwncloudTestFileResourceImpl owncloudFileResource) throws Exception;
+  protected void prepare_getOutputStream_NOK_Unauthorized(OwncloudTestFileResourceImpl owncloudFileResource) throws Exception {}
 
-  protected abstract void check_getOutputStream_NOK_Unauthorized(OwncloudTestFileResourceImpl owncloudFileResource) throws Exception;
+  protected void check_getOutputStream_NOK_Unauthorized(OwncloudTestFileResourceImpl owncloudFileResource) throws Exception {}
 
   @Test
   @WithOwncloudMockUser(username = "user1", password = "s3cr3t")
@@ -418,14 +420,34 @@ public abstract class AbstractOwncloudResourceServiceTest {
     check_getOutputStream_OK_CreateNewFile(href, mediaType, TEST_FILE_CONTENT);
   }
 
-  protected abstract void prepare_getOutputStream_OK_CreateNewFile(URI href, MediaType mediaType, String testFileContent) throws Exception;
+  protected void prepare_getOutputStream_OK_CreateNewFile(URI href, MediaType mediaType, String testFileContent) throws Exception {}
 
-  protected abstract void check_getOutputStream_OK_CreateNewFile(URI href, MediaType mediaType, String testFileContent) throws Exception;
+  protected void check_getOutputStream_OK_CreateNewFile(URI href, MediaType mediaType, String testFileContent) throws Exception {}
+
+  @Test
+  @WithOwncloudMockUser(username = "user1", password = "s3cr3t")
+  public void test_getOutputStream_NOK_ResourceIsDirectory() throws Exception {
+    fail("not implemented");
+  }
+
+  protected void prepare_getOutputStream_NOK_ResourceIsDirectory(URI href) throws Exception {}
+
+  protected void check_getOutputStream_NOK_ResourceIsDirectory(URI href) throws Exception {}
+
+  @Test
+  @WithOwncloudMockUser(username = "user1", password = "s3cr3t")
+  public void test_getOutputStream_OK_OverwriteFile() throws Exception {
+    fail("not implemented");
+  }
+
+  protected void prepare_getOutputStream_OK_OverwriteFile(URI href, MediaType mediaType, String testFileContent) throws Exception {}
+
+  protected void check_getOutputStream_OK_OverwriteFile(URI href, MediaType mediaType, String testFileContent) throws Exception {}
 
   @Test
   @WithOwncloudMockUser(username = "user1", password = "s3cr3t")
   public void test_deleteFile_OK() throws Exception {
-    OwncloudTestResourceImpl owncloudFileResource = OwncloudTestFileResourceImpl.fileBuilder()
+    OwncloudTestFileResourceImpl owncloudFileResource = OwncloudTestFileResourceImpl.fileBuilder()
         .owncloudResource(
             OwncloudTestResourceImpl.builder()
                 .href(URI.create("/createdFile.txt"))
@@ -437,14 +459,14 @@ public abstract class AbstractOwncloudResourceServiceTest {
     check_deleteFile_OK(owncloudFileResource);
   }
 
-  protected abstract void prepare_deleteFile_OK(OwncloudTestResourceImpl owncloudFileResource) throws Exception;
+  protected void prepare_deleteFile_OK(OwncloudTestFileResourceImpl owncloudFileResource) throws Exception {}
 
-  protected abstract void check_deleteFile_OK(OwncloudTestResourceImpl owncloudFileResource) throws Exception;
+  protected void check_deleteFile_OK(OwncloudTestFileResourceImpl owncloudFileResource) throws Exception {}
 
   @Test(expected = OwncloudResourceNotFoundException.class)
   @WithOwncloudMockUser(username = "user1", password = "s3cr3t")
   public void test_deleteFile_NOK_FileNotExists() throws Exception {
-    OwncloudTestResourceImpl owncloudFileResource = OwncloudTestFileResourceImpl.fileBuilder()
+    OwncloudTestFileResourceImpl owncloudFileResource = OwncloudTestFileResourceImpl.fileBuilder()
         .owncloudResource(
             OwncloudTestResourceImpl.builder()
                 .href(URI.create("/notExistingFile.txt"))
@@ -459,14 +481,14 @@ public abstract class AbstractOwncloudResourceServiceTest {
     }
   }
 
-  protected abstract void prepare_deleteFile_NOK_FileNotExists(OwncloudTestResourceImpl owncloudFileResource) throws Exception;
+  protected void prepare_deleteFile_NOK_FileNotExists(OwncloudTestFileResourceImpl owncloudFileResource) throws Exception {}
 
-  protected abstract void check_deleteFile_NOK_FileNotExists(OwncloudTestResourceImpl owncloudFileResource) throws Exception;
+  protected void check_deleteFile_NOK_FileNotExists(OwncloudTestFileResourceImpl owncloudFileResource) throws Exception {}
 
   @Test(expected = OwncloudResourceException.class)
   @WithOwncloudMockUser(username = "user1", password = "s3cr3t")
   public void test_deleteFile_NOK_OtherError() throws Exception {
-    OwncloudTestResourceImpl owncloudFileResource = OwncloudTestFileResourceImpl.fileBuilder()
+    OwncloudTestFileResourceImpl owncloudFileResource = OwncloudTestFileResourceImpl.fileBuilder()
         .owncloudResource(
             OwncloudTestResourceImpl.builder()
                 .href(URI.create("/fileWhichCausesError.txt"))
@@ -481,7 +503,23 @@ public abstract class AbstractOwncloudResourceServiceTest {
     }
   }
 
-  protected abstract void prepare_deleteFile_NOK_OtherError(OwncloudTestResourceImpl owncloudFileResource) throws Exception;
+  protected void prepare_deleteFile_NOK_OtherError(OwncloudTestFileResourceImpl owncloudFileResource) throws Exception {}
 
-  protected abstract void check_deleteFile_NOK_OtherError(OwncloudTestResourceImpl owncloudFileResource) throws Exception;
+  protected void check_deleteFile_NOK_OtherError(OwncloudTestFileResourceImpl owncloudFileResource) throws Exception {}
+
+  @Test
+  @WithOwncloudMockUser(username = "user1", password = "s3cr3t")
+  public void test_deleteDirectory_OK() throws Exception {
+    OwncloudTestResourceImpl owncloudResource = OwncloudTestResourceImpl.builder()
+        .href(URI.create("/directory/subDirectory"))
+        .mediaType(OwncloudUtils.getDirectoryMediaType())
+        .build();
+    prepare_deleteDirectory_OK(owncloudResource);
+    resourceService.delete(owncloudResource);
+    check_deleteDirectory_OK(owncloudResource);
+  }
+
+  protected void prepare_deleteDirectory_OK(OwncloudTestResourceImpl owncloudResource) throws Exception {}
+
+  protected void check_deleteDirectory_OK(OwncloudTestResourceImpl owncloudResource) throws Exception {}
 }

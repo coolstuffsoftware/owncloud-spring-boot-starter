@@ -30,6 +30,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 
+import org.apache.commons.lang.Validate;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,6 +56,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
+import software.coolstuff.springframework.owncloud.exception.resource.OwncloudNoFileResourceException;
 import software.coolstuff.springframework.owncloud.exception.resource.OwncloudResourceException;
 import software.coolstuff.springframework.owncloud.exception.resource.OwncloudResourceNotFoundException;
 import software.coolstuff.springframework.owncloud.exception.resource.OwncloudRestResourceException;
@@ -375,6 +377,12 @@ class OwncloudRestResourceServiceImpl implements OwncloudResourceService, Ownclo
 
   @Override
   public OutputStream getOutputStream(OwncloudFileResource resource) {
+    Validate.notNull(resource);
+    Validate.notNull(resource.getHref());
+    Validate.notNull(resource.getMediaType());
+    if (OwncloudUtils.isDirectory(resource)) {
+      throw new OwncloudNoFileResourceException(resource.getHref());
+    }
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     PipedOutputStreamSynchronizer pipedOutputStreamSynchronizer = PipedOutputStreamSynchronizer.builder()
         .authentication(authentication)
@@ -395,6 +403,10 @@ class OwncloudRestResourceServiceImpl implements OwncloudResourceService, Ownclo
                 .mediaType(mediaType)
                 .build())
         .build();
+    try {
+      OwncloudResource existingResource = find(href);
+      resource = OwncloudUtils.toOwncloudFileResource(existingResource);
+    } catch (OwncloudResourceNotFoundException ignored) {}
     return getOutputStream(resource);
   }
 }
