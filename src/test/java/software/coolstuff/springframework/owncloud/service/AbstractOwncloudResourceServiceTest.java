@@ -413,4 +413,18 @@ public abstract class AbstractOwncloudResourceServiceTest {
   protected abstract void prepare_getOutputStream_NOK_Unauthorized(OwncloudTestFileResourceImpl owncloudFileResource) throws Exception;
 
   protected abstract void check_getOutputStream_NOK_Unauthorized(OwncloudTestFileResourceImpl owncloudFileResource) throws Exception;
+
+  public void test_getOutputStream_OK_CreateNewFile() throws Exception {
+    URI href = URI.create("/createdFile.txt");
+    MediaType mediaType = MediaType.TEXT_PLAIN;
+    prepare_getOutputStream_OK_CreateNewFile(href, mediaType, TEST_FILE_CONTENT);
+    try (OutputStream output = resourceService.getOutputStream(href, mediaType)) {
+      IOUtils.write(TEST_FILE_CONTENT, output, Charset.forName("utf8"));
+    }
+    check_getOutputStream_OK_CreateNewFile(href, mediaType, TEST_FILE_CONTENT);
+  }
+
+  protected abstract void prepare_getOutputStream_OK_CreateNewFile(URI href, MediaType mediaType, String testFileContent) throws Exception;
+
+  protected abstract void check_getOutputStream_OK_CreateNewFile(URI href, MediaType mediaType, String testFileContent) throws Exception;
 }

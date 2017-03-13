@@ -36,6 +36,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.ActiveProfiles;
@@ -188,4 +189,27 @@ public class OwncloudLocalResourceServiceTest extends AbstractOwncloudResourceSe
 
   @Override
   protected void check_getOutputStream_NOK_Unauthorized(OwncloudTestFileResourceImpl owncloudFileResource) throws Exception {}
+
+  @Override
+  protected void prepare_getOutputStream_OK_CreateNewFile(URI href, MediaType mediaType, String testFileContent) throws Exception {
+    OwncloudTestFileResourceImpl resource = OwncloudTestFileResourceImpl.fileBuilder()
+        .owncloudResource(OwncloudTestResourceImpl.builder()
+            .href(href)
+            .mediaType(mediaType)
+            .build())
+        .testFileContent(testFileContent)
+        .build();
+    createResource(resource);
+  }
+
+  @Override
+  protected void check_getOutputStream_OK_CreateNewFile(URI href, MediaType mediaType, String testFileContent) throws Exception {
+    Path resourcePath = resolveRelativePath(Paths.get(href.getPath()));
+    assertThat(resourcePath).exists();
+    try (InputStream input = Files.newInputStream(resourcePath)) {
+      String actual = new String(IOUtils.toByteArray(input));
+      assertThat(actual).isEqualTo(testFileContent);
+    }
+
+  }
 }

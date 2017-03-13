@@ -319,12 +319,6 @@ class OwncloudRestResourceServiceImpl implements OwncloudResourceService, Ownclo
   }
 
   @Override
-  public OwncloudFileResource createFile(URI file) {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  @Override
   public OwncloudResource createDirectory(URI directory) {
     // TODO Auto-generated method stub
     return null;
@@ -372,5 +366,17 @@ class OwncloudRestResourceServiceImpl implements OwncloudResourceService, Ownclo
         .uriResolver(this::resolveAsFileURI)
         .build();
     return pipedOutputStreamSynchronizer.getOutputStream();
+  }
+
+  @Override
+  public OutputStream getOutputStream(URI href, MediaType mediaType) {
+    OwncloudFileResource resource = OwncloudRestFileResourceImpl.fileBuilder()
+        .owncloudResource(
+            OwncloudRestResourceImpl.builder()
+                .href(href)
+                .mediaType(mediaType)
+                .build())
+        .build();
+    return getOutputStream(resource);
   }
 }

@@ -22,6 +22,8 @@ import java.io.OutputStream;
 import java.net.URI;
 import java.util.List;
 
+import org.springframework.http.MediaType;
+
 import software.coolstuff.springframework.owncloud.model.OwncloudFileResource;
 import software.coolstuff.springframework.owncloud.model.OwncloudResource;
 
@@ -39,8 +41,6 @@ public interface OwncloudResourceService {
 
   OwncloudResource find(URI path);
 
-  OwncloudFileResource createFile(URI file);
-
   OwncloudResource createDirectory(URI directory);
 
   void delete(OwncloudResource resource);
@@ -48,5 +48,7 @@ public interface OwncloudResourceService {
   InputStream getInputStream(OwncloudFileResource resource);
 
   OutputStream getOutputStream(OwncloudFileResource resource);
+
+  OutputStream getOutputStream(URI href, MediaType mediaType);
 
 }

@@ -222,12 +222,6 @@ class OwncloudLocalResourceServiceImpl implements OwncloudResourceService {
   }
 
   @Override
-  public OwncloudFileResource createFile(URI file) {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  @Override
   public OwncloudResource createDirectory(URI directory) {
     // TODO Auto-generated method stub
     return null;
@@ -252,12 +246,20 @@ class OwncloudLocalResourceServiceImpl implements OwncloudResourceService {
 
   @Override
   public OutputStream getOutputStream(OwncloudFileResource resource) {
-    Path location = resolveLocation(resource.getHref());
+    return getOutputStream(resource.getHref(), resource.getMediaType());
+  }
+
+  @Override
+  public OutputStream getOutputStream(URI href, MediaType mediaType) {
+    Path location = resolveLocation(href);
     try {
+      if (Files.notExists(location)) {
+        Files.createFile(location);
+      }
       return new ContentOutputStream(location);
-    } catch (FileNotFoundException e) {
-      log.error(String.format("File %s has not been found", location), e);
-      throw new OwncloudResourceNotFoundException(resource.getHref(), getUsername());
+    } catch (IOException e) {
+      log.error(String.format("Error while retrieving Content of File %s", location.toAbsolutePath().normalize().toString()), e);
+      throw new OwncloudLocalResourceException(e);
     }
   }
 

@@ -46,6 +46,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.ActiveProfiles;
@@ -277,19 +278,19 @@ public class OwncloudRestResourceServiceTest extends AbstractOwncloudResourceSer
   @Override
   protected void prepare_getInputStream_OK(OwncloudTestFileResourceImpl owncloudFileResource) throws Exception {
     mockServer
-        .expect(requestToWithPrefix(owncloudFileResource))
+        .expect(requestToWithPrefix(owncloudFileResource.getHref()))
         .andExpect(method(HttpMethod.GET))
         .andExpect(header(HttpHeaders.AUTHORIZATION, getBasicAuthorizationHeader()))
         .andExpect(header(HttpHeaders.CONNECTION, "keep-alive"))
         .andRespond(withSuccess(owncloudFileResource.getTestFileContent(), owncloudFileResource.getMediaType()));
   }
 
-  private RequestMatcher requestToWithPrefix(OwncloudResource owncloudResource) throws MalformedURLException {
+  private RequestMatcher requestToWithPrefix(URI href) throws MalformedURLException {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     checkRestLocation();
     URI uri = URI.create(UriComponentsBuilder.fromHttpUrl(properties.getLocation())
         .path(StringUtils.replace(DEFAULT_PATH, "{username}", authentication.getName()))
-        .path(owncloudResource.getHref().getPath())
+        .path(href.getPath())
         .toUriString());
     return requestTo(uri);
   }
@@ -319,7 +320,7 @@ public class OwncloudRestResourceServiceTest extends AbstractOwncloudResourceSer
   @Override
   protected void prepare_getInputStream_NOK_FileNotFound(OwncloudTestFileResourceImpl owncloudFileResource) throws Exception {
     mockServer
-        .expect(requestToWithPrefix(owncloudFileResource))
+        .expect(requestToWithPrefix(owncloudFileResource.getHref()))
         .andExpect(method(HttpMethod.GET))
         .andExpect(header(HttpHeaders.AUTHORIZATION, getBasicAuthorizationHeader()))
         .andExpect(header(HttpHeaders.CONNECTION, "keep-alive"))
@@ -329,7 +330,7 @@ public class OwncloudRestResourceServiceTest extends AbstractOwncloudResourceSer
   @Override
   protected void prepare_getOutputStream_OK(OwncloudTestFileResourceImpl owncloudFileResource) throws Exception {
     mockServer
-        .expect(requestToWithPrefix(owncloudFileResource))
+        .expect(requestToWithPrefix(owncloudFileResource.getHref()))
         .andExpect(method(HttpMethod.PUT))
         .andExpect(header(HttpHeaders.AUTHORIZATION, getBasicAuthorizationHeader()))
         .andExpect(header(HttpHeaders.CONNECTION, "keep-alive"))
@@ -346,7 +347,7 @@ public class OwncloudRestResourceServiceTest extends AbstractOwncloudResourceSer
   @Override
   protected void prepare_getOutputStream_NOK_Unauthorized(OwncloudTestFileResourceImpl owncloudFileResource) throws Exception {
     mockServer
-        .expect(requestToWithPrefix(owncloudFileResource))
+        .expect(requestToWithPrefix(owncloudFileResource.getHref()))
         .andExpect(method(HttpMethod.PUT))
         .andExpect(header(HttpHeaders.AUTHORIZATION, getBasicAuthorizationHeader()))
         .andExpect(header(HttpHeaders.CONNECTION, "keep-alive"))
@@ -357,6 +358,24 @@ public class OwncloudRestResourceServiceTest extends AbstractOwncloudResourceSer
 
   @Override
   protected void check_getOutputStream_NOK_Unauthorized(OwncloudTestFileResourceImpl owncloudFileResource) throws Exception {
+    mockServer.verify();
+  }
+
+  @Override
+  protected void prepare_getOutputStream_OK_CreateNewFile(URI href, MediaType mediaType, String testFileContent) throws Exception {
+    mockServer
+        .expect(requestToWithPrefix(href))
+        .andExpect(method(HttpMethod.PUT))
+        .andExpect(header(HttpHeaders.AUTHORIZATION, getBasicAuthorizationHeader()))
+        .andExpect(header(HttpHeaders.CONNECTION, "keep-alive"))
+        .andExpect(content().contentType(mediaType))
+        .andExpect(content().string(testFileContent))
+        .andRespond(withSuccess());
+
+  }
+
+  @Override
+  protected void check_getOutputStream_OK_CreateNewFile(URI href, MediaType mediaType, String testFileContent) throws Exception {
     mockServer.verify();
   }
 }
