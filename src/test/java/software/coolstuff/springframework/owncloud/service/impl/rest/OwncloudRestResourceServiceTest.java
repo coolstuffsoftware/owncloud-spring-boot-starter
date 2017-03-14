@@ -64,6 +64,7 @@ import software.coolstuff.springframework.owncloud.model.OwncloudFileResource;
 import software.coolstuff.springframework.owncloud.model.OwncloudResource;
 import software.coolstuff.springframework.owncloud.service.AbstractOwncloudResourceServiceTest;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudResourceService;
+import software.coolstuff.springframework.owncloud.service.impl.OwncloudUtils;
 
 @ActiveProfiles("REST-RESOURCE-SERVICE")
 public class OwncloudRestResourceServiceTest extends AbstractOwncloudResourceServiceTest implements OwncloudRestServiceTest {
@@ -364,6 +365,56 @@ public class OwncloudRestResourceServiceTest extends AbstractOwncloudResourceSer
 
   @Override
   protected void check_getOutputStream_OK_CreateNewFile(URI href, MediaType mediaType, String testFileContent) throws Exception {
+    Mockito.verify(sardine).list(getResourcePath(href), 0);
+  }
+
+  @Override
+  protected void prepare_getOutputStream_NOK_ResourceIsDirectory(URI href) throws Exception {
+    List<DavResource> davResources = Lists.newArrayList(
+        createDavResourceFrom(
+            OwncloudTestResourceImpl.builder()
+                .href(href)
+                .mediaType(OwncloudUtils.getDirectoryMediaType())
+                .build(),
+            Locale.GERMAN));
+    Mockito
+        .when(sardine.list(getResourcePath(href), 0))
+        .thenReturn(davResources);
+  }
+
+  @Override
+  protected void check_getOutputStream_NOK_ResourceIsDirectory(URI href) throws Exception {
+    Mockito.verify(sardine).list(getResourcePath(href), 0);
+  }
+
+  @Override
+  protected void prepare_getOutputStream_OK_OverwriteFile(URI href, MediaType mediaType, String testFileContent) throws Exception {
+    List<DavResource> davResources = Lists.newArrayList(
+        createDavResourceFrom(
+            OwncloudTestFileResourceImpl.fileBuilder()
+                .owncloudResource(
+                    OwncloudTestResourceImpl.builder()
+                        .href(href)
+                        .mediaType(mediaType)
+                        .build())
+                .testFileContent(testFileContent)
+                .build(),
+            Locale.GERMAN));
+    Mockito
+        .when(sardine.list(getResourcePath(href)))
+        .thenReturn(davResources);
+    mockServer
+        .expect(requestToWithPrefix(href))
+        .andExpect(method(HttpMethod.PUT))
+        .andExpect(header(HttpHeaders.AUTHORIZATION, getBasicAuthorizationHeader()))
+        .andExpect(header(HttpHeaders.CONNECTION, "keep-alive"))
+        .andExpect(content().contentType(mediaType))
+        .andExpect(content().string(testFileContent))
+        .andRespond(withSuccess());
+  }
+
+  @Override
+  protected void check_getOutputStream_OK_OverwriteFile(URI href, MediaType mediaType, String testFileContent) throws Exception {
     Mockito.verify(sardine).list(getResourcePath(href), 0);
   }
 

@@ -45,6 +45,7 @@ import org.springframework.test.context.TestExecutionListeners;
 import software.coolstuff.springframework.owncloud.exception.resource.OwncloudLocalResourceChecksumServiceException;
 import software.coolstuff.springframework.owncloud.model.OwncloudResource;
 import software.coolstuff.springframework.owncloud.service.AbstractOwncloudResourceServiceTest;
+import software.coolstuff.springframework.owncloud.service.impl.OwncloudUtils;
 import software.coolstuff.springframework.owncloud.service.impl.local.OwncloudLocalProperties.ResourceServiceProperties;
 
 @ActiveProfiles("LOCAL-RESOURCE-SERVICE")
@@ -183,6 +184,46 @@ public class OwncloudLocalResourceServiceTest extends AbstractOwncloudResourceSe
   protected void check_getOutputStream_OK_CreateNewFile(URI href, MediaType mediaType, String testFileContent) throws Exception {
     Path resourcePath = resolveRelativePath(Paths.get(href.getPath()));
     assertThat(resourcePath).exists();
+    try (InputStream input = Files.newInputStream(resourcePath)) {
+      String actual = new String(IOUtils.toByteArray(input));
+      assertThat(actual).isEqualTo(testFileContent);
+    }
+  }
+
+  @Override
+  protected void prepare_getOutputStream_NOK_ResourceIsDirectory(URI href) throws Exception {
+    OwncloudTestResourceImpl resource = OwncloudTestResourceImpl.builder()
+        .href(href)
+        .mediaType(OwncloudUtils.getDirectoryMediaType())
+        .build();
+    createResource(resource);
+  }
+
+  @Override
+  protected void check_getOutputStream_NOK_ResourceIsDirectory(URI href) throws Exception {
+    Path resourcePath = resolveRelativePath(Paths.get(href.getPath()));
+    assertThat(resourcePath).exists();
+    assertThat(resourcePath).isDirectory();
+  }
+
+  @Override
+  protected void prepare_getOutputStream_OK_OverwriteFile(URI href, MediaType mediaType, String testFileContent) throws Exception {
+    OwncloudTestFileResourceImpl resource = OwncloudTestFileResourceImpl.fileBuilder()
+        .owncloudResource(
+            OwncloudTestResourceImpl.builder()
+                .href(href)
+                .mediaType(mediaType)
+                .build())
+        .testFileContent("Here we have a very different Content that should be overwritten by the Test-Content")
+        .build();
+    createResource(resource);
+  }
+
+  @Override
+  protected void check_getOutputStream_OK_OverwriteFile(URI href, MediaType mediaType, String testFileContent) throws Exception {
+    Path resourcePath = resolveRelativePath(Paths.get(href.getPath()));
+    assertThat(resourcePath).exists();
+    assertThat(resourcePath).isRegularFile();
     try (InputStream input = Files.newInputStream(resourcePath)) {
       String actual = new String(IOUtils.toByteArray(input));
       assertThat(actual).isEqualTo(testFileContent);

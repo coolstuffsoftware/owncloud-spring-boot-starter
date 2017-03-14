@@ -62,6 +62,7 @@ import lombok.ToString;
 import software.coolstuff.springframework.owncloud.config.IgnoreOnComponentScan;
 import software.coolstuff.springframework.owncloud.config.VelocityConfiguration;
 import software.coolstuff.springframework.owncloud.config.WithOwncloudMockUser;
+import software.coolstuff.springframework.owncloud.exception.resource.OwncloudNoFileResourceException;
 import software.coolstuff.springframework.owncloud.exception.resource.OwncloudResourceException;
 import software.coolstuff.springframework.owncloud.exception.resource.OwncloudResourceNotFoundException;
 import software.coolstuff.springframework.owncloud.model.OwncloudFileResource;
@@ -424,10 +425,17 @@ public abstract class AbstractOwncloudResourceServiceTest {
 
   protected void check_getOutputStream_OK_CreateNewFile(URI href, MediaType mediaType, String testFileContent) throws Exception {}
 
-  @Test
+  @Test(expected = OwncloudNoFileResourceException.class)
   @WithOwncloudMockUser(username = "user1", password = "s3cr3t")
   public void test_getOutputStream_NOK_ResourceIsDirectory() throws Exception {
-    fail("not implemented");
+    URI href = URI.create("/testDirectory");
+    prepare_getOutputStream_NOK_ResourceIsDirectory(href);
+    try (OutputStream output = resourceService.getOutputStream(href, MediaType.TEXT_PLAIN)) {
+      output.write(1);
+    } finally {
+      check_getOutputStream_NOK_ResourceIsDirectory(href);
+    }
+    fail("OwncloudNoFileResourceException should be thrown");
   }
 
   protected void prepare_getOutputStream_NOK_ResourceIsDirectory(URI href) throws Exception {}
@@ -437,7 +445,14 @@ public abstract class AbstractOwncloudResourceServiceTest {
   @Test
   @WithOwncloudMockUser(username = "user1", password = "s3cr3t")
   public void test_getOutputStream_OK_OverwriteFile() throws Exception {
-    fail("not implemented");
+    URI href = URI.create("/existingFile.txt");
+    MediaType mediaType = MediaType.TEXT_PLAIN;
+    prepare_getOutputStream_OK_OverwriteFile(href, mediaType, TEST_FILE_CONTENT);
+    try (OutputStream output = resourceService.getOutputStream(href, mediaType)) {
+      IOUtils.write(TEST_FILE_CONTENT, output, Charset.forName("utf8"));
+    } finally {
+      check_getOutputStream_OK_OverwriteFile(href, mediaType, TEST_FILE_CONTENT);
+    }
   }
 
   protected void prepare_getOutputStream_OK_OverwriteFile(URI href, MediaType mediaType, String testFileContent) throws Exception {}
