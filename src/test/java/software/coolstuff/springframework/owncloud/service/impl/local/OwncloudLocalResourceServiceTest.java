@@ -268,4 +268,19 @@ public class OwncloudLocalResourceServiceTest extends AbstractOwncloudResourceSe
     Path path = resolveRelativePath(Paths.get(owncloudResource.getHref().getPath()));
     assertThat(path).doesNotExist();
   }
+
+  @Override
+  protected void prepare_createDirectory_OK(OwncloudTestResourceImpl expectedResource) throws Exception {
+    Path path = resolveRelativePath(Paths.get(expectedResource.getHref().getPath()));
+    Mockito
+        .when(checksumService.getChecksum(path))
+        .thenReturn(Optional.ofNullable(expectedResource.getBackendETag()));
+  }
+
+  @Override
+  protected void check_createDirectory_OK(OwncloudTestResourceImpl expectedResource) throws Exception {
+    Path path = resolveRelativePath(Paths.get(expectedResource.getHref().getPath()));
+    assertThat(path).exists();
+    assertThat(path).isDirectory();
+  }
 }

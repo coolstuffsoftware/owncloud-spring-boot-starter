@@ -42,6 +42,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpHeaders;
@@ -452,6 +454,30 @@ public class OwncloudRestResourceServiceTest extends AbstractOwncloudResourceSer
         .andExpect(method(HttpMethod.DELETE))
         .andExpect(header(HttpHeaders.AUTHORIZATION, getBasicAuthorizationHeader()))
         .andRespond(withNoContent());
+  }
+
+  @Override
+  protected void prepare_createDirectory_OK(OwncloudTestResourceImpl expectedResource) throws Exception {
+    Mockito
+        .when(sardine.list(getResourcePath(expectedResource.getHref()), 0))
+        .then(new Answer<List<DavResource>>() {
+          private int count = 0;
+
+          @Override
+          public List<DavResource> answer(InvocationOnMock invocation) throws Throwable {
+            if (count++ == 0) {
+              throw new SardineException("not Found", HttpStatus.NOT_FOUND.value(), "not Found");
+            }
+            return Lists.newArrayList(
+                createDavResourceFrom(expectedResource, Locale.GERMAN));
+          }
+        });
+  }
+
+  @Override
+  protected void check_createDirectory_OK(OwncloudTestResourceImpl expectedResource) throws Exception {
+    Mockito.verify(sardine)
+        .createDirectory(getResourcePath(expectedResource.getHref()));
   }
 
 }

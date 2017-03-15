@@ -273,20 +273,22 @@ public abstract class AbstractOwncloudResourceServiceTest {
         .testFileContent(TEST_FILE_CONTENT)
         .build();
     prepare_findFile_OK(searchPath, expectedResource);
-    OwncloudResource resource = resourceService.find(searchPath);
+    Optional<OwncloudResource> resource = resourceService.find(searchPath);
     assertThat(resource).isNotNull();
-    assertThat(resource).isEqualTo(expectedResource);
+    assertThat(resource).isNotEmpty();
+    assertThat(resource.get()).isEqualTo(expectedResource);
   }
 
   protected void prepare_findFile_OK(URI searchPath, OwncloudTestFileResourceImpl expectedResource) throws Exception {}
 
-  @Test(expected = OwncloudResourceNotFoundException.class)
+  @Test
   @WithOwncloudMockUser(username = "user1", password = "s3cr3t")
   public void test_findFile_NotExists() throws Exception {
     URI searchPath = URI.create("/unknownFile.txt");
     prepare_findFile_NotExists(searchPath);
-    resourceService.find(searchPath);
-    fail("Expected Exception " + OwncloudResourceNotFoundException.class.getName() + " has not been thrown");
+    Optional<OwncloudResource> resource = resourceService.find(searchPath);
+    assertThat(resource).isNotNull();
+    assertThat(resource).isEmpty();
   }
 
   protected void prepare_findFile_NotExists(URI searchPath) throws Exception {}
@@ -305,9 +307,10 @@ public abstract class AbstractOwncloudResourceServiceTest {
         .name("/")
         .build();
     prepare_findRootDirectory_OK(expected);
-    OwncloudResource actual = resourceService.find(null);
+    Optional<OwncloudResource> actual = resourceService.find(null);
     assertThat(actual).isNotNull();
-    assertThat(actual).isEqualTo(expected);
+    assertThat(actual).isNotEmpty();
+    assertThat(actual.get()).isEqualTo(expected);
   }
 
   protected void prepare_findRootDirectory_OK(OwncloudTestResourceImpl expectedResource) throws Exception {}
@@ -537,4 +540,30 @@ public abstract class AbstractOwncloudResourceServiceTest {
   protected void prepare_deleteDirectory_OK(OwncloudTestResourceImpl owncloudResource) throws Exception {}
 
   protected void check_deleteDirectory_OK(OwncloudTestResourceImpl owncloudResource) throws Exception {}
+
+  @Test
+  @WithOwncloudMockUser(username = "user1", password = "s3cr3t")
+  public void test_createDirectory_OK() throws Exception {
+    String name = "directory";
+    URI uri = URI.create('/' + name + '/');
+    String eTag = UUID.randomUUID().toString();
+    OwncloudTestResourceImpl expected = OwncloudTestResourceImpl.builder()
+        .href(uri)
+        .backendName(name)
+        .name(name)
+        .backendETag(eTag)
+        .eTag(eTag)
+        .mediaType(OwncloudUtils.getDirectoryMediaType())
+        .build();
+    prepare_createDirectory_OK(expected);
+    OwncloudResource actual = resourceService.createDirectory(uri);
+    assertThat(actual).isNotNull();
+    assertThat(actual).isEqualTo(expected);
+    check_createDirectory_OK(expected);
+  }
+
+  protected void prepare_createDirectory_OK(OwncloudTestResourceImpl expectedResource) throws Exception {}
+
+  protected void check_createDirectory_OK(OwncloudTestResourceImpl expectedResource) throws Exception {}
+
 }

@@ -21,6 +21,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.http.MediaType;
 
@@ -39,7 +40,7 @@ public interface OwncloudResourceService {
 
   List<OwncloudResource> list(URI relativeTo);
 
-  OwncloudResource find(URI path);
+  Optional<OwncloudResource> find(URI path);
 
   OwncloudResource createDirectory(URI directory);
 

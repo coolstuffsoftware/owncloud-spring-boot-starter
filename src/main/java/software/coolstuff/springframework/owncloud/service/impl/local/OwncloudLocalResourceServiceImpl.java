@@ -49,6 +49,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import lombok.extern.slf4j.Slf4j;
 import software.coolstuff.springframework.owncloud.exception.resource.OwncloudLocalResourceException;
+import software.coolstuff.springframework.owncloud.exception.resource.OwncloudNoDirectoryResourceException;
 import software.coolstuff.springframework.owncloud.exception.resource.OwncloudNoFileResourceException;
 import software.coolstuff.springframework.owncloud.exception.resource.OwncloudResourceNotFoundException;
 import software.coolstuff.springframework.owncloud.model.OwncloudFileResource;
@@ -83,19 +84,19 @@ class OwncloudLocalResourceServiceImpl implements OwncloudResourceService {
     if (Files.isDirectory(location)) {
       addDirectoryResource(location, owncloudResources);
     } else {
-      owncloudResources.add(createOwncloudResourceFrom(location));
+      owncloudResources.add(createOwncloudResourceOf(location));
     }
     return owncloudResources;
   }
 
   private void addDirectoryResource(Path location, List<OwncloudResource> owncloudResources) {
     try {
-      OwncloudModifyingLocalResource actualDirectory = createOwncloudResourceFrom(location);
+      OwncloudModifyingLocalResource actualDirectory = createOwncloudResourceOf(location);
       actualDirectory.setName(".");
       owncloudResources.add(actualDirectory);
       owncloudResources.addAll(
           Files.list(location)
-              .map(path -> createOwncloudResourceFrom(path))
+              .map(path -> createOwncloudResourceOf(path))
               .collect(Collectors.toList()));
       appendParentDirectoryOf(location, owncloudResources);
     } catch (IOException e) {
@@ -106,7 +107,7 @@ class OwncloudLocalResourceServiceImpl implements OwncloudResourceService {
   private void appendParentDirectoryOf(Path location, List<OwncloudResource> owncloudResources) {
     if (isParentDirectoryAppendable(location)) {
       location = location.resolve("..").normalize();
-      OwncloudModifyingLocalResource superDirectory = createOwncloudResourceFrom(location);
+      OwncloudModifyingLocalResource superDirectory = createOwncloudResourceOf(location);
       superDirectory.setName("..");
       owncloudResources.add(superDirectory);
     }
@@ -143,7 +144,7 @@ class OwncloudLocalResourceServiceImpl implements OwncloudResourceService {
     return location;
   }
 
-  private OwncloudModifyingLocalResource createOwncloudResourceFrom(Path path) {
+  private OwncloudModifyingLocalResource createOwncloudResourceOf(Path path) {
     Path rootPath = getRootLocationOfAuthenticatedUser();
     Path relativePath = rootPath.toAbsolutePath().relativize(path.toAbsolutePath());
     URI href = URI.create(
@@ -217,18 +218,30 @@ class OwncloudLocalResourceServiceImpl implements OwncloudResourceService {
   }
 
   @Override
-  public OwncloudResource find(URI path) {
+  public Optional<OwncloudResource> find(URI path) {
     Path location = resolveLocation(path);
     if (Files.notExists(location)) {
-      throw new OwncloudResourceNotFoundException(path, getUsername());
+      return Optional.empty();
     }
-    return createOwncloudResourceFrom(location);
+    return Optional.ofNullable(createOwncloudResourceOf(location));
   }
 
   @Override
   public OwncloudResource createDirectory(URI directory) {
-    // TODO Auto-generated method stub
-    return null;
+    Path location = resolveLocation(directory);
+    if (Files.exists(location)) {
+      if (Files.isDirectory(location)) {
+        return createOwncloudResourceOf(location);
+      }
+      throw new OwncloudNoDirectoryResourceException(directory);
+    }
+    try {
+      Files.createDirectory(location);
+      checksumService.recalculateChecksum(location);
+      return createOwncloudResourceOf(location);
+    } catch (IOException e) {
+      throw new OwncloudLocalResourceException(e);
+    }
   }
 
   @Override

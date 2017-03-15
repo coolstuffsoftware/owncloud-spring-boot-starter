@@ -24,8 +24,11 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
@@ -54,10 +57,11 @@ import com.google.common.cache.LoadingCache;
 
 import lombok.Builder;
 import lombok.Data;
+import lombok.Getter;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
+import software.coolstuff.springframework.owncloud.exception.resource.OwncloudNoDirectoryResourceException;
 import software.coolstuff.springframework.owncloud.exception.resource.OwncloudNoFileResourceException;
-import software.coolstuff.springframework.owncloud.exception.resource.OwncloudResourceException;
 import software.coolstuff.springframework.owncloud.exception.resource.OwncloudResourceNotFoundException;
 import software.coolstuff.springframework.owncloud.exception.resource.OwncloudRestResourceException;
 import software.coolstuff.springframework.owncloud.exception.resource.OwncloudSardineCacheException;
@@ -175,7 +179,13 @@ class OwncloudRestResourceServiceImpl implements OwncloudResourceService, Ownclo
                 .collect(Collectors.toList()));
       }
     } catch (SardineException e) {
-      throwMappedSardineException(URI.create(searchPath.toString()), authentication, e);
+      SardineExceptionHandlerEnvironment handlerEnvironment = SardineExceptionHandlerEnvironment.builder()
+          .uri(URI.create(searchPath.toString()))
+          .authentication(authentication)
+          .sardineException(e)
+          .build();
+      registerDefaultStatusCodeHandler(handlerEnvironment);
+      handleSardineException(handlerEnvironment);
     } catch (IOException e) {
       throw new OwncloudRestResourceException(e);
     }
@@ -285,49 +295,120 @@ class OwncloudRestResourceServiceImpl implements OwncloudResourceService, Ownclo
     return owncloudResources.size() == 1 && !OwncloudUtils.isDirectory(owncloudResources.get(0));
   }
 
-  private void throwMappedSardineException(URI uri, Authentication authentication, SardineException sardineException) throws OwncloudResourceException {
-    int statusCode = Optional.ofNullable(sardineException)
-        .map(exception -> exception.getStatusCode())
-        .orElse(HttpStatus.SC_OK);
-    switch (statusCode) {
-      case HttpStatus.SC_OK:
-        return;
-      case HttpStatus.SC_NOT_FOUND:
-        throw new OwncloudResourceNotFoundException(uri, authentication.getName());
-      default:
-        log.error("Unmapped HTTP-Status {}. Reason-Phrase: {}", statusCode, sardineException.getResponsePhrase());
-        throw new OwncloudRestResourceException("Unmapped returned HTTP-Status " + statusCode, sardineException);
+  private static class SardineExceptionHandlerEnvironment {
+    @Getter
+    private final URI uri;
+    private final Authentication authentication;
+    @Getter
+    private final SardineException sardineException;
+
+    private final Map<Integer, Function<SardineExceptionHandlerEnvironment, Optional<OwncloudResource>>> statusCodeHandler = new HashMap<>();
+
+    @Builder
+    private SardineExceptionHandlerEnvironment(
+        final URI uri,
+        final Authentication authentication,
+        final SardineException sardineException) {
+      Validate.notNull(uri);
+      Validate.notNull(sardineException);
+      this.uri = uri;
+      this.authentication = authentication;
+      this.sardineException = sardineException;
+    }
+
+    public String getUsername() {
+      return (authentication == null ? null : authentication.getName());
+    }
+
+    public void registerStatusCodeHandler(int statusCode, Function<SardineExceptionHandlerEnvironment, Optional<OwncloudResource>> statusCodeHandler) {
+      this.statusCodeHandler.put(statusCode, statusCodeHandler);
+    }
+
+    public Function<SardineExceptionHandlerEnvironment, Optional<OwncloudResource>> getStatusCodeHandlerFor(int statusCode) {
+      return statusCodeHandler.get(statusCode);
     }
   }
 
+  private void registerDefaultStatusCodeHandler(SardineExceptionHandlerEnvironment environment) {
+    environment.registerStatusCodeHandler(HttpStatus.SC_NOT_FOUND, this::handleStatusCodeNotFound);
+  }
+
+  private Optional<OwncloudResource> handleStatusCodeNotFound(SardineExceptionHandlerEnvironment environment) {
+    throw new OwncloudResourceNotFoundException(environment.getUri(), environment.getUsername());
+  }
+
+  private Optional<OwncloudResource> handleSardineException(SardineExceptionHandlerEnvironment environment) {
+    SardineException sardineException = environment.getSardineException();
+    int statusCode = sardineException.getStatusCode();
+    Function<SardineExceptionHandlerEnvironment, Optional<OwncloudResource>> statusCodeHandler = environment.getStatusCodeHandlerFor(statusCode);
+    if (statusCodeHandler != null) {
+      return statusCodeHandler.apply(environment);
+    }
+    log.error("Unmapped HTTP-Status {}. Reason-Phrase: {}", statusCode, sardineException.getResponsePhrase());
+    throw new OwncloudRestResourceException("Unmapped returned HTTP-Status " + statusCode, sardineException);
+  }
+
   @Override
-  public OwncloudResource find(URI path) {
+  public Optional<OwncloudResource> find(URI path) {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     URI searchPath = resolveAsDirectoryURI(path, authentication.getName());
     val conversionProperties = OwncloudResourceConversionProperties.builder()
         .rootPath(getResolvedRootUri(authentication.getName()))
         .searchPath(searchPath)
         .build();
-    OwncloudResource owncloudResource = null;
     try {
       Sardine sardine = getSardine();
       List<DavResource> davResources = sardine.list(searchPath.toString(), 0);
-      owncloudResource = davResources.stream()
-          .findFirst()
-          .map(davResource -> createOwncloudResourceFrom(davResource, conversionProperties))
-          .orElseThrow(() -> new OwncloudResourceNotFoundException(path, authentication.getName()));
+      return Optional.ofNullable(
+          davResources.stream()
+              .findFirst()
+              .map(davResource -> createOwncloudResourceFrom(davResource, conversionProperties))
+              .orElse(null));
     } catch (SardineException e) {
-      throwMappedSardineException(URI.create(path.toString()), authentication, e);
+      SardineExceptionHandlerEnvironment handlerEnvironment = SardineExceptionHandlerEnvironment.builder()
+          .uri(URI.create(searchPath.toString()))
+          .authentication(authentication)
+          .sardineException(e)
+          .build();
+      registerDefaultStatusCodeHandler(handlerEnvironment);
+      handlerEnvironment.registerStatusCodeHandler(HttpStatus.SC_NOT_FOUND, environment -> Optional.empty());
+      return handleSardineException(handlerEnvironment);
     } catch (IOException e) {
       throw new OwncloudRestResourceException(e);
     }
-    return owncloudResource;
   }
 
   @Override
   public OwncloudResource createDirectory(URI directory) {
-    // TODO Auto-generated method stub
-    return null;
+    Optional<OwncloudResource> existingDirectory = find(directory);
+    if (existingDirectory.isPresent()) {
+      return existingDirectory
+          .filter(OwncloudUtils::isDirectory)
+          .orElseThrow(() -> new OwncloudNoDirectoryResourceException(directory));
+    }
+    return createNonExistingDirectory(directory);
+  }
+
+  private OwncloudResource createNonExistingDirectory(URI directory) {
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    URI directoryURI = resolveAsDirectoryURI(directory, authentication.getName());
+    OwncloudResource owncloudResource = null;
+    try {
+      Sardine sardine = getSardine();
+      sardine.createDirectory(directoryURI.toString());
+      owncloudResource = find(directory).get();
+    } catch (SardineException e) {
+      SardineExceptionHandlerEnvironment handlerEnvironment = SardineExceptionHandlerEnvironment.builder()
+          .uri(URI.create(directory.toString()))
+          .authentication(authentication)
+          .sardineException(e)
+          .build();
+      registerDefaultStatusCodeHandler(handlerEnvironment);
+      handleSardineException(handlerEnvironment);
+    } catch (IOException e) {
+      throw new OwncloudRestResourceException(e);
+    }
+    return owncloudResource;
   }
 
   @Override
@@ -396,6 +477,13 @@ class OwncloudRestResourceServiceImpl implements OwncloudResourceService, Ownclo
 
   @Override
   public OutputStream getOutputStream(URI href, MediaType mediaType) {
+    Optional<OwncloudResource> existingFile = find(href);
+    if (existingFile.isPresent()) {
+      return getOutputStream(existingFile
+          .filter(OwncloudUtils::isNotDirectory)
+          .map(OwncloudUtils::toOwncloudFileResource)
+          .orElseThrow(() -> new OwncloudNoFileResourceException(href)));
+    }
     OwncloudFileResource resource = OwncloudRestFileResourceImpl.fileBuilder()
         .owncloudResource(
             OwncloudRestResourceImpl.builder()
@@ -403,10 +491,6 @@ class OwncloudRestResourceServiceImpl implements OwncloudResourceService, Ownclo
                 .mediaType(mediaType)
                 .build())
         .build();
-    try {
-      OwncloudResource existingResource = find(href);
-      resource = OwncloudUtils.toOwncloudFileResource(existingResource);
-    } catch (OwncloudResourceNotFoundException ignored) {}
     return getOutputStream(resource);
   }
 }

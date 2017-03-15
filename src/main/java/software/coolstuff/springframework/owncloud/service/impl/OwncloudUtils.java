@@ -71,6 +71,15 @@ public final class OwncloudUtils {
             .orElse(null));
   }
 
+  /**
+   * Checks, if the OwncloudResource is not a Directory
+   * @param owncloudResource OwncloudResource
+   * @return is it not a Directory
+   */
+  public static boolean isNotDirectory(OwncloudResource owncloudResource) {
+    return !isDirectory(owncloudResource);
+  }
+
   public static MediaType getDirectoryMediaType() {
     return MediaType.valueOf(UNIX_DIRECTORY);
   }
