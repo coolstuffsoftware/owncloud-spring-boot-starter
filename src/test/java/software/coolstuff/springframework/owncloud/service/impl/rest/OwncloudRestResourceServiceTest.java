@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Base64.Encoder;
 import java.util.Date;
@@ -458,6 +459,7 @@ public class OwncloudRestResourceServiceTest extends AbstractOwncloudResourceSer
 
   @Override
   protected void prepare_createDirectory_OK(OwncloudTestResourceImpl expectedResource) throws Exception {
+    ArrayList<DavResource> result = Lists.newArrayList(createDavResourceFrom(expectedResource, Locale.GERMAN));
     Mockito
         .when(sardine.list(getResourcePath(expectedResource.getHref()), 0))
         .then(new Answer<List<DavResource>>() {
@@ -468,8 +470,7 @@ public class OwncloudRestResourceServiceTest extends AbstractOwncloudResourceSer
             if (count++ == 0) {
               throw new SardineException("not Found", HttpStatus.NOT_FOUND.value(), "not Found");
             }
-            return Lists.newArrayList(
-                createDavResourceFrom(expectedResource, Locale.GERMAN));
+            return result;
           }
         });
   }
@@ -480,4 +481,42 @@ public class OwncloudRestResourceServiceTest extends AbstractOwncloudResourceSer
         .createDirectory(getResourcePath(expectedResource.getHref()));
   }
 
+  @Override
+  protected void prepare_createDirectory_NOK_AlreadyExistsAsFile(URI uri) throws Exception {
+    OwncloudTestFileResourceImpl existingResource = OwncloudTestFileResourceImpl.fileBuilder()
+        .owncloudResource(OwncloudTestResourceImpl.builder()
+            .href(uri)
+            .mediaType(MediaType.TEXT_PLAIN)
+            .build())
+        .testFileContent("No matter what content is in the existing Resource")
+        .build();
+    ArrayList<DavResource> result = Lists.newArrayList(createDavResourceFrom(existingResource, Locale.GERMAN));
+    Mockito
+        .when(sardine.list(getResourcePath(uri), 0))
+        .thenReturn(result);
+  }
+
+  @Override
+  protected void check_createDirectory_NOK_AlreadyExistsAsFile(URI uri) throws Exception {
+    Mockito.verify(sardine)
+        .list(getResourcePath(uri), 0);
+    Mockito.verify(sardine, Mockito.never())
+        .createDirectory(getResourcePath(uri));
+  }
+
+  @Override
+  protected void prepare_createDirectory_OK_AlreadyExists(OwncloudTestResourceImpl expected) throws Exception {
+    ArrayList<DavResource> result = Lists.newArrayList(createDavResourceFrom(expected, Locale.GERMAN));
+    Mockito
+        .when(sardine.list(getResourcePath(expected.getHref()), 0))
+        .thenReturn(result);
+  }
+
+  @Override
+  protected void check_createDirectory_OK_AlreadyExists(OwncloudTestResourceImpl expected) throws Exception {
+    Mockito.verify(sardine)
+        .list(getResourcePath(expected.getHref()), 0);
+    Mockito.verify(sardine, Mockito.never())
+        .createDirectory(getResourcePath(expected.getHref()));
+  }
 }

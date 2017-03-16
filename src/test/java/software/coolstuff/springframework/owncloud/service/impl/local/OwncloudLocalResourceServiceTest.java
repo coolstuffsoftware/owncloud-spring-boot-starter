@@ -283,4 +283,16 @@ public class OwncloudLocalResourceServiceTest extends AbstractOwncloudResourceSe
     assertThat(path).exists();
     assertThat(path).isDirectory();
   }
+
+  @Override
+  protected void prepare_createDirectory_NOK_AlreadyExistsAsFile(URI uri) throws Exception {
+    Path path = resolveRelativePath(Paths.get(uri.getPath()));
+    Files.createDirectories(path.getParent());
+    Files.createFile(path);
+  }
+
+  @Override
+  protected void prepare_createDirectory_OK_AlreadyExists(OwncloudTestResourceImpl expected) throws Exception {
+    createResource(expected);
+  }
 }

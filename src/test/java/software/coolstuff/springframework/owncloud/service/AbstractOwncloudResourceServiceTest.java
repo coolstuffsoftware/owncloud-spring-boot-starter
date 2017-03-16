@@ -62,6 +62,7 @@ import lombok.ToString;
 import software.coolstuff.springframework.owncloud.config.IgnoreOnComponentScan;
 import software.coolstuff.springframework.owncloud.config.VelocityConfiguration;
 import software.coolstuff.springframework.owncloud.config.WithOwncloudMockUser;
+import software.coolstuff.springframework.owncloud.exception.resource.OwncloudNoDirectoryResourceException;
 import software.coolstuff.springframework.owncloud.exception.resource.OwncloudNoFileResourceException;
 import software.coolstuff.springframework.owncloud.exception.resource.OwncloudResourceException;
 import software.coolstuff.springframework.owncloud.exception.resource.OwncloudResourceNotFoundException;
@@ -566,4 +567,38 @@ public abstract class AbstractOwncloudResourceServiceTest {
 
   protected void check_createDirectory_OK(OwncloudTestResourceImpl expectedResource) throws Exception {}
 
+  @Test(expected = OwncloudNoDirectoryResourceException.class)
+  @WithOwncloudMockUser(username = "user1", password = "s3cr3t")
+  public void test_createDirectory_NOK_AlreadyExistsAsFile() throws Exception {
+    URI uri = URI.create("/directory/");
+    prepare_createDirectory_NOK_AlreadyExistsAsFile(uri);
+    try {
+      resourceService.createDirectory(uri);
+    } finally {
+      check_createDirectory_NOK_AlreadyExistsAsFile(uri);
+    }
+  }
+
+  protected void prepare_createDirectory_NOK_AlreadyExistsAsFile(URI uri) throws Exception {}
+
+  protected void check_createDirectory_NOK_AlreadyExistsAsFile(URI uri) throws Exception {}
+
+  @Test
+  @WithOwncloudMockUser(username = "user1", password = "s3cr3t")
+  public void test_createDirectory_OK_AlreadyExists() throws Exception {
+    URI uri = URI.create("/directory/");
+    OwncloudTestResourceImpl expected = OwncloudTestResourceImpl.builder()
+        .href(uri)
+        .mediaType(OwncloudUtils.getDirectoryMediaType())
+        .build();
+    prepare_createDirectory_OK_AlreadyExists(expected);
+    OwncloudResource actual = resourceService.createDirectory(uri);
+    assertThat(actual).isNotNull();
+    assertThat(actual).isEqualTo(expected);
+    check_createDirectory_OK_AlreadyExists(expected);
+  }
+
+  protected void prepare_createDirectory_OK_AlreadyExists(OwncloudTestResourceImpl expected) throws Exception {}
+
+  protected void check_createDirectory_OK_AlreadyExists(OwncloudTestResourceImpl expected) throws Exception {}
 }
