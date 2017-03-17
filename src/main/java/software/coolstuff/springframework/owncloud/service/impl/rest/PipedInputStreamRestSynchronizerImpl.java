@@ -35,18 +35,18 @@ import lombok.Builder;
 import software.coolstuff.springframework.owncloud.exception.resource.OwncloudRestResourceException;
 import software.coolstuff.springframework.owncloud.model.OwncloudFileResource;
 
-class PipedInputStreamSynchronizerImpl extends AbstractPipedStreamSynchronizerImpl implements PipedInputStreamSynchronizer {
+class PipedInputStreamRestSynchronizerImpl extends AbstractPipedStreamRestSynchronizerImpl implements PipedInputStreamRestSynchronizer {
 
   private final SynchronizedPipedInputStream pipedInputStream = new SynchronizedPipedInputStream();
 
   @Builder
-  private static PipedInputStreamSynchronizer build(
+  private static PipedInputStreamRestSynchronizer build(
       final Authentication authentication,
       final OwncloudFileResource owncloudFileResource,
       final OwncloudRestProperties owncloudRestProperties,
       final RestOperations restOperations,
       final BiFunction<URI, String, URI> uriResolver) {
-    return new PipedInputStreamSynchronizerImpl(
+    return new PipedInputStreamRestSynchronizerImpl(
         authentication,
         owncloudFileResource,
         owncloudRestProperties,
@@ -54,7 +54,7 @@ class PipedInputStreamSynchronizerImpl extends AbstractPipedStreamSynchronizerIm
         uriResolver);
   }
 
-  private PipedInputStreamSynchronizerImpl(
+  private PipedInputStreamRestSynchronizerImpl(
       final Authentication authentication,
       final OwncloudFileResource owncloudFileResource,
       final OwncloudRestProperties owncloudRestProperties,

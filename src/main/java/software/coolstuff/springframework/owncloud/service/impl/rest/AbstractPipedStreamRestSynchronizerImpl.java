@@ -44,12 +44,13 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import software.coolstuff.springframework.owncloud.exception.resource.OwncloudResourcePipeSynchronizationException;
 import software.coolstuff.springframework.owncloud.model.OwncloudFileResource;
-import software.coolstuff.springframework.owncloud.service.impl.rest.OwncloudRestProperties.ResourceServiceProperties;
+import software.coolstuff.springframework.owncloud.service.impl.OwncloudProperties;
+import software.coolstuff.springframework.owncloud.service.impl.OwncloudProperties.ResourceServiceProperties;
 
 @Slf4j
-abstract class AbstractPipedStreamSynchronizerImpl {
+abstract class AbstractPipedStreamRestSynchronizerImpl {
 
-  private static final int DEFAULT_BUFFER_SIZE = 2048;
+  private static final int EOF = -1;
 
   @FunctionalInterface
   static interface VoidResponseExtractor {
@@ -63,7 +64,7 @@ abstract class AbstractPipedStreamSynchronizerImpl {
 
   private final Authentication authentication;
   private final OwncloudFileResource owncloudFileResource;
-  private final OwncloudRestProperties owncloudRestProperties;
+  private final OwncloudProperties owncloudProperties;
   private final RestOperations restOperations;
   private final Optional<BiFunction<URI, String, URI>> uriResolver;
 
@@ -72,15 +73,15 @@ abstract class AbstractPipedStreamSynchronizerImpl {
   private boolean interrupted;
   private final CyclicBarrier pipeSync = new CyclicBarrier(2);
 
-  protected AbstractPipedStreamSynchronizerImpl(
+  protected AbstractPipedStreamRestSynchronizerImpl(
       final Authentication authentication,
       final OwncloudFileResource owncloudFileResource,
-      final OwncloudRestProperties owncloudRestProperties,
+      final OwncloudProperties owncloudProperties,
       final RestOperations restOperations,
       final BiFunction<URI, String, URI> uriResolver) {
     this.authentication = authentication;
     this.owncloudFileResource = owncloudFileResource;
-    this.owncloudRestProperties = owncloudRestProperties;
+    this.owncloudProperties = owncloudProperties;
     this.restOperations = restOperations;
     this.uriResolver = Optional.ofNullable(uriResolver);
   }
@@ -236,7 +237,7 @@ abstract class AbstractPipedStreamSynchronizerImpl {
 
   protected void copy(InputStream input, OutputStream output) throws IOException {
     byte[] buffer = new byte[getBufferSize()];
-    for (int length = 0; (length = input.read(buffer)) != -1;) {
+    for (int length = 0; (length = input.read(buffer)) != EOF;) {
       output.write(buffer, 0, length);
       if (isInterrupted()) {
         log.warn("Background Thread has been interrupted -> stop the Copy Process");
@@ -246,13 +247,13 @@ abstract class AbstractPipedStreamSynchronizerImpl {
   }
 
   protected final int getBufferSize() {
-    return Optional.ofNullable(owncloudRestProperties)
+    return Optional.ofNullable(owncloudProperties)
         .map(this::extractBufferSize)
-        .orElse(DEFAULT_BUFFER_SIZE);
+        .orElse(OwncloudProperties.DEFAULT_BUFFER_SIZE);
   }
 
-  private int extractBufferSize(OwncloudRestProperties properties) {
-    ResourceServiceProperties resourceProperties = owncloudRestProperties.getResourceService();
+  private int extractBufferSize(OwncloudProperties properties) {
+    ResourceServiceProperties resourceProperties = properties.getResourceService();
     return resourceProperties.getPipedStreamBufferSize();
   }
 }

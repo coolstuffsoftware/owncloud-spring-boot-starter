@@ -17,6 +17,8 @@
 */
 package software.coolstuff.springframework.owncloud.service.impl;
 
+import javax.validation.constraints.Min;
+
 import lombok.Data;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudUserModificationService;
 
@@ -39,6 +41,11 @@ import software.coolstuff.springframework.owncloud.service.api.OwncloudUserModif
  */
 @Data
 public abstract class OwncloudProperties {
+
+  /**
+   * Default Buffer Size
+   */
+  public static final int DEFAULT_BUFFER_SIZE = 2048;
 
   /**
    * Common Properties for the UserService
@@ -64,9 +71,15 @@ public abstract class OwncloudProperties {
   public static class ResourceServiceProperties {
 
     /**
-     * Add .. to the List of returned OwncloudResources (on list-Methods)
+     * Add .. to the List of returned OwncloudResources (on list-Methods) (Default: <code>true</code>)
      */
     private boolean addRelativeDownPath = true;
+
+    /**
+     * Buffer Size for the Copy Process (Default: <code>2048</code>)
+     */
+    @Min(1)
+    private int pipedStreamBufferSize = DEFAULT_BUFFER_SIZE;
 
   }
 

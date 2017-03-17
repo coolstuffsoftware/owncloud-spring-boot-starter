@@ -19,12 +19,12 @@ package software.coolstuff.springframework.owncloud.service.impl.rest;
 
 import java.io.InputStream;
 
-interface PipedInputStreamSynchronizer {
+interface PipedInputStreamRestSynchronizer {
 
   InputStream getInputStream();
 
-  static PipedInputStreamSynchronizerImpl.PipedInputStreamSynchronizerBuilder build() {
-    return PipedInputStreamSynchronizerImpl.builder();
+  static PipedInputStreamRestSynchronizerImpl.PipedInputStreamRestSynchronizerBuilder build() {
+    return PipedInputStreamRestSynchronizerImpl.builder();
   }
 
 }

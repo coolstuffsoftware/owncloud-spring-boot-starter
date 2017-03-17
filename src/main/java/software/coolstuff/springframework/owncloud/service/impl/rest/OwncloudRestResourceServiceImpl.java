@@ -450,7 +450,7 @@ class OwncloudRestResourceServiceImpl implements OwncloudResourceService, Ownclo
   @Override
   public InputStream getInputStream(OwncloudFileResource resource) {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-    PipedInputStreamSynchronizer pipedInputStreamSynchronizer = PipedInputStreamSynchronizer.build()
+    PipedInputStreamRestSynchronizer pipedInputStreamSynchronizer = PipedInputStreamRestSynchronizer.build()
         .authentication(authentication)
         .owncloudFileResource(resource)
         .owncloudRestProperties(properties)
@@ -469,7 +469,7 @@ class OwncloudRestResourceServiceImpl implements OwncloudResourceService, Ownclo
       throw new OwncloudNoFileResourceException(resource.getHref());
     }
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-    PipedOutputStreamSynchronizer pipedOutputStreamSynchronizer = PipedOutputStreamSynchronizer.builder()
+    PipedOutputStreamRestSynchronizer pipedOutputStreamSynchronizer = PipedOutputStreamRestSynchronizer.builder()
         .authentication(authentication)
         .owncloudFileResource(resource)
         .owncloudRestProperties(properties)
