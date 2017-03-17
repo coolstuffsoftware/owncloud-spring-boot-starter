@@ -24,8 +24,8 @@ import org.springframework.boot.test.autoconfigure.web.client.RestClientTest;
 import org.springframework.context.ApplicationContext;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.test.context.support.WithMockUser;
 
-import software.coolstuff.springframework.owncloud.config.WithOwncloudMockUser;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudGrantedAuthoritiesMapper;
 
 @RestClientTest(UserDetailsService.class)
@@ -43,7 +43,7 @@ public abstract class AbstractOwncloudUserDetailsServiceWithAuthorityAppenderTes
   }
 
   @Test
-  @WithOwncloudMockUser(username = "test1", password = "password")
+  @WithMockUser(username = "test1", password = "password")
   public void testAppendedGroups() throws Exception {
     prepareTestAppendedGroups("user1", true, "user1@example.com", "Mr. User 1", "group1", "group2");
 

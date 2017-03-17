@@ -31,6 +31,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.util.LinkedMultiValueMap;
@@ -40,7 +41,6 @@ import com.google.common.collect.Lists;
 
 import lombok.Builder;
 import lombok.Data;
-import software.coolstuff.springframework.owncloud.config.WithOwncloudMockUser;
 import software.coolstuff.springframework.owncloud.exception.auth.OwncloudGroupNotFoundException;
 import software.coolstuff.springframework.owncloud.exception.auth.OwncloudUsernameAlreadyExistsException;
 import software.coolstuff.springframework.owncloud.model.OwncloudModificationUser;
@@ -328,7 +328,7 @@ public class OwncloudRestUserModificationServiceTest extends AbstractOwncloudUse
   }
 
   @Test(expected = IllegalArgumentException.class)
-  @WithOwncloudMockUser(username = "user1", password = "password")
+  @WithMockUser(username = "user1", password = "password")
   public void testSaveUser_CreateUser_NOK_IllegalArgument() throws Exception {
     OwncloudModificationUser user = OwncloudModificationUser.builder()
         .username("user5")
@@ -348,7 +348,7 @@ public class OwncloudRestUserModificationServiceTest extends AbstractOwncloudUse
   }
 
   @Test(expected = OwncloudUsernameAlreadyExistsException.class)
-  @WithOwncloudMockUser(username = "user1", password = "password")
+  @WithMockUser(username = "user1", password = "password")
   public void testSaveUser_CreateUser_NOK_OwncloudUsernameAlreadyExistsException() throws Exception {
     OwncloudModificationUser user = OwncloudModificationUser.builder()
         .username("user5")
@@ -368,7 +368,7 @@ public class OwncloudRestUserModificationServiceTest extends AbstractOwncloudUse
   }
 
   @Test(expected = IllegalStateException.class)
-  @WithOwncloudMockUser(username = "user1", password = "password")
+  @WithMockUser(username = "user1", password = "password")
   public void testSaveUser_CreateUser_NOK_IllegalStateException() throws Exception {
     OwncloudModificationUser user = OwncloudModificationUser.builder()
         .username("user5")
@@ -388,7 +388,7 @@ public class OwncloudRestUserModificationServiceTest extends AbstractOwncloudUse
   }
 
   @Test(expected = AccessDeniedException.class)
-  @WithOwncloudMockUser(username = "user1", password = "password")
+  @WithMockUser(username = "user1", password = "password")
   public void testSaveUser_CreateUser_NOK_AccessDeniedException() throws Exception {
     OwncloudModificationUser user = OwncloudModificationUser.builder()
         .username("user5")
@@ -408,7 +408,7 @@ public class OwncloudRestUserModificationServiceTest extends AbstractOwncloudUse
   }
 
   @Test(expected = IllegalStateException.class)
-  @WithOwncloudMockUser(username = "user1", password = "password")
+  @WithMockUser(username = "user1", password = "password")
   public void testSaveUser_CreateUser_NOK_UnknownError() throws Exception {
     OwncloudModificationUser user = OwncloudModificationUser.builder()
         .username("user5")
@@ -428,7 +428,7 @@ public class OwncloudRestUserModificationServiceTest extends AbstractOwncloudUse
   }
 
   @Test(expected = IllegalStateException.class)
-  @WithOwncloudMockUser(username = "user1", password = "password")
+  @WithMockUser(username = "user1", password = "password")
   public void testSaveUser_UpdateUser_NOK_UpdateDisplayName_IllegalStateException_UsernameNotFound() throws Exception {
     OwncloudModificationUser existingUser = OwncloudModificationUser.builder()
         .username("user5")
@@ -457,7 +457,7 @@ public class OwncloudRestUserModificationServiceTest extends AbstractOwncloudUse
   }
 
   @Test(expected = IllegalStateException.class)
-  @WithOwncloudMockUser(username = "user1", password = "password")
+  @WithMockUser(username = "user1", password = "password")
   public void testSaveUser_UpdateUser_NOK_UpdateDisplayName_IllegalStateException() throws Exception {
     OwncloudModificationUser existingUser = OwncloudModificationUser.builder()
         .username("user5")
@@ -486,7 +486,7 @@ public class OwncloudRestUserModificationServiceTest extends AbstractOwncloudUse
   }
 
   @Test(expected = AccessDeniedException.class)
-  @WithOwncloudMockUser(username = "user1", password = "password")
+  @WithMockUser(username = "user1", password = "password")
   public void testSaveUser_UpdateUser_NOK_UpdateDisplayName_AccessDenied() throws Exception {
     OwncloudModificationUser existingUser = OwncloudModificationUser.builder()
         .username("user5")
@@ -515,7 +515,7 @@ public class OwncloudRestUserModificationServiceTest extends AbstractOwncloudUse
   }
 
   @Test(expected = IllegalStateException.class)
-  @WithOwncloudMockUser(username = "user1", password = "password")
+  @WithMockUser(username = "user1", password = "password")
   public void testSaveUser_UpdateUser_NOK_UpdateDisplayName_UnknownError() throws Exception {
     OwncloudModificationUser existingUser = OwncloudModificationUser.builder()
         .username("user5")
@@ -544,7 +544,7 @@ public class OwncloudRestUserModificationServiceTest extends AbstractOwncloudUse
   }
 
   @Test(expected = IllegalStateException.class)
-  @WithOwncloudMockUser(username = "user1", password = "password")
+  @WithMockUser(username = "user1", password = "password")
   public void testSaveUser_UpdateUser_NOK_UpdateEmail_IllegalStateException_UsernameNotFound() throws Exception {
     OwncloudModificationUser existingUser = OwncloudModificationUser.builder()
         .username("user5")
@@ -573,7 +573,7 @@ public class OwncloudRestUserModificationServiceTest extends AbstractOwncloudUse
   }
 
   @Test(expected = IllegalStateException.class)
-  @WithOwncloudMockUser(username = "user1", password = "password")
+  @WithMockUser(username = "user1", password = "password")
   public void testSaveUser_UpdateUser_NOK_UpdateEmail_IllegalStateException() throws Exception {
     OwncloudModificationUser existingUser = OwncloudModificationUser.builder()
         .username("user5")
@@ -602,7 +602,7 @@ public class OwncloudRestUserModificationServiceTest extends AbstractOwncloudUse
   }
 
   @Test(expected = AccessDeniedException.class)
-  @WithOwncloudMockUser(username = "user1", password = "password")
+  @WithMockUser(username = "user1", password = "password")
   public void testSaveUser_UpdateUser_NOK_UpdateEmail_AccessDenied() throws Exception {
     OwncloudModificationUser existingUser = OwncloudModificationUser.builder()
         .username("user5")
@@ -631,7 +631,7 @@ public class OwncloudRestUserModificationServiceTest extends AbstractOwncloudUse
   }
 
   @Test(expected = IllegalStateException.class)
-  @WithOwncloudMockUser(username = "user1", password = "password")
+  @WithMockUser(username = "user1", password = "password")
   public void testSaveUser_UpdateUser_NOK_UpdateEmail_UnknownError() throws Exception {
     OwncloudModificationUser existingUser = OwncloudModificationUser.builder()
         .username("user5")
@@ -660,7 +660,7 @@ public class OwncloudRestUserModificationServiceTest extends AbstractOwncloudUse
   }
 
   @Test(expected = IllegalStateException.class)
-  @WithOwncloudMockUser(username = "user1", password = "password")
+  @WithMockUser(username = "user1", password = "password")
   public void testSaveUser_UpdateUser_NOK_Enable_IllegalStateException_UsernameNotFound() throws Exception {
     OwncloudModificationUser existingUser = OwncloudModificationUser.builder()
         .username("user5")
@@ -689,7 +689,7 @@ public class OwncloudRestUserModificationServiceTest extends AbstractOwncloudUse
   }
 
   @Test(expected = IllegalStateException.class)
-  @WithOwncloudMockUser(username = "user1", password = "password")
+  @WithMockUser(username = "user1", password = "password")
   public void testSaveUser_UpdateUser_NOK_Enable_IllegalStateException() throws Exception {
     OwncloudModificationUser existingUser = OwncloudModificationUser.builder()
         .username("user5")
@@ -718,7 +718,7 @@ public class OwncloudRestUserModificationServiceTest extends AbstractOwncloudUse
   }
 
   @Test(expected = AccessDeniedException.class)
-  @WithOwncloudMockUser(username = "user1", password = "password")
+  @WithMockUser(username = "user1", password = "password")
   public void testSaveUser_UpdateUser_NOK_Enable_AccessDenied() throws Exception {
     OwncloudModificationUser existingUser = OwncloudModificationUser.builder()
         .username("user5")
@@ -747,7 +747,7 @@ public class OwncloudRestUserModificationServiceTest extends AbstractOwncloudUse
   }
 
   @Test(expected = IllegalStateException.class)
-  @WithOwncloudMockUser(username = "user1", password = "password")
+  @WithMockUser(username = "user1", password = "password")
   public void testSaveUser_UpdateUser_NOK_Enable_UnknownError() throws Exception {
     OwncloudModificationUser existingUser = OwncloudModificationUser.builder()
         .username("user5")
@@ -776,7 +776,7 @@ public class OwncloudRestUserModificationServiceTest extends AbstractOwncloudUse
   }
 
   @Test(expected = IllegalStateException.class)
-  @WithOwncloudMockUser(username = "user1", password = "password")
+  @WithMockUser(username = "user1", password = "password")
   public void testSaveUser_UpdateUser_NOK_Disable_IllegalStateExcreption_UsernameNotFound() throws Exception {
     OwncloudModificationUser existingUser = OwncloudModificationUser.builder()
         .username("user5")
@@ -805,7 +805,7 @@ public class OwncloudRestUserModificationServiceTest extends AbstractOwncloudUse
   }
 
   @Test(expected = IllegalStateException.class)
-  @WithOwncloudMockUser(username = "user1", password = "password")
+  @WithMockUser(username = "user1", password = "password")
   public void testSaveUser_UpdateUser_NOK_Disable_IllegalStateException() throws Exception {
     OwncloudModificationUser existingUser = OwncloudModificationUser.builder()
         .username("user5")
@@ -834,7 +834,7 @@ public class OwncloudRestUserModificationServiceTest extends AbstractOwncloudUse
   }
 
   @Test(expected = AccessDeniedException.class)
-  @WithOwncloudMockUser(username = "user1", password = "password")
+  @WithMockUser(username = "user1", password = "password")
   public void testSaveUser_UpdateUser_NOK_Disable_AccessDenied() throws Exception {
     OwncloudModificationUser existingUser = OwncloudModificationUser.builder()
         .username("user5")
@@ -863,7 +863,7 @@ public class OwncloudRestUserModificationServiceTest extends AbstractOwncloudUse
   }
 
   @Test(expected = IllegalStateException.class)
-  @WithOwncloudMockUser(username = "user1", password = "password")
+  @WithMockUser(username = "user1", password = "password")
   public void testSaveUser_UpdateUser_NOK_Disable_UnknownError() throws Exception {
     OwncloudModificationUser existingUser = OwncloudModificationUser.builder()
         .username("user5")
@@ -892,7 +892,7 @@ public class OwncloudRestUserModificationServiceTest extends AbstractOwncloudUse
   }
 
   @Test(expected = IllegalArgumentException.class)
-  @WithOwncloudMockUser(username = "user1", password = "password")
+  @WithMockUser(username = "user1", password = "password")
   public void testSaveUser_UpdateUser_NOK_AddGroup_IllegalArgumentException() throws Exception {
     OwncloudModificationUser existingUser = OwncloudModificationUser.builder()
         .username("user5")
@@ -924,7 +924,7 @@ public class OwncloudRestUserModificationServiceTest extends AbstractOwncloudUse
   }
 
   @Test(expected = OwncloudGroupNotFoundException.class)
-  @WithOwncloudMockUser(username = "user1", password = "password")
+  @WithMockUser(username = "user1", password = "password")
   public void testSaveUser_UpdateUser_NOK_AddGroup_OwncloudGroupNotFoundException() throws Exception {
     OwncloudModificationUser existingUser = OwncloudModificationUser.builder()
         .username("user5")
@@ -956,7 +956,7 @@ public class OwncloudRestUserModificationServiceTest extends AbstractOwncloudUse
   }
 
   @Test(expected = IllegalStateException.class)
-  @WithOwncloudMockUser(username = "user1", password = "password")
+  @WithMockUser(username = "user1", password = "password")
   public void testSaveUser_UpdateUser_NOK_AddGroup_IllegalStateException_UsernameNotFound() throws Exception {
     OwncloudModificationUser existingUser = OwncloudModificationUser.builder()
         .username("user5")
@@ -988,7 +988,7 @@ public class OwncloudRestUserModificationServiceTest extends AbstractOwncloudUse
   }
 
   @Test(expected = AccessDeniedException.class)
-  @WithOwncloudMockUser(username = "user1", password = "password")
+  @WithMockUser(username = "user1", password = "password")
   public void testSaveUser_UpdateUser_NOK_AddGroup_AccessDeniedException_NotAllowedToAddGroup() throws Exception {
     OwncloudModificationUser existingUser = OwncloudModificationUser.builder()
         .username("user5")
@@ -1020,7 +1020,7 @@ public class OwncloudRestUserModificationServiceTest extends AbstractOwncloudUse
   }
 
   @Test(expected = IllegalStateException.class)
-  @WithOwncloudMockUser(username = "user1", password = "password")
+  @WithMockUser(username = "user1", password = "password")
   public void testSaveUser_UpdateUser_NOK_AddGroup_IllegalStateException() throws Exception {
     OwncloudModificationUser existingUser = OwncloudModificationUser.builder()
         .username("user5")
@@ -1052,7 +1052,7 @@ public class OwncloudRestUserModificationServiceTest extends AbstractOwncloudUse
   }
 
   @Test(expected = AccessDeniedException.class)
-  @WithOwncloudMockUser(username = "user1", password = "password")
+  @WithMockUser(username = "user1", password = "password")
   public void testSaveUser_UpdateUser_NOK_AddGroup_AccessDeniedException_NoPermissions() throws Exception {
     OwncloudModificationUser existingUser = OwncloudModificationUser.builder()
         .username("user5")
@@ -1084,7 +1084,7 @@ public class OwncloudRestUserModificationServiceTest extends AbstractOwncloudUse
   }
 
   @Test(expected = IllegalStateException.class)
-  @WithOwncloudMockUser(username = "user1", password = "password")
+  @WithMockUser(username = "user1", password = "password")
   public void testSaveUser_UpdateUser_NOK_AddGroup_UnknownError() throws Exception {
     OwncloudModificationUser existingUser = OwncloudModificationUser.builder()
         .username("user5")
@@ -1116,7 +1116,7 @@ public class OwncloudRestUserModificationServiceTest extends AbstractOwncloudUse
   }
 
   @Test(expected = IllegalArgumentException.class)
-  @WithOwncloudMockUser(username = "user1", password = "password")
+  @WithMockUser(username = "user1", password = "password")
   public void testSaveUser_UpdateUser_NOK_RemoveGroup_IllegalArgumentException() throws Exception {
     OwncloudModificationUser existingUser = OwncloudModificationUser.builder()
         .username("user5")
@@ -1148,7 +1148,7 @@ public class OwncloudRestUserModificationServiceTest extends AbstractOwncloudUse
   }
 
   @Test(expected = OwncloudGroupNotFoundException.class)
-  @WithOwncloudMockUser(username = "user1", password = "password")
+  @WithMockUser(username = "user1", password = "password")
   public void testSaveUser_UpdateUser_NOK_RemoveGroup_OwncloudGroupNotFoundException() throws Exception {
     OwncloudModificationUser existingUser = OwncloudModificationUser.builder()
         .username("user5")
@@ -1180,7 +1180,7 @@ public class OwncloudRestUserModificationServiceTest extends AbstractOwncloudUse
   }
 
   @Test(expected = IllegalStateException.class)
-  @WithOwncloudMockUser(username = "user1", password = "password")
+  @WithMockUser(username = "user1", password = "password")
   public void testSaveUser_UpdateUser_NOK_RemoveGroup_IllegalStateException_UsernameNotFound() throws Exception {
     OwncloudModificationUser existingUser = OwncloudModificationUser.builder()
         .username("user5")
@@ -1212,7 +1212,7 @@ public class OwncloudRestUserModificationServiceTest extends AbstractOwncloudUse
   }
 
   @Test(expected = AccessDeniedException.class)
-  @WithOwncloudMockUser(username = "user1", password = "password")
+  @WithMockUser(username = "user1", password = "password")
   public void testSaveUser_UpdateUser_NOK_RemoveGroup_AccessDeniedException_NotAllowedToRemoveGroup() throws Exception {
     OwncloudModificationUser existingUser = OwncloudModificationUser.builder()
         .username("user5")
@@ -1244,7 +1244,7 @@ public class OwncloudRestUserModificationServiceTest extends AbstractOwncloudUse
   }
 
   @Test(expected = IllegalStateException.class)
-  @WithOwncloudMockUser(username = "user1", password = "password")
+  @WithMockUser(username = "user1", password = "password")
   public void testSaveUser_UpdateUser_NOK_RemoveGroup_IllegalStateException() throws Exception {
     OwncloudModificationUser existingUser = OwncloudModificationUser.builder()
         .username("user5")
@@ -1276,7 +1276,7 @@ public class OwncloudRestUserModificationServiceTest extends AbstractOwncloudUse
   }
 
   @Test(expected = AccessDeniedException.class)
-  @WithOwncloudMockUser(username = "user1", password = "password")
+  @WithMockUser(username = "user1", password = "password")
   public void testSaveUser_UpdateUser_NOK_RemoveGroup_AccessDeniedException_NoPermissions() throws Exception {
     OwncloudModificationUser existingUser = OwncloudModificationUser.builder()
         .username("user5")
@@ -1308,7 +1308,7 @@ public class OwncloudRestUserModificationServiceTest extends AbstractOwncloudUse
   }
 
   @Test(expected = IllegalStateException.class)
-  @WithOwncloudMockUser(username = "user1", password = "password")
+  @WithMockUser(username = "user1", password = "password")
   public void testSaveUser_UpdateUser_NOK_RemoveGroup_UnknownError() throws Exception {
     OwncloudModificationUser existingUser = OwncloudModificationUser.builder()
         .username("user5")
@@ -1340,7 +1340,7 @@ public class OwncloudRestUserModificationServiceTest extends AbstractOwncloudUse
   }
 
   @Test(expected = AccessDeniedException.class)
-  @WithOwncloudMockUser(username = "user1", password = "password")
+  @WithMockUser(username = "user1", password = "password")
   public void testDeleteUser_NOK_AccessDeniedException() throws Exception {
     respondFailure(
         RestRequest.builder()
@@ -1352,7 +1352,7 @@ public class OwncloudRestUserModificationServiceTest extends AbstractOwncloudUse
   }
 
   @Test(expected = IllegalStateException.class)
-  @WithOwncloudMockUser(username = "user1", password = "password")
+  @WithMockUser(username = "user1", password = "password")
   public void testDeleteUser_NOK_UnknownError() throws Exception {
     respondFailure(
         RestRequest.builder()
@@ -1364,7 +1364,7 @@ public class OwncloudRestUserModificationServiceTest extends AbstractOwncloudUse
   }
 
   @Test(expected = IllegalArgumentException.class)
-  @WithOwncloudMockUser(username = "user1", password = "password")
+  @WithMockUser(username = "user1", password = "password")
   public void testCreateGroup_NOK_IllegalArgumentException() throws Exception {
     respondFailure(
         RestRequest.builder()
@@ -1376,7 +1376,7 @@ public class OwncloudRestUserModificationServiceTest extends AbstractOwncloudUse
   }
 
   @Test(expected = IllegalStateException.class)
-  @WithOwncloudMockUser(username = "user1", password = "password")
+  @WithMockUser(username = "user1", password = "password")
   public void testCreateGroup_NOK_CannotCreateGroup() throws Exception {
     respondFailure(
         RestRequest.builder()
@@ -1388,7 +1388,7 @@ public class OwncloudRestUserModificationServiceTest extends AbstractOwncloudUse
   }
 
   @Test(expected = AccessDeniedException.class)
-  @WithOwncloudMockUser(username = "user1", password = "password")
+  @WithMockUser(username = "user1", password = "password")
   public void testCreateGroup_NOK_AccessDeniedException() throws Exception {
     respondFailure(
         RestRequest.builder()
@@ -1400,7 +1400,7 @@ public class OwncloudRestUserModificationServiceTest extends AbstractOwncloudUse
   }
 
   @Test(expected = IllegalStateException.class)
-  @WithOwncloudMockUser(username = "user1", password = "password")
+  @WithMockUser(username = "user1", password = "password")
   public void testCreateGroup_NOK_UnknownError() throws Exception {
     respondFailure(
         RestRequest.builder()
@@ -1412,7 +1412,7 @@ public class OwncloudRestUserModificationServiceTest extends AbstractOwncloudUse
   }
 
   @Test(expected = IllegalStateException.class)
-  @WithOwncloudMockUser(username = "user1", password = "password")
+  @WithMockUser(username = "user1", password = "password")
   public void testDeleteGroup_NOK_CannotDeleteGroup() throws Exception {
     respondFailure(
         RestRequest.builder()
@@ -1424,7 +1424,7 @@ public class OwncloudRestUserModificationServiceTest extends AbstractOwncloudUse
   }
 
   @Test(expected = AccessDeniedException.class)
-  @WithOwncloudMockUser(username = "user1", password = "password")
+  @WithMockUser(username = "user1", password = "password")
   public void testDeleteGroup_NOK_AccessDeniedException() throws Exception {
     respondFailure(
         RestRequest.builder()
@@ -1436,7 +1436,7 @@ public class OwncloudRestUserModificationServiceTest extends AbstractOwncloudUse
   }
 
   @Test(expected = IllegalStateException.class)
-  @WithOwncloudMockUser(username = "user1", password = "password")
+  @WithMockUser(username = "user1", password = "password")
   public void testDeleteGroup_NOK_UnknownError() throws Exception {
     respondFailure(
         RestRequest.builder()

@@ -24,10 +24,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.client.RestClientTest;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.test.context.support.WithMockUser;
 
 import com.google.common.collect.Lists;
 
-import software.coolstuff.springframework.owncloud.config.WithOwncloudMockUser;
 import software.coolstuff.springframework.owncloud.exception.auth.OwncloudGroupAlreadyExistsException;
 import software.coolstuff.springframework.owncloud.exception.auth.OwncloudGroupNotFoundException;
 import software.coolstuff.springframework.owncloud.model.OwncloudModificationUser;
@@ -89,7 +89,7 @@ public abstract class AbstractOwncloudUserModificationServiceTest extends Abstra
   }
 
   @Test
-  @WithOwncloudMockUser(username = "user1", password = "password")
+  @WithMockUser(username = "user1", password = "password")
   public void testSaveUser_CreateUser_OK_WithoutGroups() throws Exception {
     OwncloudModificationUser newUser = OwncloudModificationUser.builder()
         .username("user3")
@@ -117,7 +117,7 @@ public abstract class AbstractOwncloudUserModificationServiceTest extends Abstra
   protected void prepareTestSaveUser_CreateUser_OK_WithoutGroups(OwncloudModificationUser newUser) throws Exception {}
 
   @Test
-  @WithOwncloudMockUser(username = "user1", password = "password")
+  @WithMockUser(username = "user1", password = "password")
   public void testSaveUser_CreateUser_OK_WithGroups() throws Exception {
     OwncloudModificationUser newUser = OwncloudModificationUser.builder()
         .username("user4")
@@ -147,7 +147,7 @@ public abstract class AbstractOwncloudUserModificationServiceTest extends Abstra
   protected void prepareTestSaveUser_CreateUser_OK_WithGroups(OwncloudModificationUser newUser) throws Exception {}
 
   @Test
-  @WithOwncloudMockUser(username = "user1", password = "password")
+  @WithMockUser(username = "user1", password = "password")
   public void testSaveUser_UpdateUser_OK_WithoutGroups() throws Exception {
     OwncloudModificationUser existingUser = OwncloudModificationUser.builder()
         .username("user2")
@@ -182,7 +182,7 @@ public abstract class AbstractOwncloudUserModificationServiceTest extends Abstra
   protected void prepareTestSaveUser_UpdateUser_OK_WithoutGroups(OwncloudModificationUser existingUser, OwncloudModificationUser updateUser) throws Exception {}
 
   @Test
-  @WithOwncloudMockUser(username = "user1", password = "password")
+  @WithMockUser(username = "user1", password = "password")
   public void testSaveUser_UpdateUser_OK_WithGroups() throws Exception {
     OwncloudModificationUser existingUser = OwncloudModificationUser.builder()
         .username("user1")
@@ -221,7 +221,7 @@ public abstract class AbstractOwncloudUserModificationServiceTest extends Abstra
   protected void prepareTestSaveUser_UpdateUser_OK_WithGroups(OwncloudModificationUser existingUser, OwncloudModificationUser updateUser) throws Exception {}
 
   @Test
-  @WithOwncloudMockUser(username = "user1", password = "password")
+  @WithMockUser(username = "user1", password = "password")
   public void testDeleteUser_OK() throws Exception {
     prepareTestDeleteUser_OK("user1");
     userModificationService.deleteUser("user1");
@@ -230,7 +230,7 @@ public abstract class AbstractOwncloudUserModificationServiceTest extends Abstra
   protected void prepareTestDeleteUser_OK(String username) throws Exception {}
 
   @Test(expected = UsernameNotFoundException.class)
-  @WithOwncloudMockUser(username = "user1", password = "password")
+  @WithMockUser(username = "user1", password = "password")
   public void testDeleteUser_NOK_UsernameNotFoundException() throws Exception {
     prepareTestDeleteUser_NOK_UsernameNotFoundException("user3");
     userModificationService.deleteUser("user3");
@@ -239,7 +239,7 @@ public abstract class AbstractOwncloudUserModificationServiceTest extends Abstra
   protected void prepareTestDeleteUser_NOK_UsernameNotFoundException(String username) throws Exception {}
 
   @Test
-  @WithOwncloudMockUser(username = "user1", password = "password")
+  @WithMockUser(username = "user1", password = "password")
   public void testCreateGroup_OK() throws Exception {
     prepareTestCreateGroup_OK("group4");
     userModificationService.createGroup("group4");
@@ -248,7 +248,7 @@ public abstract class AbstractOwncloudUserModificationServiceTest extends Abstra
   protected void prepareTestCreateGroup_OK(String groupname) throws Exception {}
 
   @Test(expected = OwncloudGroupAlreadyExistsException.class)
-  @WithOwncloudMockUser(username = "user1", password = "password")
+  @WithMockUser(username = "user1", password = "password")
   public void testCreateGroup_NOK_OwncloudGroupAlreadyExists() throws Exception {
     prepareTestCreateGroup_NOK_OwncloudGroupAlreadyExists("group1");
     userModificationService.createGroup("group1");
@@ -257,7 +257,7 @@ public abstract class AbstractOwncloudUserModificationServiceTest extends Abstra
   protected void prepareTestCreateGroup_NOK_OwncloudGroupAlreadyExists(String groupname) throws Exception {}
 
   @Test
-  @WithOwncloudMockUser(username = "user1", password = "password")
+  @WithMockUser(username = "user1", password = "password")
   public void testDeleteGroup_OK() throws Exception {
     prepareTestDeleteGroup_OK("group1");
     userModificationService.deleteGroup("group1");
@@ -266,7 +266,7 @@ public abstract class AbstractOwncloudUserModificationServiceTest extends Abstra
   protected void prepareTestDeleteGroup_OK(String groupname) throws Exception {}
 
   @Test(expected = OwncloudGroupNotFoundException.class)
-  @WithOwncloudMockUser(username = "user1", password = "password")
+  @WithMockUser(username = "user1", password = "password")
   public void testDeleteGroup_NOK_GroupNotFound() throws Exception {
     prepareTestDeleteGroup_NOK_GroupNotFound("group4");
     userModificationService.deleteGroup("group4");

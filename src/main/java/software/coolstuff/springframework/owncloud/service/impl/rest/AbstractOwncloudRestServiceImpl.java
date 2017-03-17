@@ -110,7 +110,7 @@ abstract class AbstractOwncloudRestServiceImpl implements OwncloudRestService {
   protected HttpHeaders prepareHeadersWithBasicAuthorization() {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     if (OwncloudUtils.isAuthenticationClassNotSupported(authentication.getClass())) {
-      throw new OwncloudInvalidAuthenticationObjectException(authentication);
+      throw new OwncloudInvalidAuthenticationObjectException(authentication, UsernamePasswordAuthenticationToken.class);
     }
     return OwncloudRestUtils.addAuthorizationHeader(authentication);
   }

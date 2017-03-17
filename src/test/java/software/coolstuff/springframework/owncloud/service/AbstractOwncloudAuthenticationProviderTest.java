@@ -29,11 +29,10 @@ import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.RememberMeAuthenticationToken;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.test.context.support.WithMockUser;
 
 import lombok.Builder;
 import lombok.Data;
-import software.coolstuff.springframework.owncloud.config.WithOwncloudMockUser;
-import software.coolstuff.springframework.owncloud.model.OwncloudAuthentication;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
 import software.coolstuff.springframework.owncloud.service.impl.AbstractOwncloudServiceTest;
 
@@ -53,12 +52,11 @@ public abstract class AbstractOwncloudAuthenticationProviderTest extends Abstrac
   @Test
   public void testSupportedAuthenticationTokens() {
     Assert.assertTrue(authenticationProvider.supports(UsernamePasswordAuthenticationToken.class));
-    Assert.assertTrue(authenticationProvider.supports(OwncloudAuthentication.class));
     Assert.assertFalse(authenticationProvider.supports(RememberMeAuthenticationToken.class));
   }
 
   @Test
-  @WithOwncloudMockUser(username = "user1", password = "s3cr3t")
+  @WithMockUser(username = "user1", password = "s3cr3t")
   public void testAuthenticate_OK() throws Exception {
     Credentials credentials = Credentials.builder().username("user1").password("s3cr3t").build();
 
@@ -68,7 +66,7 @@ public abstract class AbstractOwncloudAuthenticationProviderTest extends Abstrac
     verifyServer();
 
     Assert.assertNotNull(authentication);
-    Assert.assertTrue(OwncloudAuthentication.class.isAssignableFrom(authentication.getClass()));
+    Assert.assertTrue(UsernamePasswordAuthenticationToken.class.isAssignableFrom(authentication.getClass()));
     checkAuthorities(authentication.getName(), authentication.getAuthorities(), "group1", "group2");
 
     Assert.assertEquals(credentials.getUsername(), authentication.getName());

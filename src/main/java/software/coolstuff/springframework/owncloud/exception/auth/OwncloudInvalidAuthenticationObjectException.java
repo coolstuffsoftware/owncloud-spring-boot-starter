@@ -23,8 +23,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-import software.coolstuff.springframework.owncloud.model.OwncloudAuthentication;
-
 /**
  * Thrown when trying to authenticate neither with {@link OwncloudAuthentication} nor with {@link UsernamePasswordAuthenticationToken}
  *
@@ -35,10 +33,10 @@ public class OwncloudInvalidAuthenticationObjectException extends Authentication
 
   private static final long serialVersionUID = -3421422373807935754L;
 
-  public OwncloudInvalidAuthenticationObjectException(Authentication authentication) {
+  public OwncloudInvalidAuthenticationObjectException(Authentication authentication, Class<? extends Authentication> expectedAuthenticationClass) {
     super(
         "Authentication is not of type " +
-            OwncloudAuthentication.class.getSimpleName() +
+            expectedAuthenticationClass.getSimpleName() +
             ". Instead it is of Type " +
             (authentication == null ? "null" : authentication.getClass().getSimpleName()));
   }

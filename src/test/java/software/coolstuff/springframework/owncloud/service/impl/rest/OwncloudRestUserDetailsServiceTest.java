@@ -27,9 +27,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.test.context.support.WithAnonymousUser;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 
-import software.coolstuff.springframework.owncloud.config.WithOwncloudMockUser;
 import software.coolstuff.springframework.owncloud.exception.auth.OwncloudInvalidAuthenticationObjectException;
 import software.coolstuff.springframework.owncloud.service.AbstractOwncloudUserDetailsServiceTest;
 
@@ -79,7 +79,7 @@ public class OwncloudRestUserDetailsServiceTest extends AbstractOwncloudUserDeta
   }
 
   @Test(expected = AccessDeniedException.class)
-  @WithOwncloudMockUser(username = "user1", password = "password")
+  @WithMockUser(username = "user1", password = "password")
   public void testUserDetails_AccessDenied() throws Exception {
     respondFailure(
         RestRequest.builder()
@@ -92,7 +92,7 @@ public class OwncloudRestUserDetailsServiceTest extends AbstractOwncloudUserDeta
   }
 
   @Test(expected = IllegalStateException.class)
-  @WithOwncloudMockUser(username = "user1", password = "password")
+  @WithMockUser(username = "user1", password = "password")
   public void testUserDetails_UnknownError() throws Exception {
     respondFailure(
         RestRequest.builder()

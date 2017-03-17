@@ -9,7 +9,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import software.coolstuff.springframework.owncloud.exception.resource.OwncloudNoFileResourceException;
-import software.coolstuff.springframework.owncloud.model.OwncloudAuthentication;
 import software.coolstuff.springframework.owncloud.model.OwncloudFileResource;
 import software.coolstuff.springframework.owncloud.model.OwncloudResource;
 
@@ -29,8 +28,7 @@ public final class OwncloudUtils {
    * @return is the Authentication Object be servicable by the Owncloud AuthenticationProvider Implementation
    */
   public static boolean isAuthenticationClassSupported(Class<?> authenticationClass) {
-    return UsernamePasswordAuthenticationToken.class.isAssignableFrom(authenticationClass) ||
-        OwncloudAuthentication.class.isAssignableFrom(authenticationClass);
+    return UsernamePasswordAuthenticationToken.class.isAssignableFrom(authenticationClass);
   }
 
   /**

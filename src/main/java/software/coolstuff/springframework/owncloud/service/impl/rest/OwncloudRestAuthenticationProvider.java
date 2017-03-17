@@ -31,7 +31,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 import lombok.extern.slf4j.Slf4j;
 import software.coolstuff.springframework.owncloud.exception.OwncloudStatusException;
-import software.coolstuff.springframework.owncloud.model.OwncloudAuthentication;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
 import software.coolstuff.springframework.owncloud.service.impl.OwncloudUtils;
 
@@ -74,7 +73,7 @@ class OwncloudRestAuthenticationProvider extends AbstractOwncloudRestServiceImpl
     log.trace("Set the Password of User {} to the Authentication Object", username);
     owncloudUserDetails.setPassword(password);
 
-    return new OwncloudAuthentication(owncloudUserDetails);
+    return new UsernamePasswordAuthenticationToken(owncloudUserDetails, password, owncloudUserDetails.getAuthorities());
   }
 
   @Override

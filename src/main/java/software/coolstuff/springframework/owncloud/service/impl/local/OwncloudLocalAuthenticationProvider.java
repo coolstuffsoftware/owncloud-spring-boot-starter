@@ -14,7 +14,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import software.coolstuff.springframework.owncloud.model.OwncloudAuthentication;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
 import software.coolstuff.springframework.owncloud.service.impl.OwncloudUtils;
 
@@ -67,7 +66,7 @@ class OwncloudLocalAuthenticationProvider implements AuthenticationProvider {
     log.trace("Set the Password of User {} to the Authentication Object", username);
     owncloudUserDetails.setPassword(password);
 
-    return new OwncloudAuthentication(owncloudUserDetails);
+    return new UsernamePasswordAuthenticationToken(owncloudUserDetails, password, owncloudUserDetails.getAuthorities());
   }
 
   @Override

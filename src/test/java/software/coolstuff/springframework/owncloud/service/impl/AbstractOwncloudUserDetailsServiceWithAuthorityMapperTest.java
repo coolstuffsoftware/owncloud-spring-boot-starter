@@ -25,8 +25,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
-
-import software.coolstuff.springframework.owncloud.config.WithOwncloudMockUser;
+import org.springframework.security.test.context.support.WithMockUser;
 
 @RestClientTest(UserDetailsService.class)
 public abstract class AbstractOwncloudUserDetailsServiceWithAuthorityMapperTest extends AbstractOwncloudServiceTest {
@@ -43,7 +42,7 @@ public abstract class AbstractOwncloudUserDetailsServiceWithAuthorityMapperTest 
   }
 
   @Test
-  @WithOwncloudMockUser(username = "test1", password = "password")
+  @WithMockUser(username = "test1", password = "password")
   public void testMappedGroups() throws Exception {
     prepareTestMappedGroups("user1", true, "user1@example.com", "Mr. User 1", "group1", "group2");
 

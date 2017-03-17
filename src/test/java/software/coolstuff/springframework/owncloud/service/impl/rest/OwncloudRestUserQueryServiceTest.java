@@ -24,11 +24,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.util.UriUtils;
 
-import software.coolstuff.springframework.owncloud.config.WithOwncloudMockUser;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
 import software.coolstuff.springframework.owncloud.service.AbstractOwncloudUserQueryServiceTest;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudUserQueryService;
@@ -165,7 +165,7 @@ public class OwncloudRestUserQueryServiceTest extends AbstractOwncloudUserQueryS
   }
 
   @Test(expected = BadCredentialsException.class)
-  @WithOwncloudMockUser(username = "user1", password = "password")
+  @WithMockUser(username = "user1", password = "password")
   public void testBadCredentialsBy401() throws Exception {
     respondHttpStatus(
         RestRequest.builder()
@@ -178,7 +178,7 @@ public class OwncloudRestUserQueryServiceTest extends AbstractOwncloudUserQueryS
   }
 
   @Test(expected = HttpClientErrorException.class)
-  @WithOwncloudMockUser(username = "user1", password = "password")
+  @WithMockUser(username = "user1", password = "password")
   public void testNotFound() throws Exception {
     respondHttpStatus(
         RestRequest.builder()
@@ -191,7 +191,7 @@ public class OwncloudRestUserQueryServiceTest extends AbstractOwncloudUserQueryS
   }
 
   @Test(expected = AccessDeniedException.class)
-  @WithOwncloudMockUser(username = "user1", password = "password")
+  @WithMockUser(username = "user1", password = "password")
   public void testFindAllMembersOfGroup_NOK_AccessDenied() throws Exception {
     respondFailure(
         RestRequest.builder()
@@ -203,7 +203,7 @@ public class OwncloudRestUserQueryServiceTest extends AbstractOwncloudUserQueryS
   }
 
   @Test(expected = IllegalStateException.class)
-  @WithOwncloudMockUser(username = "user1", password = "password")
+  @WithMockUser(username = "user1", password = "password")
   public void testFindAllMembersOfGroup_NOK_UnknownError() throws Exception {
     respondFailure(
         RestRequest.builder()
