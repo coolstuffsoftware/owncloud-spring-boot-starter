@@ -62,6 +62,12 @@ public final class OwncloudUtils {
     return !isAuthenticationClassSupported(authenticationClass);
   }
 
+  /**
+   * Checks, if the given Authentication Object is authenticated
+   * by the Owncloud{Rest|Local}AuthenticationProvider
+   * @param authentication Authentication Object
+   * @return is authenticated by the Owncloud{Rest|Local}AuthenticationProvider
+   */
   public static boolean isValidAuthentication(Authentication authentication) {
     if (authentication == null) {
       return false;
@@ -73,7 +79,7 @@ public final class OwncloudUtils {
     }
 
     if (authentication.getCredentials() != null) {
-      // if Credentials are available these must be of Class CharSequence and not empty
+      // if Credentials are available then these must be of Class CharSequence and not empty
       return CharSequence.class.isAssignableFrom(authentication.getCredentials().getClass()) &&
           StringUtils.isNotBlank((CharSequence) authentication.getCredentials());
     }
@@ -87,6 +93,12 @@ public final class OwncloudUtils {
     return false;
   }
 
+  /**
+   * Checks, if the given Authentication Object is NOT authenticated
+   * by the Owncloud{Rest|Local}AuthenticationProvider
+   * @param authentication Authentication Object
+   * @return is not authenticated by the Owncloud{Rest|Local}AuthenticationProvider
+   */
   public static boolean isInvalidAuthentication(Authentication authentication) {
     return !isValidAuthentication(authentication);
   }
