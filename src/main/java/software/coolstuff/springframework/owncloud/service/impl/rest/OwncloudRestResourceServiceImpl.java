@@ -66,6 +66,7 @@ import software.coolstuff.springframework.owncloud.exception.resource.OwncloudRe
 import software.coolstuff.springframework.owncloud.exception.resource.OwncloudRestResourceException;
 import software.coolstuff.springframework.owncloud.exception.resource.OwncloudSardineCacheException;
 import software.coolstuff.springframework.owncloud.model.OwncloudFileResource;
+import software.coolstuff.springframework.owncloud.model.OwncloudQuota;
 import software.coolstuff.springframework.owncloud.model.OwncloudResource;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudResourceService;
 import software.coolstuff.springframework.owncloud.service.impl.OwncloudUtils;
@@ -84,6 +85,9 @@ class OwncloudRestResourceServiceImpl implements OwncloudResourceService, Ownclo
 
   @Autowired
   private SardineCacheLoader sardineCacheLoader;
+
+  @Autowired
+  private OwncloudRestQuotaService quotaService;
 
   public OwncloudRestResourceServiceImpl(
       final RestTemplateBuilder builder,
@@ -492,5 +496,11 @@ class OwncloudRestResourceServiceImpl implements OwncloudResourceService, Ownclo
                 .build())
         .build();
     return getOutputStream(resource);
+  }
+
+  @Override
+  public OwncloudQuota getQuota() {
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    return quotaService.getQuota(authentication.getName());
   }
 }

@@ -37,15 +37,11 @@ class OwncloudAuthenticationTypeChecker {
       + " execution(* software.coolstuff.springframework.owncloud.service.api.OwncloudResourceService.*(..))")
   void checkAuthenticationObject(JoinPoint joinPoint) {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-    if (isInvalidAuthentication(authentication)) {
+    if (OwncloudUtils.isInvalidAuthentication(authentication)) {
       log.warn("Access denied for Method {}.{}(); because User is not authenticated by the Owncloud Authentication Provider",
           joinPoint.getSignature().getDeclaringTypeName(), joinPoint.getSignature().getName());
       throw new OwncloudInvalidAuthenticationObjectException(authentication, UsernamePasswordAuthenticationToken.class);
     }
-  }
-
-  private boolean isInvalidAuthentication(Authentication authentication) {
-    return authentication == null || OwncloudUtils.isAuthenticationClassNotSupported(authentication.getClass());
   }
 
 }

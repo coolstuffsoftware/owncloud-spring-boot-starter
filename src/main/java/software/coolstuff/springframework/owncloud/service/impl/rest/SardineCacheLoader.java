@@ -17,9 +17,11 @@
 */
 package software.coolstuff.springframework.owncloud.service.impl.rest;
 
+import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import com.github.sardine.Sardine;
 import com.github.sardine.impl.SardineImpl;
@@ -38,7 +40,15 @@ class SardineCacheLoader extends CacheLoader<String, Sardine> {
       log.error(errorMessage);
       throw new IllegalStateException(errorMessage);
     }
-    return new SardineImpl(authentication.getName(), (String) authentication.getCredentials());
+    if (isCredentialsAvailable(authentication)) {
+      return new SardineImpl(authentication.getName(), (String) authentication.getCredentials());
+    }
+    UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+    return new SardineImpl(userDetails.getUsername(), userDetails.getPassword());
+  }
+
+  private boolean isCredentialsAvailable(Authentication authentication) {
+    return authentication.getCredentials() != null && ClassUtils.isAssignable(authentication.getCredentials().getClass(), String.class);
   }
 
 }

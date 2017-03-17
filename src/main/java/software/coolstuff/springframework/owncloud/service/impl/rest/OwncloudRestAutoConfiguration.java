@@ -67,6 +67,11 @@ class OwncloudRestAutoConfiguration {
   }
 
   @Bean
+  public OwncloudRestQuotaService owncloudQuotaService(RestTemplateBuilder builder) {
+    return new OwncloudRestQuotaServiceImpl(builder);
+  }
+
+  @Bean
   public OwncloudResourceService owncloudResourceService(RestTemplateBuilder builder, OwncloudRestProperties properties) throws MalformedURLException {
     return new OwncloudRestResourceServiceImpl(builder, properties);
   }

@@ -6,6 +6,7 @@
       <enabled>false</enabled>
       <displayname>Mrs. User 2</displayname>
       <email>user2@example.com</email>
+      <quota/>
     </user>
   </users>
   <groups>

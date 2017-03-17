@@ -229,7 +229,10 @@ public class OwncloudLocalFileTestExecutionListener extends AbstractOwncloudTest
         try {
           method.invoke(testContext.getTestInstance(), target);
         } catch (InvocationTargetException e) {
-          throw (Exception) e.getCause();
+          if (e.getCause() instanceof Exception) {
+            throw (Exception) e.getCause();
+          }
+          throw (Error) e.getCause();
         }
       }
 
@@ -249,6 +252,7 @@ public class OwncloudLocalFileTestExecutionListener extends AbstractOwncloudTest
       Diff diff = DiffBuilder.compare(Input.fromStream(inputSource))
           .withTest(Input.fromStream(inputTarget))
           .checkForSimilar()
+          .ignoreWhitespace()
           .withNodeMatcher(new DefaultNodeMatcher(ElementSelectors.byNameAndText))
           .build();
       Assert.assertFalse(diff.toString(), diff.hasDifferences());

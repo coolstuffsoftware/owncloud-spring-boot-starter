@@ -56,14 +56,15 @@ class OwncloudLocalUserData {
     private boolean enabled = true;
     private String displayname;
     private String email;
+    private Long quota;
 
-    @Singular
+    @lombok.Singular
     @XmlElementWrapper(name = "groups")
     @XmlElement(name = "group")
     private Set<String> groups;
   }
 
-  @Singular
+  @lombok.Singular
   @XmlElementWrapper(name = "users")
   @XmlElement(name = "user")
   private Collection<User> users;

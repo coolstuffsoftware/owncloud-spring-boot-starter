@@ -53,6 +53,7 @@ import software.coolstuff.springframework.owncloud.exception.resource.OwncloudNo
 import software.coolstuff.springframework.owncloud.exception.resource.OwncloudNoFileResourceException;
 import software.coolstuff.springframework.owncloud.exception.resource.OwncloudResourceNotFoundException;
 import software.coolstuff.springframework.owncloud.model.OwncloudFileResource;
+import software.coolstuff.springframework.owncloud.model.OwncloudQuota;
 import software.coolstuff.springframework.owncloud.model.OwncloudResource;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudResourceService;
 import software.coolstuff.springframework.owncloud.service.impl.OwncloudUtils;
@@ -337,6 +338,11 @@ class OwncloudLocalResourceServiceImpl implements OwncloudResourceService {
         throw new OwncloudLocalResourceException(e);
       }
     }
+  }
 
+  @Override
+  public OwncloudQuota getQuota() {
+    // TODO: implement me !!!
+    throw new RuntimeException("not implemented now");
   }
 }

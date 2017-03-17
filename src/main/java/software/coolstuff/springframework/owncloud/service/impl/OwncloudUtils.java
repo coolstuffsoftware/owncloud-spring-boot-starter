@@ -1,16 +1,37 @@
+/*
+   Copyright (C) 2016 by the original Authors.
+
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 3 of the License, or
+   (at your option) any later version.
+
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to the Free Software Foundation,
+   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
+*/
 package software.coolstuff.springframework.owncloud.service.impl;
 
 import java.util.Optional;
 
 import org.apache.commons.lang3.ClassUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import software.coolstuff.springframework.owncloud.exception.resource.OwncloudNoFileResourceException;
 import software.coolstuff.springframework.owncloud.model.OwncloudFileResource;
 import software.coolstuff.springframework.owncloud.model.OwncloudResource;
+import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
 
 /**
  * General Utilities for the Owncloud Services.
@@ -39,6 +60,35 @@ public final class OwncloudUtils {
    */
   public static boolean isAuthenticationClassNotSupported(Class<?> authenticationClass) {
     return !isAuthenticationClassSupported(authenticationClass);
+  }
+
+  public static boolean isValidAuthentication(Authentication authentication) {
+    if (authentication == null) {
+      return false;
+    }
+
+    // if UserDetails are set then it must be of Class OwncloudUserDetails
+    if (authentication.getDetails() != null && !ClassUtils.isAssignable(authentication.getPrincipal().getClass(), OwncloudUserDetails.class)) {
+      return false;
+    }
+
+    if (authentication.getCredentials() != null) {
+      // if Credentials are available these must be of Class CharSequence and not empty
+      return CharSequence.class.isAssignableFrom(authentication.getCredentials().getClass()) &&
+          StringUtils.isNotBlank((CharSequence) authentication.getCredentials());
+    }
+
+    if (authentication.getPrincipal() != null) {
+      // Password of the UserDetails must not be empty
+      UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+      return StringUtils.isNotBlank(userDetails.getPassword());
+    }
+
+    return false;
+  }
+
+  public static boolean isInvalidAuthentication(Authentication authentication) {
+    return !isValidAuthentication(authentication);
   }
 
   /**

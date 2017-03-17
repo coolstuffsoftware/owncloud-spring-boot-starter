@@ -29,12 +29,14 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.util.ClassUtils;
 import org.springframework.web.client.HttpStatusCodeException;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import software.coolstuff.springframework.owncloud.exception.resource.OwncloudQuotaExceededException;
 import software.coolstuff.springframework.owncloud.exception.resource.OwncloudResourceNotFoundException;
 import software.coolstuff.springframework.owncloud.exception.resource.OwncloudRestResourceException;
 
@@ -93,7 +95,11 @@ final class OwncloudRestUtils {
 
   public static String encodeCredentialsForBasicAuthorization(Authentication authentication) {
     Validate.notNull(authentication);
-    return encodeCredentialsForBasicAuthorization(authentication.getName(), authentication.getCredentials());
+    if (authentication.getCredentials() != null) {
+      return encodeCredentialsForBasicAuthorization(authentication.getName(), authentication.getCredentials());
+    }
+    UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+    return encodeCredentialsForBasicAuthorization(userDetails.getUsername(), userDetails.getPassword());
   }
 
   public static String encodeCredentialsForBasicAuthorization(String username, Object password) {
@@ -125,6 +131,8 @@ final class OwncloudRestUtils {
     switch (httpStatusCodeException.getStatusCode()) {
       case NOT_FOUND:
         throw new OwncloudResourceNotFoundException(environment.getRequestURI(), environment.getUsername());
+      case INSUFFICIENT_STORAGE:
+        throw new OwncloudQuotaExceededException(environment.getRequestURI(), environment.getUsername());
       default:
         break;
     }

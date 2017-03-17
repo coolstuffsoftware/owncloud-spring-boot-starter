@@ -26,6 +26,7 @@ import java.util.Optional;
 import org.springframework.http.MediaType;
 
 import software.coolstuff.springframework.owncloud.model.OwncloudFileResource;
+import software.coolstuff.springframework.owncloud.model.OwncloudQuota;
 import software.coolstuff.springframework.owncloud.model.OwncloudResource;
 
 /**
@@ -51,5 +52,7 @@ public interface OwncloudResourceService {
   OutputStream getOutputStream(OwncloudFileResource resource);
 
   OutputStream getOutputStream(URI href, MediaType mediaType);
+
+  OwncloudQuota getQuota();
 
 }
