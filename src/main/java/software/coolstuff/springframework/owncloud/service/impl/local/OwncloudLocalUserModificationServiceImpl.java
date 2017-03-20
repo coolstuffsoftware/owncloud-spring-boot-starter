@@ -1,11 +1,13 @@
 package software.coolstuff.springframework.owncloud.service.impl.local;
 
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import lombok.RequiredArgsConstructor;
@@ -21,6 +23,9 @@ import software.coolstuff.springframework.owncloud.service.api.OwncloudUserModif
 class OwncloudLocalUserModificationServiceImpl implements OwncloudUserModificationService {
 
   private final OwncloudLocalUserDataService localDataService;
+
+  @Autowired
+  private Optional<OwncloudLocalResourceService> owncloudLocalResourceService;
 
   @Override
   public OwncloudUserDetails saveUser(OwncloudModificationUser modificationUser) {
@@ -50,6 +55,10 @@ class OwncloudLocalUserModificationServiceImpl implements OwncloudUserModificati
     manageGroups(existingUser, modificationUser);
 
     OwncloudUserDetails changedUserDetails = localDataService.convert(existingUser);
+    owncloudLocalResourceService.ifPresent(service -> {
+      log.debug("Notify local Resource Service about changed UserDetails {}", changedUserDetails);
+      service.notifyUserModification(changedUserDetails);
+    });
     log.info("User {} successfully modified", changedUserDetails.getUsername());
     return changedUserDetails;
   }
@@ -79,6 +88,10 @@ class OwncloudLocalUserModificationServiceImpl implements OwncloudUserModificati
     }
     log.debug("Remove User {}", username);
     localDataService.removeUser(username);
+    owncloudLocalResourceService.ifPresent(service -> {
+      log.debug("Notify local Resource Service about removed User {}", username);
+      service.notifyRemovedUser(username);
+    });
     log.info("User {} successfully removed", username);
   }
 

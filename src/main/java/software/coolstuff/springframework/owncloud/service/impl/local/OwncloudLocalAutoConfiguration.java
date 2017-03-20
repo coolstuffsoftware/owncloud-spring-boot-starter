@@ -81,7 +81,7 @@ class OwncloudLocalAutoConfiguration {
   @Bean
   @ConditionalOnMissingBean(OwncloudResourceService.class)
   @ConditionalOnProperty("owncloud.resource-service.location")
-  public OwncloudResourceService owncloudResourceService() {
+  public OwncloudLocalResourceService owncloudResourceService() {
     return new OwncloudLocalResourceServiceImpl();
   }
 

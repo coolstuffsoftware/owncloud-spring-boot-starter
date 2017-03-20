@@ -32,7 +32,9 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
@@ -52,18 +54,24 @@ import software.coolstuff.springframework.owncloud.exception.resource.OwncloudRe
 import software.coolstuff.springframework.owncloud.model.OwncloudFileResource;
 import software.coolstuff.springframework.owncloud.model.OwncloudQuota;
 import software.coolstuff.springframework.owncloud.model.OwncloudResource;
-import software.coolstuff.springframework.owncloud.service.api.OwncloudResourceService;
+import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
 import software.coolstuff.springframework.owncloud.service.impl.OwncloudUtils;
 import software.coolstuff.springframework.owncloud.service.impl.local.OwncloudLocalProperties.ResourceServiceProperties;
+import software.coolstuff.springframework.owncloud.service.impl.local.OwncloudLocalUserData.User;
 
 @Slf4j
-class OwncloudLocalResourceServiceImpl implements OwncloudResourceService {
+class OwncloudLocalResourceServiceImpl implements OwncloudLocalResourceService {
 
   @Autowired
   private OwncloudLocalProperties properties;
 
   @Autowired
   private OwncloudLocalResourceChecksumService checksumService;
+
+  @Autowired
+  private OwncloudLocalUserDataService userDataService;
+
+  private Map<String, Long> usedSpaces = new ConcurrentHashMap<>();
 
   @PostConstruct
   protected void afterPropertiesSet() throws Exception {
@@ -73,6 +81,26 @@ class OwncloudLocalResourceServiceImpl implements OwncloudResourceService {
 
     Path baseLocation = resourceProperties.getLocation();
     OwncloudLocalUtils.checkPrivilegesOnDirectory(baseLocation);
+
+    calculateUsedSpace(baseLocation);
+  }
+
+  private void calculateUsedSpace(Path baseLocation) throws IOException {
+    for (User user : userDataService.getUsers()) {
+      String username = user.getUsername();
+      Path userBaseLocation = baseLocation.resolve(username);
+
+      if (Files.notExists(userBaseLocation)) {
+        usedSpaces.put(username, 0L);
+        continue;
+      }
+
+      long usedSpace = 0;
+      for (Path path : Files.newDirectoryStream(userBaseLocation, Files::isRegularFile)) {
+        usedSpace += Files.size(path);
+      }
+      usedSpaces.put(username, usedSpace);
+    }
   }
 
   @Override
@@ -307,6 +335,7 @@ class OwncloudLocalResourceServiceImpl implements OwncloudResourceService {
     PipedOutputStreamLocalSynchronizer pipedStreamSynchronizer = PipedOutputStreamLocalSynchronizer.builder()
         .authentication(authentication)
         .quotaChecker(this::checkQuota)
+        .quotaResetter(this::resetQuota)
         .onCloseCallback(checksumService::recalculateChecksum)
         .owncloudLocalProperties(properties)
         .uri(href)
@@ -319,9 +348,23 @@ class OwncloudLocalResourceServiceImpl implements OwncloudResourceService {
     // TODO: implement me !!!
   }
 
+  private void resetQuota(Authentication authentication, long writtenBytes) {
+    // TODO: implement me !!!
+  }
+
   @Override
   public OwncloudQuota getQuota() {
     // TODO: implement me !!!
     throw new RuntimeException("not implemented now");
+  }
+
+  @Override
+  public void notifyUserModification(OwncloudUserDetails userDetails) {
+    // TODO implement me !!!
+  }
+
+  @Override
+  public void notifyRemovedUser(String username) {
+    // TODO implement me !!!
   }
 }

@@ -29,6 +29,8 @@ import org.springframework.boot.logging.LogLevel;
 import org.springframework.security.core.Authentication;
 
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import software.coolstuff.springframework.owncloud.exception.resource.OwncloudResourcePipeSynchronizationException;
@@ -160,19 +162,51 @@ public abstract class AbstractPipedStreamSynchronizerImpl {
   }
 
   protected void copy(InputStream input, OutputStream output) throws IOException {
-    copy(input, output, null);
+    copy(CopyEnvironment.builder()
+        .inputStream(input)
+        .outputStream(output)
+        .build());
   }
 
-  protected void copy(InputStream input, OutputStream output, BiConsumer<Authentication, Integer> quotaChecker) throws IOException {
-    byte[] buffer = new byte[getBufferSize()];
-    for (int length = 0; (length = input.read(buffer)) != EOF;) {
+  protected void copy(CopyEnvironment environment) throws IOException {
+    long sumLength = 0;
+    try {
+      byte[] buffer = new byte[getBufferSize()];
+      InputStream input = environment.getInputStream();
+      OutputStream output = environment.getOutputStream();
+      for (int length = 0; (length = input.read(buffer)) != EOF; sumLength += length) {
+        environment.checkQuota(authentication, length);
+        output.write(buffer, 0, length);
+        if (isInterrupted()) {
+          log.warn("Background Thread has been interrupted -> stop the Copy Process");
+          return;
+        }
+      }
+    } catch (Exception e) {
+      environment.resetQuota(authentication, sumLength);
+      throw e;
+    }
+  }
+
+  @AllArgsConstructor(access = AccessLevel.PRIVATE)
+  @Builder
+  protected static class CopyEnvironment {
+    @Getter
+    private final InputStream inputStream;
+    @Getter
+    private final OutputStream outputStream;
+    private BiConsumer<Authentication, Integer> quotaChecker;
+    private BiConsumer<Authentication, Long> quotaResetter;
+
+    public void checkQuota(Authentication authentication, int length) {
       if (quotaChecker != null) {
         quotaChecker.accept(authentication, length);
       }
-      output.write(buffer, 0, length);
-      if (isInterrupted()) {
-        log.warn("Background Thread has been interrupted -> stop the Copy Process");
-        return;
+    }
+
+    public void resetQuota(Authentication authentication, long sumLength) {
+      if (quotaResetter != null) {
+        quotaResetter.accept(authentication, sumLength);
       }
     }
   }

@@ -49,6 +49,7 @@ class PipedOutputStreamLocalSynchronizerImpl extends AbstractPipedStreamSynchron
   private final OwncloudLocalProperties owncloudLocalProperties;
   private final SynchronizedPipedOutputStream pipedOutputStream;
   private final BiConsumer<Authentication, Integer> quotaChecker;
+  private final BiConsumer<Authentication, Long> quotaResetter;
   private final Optional<Consumer<Path>> onCloseCallback;
 
   private Path temporaryFile;
@@ -59,12 +60,14 @@ class PipedOutputStreamLocalSynchronizerImpl extends AbstractPipedStreamSynchron
       final Function<URI, Path> uriResolver,
       final OwncloudLocalProperties owncloudLocalProperties,
       final BiConsumer<Authentication, Integer> quotaChecker,
+      final BiConsumer<Authentication, Long> quotaResetter,
       final Consumer<Path> onCloseCallback) {
     super(authentication, owncloudLocalProperties, uri);
     this.outputFile = getOutputFile(uri, uriResolver);
     this.owncloudLocalProperties = owncloudLocalProperties;
     this.pipedOutputStream = new SynchronizedPipedOutputStream();
     this.quotaChecker = quotaChecker;
+    this.quotaResetter = quotaResetter;
     this.onCloseCallback = Optional.ofNullable(onCloseCallback);
   }
 
@@ -100,6 +103,7 @@ class PipedOutputStreamLocalSynchronizerImpl extends AbstractPipedStreamSynchron
       final Function<URI, Path> uriResolver,
       final OwncloudLocalProperties owncloudLocalProperties,
       final BiConsumer<Authentication, Integer> quotaChecker,
+      final BiConsumer<Authentication, Long> quotaResetter,
       final Consumer<Path> onCloseCallback) {
     return new PipedOutputStreamLocalSynchronizerImpl(
         authentication,
@@ -107,6 +111,7 @@ class PipedOutputStreamLocalSynchronizerImpl extends AbstractPipedStreamSynchron
         uriResolver,
         owncloudLocalProperties,
         quotaChecker,
+        quotaResetter,
         onCloseCallback);
   }
 
@@ -136,7 +141,13 @@ class PipedOutputStreamLocalSynchronizerImpl extends AbstractPipedStreamSynchron
     try (InputStream input = new PipedInputStream(pipedOutputStream);
         OutputStream output = Files.newOutputStream(temporaryFile)) {
       setPipeReady();
-      copy(input, output, quotaChecker);
+      CopyEnvironment copyEnvironment = CopyEnvironment.builder()
+          .inputStream(input)
+          .outputStream(output)
+          .quotaChecker(quotaChecker)
+          .quotaResetter(quotaResetter)
+          .build();
+      copy(copyEnvironment);
     } catch (OwncloudResourceException e) {
       pipedOutputStream.setOwncloudResourceException(e);
       throw e;
