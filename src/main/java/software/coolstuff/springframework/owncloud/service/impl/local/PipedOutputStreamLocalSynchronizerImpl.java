@@ -48,7 +48,7 @@ class PipedOutputStreamLocalSynchronizerImpl extends AbstractPipedStreamSynchron
   private final Path outputFile;
   private final OwncloudLocalProperties owncloudLocalProperties;
   private final SynchronizedPipedOutputStream pipedOutputStream;
-  private final BiConsumer<URI, Integer> fileSizeChecker;
+  private final BiConsumer<Authentication, Integer> quotaChecker;
   private final Optional<Consumer<Path>> onCloseCallback;
 
   private Path temporaryFile;
@@ -58,13 +58,13 @@ class PipedOutputStreamLocalSynchronizerImpl extends AbstractPipedStreamSynchron
       final URI uri,
       final Function<URI, Path> uriResolver,
       final OwncloudLocalProperties owncloudLocalProperties,
-      final BiConsumer<URI, Integer> fileSizeChecker,
+      final BiConsumer<Authentication, Integer> quotaChecker,
       final Consumer<Path> onCloseCallback) {
     super(authentication, owncloudLocalProperties, uri);
     this.outputFile = getOutputFile(uri, uriResolver);
     this.owncloudLocalProperties = owncloudLocalProperties;
     this.pipedOutputStream = new SynchronizedPipedOutputStream();
-    this.fileSizeChecker = fileSizeChecker;
+    this.quotaChecker = quotaChecker;
     this.onCloseCallback = Optional.ofNullable(onCloseCallback);
   }
 
@@ -99,14 +99,14 @@ class PipedOutputStreamLocalSynchronizerImpl extends AbstractPipedStreamSynchron
       final URI uri,
       final Function<URI, Path> uriResolver,
       final OwncloudLocalProperties owncloudLocalProperties,
-      final BiConsumer<URI, Integer> fileSizeChecker,
+      final BiConsumer<Authentication, Integer> quotaChecker,
       final Consumer<Path> onCloseCallback) {
     return new PipedOutputStreamLocalSynchronizerImpl(
         authentication,
         uri,
         uriResolver,
         owncloudLocalProperties,
-        fileSizeChecker,
+        quotaChecker,
         onCloseCallback);
   }
 
@@ -136,7 +136,7 @@ class PipedOutputStreamLocalSynchronizerImpl extends AbstractPipedStreamSynchron
     try (InputStream input = new PipedInputStream(pipedOutputStream);
         OutputStream output = Files.newOutputStream(temporaryFile)) {
       setPipeReady();
-      copy(input, output, fileSizeChecker);
+      copy(input, output, quotaChecker);
     } catch (OwncloudResourceException e) {
       pipedOutputStream.setOwncloudResourceException(e);
       throw e;

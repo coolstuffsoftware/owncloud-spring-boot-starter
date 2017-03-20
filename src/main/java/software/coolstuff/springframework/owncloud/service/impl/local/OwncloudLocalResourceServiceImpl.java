@@ -306,7 +306,7 @@ class OwncloudLocalResourceServiceImpl implements OwncloudResourceService {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     PipedOutputStreamLocalSynchronizer pipedStreamSynchronizer = PipedOutputStreamLocalSynchronizer.builder()
         .authentication(authentication)
-        .fileSizeChecker(this::checkQuota)
+        .quotaChecker(this::checkQuota)
         .onCloseCallback(checksumService::recalculateChecksum)
         .owncloudLocalProperties(properties)
         .uri(href)
@@ -315,7 +315,7 @@ class OwncloudLocalResourceServiceImpl implements OwncloudResourceService {
     return pipedStreamSynchronizer.getOutputStream();
   }
 
-  private void checkQuota(URI uri, int length) {
+  private void checkQuota(Authentication authentication, int length) {
     // TODO: implement me !!!
   }
 

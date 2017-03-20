@@ -163,11 +163,11 @@ public abstract class AbstractPipedStreamSynchronizerImpl {
     copy(input, output, null);
   }
 
-  protected void copy(InputStream input, OutputStream output, BiConsumer<URI, Integer> lengthChecker) throws IOException {
+  protected void copy(InputStream input, OutputStream output, BiConsumer<Authentication, Integer> quotaChecker) throws IOException {
     byte[] buffer = new byte[getBufferSize()];
     for (int length = 0; (length = input.read(buffer)) != EOF;) {
-      if (lengthChecker != null) {
-        lengthChecker.accept(getUri(), length);
+      if (quotaChecker != null) {
+        quotaChecker.accept(authentication, length);
       }
       output.write(buffer, 0, length);
       if (isInterrupted()) {
