@@ -26,40 +26,48 @@ import java.net.URI;
 import java.util.Optional;
 import java.util.function.BiFunction;
 
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.http.client.ClientHttpRequest;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestOperations;
 
 import lombok.Builder;
+import lombok.extern.slf4j.Slf4j;
 import software.coolstuff.springframework.owncloud.exception.resource.OwncloudRestResourceException;
-import software.coolstuff.springframework.owncloud.model.OwncloudFileResource;
 
+@Slf4j
 class PipedOutputStreamRestSynchronizerImpl extends AbstractPipedStreamRestSynchronizerImpl implements PipedOutputStreamRestSynchronizer {
 
+  private final Optional<MediaType> mediaType;
   private final SynchronizedPipedOutputStream pipedOutputStream;
 
   private PipedOutputStreamRestSynchronizerImpl(
       final Authentication authentication,
-      final OwncloudFileResource owncloudFileResource,
+      final URI uri,
+      final MediaType mediaType,
       final OwncloudRestProperties owncloudRestProperties,
       final RestOperations restOperations,
       final BiFunction<URI, String, URI> uriResolver) {
-    super(authentication, owncloudFileResource, owncloudRestProperties, restOperations, uriResolver);
+    super(authentication, uri, owncloudRestProperties, restOperations, uriResolver);
     this.pipedOutputStream = new SynchronizedPipedOutputStream();
+    this.mediaType = Optional.ofNullable(mediaType);
   }
 
   @Builder
   private static PipedOutputStreamRestSynchronizer build(
       final Authentication authentication,
-      final OwncloudFileResource owncloudFileResource,
+      final URI uri,
+      final MediaType mediaType,
       final OwncloudRestProperties owncloudRestProperties,
       final RestOperations restOperations,
       final BiFunction<URI, String, URI> uriResolver) {
     return new PipedOutputStreamRestSynchronizerImpl(
         authentication,
-        owncloudFileResource,
+        uri,
+        mediaType,
         owncloudRestProperties,
         restOperations,
         uriResolver);
@@ -90,6 +98,14 @@ class PipedOutputStreamRestSynchronizerImpl extends AbstractPipedStreamRestSynch
     copy(input, clientHttpRequest.getBody());
   }
 
+  private void addContentTypeHeader(ClientHttpRequest clientHttpRequest) {
+    mediaType.ifPresent(mediaType -> {
+      log.debug("Set the ContentType Header to {}", mediaType.toString());
+      HttpHeaders headers = clientHttpRequest.getHeaders();
+      headers.add(HttpHeaders.CONTENT_TYPE, mediaType.toString());
+    });
+  }
+
   @Override
   public OutputStream getOutputStream() {
     startThreadAndWaitForConnectedPipe();
@@ -108,14 +124,16 @@ class PipedOutputStreamRestSynchronizerImpl extends AbstractPipedStreamRestSynch
     public void close() throws IOException {
       super.close();
       setPipeReady();
-      restClientException.ifPresent(restClientException -> {
-        RestClientExceptionHandlerEnvironment exceptionHandlerEnvironment = RestClientExceptionHandlerEnvironment.builder()
-            .restClientException(restClientException)
-            .requestURI(getUnresolvedUri())
-            .username(getUsername())
-            .build();
-        OwncloudRestUtils.handleRestClientException(exceptionHandlerEnvironment);
-      });
+      restClientException.ifPresent(this::handleRestClientException);
+    }
+
+    private void handleRestClientException(RestClientException exception) {
+      RestClientExceptionHandlerEnvironment exceptionHandlerEnvironment = RestClientExceptionHandlerEnvironment.builder()
+          .restClientException(exception)
+          .requestURI(getUri())
+          .username(getUsername())
+          .build();
+      OwncloudRestUtils.handleRestClientException(exceptionHandlerEnvironment);
     }
   }
 }

@@ -321,7 +321,7 @@ class OwncloudRestResourceServiceImpl implements OwncloudResourceService, Ownclo
     }
 
     public String getUsername() {
-      return (authentication == null ? null : authentication.getName());
+      return authentication == null ? null : authentication.getName();
     }
 
     public void registerStatusCodeHandler(int statusCode, Function<SardineExceptionHandlerEnvironment, Optional<OwncloudResource>> statusCodeHandler) {
@@ -452,9 +452,9 @@ class OwncloudRestResourceServiceImpl implements OwncloudResourceService, Ownclo
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     PipedInputStreamRestSynchronizer pipedInputStreamSynchronizer = PipedInputStreamRestSynchronizer.build()
         .authentication(authentication)
-        .owncloudFileResource(resource)
         .owncloudRestProperties(properties)
         .restOperations(restOperations)
+        .uri(resource.getHref())
         .uriResolver(this::resolveAsFileURI)
         .build();
     return pipedInputStreamSynchronizer.getInputStream();
@@ -471,9 +471,10 @@ class OwncloudRestResourceServiceImpl implements OwncloudResourceService, Ownclo
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     PipedOutputStreamRestSynchronizer pipedOutputStreamSynchronizer = PipedOutputStreamRestSynchronizer.builder()
         .authentication(authentication)
-        .owncloudFileResource(resource)
+        .mediaType(resource.getMediaType())
         .owncloudRestProperties(properties)
         .restOperations(restOperations)
+        .uri(resource.getHref())
         .uriResolver(this::resolveAsFileURI)
         .build();
     return pipedOutputStreamSynchronizer.getOutputStream();

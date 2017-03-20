@@ -18,6 +18,9 @@
 package software.coolstuff.springframework.owncloud.service.impl;
 
 import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
+
+import org.springframework.boot.logging.LogLevel;
 
 import lombok.Data;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudUserModificationService;
@@ -81,6 +84,12 @@ public abstract class OwncloudProperties {
     @Min(1)
     private int pipedStreamBufferSize = DEFAULT_BUFFER_SIZE;
 
+    /**
+     * Log-Level of any uncaught Exception while running the Background-Thread
+     * of the PipedStream-Synchronizer.
+     */
+    @NotNull
+    private LogLevel pipedStreamUncaughtExceptionLogLevel = LogLevel.ERROR;
   }
 
   /**

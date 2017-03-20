@@ -43,6 +43,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestExecutionListeners;
 
 import software.coolstuff.springframework.owncloud.exception.resource.OwncloudLocalResourceChecksumServiceException;
+import software.coolstuff.springframework.owncloud.exception.resource.OwncloudLocalResourceException;
 import software.coolstuff.springframework.owncloud.model.OwncloudResource;
 import software.coolstuff.springframework.owncloud.service.AbstractOwncloudResourceServiceTest;
 import software.coolstuff.springframework.owncloud.service.impl.OwncloudUtils;
@@ -164,7 +165,7 @@ public class OwncloudLocalResourceServiceTest extends AbstractOwncloudResourceSe
   protected void prepare_getOutputStream_NOK_Unauthorized(OwncloudTestFileResourceImpl owncloudFileResource) throws Exception {
     Path resourcePath = resolveRelativePath(Paths.get(owncloudFileResource.getHref().getPath()));
     Mockito
-        .doThrow(IOException.class)
+        .doThrow(OwncloudLocalResourceException.class)
         .when(checksumService).recalculateChecksum(resourcePath);
   };
 

@@ -56,6 +56,8 @@ class OwncloudLocalProperties extends OwncloudProperties {
     private Path location;
     @NotNull
     private MessageDigestAlgorithm messageDigestAlgorithm = MessageDigestAlgorithm.MD5;
+    @NotNull
+    private String pipedStreamTemporaryFilePrefix = "owncloud";
   }
 
   private ResourceServiceProperties resourceService = new ResourceServiceProperties();

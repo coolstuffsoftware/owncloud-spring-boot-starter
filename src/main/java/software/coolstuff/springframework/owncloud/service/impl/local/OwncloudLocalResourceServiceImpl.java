@@ -17,8 +17,6 @@
 */
 package software.coolstuff.springframework.owncloud.service.impl.local;
 
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -50,7 +48,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 import lombok.extern.slf4j.Slf4j;
 import software.coolstuff.springframework.owncloud.exception.resource.OwncloudLocalResourceException;
 import software.coolstuff.springframework.owncloud.exception.resource.OwncloudNoDirectoryResourceException;
-import software.coolstuff.springframework.owncloud.exception.resource.OwncloudNoFileResourceException;
 import software.coolstuff.springframework.owncloud.exception.resource.OwncloudResourceNotFoundException;
 import software.coolstuff.springframework.owncloud.model.OwncloudFileResource;
 import software.coolstuff.springframework.owncloud.model.OwncloudQuota;
@@ -306,38 +303,20 @@ class OwncloudLocalResourceServiceImpl implements OwncloudResourceService {
 
   @Override
   public OutputStream getOutputStream(URI href, MediaType mediaType) {
-    Path location = resolveLocation(href);
-    try {
-      if (Files.notExists(location)) {
-        Files.createFile(location);
-      } else if (Files.isDirectory(location)) {
-        throw new OwncloudNoFileResourceException(href);
-      }
-      return new ContentOutputStream(location);
-    } catch (IOException e) {
-      log.error(String.format("Error while retrieving Content of File %s", location.toAbsolutePath().normalize().toString()), e);
-      throw new OwncloudLocalResourceException(e);
-    }
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    PipedOutputStreamLocalSynchronizer pipedStreamSynchronizer = PipedOutputStreamLocalSynchronizer.builder()
+        .authentication(authentication)
+        .fileSizeChecker(this::checkQuota)
+        .onCloseCallback(checksumService::recalculateChecksum)
+        .owncloudLocalProperties(properties)
+        .uri(href)
+        .uriResolver(this::resolveLocation)
+        .build();
+    return pipedStreamSynchronizer.getOutputStream();
   }
 
-  private class ContentOutputStream extends FileOutputStream {
-
-    private final Path path;
-
-    public ContentOutputStream(final Path path) throws FileNotFoundException {
-      super(path.toFile());
-      this.path = path;
-    }
-
-    @Override
-    public void close() {
-      try {
-        super.close();
-        checksumService.recalculateChecksum(path);
-      } catch (IOException e) {
-        throw new OwncloudLocalResourceException(e);
-      }
-    }
+  private void checkQuota(URI uri, int length) {
+    // TODO: implement me !!!
   }
 
   @Override

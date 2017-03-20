@@ -33,36 +33,35 @@ import org.springframework.web.client.RestOperations;
 
 import lombok.Builder;
 import software.coolstuff.springframework.owncloud.exception.resource.OwncloudRestResourceException;
-import software.coolstuff.springframework.owncloud.model.OwncloudFileResource;
 
 class PipedInputStreamRestSynchronizerImpl extends AbstractPipedStreamRestSynchronizerImpl implements PipedInputStreamRestSynchronizer {
 
   private final SynchronizedPipedInputStream pipedInputStream = new SynchronizedPipedInputStream();
 
-  @Builder
-  private static PipedInputStreamRestSynchronizer build(
-      final Authentication authentication,
-      final OwncloudFileResource owncloudFileResource,
-      final OwncloudRestProperties owncloudRestProperties,
-      final RestOperations restOperations,
-      final BiFunction<URI, String, URI> uriResolver) {
-    return new PipedInputStreamRestSynchronizerImpl(
-        authentication,
-        owncloudFileResource,
-        owncloudRestProperties,
-        restOperations,
-        uriResolver);
-  }
-
   private PipedInputStreamRestSynchronizerImpl(
       final Authentication authentication,
-      final OwncloudFileResource owncloudFileResource,
+      final URI uri,
       final OwncloudRestProperties owncloudRestProperties,
       final RestOperations restOperations,
       final BiFunction<URI, String, URI> uriResolver) {
     super(
         authentication,
-        owncloudFileResource,
+        uri,
+        owncloudRestProperties,
+        restOperations,
+        uriResolver);
+  }
+
+  @Builder
+  private static PipedInputStreamRestSynchronizer build(
+      final Authentication authentication,
+      final URI uri,
+      final OwncloudRestProperties owncloudRestProperties,
+      final RestOperations restOperations,
+      final BiFunction<URI, String, URI> uriResolver) {
+    return new PipedInputStreamRestSynchronizerImpl(
+        authentication,
+        uri,
         owncloudRestProperties,
         restOperations,
         uriResolver);
@@ -104,15 +103,16 @@ class PipedInputStreamRestSynchronizerImpl extends AbstractPipedStreamRestSynchr
     @Override
     public void close() throws IOException {
       super.close();
-      restClientException.ifPresent(restClientException -> {
-        RestClientExceptionHandlerEnvironment exceptionHandlerEnvironment = RestClientExceptionHandlerEnvironment.builder()
-            .restClientException(restClientException)
-            .requestURI(getUnresolvedUri())
-            .username(getUsername())
-            .build();
-        OwncloudRestUtils.handleRestClientException(exceptionHandlerEnvironment);
-      });
+      restClientException.ifPresent(this::handleRestClientException);
     }
 
+    private void handleRestClientException(RestClientException exception) {
+      RestClientExceptionHandlerEnvironment exceptionHandlerEnvironment = RestClientExceptionHandlerEnvironment.builder()
+          .restClientException(exception)
+          .requestURI(getUri())
+          .username(getUsername())
+          .build();
+      OwncloudRestUtils.handleRestClientException(exceptionHandlerEnvironment);
+    }
   }
 }

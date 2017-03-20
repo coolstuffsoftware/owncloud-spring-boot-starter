@@ -39,4 +39,13 @@ public abstract class OwncloudResourceException extends RuntimeException {
   protected OwncloudResourceException(String message, Throwable throwable) {
     super(message, throwable);
   }
+
+  /**
+   * Rethrow the given OwncloudResourceException
+   * @param owncloudResourceException rethrowable Exception
+   */
+  public static void reThrow(OwncloudResourceException owncloudResourceException) {
+    throw owncloudResourceException;
+  }
+
 }

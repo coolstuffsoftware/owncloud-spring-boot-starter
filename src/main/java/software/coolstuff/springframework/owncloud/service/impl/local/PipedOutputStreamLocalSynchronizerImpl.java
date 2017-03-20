@@ -17,47 +17,176 @@
 */
 package software.coolstuff.springframework.owncloud.service.impl.local;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
+import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.Optional;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 import org.springframework.security.core.Authentication;
 
-import lombok.AccessLevel;
 import lombok.Builder;
-import lombok.RequiredArgsConstructor;
-import software.coolstuff.springframework.owncloud.model.OwncloudFileResource;
-import software.coolstuff.springframework.owncloud.service.impl.OwncloudProperties;
-import software.coolstuff.springframework.owncloud.service.impl.OwncloudProperties.ResourceServiceProperties;
+import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
+import software.coolstuff.springframework.owncloud.exception.resource.OwncloudLocalResourceException;
+import software.coolstuff.springframework.owncloud.exception.resource.OwncloudNoFileResourceException;
+import software.coolstuff.springframework.owncloud.exception.resource.OwncloudResourceException;
+import software.coolstuff.springframework.owncloud.service.impl.AbstractPipedStreamSynchronizerImpl;
+import software.coolstuff.springframework.owncloud.service.impl.local.OwncloudLocalProperties.ResourceServiceProperties;
 
-@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-class PipedOutputStreamLocalSynchronizerImpl implements PipedOutputStreamLocalSynchronizer {
+@Slf4j
+class PipedOutputStreamLocalSynchronizerImpl extends AbstractPipedStreamSynchronizerImpl implements PipedOutputStreamLocalSynchronizer {
 
-  private final Authentication authentication;
-  private final OwncloudFileResource owncloudFileResource;
-  private final OwncloudProperties owncloudProperties;
+  private final Path outputFile;
+  private final OwncloudLocalProperties owncloudLocalProperties;
+  private final SynchronizedPipedOutputStream pipedOutputStream;
+  private final BiConsumer<URI, Integer> fileSizeChecker;
+  private final Optional<Consumer<Path>> onCloseCallback;
+
+  private Path temporaryFile;
+
+  private PipedOutputStreamLocalSynchronizerImpl(
+      final Authentication authentication,
+      final URI uri,
+      final Function<URI, Path> uriResolver,
+      final OwncloudLocalProperties owncloudLocalProperties,
+      final BiConsumer<URI, Integer> fileSizeChecker,
+      final Consumer<Path> onCloseCallback) {
+    super(authentication, owncloudLocalProperties, uri);
+    this.outputFile = getOutputFile(uri, uriResolver);
+    this.owncloudLocalProperties = owncloudLocalProperties;
+    this.pipedOutputStream = new SynchronizedPipedOutputStream();
+    this.fileSizeChecker = fileSizeChecker;
+    this.onCloseCallback = Optional.ofNullable(onCloseCallback);
+  }
+
+  private Path getOutputFile(URI uri, Function<URI, Path> uriResolver) {
+    Path path = uriResolver.apply(uri);
+    checkIsDirectory(path, uri);
+    createFileIfNotExists(path);
+    return path;
+  }
+
+  private void checkIsDirectory(Path path, URI uri) {
+    if (Files.isDirectory(path)) {
+      throw new OwncloudNoFileResourceException(uri);
+    }
+  }
+
+  private void createFileIfNotExists(Path path) {
+    try {
+      if (Files.notExists(path)) {
+        Files.createFile(path);
+      }
+    } catch (IOException e) {
+      String exceptionMessage = "Error while creating empty File " + path.toAbsolutePath().normalize().toString();
+      log.error(exceptionMessage, e);
+      throw new OwncloudLocalResourceException(exceptionMessage, e);
+    }
+  }
 
   @Builder
   private static PipedOutputStreamLocalSynchronizer build(
       final Authentication authentication,
-      final OwncloudFileResource owncloudFileResource,
-      final OwncloudProperties owncloudProperties) {
-    return new PipedOutputStreamLocalSynchronizerImpl(authentication, owncloudFileResource, owncloudProperties);
+      final URI uri,
+      final Function<URI, Path> uriResolver,
+      final OwncloudLocalProperties owncloudLocalProperties,
+      final BiConsumer<URI, Integer> fileSizeChecker,
+      final Consumer<Path> onCloseCallback) {
+    return new PipedOutputStreamLocalSynchronizerImpl(
+        authentication,
+        uri,
+        uriResolver,
+        owncloudLocalProperties,
+        fileSizeChecker,
+        onCloseCallback);
+  }
+
+  @Override
+  protected String getThreadName() {
+    return "pipe Content of " + outputFile.toAbsolutePath().normalize().toString();
   }
 
   @Override
   public OutputStream getOutputStream() {
-    throw new RuntimeException("not implemented now");
+    createTemporaryFile();
+    startThreadAndWaitForConnectedPipe();
+    return pipedOutputStream;
   }
 
-  private final int getBufferSize() {
-    return Optional.ofNullable(owncloudProperties)
-        .map(this::extractBufferSize)
-        .orElse(OwncloudProperties.DEFAULT_BUFFER_SIZE);
+  private void createTemporaryFile() {
+    try {
+      ResourceServiceProperties resourceProperties = owncloudLocalProperties.getResourceService();
+      temporaryFile = Files.createTempFile(resourceProperties.getPipedStreamTemporaryFilePrefix(), null);
+    } catch (IOException e) {
+      throw new OwncloudLocalResourceException(e);
+    }
   }
 
-  private int extractBufferSize(OwncloudProperties properties) {
-    ResourceServiceProperties resourceProperties = properties.getResourceService();
-    return resourceProperties.getPipedStreamBufferSize();
+  @Override
+  protected void createPipedStream() {
+    try (InputStream input = new PipedInputStream(pipedOutputStream);
+        OutputStream output = Files.newOutputStream(temporaryFile)) {
+      setPipeReady();
+      copy(input, output, fileSizeChecker);
+    } catch (OwncloudResourceException e) {
+      pipedOutputStream.setOwncloudResourceException(e);
+      throw e;
+    } catch (IOException e) {
+      pipedOutputStream.setIOException(e);
+      throw new OwncloudLocalResourceException(e);
+    } finally {
+      waitForPipeReady();
+    }
   }
 
+  private class SynchronizedPipedOutputStream extends PipedOutputStream {
+
+    @Setter
+    private IOException iOException;
+
+    private Optional<OwncloudResourceException> owncloudResourceException = Optional.empty();
+
+    public void setOwncloudResourceException(OwncloudResourceException owncloudResourceException) {
+      this.owncloudResourceException = Optional.ofNullable(owncloudResourceException);
+    }
+
+    @Override
+    public void close() throws IOException {
+      super.close();
+      try {
+        moveTemporaryToRealFile();
+        onCloseCallback.ifPresent(callback -> callback.accept(outputFile));
+        throwOptionalIOException();
+        owncloudResourceException.ifPresent(OwncloudResourceException::reThrow);
+      } finally {
+        setPipeReady();
+      }
+    }
+
+    private void moveTemporaryToRealFile() throws IOException {
+      if (isExceptionAvailable()) {
+        return;
+      }
+      Files.move(temporaryFile, outputFile, StandardCopyOption.REPLACE_EXISTING);
+    }
+
+    private boolean isExceptionAvailable() {
+      return iOException != null || owncloudResourceException.isPresent();
+    }
+
+    private void throwOptionalIOException() throws IOException {
+      if (iOException != null) {
+        throw iOException;
+      }
+    }
+  }
 }
