@@ -44,7 +44,7 @@ public abstract class AbstractOwncloudUserDetailsServiceWithAuthorityMapperTest 
   @Test
   @WithMockUser(username = "test1", password = "password")
   public void testMappedGroups() throws Exception {
-    prepareTestMappedGroups("user1", true, "user1@example.com", "Mr. User 1", "group1", "group2");
+    prepareTestMappedGroups("user1", true, "user1@example.com", "Mr. User 1", 1024L, "group1", "group2");
 
     UserDetails userDetails = userDetailsService.loadUserByUsername("user1");
     verifyServer();
@@ -55,6 +55,6 @@ public abstract class AbstractOwncloudUserDetailsServiceWithAuthorityMapperTest 
     checkAuthorities(userDetails.getUsername(), userDetails.getAuthorities(), "group1", "group2");
   }
 
-  protected void prepareTestMappedGroups(String username, boolean enable, String email, String displayName, String... groups) throws Exception {}
+  protected void prepareTestMappedGroups(String username, boolean enable, String email, String displayName, Long quota, String... groups) throws Exception {}
 
 }

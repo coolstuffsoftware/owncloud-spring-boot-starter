@@ -110,6 +110,13 @@ public class OwncloudUserDetails implements UserDetails {
    */
   private String email;
 
+  /**
+   * Quota of the User.
+   * @param quota Quota of the User
+   * @return Quota of the User
+   */
+  private Long quota;
+
   public static class OwncloudUserDetailsBuilder {
     private boolean enabled = true;
   }
@@ -122,7 +129,8 @@ public class OwncloudUserDetails implements UserDetails {
       Collection<? extends GrantedAuthority> authorities,
       List<String> groups,
       String displayname,
-      String email) {
+      String email,
+      Long quota) {
     setUsername(username);
     setPassword(password);
     setEnabled(enabled);
@@ -130,6 +138,7 @@ public class OwncloudUserDetails implements UserDetails {
     setGroups(groups);
     setDisplayname(displayname);
     setEmail(email);
+    setQuota(quota);
   }
 
   @Override

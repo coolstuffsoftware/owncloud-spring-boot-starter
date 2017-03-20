@@ -17,11 +17,14 @@
 */
 package software.coolstuff.springframework.owncloud.service.impl.rest;
 
+import java.text.DecimalFormat;
+import java.text.Format;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,8 +45,7 @@ import software.coolstuff.springframework.owncloud.service.api.OwncloudUserModif
 import software.coolstuff.springframework.owncloud.service.api.OwncloudUserQueryService;
 
 @Slf4j
-class OwncloudRestUserModificationServiceImpl extends AbstractOwncloudRestServiceImpl
-    implements OwncloudUserModificationService {
+class OwncloudRestUserModificationServiceImpl extends AbstractOwncloudRestServiceImpl implements OwncloudUserModificationService {
 
   @Autowired
   private OwncloudUserQueryService userQueryService;
@@ -75,13 +77,18 @@ class OwncloudRestUserModificationServiceImpl extends AbstractOwncloudRestServic
 
   private void updateUser(OwncloudModificationUser user, Ocs.User.Data existingUser) {
     // change the Display Name
-    if (!StringUtils.equals(user.getDisplayname(), existingUser.getDisplayname())) {
+    if (isDisplaynameChanged(user, existingUser)) {
       updateOwncloudUserField(user.getUsername(), UserUpdateField.DISPLAY_NAME, user.getDisplayname());
     }
 
     // change the eMail
-    if (!StringUtils.equals(user.getEmail(), existingUser.getEmail())) {
+    if (isEmailChanged(user, existingUser)) {
       updateOwncloudUserField(user.getUsername(), UserUpdateField.EMAIL, user.getEmail());
+    }
+
+    // change the Quota
+    if (isQuotaChanged(user, existingUser)) {
+      updateOwncloudUserField(user.getUsername(), UserUpdateField.QUOTA, user.getQuota());
     }
 
     // change the availability Status
@@ -92,64 +99,100 @@ class OwncloudRestUserModificationServiceImpl extends AbstractOwncloudRestServic
     manageGroupMemberships(user.getUsername(), user.getGroups());
   }
 
-  private void updateOwncloudUserField(String username, UserUpdateField updateField, String value) {
+  private boolean isDisplaynameChanged(OwncloudModificationUser user, Ocs.User.Data existingUser) {
+    return !StringUtils.equals(user.getDisplayname(), existingUser.getDisplayname());
+  }
+
+  private void updateOwncloudUserField(String username, UserUpdateField updateField, Object value) {
     log.trace("Create the Message Body for the Change Request of the Attribute {} of User {} on Location {}",
         updateField, username, getLocation());
     Map<String, List<String>> data = new HashMap<>();
     data.put("key", Lists.newArrayList(updateField.getFieldName()));
-    data.put("value", Lists.newArrayList(value));
+    if (value != null) {
+      data.put("value", Lists.newArrayList(updateField.format(value)));
+    }
 
     log.debug("Update Attribute {} of User {} on Location {}", updateField, username, getLocation());
-    exchange("/cloud/users/{user}", HttpMethod.PUT, multiValuedEntity(data), Ocs.Void.class, (authorizationUser, uri, meta) -> {
-      if ("ok".equals(meta.getStatus())) {
-        return;
-      }
+    exchange(
+        "/cloud/users/{user}",
+        HttpMethod.PUT,
+        multiValuedEntity(data),
+        Ocs.Void.class,
+        (authenticatedUser, uri, meta) -> checkFieldUpdate(authenticatedUser, uri, meta, username),
+        username);
+  }
 
-      String exceptionMessage;
-      switch (meta.getStatuscode()) {
-        case 101:
-          log.warn("Error 101: User {} not found", username);
-          throw new IllegalStateException("User " + username + " not found");
-        case 102:
-          log.error("Error 102: {}", meta.getMessage());
-          throw new IllegalStateException(meta.getMessage());
-        case 997:
-          exceptionMessage = String.format("User %s is not authorized to access Resource %s", authorizationUser, uri);
-          log.warn("Error 997: {}", exceptionMessage);
-          throw new AccessDeniedException(exceptionMessage);
-        default:
-          exceptionMessage = String.format("Unknown Error Code %d. Reason: %s", meta.getStatuscode(), StringUtils.defaultIfEmpty(meta.getMessage(), ""));
-          log.error(exceptionMessage);
-          throw new IllegalStateException(exceptionMessage);
-      }
-    }, username);
+  private void checkFieldUpdate(String authenticatedUser, String uri, Ocs.Meta meta, String username) {
+    if ("ok".equals(meta.getStatus())) {
+      return;
+    }
+
+    String exceptionMessage;
+    switch (meta.getStatuscode()) {
+      case 101:
+        log.warn("Error 101: User {} not found", username);
+        throw new IllegalStateException("User " + username + " not found");
+      case 102:
+        log.error("Error 102: {}", meta.getMessage());
+        throw new IllegalStateException(meta.getMessage());
+      case 103:
+        log.error("Error 103: {}", meta.getMessage());
+        throw new IllegalStateException(meta.getMessage());
+      case 997:
+        exceptionMessage = String.format("User %s is not authorized to access Resource %s", authenticatedUser, uri);
+        log.warn("Error 997: {}", exceptionMessage);
+        throw new AccessDeniedException(exceptionMessage);
+      default:
+        exceptionMessage = String.format("Unknown Error Code %d. Reason: %s", meta.getStatuscode(), StringUtils.defaultIfEmpty(meta.getMessage(), ""));
+        log.error(exceptionMessage);
+        throw new IllegalStateException(exceptionMessage);
+    }
+  }
+
+  private boolean isEmailChanged(OwncloudModificationUser user, Ocs.User.Data existingUser) {
+    return !StringUtils.equals(user.getEmail(), existingUser.getEmail());
+  }
+
+  private boolean isQuotaChanged(OwncloudModificationUser user, Ocs.User.Data existingUser) {
+    Long newQuota = user.getQuota();
+    Long existingQuota = (existingUser.getQuota() != null ? existingUser.getQuota().getTotal() : null);
+    return ObjectUtils.compare(newQuota, existingQuota) != 0;
   }
 
   private void changeOwncloudUserAvailabilityStatus(String username, boolean status) {
     log.debug("{} User {} on Location {}", status ? "Enable" : "Disable", username, getLocation());
-    exchange("/cloud/users/{user}/{status}", HttpMethod.PUT, emptyEntity(), Ocs.Void.class, (authorizationUser, uri, meta) -> {
-      if ("ok".equals(meta.getStatus())) {
-        return;
-      }
+    exchange(
+        "/cloud/users/{user}/{status}",
+        HttpMethod.PUT,
+        emptyEntity(),
+        Ocs.Void.class,
+        (authenticatedUser, uri, meta) -> checkAvailabilityStatusUpdate(authenticatedUser, uri, meta, username),
+        username,
+        status ? "enable" : "disable");
+  }
 
-      String exceptionMessage;
-      switch (meta.getStatuscode()) {
-        case 101:
-          log.error("Error 101: User {} not found", username);
-          throw new IllegalStateException("User " + username + " not found");
-        case 102:
-          log.error("Error 102: {}", meta.getMessage());
-          throw new IllegalStateException(meta.getMessage());
-        case 997:
-          exceptionMessage = String.format("User %s is not authorized to access Resource %s", authorizationUser, uri);
-          log.warn("Error 997: {}", exceptionMessage);
-          throw new AccessDeniedException(exceptionMessage);
-        default:
-          exceptionMessage = String.format("Unknown Error Code %d. Reason: %s", meta.getStatuscode(), StringUtils.defaultIfEmpty(meta.getMessage(), ""));
-          log.error(exceptionMessage);
-          throw new IllegalStateException(exceptionMessage);
-      }
-    }, username, status ? "enable" : "disable");
+  private void checkAvailabilityStatusUpdate(String authenticatedUser, String uri, Ocs.Meta meta, String username) {
+    if ("ok".equals(meta.getStatus())) {
+      return;
+    }
+
+    String exceptionMessage;
+    switch (meta.getStatuscode()) {
+      case 101:
+        log.error("Error 101: User {} not found", username);
+        throw new IllegalStateException("User " + username + " not found");
+      case 102:
+        log.error("Error 102: {}", meta.getMessage());
+        throw new IllegalStateException(meta.getMessage());
+      case 997:
+        exceptionMessage = String.format("User %s is not authorized to access Resource %s", username, uri);
+        log.warn("Error 997: {}", exceptionMessage);
+        throw new AccessDeniedException(exceptionMessage);
+      default:
+        exceptionMessage = String.format("Unknown Error Code %d. Reason: %s", meta.getStatuscode(), StringUtils.defaultIfEmpty(meta.getMessage(), ""));
+        log.error(exceptionMessage);
+        throw new IllegalStateException(exceptionMessage);
+    }
   }
 
   private void manageGroupMemberships(String username, List<String> expectedGroups) {
@@ -171,40 +214,13 @@ class OwncloudRestUserModificationServiceImpl extends AbstractOwncloudRestServic
         data.put("groupid", Lists.newArrayList(groupname));
 
         log.debug("Assign Group {} to User {} on Location {}", groupname, username, getLocation());
-        exchange("/cloud/users/{user}/groups", HttpMethod.POST, multiValuedEntity(data), Ocs.Void.class, (authorizationUser, uri, meta) -> {
-          if ("ok".equals(meta.getStatus())) {
-            return;
-          }
-
-          String exceptionMessage;
-          switch (meta.getStatuscode()) {
-            case 101:
-              log.error("Error 101: {}", meta.getMessage());
-              throw new IllegalArgumentException(meta.getMessage());
-            case 102:
-              log.warn("Error 102: Owncloud Group {} not found", groupname);
-              throw new OwncloudGroupNotFoundException(groupname);
-            case 103:
-              log.warn("Error 103: User {} not found", username);
-              throw new IllegalStateException("User " + username + " not found");
-            case 104:
-              exceptionMessage = String.format("User %s is not authorized to assign Group %s to User %s", authorizationUser, groupname, username);
-              log.warn("Error 104: {}", exceptionMessage);
-              throw new AccessDeniedException(exceptionMessage);
-            case 105:
-              exceptionMessage = String.format("Error while assign Group %s to User %s. Reason: %s", groupname, username, StringUtils.defaultIfEmpty(meta.getMessage(), ""));
-              log.error("Error 105: {}", exceptionMessage);
-              throw new IllegalStateException(exceptionMessage);
-            case 997:
-              exceptionMessage = String.format("User %s is not authorized to access Resource %s", authorizationUser, uri);
-              log.warn("Error 997: {}", exceptionMessage);
-              throw new AccessDeniedException(exceptionMessage);
-            default:
-              exceptionMessage = String.format("Unknown Error Code %d. Reason: %s", meta.getStatuscode(), StringUtils.defaultIfEmpty(meta.getMessage(), ""));
-              log.error(exceptionMessage);
-              throw new IllegalStateException(exceptionMessage);
-          }
-        }, username);
+        exchange(
+            "/cloud/users/{user}/groups",
+            HttpMethod.POST,
+            multiValuedEntity(data),
+            Ocs.Void.class,
+            (authenticatedUser, uri, meta) -> checkAssignGroupMembership(authenticatedUser, uri, meta, username, groupname),
+            username);
       }
     }
 
@@ -215,43 +231,87 @@ class OwncloudRestUserModificationServiceImpl extends AbstractOwncloudRestServic
         Map<String, List<String>> data = new HashMap<>();
         data.put("groupid", Lists.newArrayList(groupname));
 
-        log.debug("Unassign Group {} from User {} on Location {}", groupname, username, getLocation());
-        exchange("/cloud/users/{user}/groups", HttpMethod.DELETE, multiValuedEntity(data), Ocs.Void.class, (authorizationUser, uri, meta) -> {
-          if ("ok".equals(meta.getStatus())) {
-            return;
-          }
-
-          String exceptionMessage;
-          switch (meta.getStatuscode()) {
-            case 101:
-              log.error("Error 101: {}", meta.getMessage());
-              throw new IllegalArgumentException(meta.getMessage());
-            case 102:
-              log.warn("Error 102: Owncloud Group {} not found", groupname);
-              throw new OwncloudGroupNotFoundException(groupname);
-            case 103:
-              log.warn("Error 103: User {} not found", username);
-              throw new IllegalStateException("User " + username + " not found");
-            case 104:
-              exceptionMessage = String.format("User %s is not authorized to unassign Group %s from User %s", authorizationUser, groupname, username);
-              log.warn("Error 104: {}", exceptionMessage);
-              throw new AccessDeniedException(exceptionMessage);
-            case 105:
-              exceptionMessage = String.format("Error while unassign Group %s from User %s. Reason: %s", groupname, username, StringUtils.defaultIfEmpty(meta.getMessage(), ""));
-              log.error("Error 105: {}", exceptionMessage);
-              throw new IllegalStateException(exceptionMessage);
-            case 997:
-              exceptionMessage = String.format("User %s is not authorized to access Resource %s", authorizationUser, uri);
-              log.warn("Error 997: {}", exceptionMessage);
-              throw new AccessDeniedException(exceptionMessage);
-            default:
-              exceptionMessage = String.format("Unknown Error Code %d. Reason: %s", meta.getStatuscode(), StringUtils.defaultIfEmpty(meta.getMessage(), ""));
-              log.error(exceptionMessage);
-              throw new IllegalStateException(exceptionMessage);
-          }
-        }, username);
+        log.debug("Remove Group {} from User {} on Location {}", groupname, username, getLocation());
+        exchange(
+            "/cloud/users/{user}/groups",
+            HttpMethod.DELETE,
+            multiValuedEntity(data),
+            Ocs.Void.class,
+            (authenticatedUser, uri, meta) -> checkRemoveGroupMembership(authenticatedUser, uri, meta, username, groupname),
+            username);
       }
     }
+  }
+
+  private void checkAssignGroupMembership(String authenticatedUser, String uri, Ocs.Meta meta, String username, String groupname) {
+    if ("ok".equals(meta.getStatus())) {
+      return;
+    }
+
+    String exceptionMessage;
+    switch (meta.getStatuscode()) {
+      case 101:
+        log.error("Error 101: {}", meta.getMessage());
+        throw new IllegalArgumentException(meta.getMessage());
+      case 102:
+        log.warn("Error 102: Owncloud Group {} not found", groupname);
+        throw new OwncloudGroupNotFoundException(groupname);
+      case 103:
+        log.warn("Error 103: User {} not found", username);
+        throw new IllegalStateException("User " + username + " not found");
+      case 104:
+        exceptionMessage = String.format("User %s is not authorized to assign Group %s to User %s", username, groupname, username);
+        log.warn("Error 104: {}", exceptionMessage);
+        throw new AccessDeniedException(exceptionMessage);
+      case 105:
+        exceptionMessage = String.format("Error while assign Group %s to User %s. Reason: %s", groupname, username, StringUtils.defaultIfEmpty(meta.getMessage(), ""));
+        log.error("Error 105: {}", exceptionMessage);
+        throw new IllegalStateException(exceptionMessage);
+      case 997:
+        exceptionMessage = String.format("User %s is not authorized to access Resource %s", username, uri);
+        log.warn("Error 997: {}", exceptionMessage);
+        throw new AccessDeniedException(exceptionMessage);
+      default:
+        exceptionMessage = String.format("Unknown Error Code %d. Reason: %s", meta.getStatuscode(), StringUtils.defaultIfEmpty(meta.getMessage(), ""));
+        log.error(exceptionMessage);
+        throw new IllegalStateException(exceptionMessage);
+    }
+  }
+
+  private void checkRemoveGroupMembership(String authenticatedUser, String uri, Ocs.Meta meta, String username, String groupname) {
+    if ("ok".equals(meta.getStatus())) {
+      return;
+    }
+
+    String exceptionMessage;
+    switch (meta.getStatuscode()) {
+      case 101:
+        log.error("Error 101: {}", meta.getMessage());
+        throw new IllegalArgumentException(meta.getMessage());
+      case 102:
+        log.warn("Error 102: Owncloud Group {} not found", groupname);
+        throw new OwncloudGroupNotFoundException(groupname);
+      case 103:
+        log.warn("Error 103: User {} not found", username);
+        throw new IllegalStateException("User " + username + " not found");
+      case 104:
+        exceptionMessage = String.format("User %s is not authorized to unassign Group %s from User %s", authenticatedUser, groupname, username);
+        log.warn("Error 104: {}", exceptionMessage);
+        throw new AccessDeniedException(exceptionMessage);
+      case 105:
+        exceptionMessage = String.format("Error while unassign Group %s from User %s. Reason: %s", groupname, username, StringUtils.defaultIfEmpty(meta.getMessage(), ""));
+        log.error("Error 105: {}", exceptionMessage);
+        throw new IllegalStateException(exceptionMessage);
+      case 997:
+        exceptionMessage = String.format("User %s is not authorized to access Resource %s", authenticatedUser, uri);
+        log.warn("Error 997: {}", exceptionMessage);
+        throw new AccessDeniedException(exceptionMessage);
+      default:
+        exceptionMessage = String.format("Unknown Error Code %d. Reason: %s", meta.getStatuscode(), StringUtils.defaultIfEmpty(meta.getMessage(), ""));
+        log.error(exceptionMessage);
+        throw new IllegalStateException(exceptionMessage);
+    }
+
   }
 
   private void createUser(OwncloudModificationUser user) {
@@ -263,32 +323,12 @@ class OwncloudRestUserModificationServiceImpl extends AbstractOwncloudRestServic
     data.put("password", Lists.newArrayList(user.getPassword()));
 
     log.debug("Create User {}", user.getUsername());
-    exchange("/cloud/users", HttpMethod.POST, multiValuedEntity(data), Ocs.Void.class, (authorizationUser, uri, meta) -> {
-      if ("ok".equals(meta.getStatus())) {
-        return;
-      }
-
-      String exceptionMessage;
-      switch (meta.getStatuscode()) {
-        case 101:
-          log.error("Error 101: {}", meta.getMessage());
-          throw new IllegalArgumentException(meta.getMessage());
-        case 102:
-          log.warn("Error 102: User {} already exists", user.getUsername());
-          throw new OwncloudUsernameAlreadyExistsException(user.getUsername());
-        case 103:
-          log.error("Error 103: {}", meta.getMessage());
-          throw new IllegalStateException(meta.getMessage());
-        case 997:
-          exceptionMessage = String.format("User %s is not authorized to access Resource %s", authorizationUser, uri);
-          log.warn("Error 997: {}", exceptionMessage);
-          throw new AccessDeniedException(exceptionMessage);
-        default:
-          exceptionMessage = String.format("Unknown Error Code %d. Reason: %s", meta.getStatuscode(), StringUtils.defaultIfEmpty(meta.getMessage(), ""));
-          log.error(exceptionMessage);
-          throw new IllegalStateException(exceptionMessage);
-      }
-    });
+    exchange(
+        "/cloud/users",
+        HttpMethod.POST,
+        multiValuedEntity(data),
+        Ocs.Void.class,
+        (authenticatedUser, uri, meta) -> checkCreateUser(authenticatedUser, uri, meta, user.getUsername()));
     log.info("User {} successfully created", user.getUsername());
 
     log.debug("Re-Read the Information about User {} from Location {}", user.getUsername(), getLocation());
@@ -296,32 +336,67 @@ class OwncloudRestUserModificationServiceImpl extends AbstractOwncloudRestServic
     updateUser(user, existingUser.getData());
   }
 
+  private void checkCreateUser(String authenticatedUser, String uri, Ocs.Meta meta, String username) {
+    if ("ok".equals(meta.getStatus())) {
+      return;
+    }
+
+    String exceptionMessage;
+    switch (meta.getStatuscode()) {
+      case 101:
+        log.error("Error 101: {}", meta.getMessage());
+        throw new IllegalArgumentException(meta.getMessage());
+      case 102:
+        log.warn("Error 102: User {} already exists", username);
+        throw new OwncloudUsernameAlreadyExistsException(username);
+      case 103:
+        log.error("Error 103: {}", meta.getMessage());
+        throw new IllegalStateException(meta.getMessage());
+      case 997:
+        exceptionMessage = String.format("User %s is not authorized to access Resource %s", authenticatedUser, uri);
+        log.warn("Error 997: {}", exceptionMessage);
+        throw new AccessDeniedException(exceptionMessage);
+      default:
+        exceptionMessage = String.format("Unknown Error Code %d. Reason: %s", meta.getStatuscode(), StringUtils.defaultIfEmpty(meta.getMessage(), ""));
+        log.error(exceptionMessage);
+        throw new IllegalStateException(exceptionMessage);
+    }
+  }
+
   @Override
   public void deleteUser(String username) {
     Validate.notBlank(username);
 
     log.debug("Delete User {} from Location {}", username, getLocation());
-    exchange("/cloud/users/{user}", HttpMethod.DELETE, emptyEntity(), Ocs.Void.class, (authorizationUser, uri, meta) -> {
-      if ("ok".equals(meta.getStatus())) {
-        return;
-      }
-
-      String exceptionMessage;
-      switch (meta.getStatuscode()) {
-        case 101:
-          log.error("Error 101: User {} not found", username);
-          throw new UsernameNotFoundException(username);
-        case 997:
-          exceptionMessage = String.format("User %s is not authorized to access Resource %s", authorizationUser, uri);
-          log.warn("Error 997: {}", exceptionMessage);
-          throw new AccessDeniedException(exceptionMessage);
-        default:
-          exceptionMessage = String.format("Unknown Error Code %d. Reason: %s", meta.getStatuscode(), StringUtils.defaultIfEmpty(meta.getMessage(), ""));
-          log.error(exceptionMessage);
-          throw new IllegalStateException(exceptionMessage);
-      }
-    }, username);
+    exchange(
+        "/cloud/users/{user}",
+        HttpMethod.DELETE,
+        emptyEntity(),
+        Ocs.Void.class,
+        (authenticatedUser, uri, meta) -> checkDeleteUser(authenticatedUser, uri, meta, username),
+        username);
     log.info("User {} successfully removed from Location {}", username, getLocation());
+  }
+
+  private void checkDeleteUser(String authenticatedUser, String uri, Ocs.Meta meta, String username) {
+    if ("ok".equals(meta.getStatus())) {
+      return;
+    }
+
+    String exceptionMessage;
+    switch (meta.getStatuscode()) {
+      case 101:
+        log.error("Error 101: User {} not found", username);
+        throw new UsernameNotFoundException(username);
+      case 997:
+        exceptionMessage = String.format("User %s is not authorized to access Resource %s", authenticatedUser, uri);
+        log.warn("Error 997: {}", exceptionMessage);
+        throw new AccessDeniedException(exceptionMessage);
+      default:
+        exceptionMessage = String.format("Unknown Error Code %d. Reason: %s", meta.getStatuscode(), StringUtils.defaultIfEmpty(meta.getMessage(), ""));
+        log.error(exceptionMessage);
+        throw new IllegalStateException(exceptionMessage);
+    }
   }
 
   @Override
@@ -333,34 +408,42 @@ class OwncloudRestUserModificationServiceImpl extends AbstractOwncloudRestServic
     data.put("groupid", Lists.newArrayList(groupname));
 
     log.debug("Create Group {} on Location {}", groupname, getLocation());
-    exchange("/cloud/groups/{group}", HttpMethod.POST, multiValuedEntity(data), Ocs.Void.class, (authorizationUser, uri, meta) -> {
-      if ("ok".equals(meta.getStatus())) {
-        return;
-      }
-
-      String exceptionMessage;
-      switch (meta.getStatuscode()) {
-        case 101:
-          log.error("Error 101: {}", meta.getMessage());
-          throw new IllegalArgumentException(meta.getMessage());
-        case 102:
-          log.warn("Error 102: Group {} already exists", groupname);
-          throw new OwncloudGroupAlreadyExistsException(groupname);
-        case 103:
-          exceptionMessage = String.format("Failed to create Group %s. Reason: %s", groupname, StringUtils.defaultIfEmpty(meta.getMessage(), ""));
-          log.error("Error 103: {}", exceptionMessage);
-          throw new IllegalStateException(exceptionMessage);
-        case 997:
-          exceptionMessage = String.format("User %s is not authorized to access Resource %s", authorizationUser, uri);
-          log.warn("Error 997: {}", exceptionMessage);
-          throw new AccessDeniedException(exceptionMessage);
-        default:
-          exceptionMessage = String.format("Unknown Error Code %d. Reason: %s", meta.getStatuscode(), StringUtils.defaultIfEmpty(meta.getMessage(), ""));
-          log.error(exceptionMessage);
-          throw new IllegalStateException(exceptionMessage);
-      }
-    }, groupname);
+    exchange(
+        "/cloud/groups/{group}",
+        HttpMethod.POST,
+        multiValuedEntity(data),
+        Ocs.Void.class,
+        (authenticatedUser, uri, meta) -> checkCreateGroup(authenticatedUser, uri, meta, groupname),
+        groupname);
     log.info("Group {} successfully created on Location {}", groupname, getLocation());
+  }
+
+  private void checkCreateGroup(String authenticatedUser, String uri, Ocs.Meta meta, String groupname) {
+    if ("ok".equals(meta.getStatus())) {
+      return;
+    }
+
+    String exceptionMessage;
+    switch (meta.getStatuscode()) {
+      case 101:
+        log.error("Error 101: {}", meta.getMessage());
+        throw new IllegalArgumentException(meta.getMessage());
+      case 102:
+        log.warn("Error 102: Group {} already exists", groupname);
+        throw new OwncloudGroupAlreadyExistsException(groupname);
+      case 103:
+        exceptionMessage = String.format("Failed to create Group %s. Reason: %s", groupname, StringUtils.defaultIfEmpty(meta.getMessage(), ""));
+        log.error("Error 103: {}", exceptionMessage);
+        throw new IllegalStateException(exceptionMessage);
+      case 997:
+        exceptionMessage = String.format("User %s is not authorized to access Resource %s", authenticatedUser, uri);
+        log.warn("Error 997: {}", exceptionMessage);
+        throw new AccessDeniedException(exceptionMessage);
+      default:
+        exceptionMessage = String.format("Unknown Error Code %d. Reason: %s", meta.getStatuscode(), StringUtils.defaultIfEmpty(meta.getMessage(), ""));
+        log.error(exceptionMessage);
+        throw new IllegalStateException(exceptionMessage);
+    }
   }
 
   @Override
@@ -372,46 +455,68 @@ class OwncloudRestUserModificationServiceImpl extends AbstractOwncloudRestServic
     data.put("groupid", Lists.newArrayList(groupname));
 
     log.debug("Delete Group {} on Location {}", groupname, getLocation());
-    exchange("/cloud/groups/{group}", HttpMethod.DELETE, multiValuedEntity(data), Ocs.Void.class, (authorizationUser, uri, meta) -> {
-      if ("ok".equals(meta.getStatus())) {
-        return;
-      }
-
-      String exceptionMessage;
-      switch (meta.getStatuscode()) {
-        case 101:
-          log.warn("Error 101: Group {} not exists", groupname);
-          throw new OwncloudGroupNotFoundException(groupname);
-        case 102:
-          exceptionMessage = String.format("Failed to delete Group %s. Reason: %s", groupname, StringUtils.defaultIfEmpty(meta.getMessage(), ""));
-          log.error("Error 102: {}", exceptionMessage);
-          throw new IllegalStateException(exceptionMessage);
-        case 997:
-          exceptionMessage = String.format("User %s is not authorized to access Resource %s", authorizationUser, uri);
-          log.warn("Error 997: {}", exceptionMessage);
-          throw new AccessDeniedException(exceptionMessage);
-        default:
-          exceptionMessage = String.format("Unknown Error Code %d. Reason: %s", meta.getStatuscode(), StringUtils.defaultIfEmpty(meta.getMessage(), ""));
-          log.error(exceptionMessage);
-          throw new IllegalStateException(exceptionMessage);
-      }
-    }, groupname);
+    exchange(
+        "/cloud/groups/{group}",
+        HttpMethod.DELETE,
+        multiValuedEntity(data),
+        Ocs.Void.class,
+        (authenticatedUser, uri, meta) -> checkDeleteGroup(authenticatedUser, uri, meta, groupname),
+        groupname);
     log.info("Group {} successfully removed from Location {}", groupname, getLocation());
+  }
+
+  private void checkDeleteGroup(String authenticatedUser, String uri, Ocs.Meta meta, String groupname) {
+    if ("ok".equals(meta.getStatus())) {
+      return;
+    }
+
+    String exceptionMessage;
+    switch (meta.getStatuscode()) {
+      case 101:
+        log.warn("Error 101: Group {} not exists", groupname);
+        throw new OwncloudGroupNotFoundException(groupname);
+      case 102:
+        exceptionMessage = String.format("Failed to delete Group %s. Reason: %s", groupname, StringUtils.defaultIfEmpty(meta.getMessage(), ""));
+        log.error("Error 102: {}", exceptionMessage);
+        throw new IllegalStateException(exceptionMessage);
+      case 997:
+        exceptionMessage = String.format("User %s is not authorized to access Resource %s", authenticatedUser, uri);
+        log.warn("Error 997: {}", exceptionMessage);
+        throw new AccessDeniedException(exceptionMessage);
+      default:
+        exceptionMessage = String.format("Unknown Error Code %d. Reason: %s", meta.getStatuscode(), StringUtils.defaultIfEmpty(meta.getMessage(), ""));
+        log.error(exceptionMessage);
+        throw new IllegalStateException(exceptionMessage);
+    }
   }
 
   private static enum UserUpdateField {
     DISPLAY_NAME("display"),
     EMAIL("email"),
-    PASSWORD("password");
+    PASSWORD("password"),
+    QUOTA("quota", new DecimalFormat("###########0"));
 
     private final String fieldName;
+    private Format format;
 
     private UserUpdateField(final String fieldName) {
       this.fieldName = fieldName;
     }
 
+    private UserUpdateField(final String fieldName, final Format format) {
+      this(fieldName);
+      this.format = format;
+    }
+
     public String getFieldName() {
       return fieldName;
+    }
+
+    public String format(Object value) {
+      if (format == null) {
+        return value != null ? value.toString() : null;
+      }
+      return format.format(value);
     }
   }
 

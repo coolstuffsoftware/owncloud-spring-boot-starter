@@ -23,10 +23,12 @@ import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.http.HttpMethod.PUT;
 
 import java.io.IOException;
+import java.text.Format;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -76,7 +78,8 @@ public class OwncloudRestUserModificationServiceTest extends AbstractOwncloudUse
               .build(),
           userModification.getExistingUser().isEnabled(),
           userModification.getExistingUser().getEmail(),
-          userModification.getExistingUser().getDisplayname());
+          userModification.getExistingUser().getDisplayname(),
+          userModification.getExistingUser().getQuota());
     } else {
       respondFailure(
           RestRequest.builder()
@@ -106,7 +109,8 @@ public class OwncloudRestUserModificationServiceTest extends AbstractOwncloudUse
               .build(),
           true,
           null,
-          userModification.getNewUser().getUsername());
+          userModification.getNewUser().getUsername(),
+          null);
     }
 
     // change the Displayname
@@ -137,13 +141,40 @@ public class OwncloudRestUserModificationServiceTest extends AbstractOwncloudUse
         respondFailure(
             RestRequest.builder()
                 .method(PUT)
-                .url("/cloud/users/" + userModification.getNewUser().getUsername()).build(),
+                .url("/cloud/users/" + userModification.getNewUser().getUsername())
+                .build(),
             userModification.getErrorCodeUpdateEmail());
       } else {
         MultiValueMap<String, String> putData = new LinkedMultiValueMap<>();
-        putData = new LinkedMultiValueMap<>();
         putData.put("key", Lists.newArrayList("email"));
         putData.put("value", Lists.newArrayList(userModification.getNewUser().getEmail()));
+        respondSuccess(
+            RestRequest.builder()
+                .method(PUT)
+                .url("/cloud/users/" + userModification.getNewUser().getUsername())
+                .build(),
+            putData);
+      }
+    }
+
+    // change the Quota
+    if (userModification.getExistingUser() == null || ObjectUtils.compare(userModification.getExistingUser().getQuota(), userModification.getNewUser().getQuota()) != 0) {
+      if (userModification.isErrorUpdateQuota()) {
+        respondFailure(
+            RestRequest.builder()
+                .method(PUT)
+                .url("/cloud/users/" + userModification.getNewUser().getUsername())
+                .build(),
+            userModification.getErrorCodeUpdateQuota());
+      } else {
+        Format quotaFormat = getQuotaFormat();
+        MultiValueMap<String, String> putData = new LinkedMultiValueMap<>();
+        putData.put("key", Lists.newArrayList("quota"));
+        if (userModification.getNewUser().getQuota() != null) {
+          putData.put("value", Lists.newArrayList(quotaFormat.format(userModification.getNewUser().getQuota())));
+        } else {
+          putData.put("value", Lists.newArrayList(""));
+        }
         respondSuccess(
             RestRequest.builder()
                 .method(PUT)
@@ -243,7 +274,8 @@ public class OwncloudRestUserModificationServiceTest extends AbstractOwncloudUse
             .build(),
         userModification.getNewUser().isEnabled(),
         userModification.getNewUser().getEmail(),
-        userModification.getNewUser().getDisplayname());
+        userModification.getNewUser().getDisplayname(),
+        userModification.getNewUser().getQuota());
     respondGroups(
         RestRequest.builder()
             .server(queryServer)
@@ -369,7 +401,7 @@ public class OwncloudRestUserModificationServiceTest extends AbstractOwncloudUse
 
   @Test(expected = IllegalStateException.class)
   @WithMockUser(username = "user1", password = "password")
-  public void testSaveUser_CreateUser_NOK_IllegalStateException() throws Exception {
+  public void testSaveUser_CreateUser_NOK_IllegalStateException_102() throws Exception {
     OwncloudModificationUser user = OwncloudModificationUser.builder()
         .username("user5")
         .password("password")
@@ -654,6 +686,161 @@ public class OwncloudRestUserModificationServiceTest extends AbstractOwncloudUse
             .existingUser(existingUser)
             .newUser(updateUser)
             .errorCodeUpdateEmail(999)
+            .build());
+
+    userModificationService.saveUser(updateUser);
+  }
+
+  @Test(expected = IllegalStateException.class)
+  @WithMockUser(username = "user1", password = "password")
+  public void testSaveUser_UpdateUser_NOK_UpdateQuota_IllegalStateException_UsernameNotFound() throws Exception {
+    OwncloudModificationUser existingUser = OwncloudModificationUser.builder()
+        .username("user5")
+        .password("password")
+        .enabled(true)
+        .displayname("Mrs. User 5")
+        .email("user5@example.com")
+        .quota(1024L)
+        .build();
+
+    OwncloudModificationUser updateUser = OwncloudModificationUser.builder()
+        .username("user5")
+        .password("password")
+        .enabled(false)
+        .displayname("changed Value")
+        .email("changed Value")
+        .quota(2048L)
+        .build();
+
+    prepareModificationRestTest(
+        UserModification.builder()
+            .existingUser(existingUser)
+            .newUser(updateUser)
+            .errorCodeUpdateQuota(101)
+            .build());
+
+    userModificationService.saveUser(updateUser);
+  }
+
+  @Test(expected = IllegalStateException.class)
+  @WithMockUser(username = "user1", password = "password")
+  public void testSaveUser_UpdateUser_NOK_UpdateQuota_IllegalStateException_102() throws Exception {
+    OwncloudModificationUser existingUser = OwncloudModificationUser.builder()
+        .username("user5")
+        .password("password")
+        .enabled(true)
+        .displayname("Mrs. User 5")
+        .email("user5@example.com")
+        .quota(1024L)
+        .build();
+
+    OwncloudModificationUser updateUser = OwncloudModificationUser.builder()
+        .username("user5")
+        .password("password")
+        .enabled(false)
+        .displayname("changed Value")
+        .email("changed Value")
+        .quota(2048L)
+        .build();
+
+    prepareModificationRestTest(
+        UserModification.builder()
+            .existingUser(existingUser)
+            .newUser(updateUser)
+            .errorCodeUpdateQuota(102)
+            .build());
+
+    userModificationService.saveUser(updateUser);
+  }
+
+  @Test(expected = IllegalStateException.class)
+  @WithMockUser(username = "user1", password = "password")
+  public void testSaveUser_UpdateUser_NOK_UpdateQuota_IllegalStateException_103() throws Exception {
+    OwncloudModificationUser existingUser = OwncloudModificationUser.builder()
+        .username("user5")
+        .password("password")
+        .enabled(true)
+        .displayname("Mrs. User 5")
+        .email("user5@example.com")
+        .quota(1024L)
+        .build();
+
+    OwncloudModificationUser updateUser = OwncloudModificationUser.builder()
+        .username("user5")
+        .password("password")
+        .enabled(false)
+        .displayname("changed Value")
+        .email("changed Value")
+        .quota(2048L)
+        .build();
+
+    prepareModificationRestTest(
+        UserModification.builder()
+            .existingUser(existingUser)
+            .newUser(updateUser)
+            .errorCodeUpdateQuota(103)
+            .build());
+
+    userModificationService.saveUser(updateUser);
+  }
+
+  @Test(expected = AccessDeniedException.class)
+  @WithMockUser(username = "user1", password = "password")
+  public void testSaveUser_UpdateUser_NOK_UpdateQuota_AccessDenied() throws Exception {
+    OwncloudModificationUser existingUser = OwncloudModificationUser.builder()
+        .username("user5")
+        .password("password")
+        .enabled(true)
+        .displayname("Mrs. User 5")
+        .email("user5@example.com")
+        .quota(1024L)
+        .build();
+
+    OwncloudModificationUser updateUser = OwncloudModificationUser.builder()
+        .username("user5")
+        .password("password")
+        .enabled(false)
+        .displayname("changed Value")
+        .email("changed Value")
+        .quota(2048L)
+        .build();
+
+    prepareModificationRestTest(
+        UserModification.builder()
+            .existingUser(existingUser)
+            .newUser(updateUser)
+            .errorCodeUpdateQuota(997)
+            .build());
+
+    userModificationService.saveUser(updateUser);
+  }
+
+  @Test(expected = IllegalStateException.class)
+  @WithMockUser(username = "user1", password = "password")
+  public void testSaveUser_UpdateUser_NOK_UpdateQuota_UnknownError() throws Exception {
+    OwncloudModificationUser existingUser = OwncloudModificationUser.builder()
+        .username("user5")
+        .password("password")
+        .enabled(true)
+        .displayname("Mrs. User 5")
+        .email("user5@example.com")
+        .quota(1024L)
+        .build();
+
+    OwncloudModificationUser updateUser = OwncloudModificationUser.builder()
+        .username("user5")
+        .password("password")
+        .enabled(false)
+        .displayname("changed Value")
+        .email("changed Value")
+        .quota(2048L)
+        .build();
+
+    prepareModificationRestTest(
+        UserModification.builder()
+            .existingUser(existingUser)
+            .newUser(updateUser)
+            .errorCodeUpdateQuota(999)
             .build());
 
     userModificationService.saveUser(updateUser);
@@ -1456,6 +1643,7 @@ public class OwncloudRestUserModificationServiceTest extends AbstractOwncloudUse
     private int errorCodeCreateUser = 0;
     private int errorCodeUpdateDisplayName = 0;
     private int errorCodeUpdateEmail = 0;
+    private int errorCodeUpdateQuota = 0;
     private int errorCodeEnableDisable = 0;
     private int errorCodeAddGroup = 0;
     private int errorCodeRemoveGroup = 0;
@@ -1464,6 +1652,7 @@ public class OwncloudRestUserModificationServiceTest extends AbstractOwncloudUse
       private int errorCodeCreateUser = 0;
       private int errorCodeUpdateDisplayName = 0;
       private int errorCodeUpdateEmail = 0;
+      private int errorCodeUpdateQuota = 0;
       private int errorCodeEnableDisable = 0;
       private int errorCodeAddGroup = 0;
       private int errorCodeRemoveGroup = 0;
@@ -1479,6 +1668,10 @@ public class OwncloudRestUserModificationServiceTest extends AbstractOwncloudUse
 
     public boolean isErrorUpdateEmail() {
       return errorCodeUpdateEmail != 0;
+    }
+
+    public boolean isErrorUpdateQuota() {
+      return errorCodeUpdateQuota != 0;
     }
 
     public boolean isErrorEnableDisable() {

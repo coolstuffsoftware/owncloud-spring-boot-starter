@@ -219,6 +219,7 @@ abstract class AbstractOwncloudRestServiceImpl implements OwncloudRestService {
         .enabled(user.getData().isEnabled())
         .displayname(user.getData().getDisplayname())
         .email(user.getData().getEmail())
+        .quota(user.getData().getQuota().getTotal())
         .groups(groups)
         .authorities(authorities)
         .build();

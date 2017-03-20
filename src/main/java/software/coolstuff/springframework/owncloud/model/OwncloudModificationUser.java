@@ -80,6 +80,13 @@ public class OwncloudModificationUser {
   private String email;
 
   /**
+   * Quota of the User to be modified.
+   * @param quota Quota of the User to be modified
+   * @return modified Quota
+   */
+  private Long quota;
+
+  /**
    * Group Memberships of the User to be modified.
    * @param groups Group Memberships of the User to be modified
    * @return modified Group Memberships
@@ -109,6 +116,7 @@ public class OwncloudModificationUser {
 
     setDisplayname(userDetails.getDisplayname());
     setEmail(userDetails.getEmail());
+    setQuota(userDetails.getQuota());
 
     if (CollectionUtils.isNotEmpty(userDetails.getAuthorities())) {
       for (GrantedAuthority authority : userDetails.getAuthorities()) {

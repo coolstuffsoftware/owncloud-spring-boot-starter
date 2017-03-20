@@ -43,12 +43,12 @@ class OwncloudLocalAutoConfiguration {
 
   @Bean
   public OwncloudUserQueryService owncloudUserQueryService() {
-    return new OwncloudLocalUserQueryResourceImpl(owncloudLocalUserDataService());
+    return new OwncloudLocalUserQueryServiceImpl(owncloudLocalUserDataService());
   }
 
   @Bean
   public OwncloudUserModificationService owncloudUserModificationService() {
-    return new OwncloudLocalUserModificationService(owncloudLocalUserDataService());
+    return new OwncloudLocalUserModificationServiceImpl(owncloudLocalUserDataService());
   }
 
   @Bean

@@ -164,6 +164,7 @@ class OwncloudLocalUserDataServiceImpl implements OwncloudLocalUserDataService, 
         .enabled(user.isEnabled())
         .displayname(user.getDisplayname())
         .email(user.getEmail())
+        .quota(user.getQuota())
         .groups(userGroups)
         .authorities(authorities)
         .build();

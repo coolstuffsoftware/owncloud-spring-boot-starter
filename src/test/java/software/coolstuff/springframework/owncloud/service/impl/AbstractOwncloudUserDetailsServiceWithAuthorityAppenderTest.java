@@ -45,7 +45,7 @@ public abstract class AbstractOwncloudUserDetailsServiceWithAuthorityAppenderTes
   @Test
   @WithMockUser(username = "test1", password = "password")
   public void testAppendedGroups() throws Exception {
-    prepareTestAppendedGroups("user1", true, "user1@example.com", "Mr. User 1", "group1", "group2");
+    prepareTestAppendedGroups("user1", true, "user1@example.com", "Mr. User 1", 1024L, "group1", "group2");
 
     UserDetails userDetails = userDetailsService.loadUserByUsername("user1");
     verifyServer();
@@ -56,6 +56,6 @@ public abstract class AbstractOwncloudUserDetailsServiceWithAuthorityAppenderTes
     checkAuthorities(userDetails.getUsername(), userDetails.getAuthorities(), "group1", "group2", "group98", "group99");
   }
 
-  protected void prepareTestAppendedGroups(String username, boolean enable, String email, String displayName, String... groups) throws Exception {}
+  protected void prepareTestAppendedGroups(String username, boolean enable, String email, String displayName, Long quota, String... groups) throws Exception {}
 
 }

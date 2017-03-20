@@ -97,6 +97,7 @@ public abstract class AbstractOwncloudUserModificationServiceTest extends Abstra
         .enabled(true)
         .displayname("Mr. User 3")
         .email("user3@example.com")
+        .quota(1024L)
         .build();
 
     prepareTestSaveUser_CreateUser_OK_WithoutGroups(newUser);
@@ -125,6 +126,7 @@ public abstract class AbstractOwncloudUserModificationServiceTest extends Abstra
         .enabled(true)
         .displayname("Mrs. User 4")
         .email("user4@example.com")
+        .quota(1024L)
         .group("group1")
         .group("group2")
         .build();
@@ -155,6 +157,7 @@ public abstract class AbstractOwncloudUserModificationServiceTest extends Abstra
         .enabled(true)
         .displayname("Mrs. User 1")
         .email("user2@example.com")
+        .quota(1024L)
         .build();
 
     OwncloudModificationUser updateUser = OwncloudModificationUser.builder()
@@ -163,6 +166,7 @@ public abstract class AbstractOwncloudUserModificationServiceTest extends Abstra
         .enabled(true)
         .displayname("Mrs. User 2 in Subdomain")
         .email("user2@subdomain.example.com")
+        .quota(2048L)
         .build();
 
     prepareTestSaveUser_UpdateUser_OK_WithoutGroups(existingUser, updateUser);
@@ -176,6 +180,7 @@ public abstract class AbstractOwncloudUserModificationServiceTest extends Abstra
     Assert.assertEquals(updateUser.isEnabled(), updatedUser.isEnabled());
     Assert.assertEquals(updateUser.getDisplayname(), updatedUser.getDisplayname());
     Assert.assertEquals(updateUser.getEmail(), updatedUser.getEmail());
+    Assert.assertEquals(updateUser.getQuota(), updatedUser.getQuota());
     Assert.assertTrue(CollectionUtils.isEmpty(updatedUser.getAuthorities()));
   }
 

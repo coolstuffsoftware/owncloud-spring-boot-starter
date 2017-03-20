@@ -10,13 +10,13 @@
     <quota>
       <free>817928385</free>
       <used>255813439</used>
-      <total>1073741824</total>
+      <total>$!{quota}</total>
       <relative>23.82</relative>
     </quota>
 #if ( ${email} )
     <email>${email}</email>
 #end
-    <displayname>${displayName}</displayname>
+    <displayname>${displayname}</displayname>
     <two_factor_auth_enabled>false</two_factor_auth_enabled>
   </data>
 </ocs>

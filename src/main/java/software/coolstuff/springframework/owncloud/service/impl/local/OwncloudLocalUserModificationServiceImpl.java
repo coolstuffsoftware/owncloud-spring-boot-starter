@@ -18,7 +18,7 @@ import software.coolstuff.springframework.owncloud.service.api.OwncloudUserModif
 
 @RequiredArgsConstructor
 @Slf4j
-class OwncloudLocalUserModificationService implements OwncloudUserModificationService {
+class OwncloudLocalUserModificationServiceImpl implements OwncloudUserModificationService {
 
   private final OwncloudLocalUserDataService localDataService;
 
@@ -44,6 +44,7 @@ class OwncloudLocalUserModificationService implements OwncloudUserModificationSe
     log.debug("Modify Information of User {}", existingUser.getUsername());
     existingUser.setDisplayname(modificationUser.getDisplayname());
     existingUser.setEmail(modificationUser.getEmail());
+    existingUser.setQuota(modificationUser.getQuota());
     existingUser.setEnabled(modificationUser.isEnabled());
 
     manageGroups(existingUser, modificationUser);

@@ -37,7 +37,7 @@ public class OwncloudRestUserDetailsServiceWithAuthorityAppenderTest extends Abs
   }
 
   @Override
-  protected void prepareTestAppendedGroups(String username, boolean enabled, String email, String displayName, String... groups) throws Exception {
+  protected void prepareTestAppendedGroups(String username, boolean enabled, String email, String displayName, Long quota, String... groups) throws Exception {
     respondUser(
         RestRequest.builder()
             .method(GET)
@@ -45,7 +45,8 @@ public class OwncloudRestUserDetailsServiceWithAuthorityAppenderTest extends Abs
             .build(),
         enabled,
         email,
-        displayName);
+        displayName,
+        quota);
     respondGroups(
         RestRequest.builder()
             .method(GET)

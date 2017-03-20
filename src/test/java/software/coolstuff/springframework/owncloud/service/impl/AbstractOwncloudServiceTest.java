@@ -30,6 +30,8 @@ import java.io.Writer;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.text.DecimalFormat;
+import java.text.Format;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
@@ -105,6 +107,8 @@ public abstract class AbstractOwncloudServiceTest {
   private final static String DEFAULT_PATH = "/ocs/v1.php";
   private final static String VELOCITY_PATH_PREFIX = "/velocity/";
 
+  private final static Format QUOTA_FORMAT = new DecimalFormat("###########0");
+
   @Autowired(required = false)
   private OwncloudGrantedAuthoritiesMapper owncloudGrantedAuthoritiesMapper;
 
@@ -134,6 +138,10 @@ public abstract class AbstractOwncloudServiceTest {
     if (server != null) {
       server.verify();
     }
+  }
+
+  protected Format getQuotaFormat() {
+    return QUOTA_FORMAT;
   }
 
   protected final MockRestServiceServer getServer() {
@@ -272,7 +280,7 @@ public abstract class AbstractOwncloudServiceTest {
     context.put("message", message != null ? message : "");
   }
 
-  protected void respondUser(RestRequest request, boolean enabled, String email, String displayName)
+  protected void respondUser(RestRequest request, boolean enabled, String email, String displayname, Long quota)
       throws IOException {
     if (isNoRestTestClass()) {
       return;
@@ -283,7 +291,8 @@ public abstract class AbstractOwncloudServiceTest {
     setSuccessMetaInformation(context);
     context.put("enabled", Boolean.toString(enabled));
     context.put("email", email);
-    context.put("displayName", displayName);
+    context.put("displayname", displayname);
+    context.put("quota", quota != null ? QUOTA_FORMAT.format(quota) : null);
 
     preparedRequest.andRespond(withSuccess(merge("user.vm", context), MediaType.TEXT_XML));
   }
