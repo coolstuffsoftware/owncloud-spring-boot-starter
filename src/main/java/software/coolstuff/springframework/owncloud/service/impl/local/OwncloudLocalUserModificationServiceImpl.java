@@ -1,13 +1,14 @@
 package software.coolstuff.springframework.owncloud.service.impl.local;
 
+import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Optional;
+import java.util.List;
 import java.util.Set;
+import java.util.function.Consumer;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import lombok.RequiredArgsConstructor;
@@ -16,16 +17,15 @@ import software.coolstuff.springframework.owncloud.exception.auth.OwncloudGroupA
 import software.coolstuff.springframework.owncloud.exception.auth.OwncloudGroupNotFoundException;
 import software.coolstuff.springframework.owncloud.model.OwncloudModificationUser;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
-import software.coolstuff.springframework.owncloud.service.api.OwncloudUserModificationService;
 
 @RequiredArgsConstructor
 @Slf4j
-class OwncloudLocalUserModificationServiceImpl implements OwncloudUserModificationService {
+class OwncloudLocalUserModificationServiceImpl implements OwncloudLocalUserModificationService {
 
   private final OwncloudLocalUserDataService localDataService;
 
-  @Autowired
-  private Optional<OwncloudLocalResourceService> owncloudLocalResourceService;
+  private final List<Consumer<OwncloudUserDetails>> saveUserListeners = new ArrayList<>();
+  private final List<Consumer<String>> deleteUserListeners = new ArrayList<>();
 
   @Override
   public OwncloudUserDetails saveUser(OwncloudModificationUser modificationUser) {
@@ -55,10 +55,9 @@ class OwncloudLocalUserModificationServiceImpl implements OwncloudUserModificati
     manageGroups(existingUser, modificationUser);
 
     OwncloudUserDetails changedUserDetails = localDataService.convert(existingUser);
-    owncloudLocalResourceService.ifPresent(service -> {
-      log.debug("Notify local Resource Service about changed UserDetails {}", changedUserDetails);
-      service.notifyUserModification(changedUserDetails);
-    });
+    log.debug("Notify registered Listeners about changed UserDetails {}", changedUserDetails);
+    saveUserListeners.stream()
+        .forEach(listener -> listener.accept(changedUserDetails));
     log.info("User {} successfully modified", changedUserDetails.getUsername());
     return changedUserDetails;
   }
@@ -88,10 +87,9 @@ class OwncloudLocalUserModificationServiceImpl implements OwncloudUserModificati
     }
     log.debug("Remove User {}", username);
     localDataService.removeUser(username);
-    owncloudLocalResourceService.ifPresent(service -> {
-      log.debug("Notify local Resource Service about removed User {}", username);
-      service.notifyRemovedUser(username);
-    });
+    log.debug("Notify registered Listeners about removed User {}", username);
+    deleteUserListeners.stream()
+        .forEach(listener -> listener.accept(username));
     log.info("User {} successfully removed", username);
   }
 
@@ -126,6 +124,16 @@ class OwncloudLocalUserModificationServiceImpl implements OwncloudUserModificati
     log.debug("Remove Group {}", groupname);
     localDataService.removeGroup(groupname);
     log.info("Group {} successfully removed", groupname);
+  }
+
+  @Override
+  public void registerSaveUserCallback(Consumer<OwncloudUserDetails> listener) {
+    saveUserListeners.add(listener);
+  }
+
+  @Override
+  public void registerDeleteUserCallback(Consumer<String> listener) {
+    deleteUserListeners.add(listener);
   }
 
 }

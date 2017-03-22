@@ -17,8 +17,18 @@
 */
 package software.coolstuff.springframework.owncloud.service.impl.local;
 
+import java.io.IOException;
+import java.nio.file.Path;
+
+import org.apache.commons.io.FileSystemUtils;
+
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
+import software.coolstuff.springframework.owncloud.exception.resource.OwncloudLocalResourceException;
 import software.coolstuff.springframework.owncloud.model.OwncloudQuota;
 
 /**
@@ -26,10 +36,57 @@ import software.coolstuff.springframework.owncloud.model.OwncloudQuota;
  *
  */
 @Data
+@Getter(AccessLevel.NONE)
 @Builder
+@Slf4j
 class OwncloudLocalQuota implements OwncloudQuota {
-  private long free;
-  private long used;
-  private long total;
-  private float relative;
+  private final Path location;
+  private Long total;
+  @Getter
+  @Setter(AccessLevel.NONE)
+  private long used = 0;
+
+  static class OwncloudLocalQuotaBuilder {
+    private long used = 0;
+  }
+
+  @Override
+  public long getTotal() {
+    if (total == null) {
+      return getFreeSpaceOfLocation();
+    }
+    if (used > total) {
+      return used;
+    }
+    return total;
+  }
+
+  private long getFreeSpaceOfLocation() {
+    try {
+      return FileSystemUtils.freeSpaceKb(location.toAbsolutePath().normalize().toString()) * 1024;
+    } catch (IOException e) {
+      String logMessage = "Error while getting the free Space of the Path " + location.toAbsolutePath().normalize().toString();
+      log.error(logMessage);
+      throw new OwncloudLocalResourceException(logMessage, e);
+    }
+  }
+
+  public synchronized void increaseUsed(long size) {
+    used += size;
+  }
+
+  public synchronized void reduceUsed(long size) {
+    used -= size;
+  }
+
+  @Override
+  public long getFree() {
+    long free = getTotal() - used;
+    return free > 0 ? free : 0;
+  }
+
+  @Override
+  public float getRelative() {
+    return used * 100 / getTotal();
+  }
 }

@@ -17,7 +17,13 @@
 */
 package software.coolstuff.springframework.owncloud.service.impl.rest;
 
-interface OwncloudRestQuotaService {
+import software.coolstuff.springframework.owncloud.service.api.OwncloudUserQueryService;
+
+/**
+ * @author mufasa1976
+ *
+ */
+interface OwncloudRestUserQueryService extends OwncloudUserQueryService {
 
   OwncloudRestQuota getQuota(String username);
 

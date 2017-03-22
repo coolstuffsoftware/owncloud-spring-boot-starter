@@ -87,7 +87,7 @@ class OwncloudRestResourceServiceImpl implements OwncloudResourceService, Ownclo
   private SardineCacheLoader sardineCacheLoader;
 
   @Autowired
-  private OwncloudRestQuotaService quotaService;
+  private OwncloudRestUserQueryService userQueryService;
 
   public OwncloudRestResourceServiceImpl(
       final RestTemplateBuilder builder,
@@ -502,6 +502,6 @@ class OwncloudRestResourceServiceImpl implements OwncloudResourceService, Ownclo
   @Override
   public OwncloudQuota getQuota() {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-    return quotaService.getQuota(authentication.getName());
+    return userQueryService.getQuota(authentication.getName());
   }
 }

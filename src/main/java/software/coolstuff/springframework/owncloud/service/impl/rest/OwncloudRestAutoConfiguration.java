@@ -31,7 +31,6 @@ import org.springframework.http.converter.xml.MappingJackson2XmlHttpMessageConve
 
 import software.coolstuff.springframework.owncloud.service.api.OwncloudResourceService;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudUserModificationService;
-import software.coolstuff.springframework.owncloud.service.api.OwncloudUserQueryService;
 
 @Configuration
 @ConditionalOnClass({
@@ -43,7 +42,7 @@ import software.coolstuff.springframework.owncloud.service.api.OwncloudUserQuery
 class OwncloudRestAutoConfiguration {
 
   @Bean
-  public OwncloudUserQueryService owncloudUserQueryRestService(RestTemplateBuilder builder) {
+  public OwncloudRestUserQueryService owncloudUserQueryRestService(RestTemplateBuilder builder) {
     return new OwncloudRestUserQueryServiceImpl(builder);
   }
 
@@ -64,11 +63,6 @@ class OwncloudRestAutoConfiguration {
   @ConditionalOnMissingBean(OwncloudRestUserDetailsService.class)
   public OwncloudRestUserDetailsService owncloudRestUserDetailsService(RestTemplateBuilder builder) {
     return new OwncloudRestUserDetailsService(builder);
-  }
-
-  @Bean
-  public OwncloudRestQuotaService owncloudQuotaService(RestTemplateBuilder builder) {
-    return new OwncloudRestQuotaServiceImpl(builder);
   }
 
   @Bean

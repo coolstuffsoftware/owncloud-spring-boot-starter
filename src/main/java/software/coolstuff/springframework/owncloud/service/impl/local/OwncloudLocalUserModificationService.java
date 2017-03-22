@@ -17,16 +17,15 @@
 */
 package software.coolstuff.springframework.owncloud.service.impl.local;
 
+import java.util.function.Consumer;
+
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
-import software.coolstuff.springframework.owncloud.service.api.OwncloudResourceService;
+import software.coolstuff.springframework.owncloud.service.api.OwncloudUserModificationService;
 
-/**
- * @author mufasa1976
- */
-interface OwncloudLocalResourceService extends OwncloudResourceService {
+interface OwncloudLocalUserModificationService extends OwncloudUserModificationService {
 
-  void notifyUserModification(OwncloudUserDetails userDetails);
+  void registerSaveUserCallback(Consumer<OwncloudUserDetails> listener);
 
-  void notifyRemovedUser(String username);
+  void registerDeleteUserCallback(Consumer<String> listener);
 
 }

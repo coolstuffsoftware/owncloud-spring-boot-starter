@@ -31,10 +31,11 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
@@ -47,20 +48,23 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import software.coolstuff.springframework.owncloud.exception.resource.OwncloudLocalResourceException;
 import software.coolstuff.springframework.owncloud.exception.resource.OwncloudNoDirectoryResourceException;
+import software.coolstuff.springframework.owncloud.exception.resource.OwncloudQuotaExceededException;
 import software.coolstuff.springframework.owncloud.exception.resource.OwncloudResourceNotFoundException;
 import software.coolstuff.springframework.owncloud.model.OwncloudFileResource;
 import software.coolstuff.springframework.owncloud.model.OwncloudQuota;
 import software.coolstuff.springframework.owncloud.model.OwncloudResource;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
+import software.coolstuff.springframework.owncloud.service.api.OwncloudResourceService;
 import software.coolstuff.springframework.owncloud.service.impl.OwncloudUtils;
+import software.coolstuff.springframework.owncloud.service.impl.QuotaCheckEnvironment;
 import software.coolstuff.springframework.owncloud.service.impl.local.OwncloudLocalProperties.ResourceServiceProperties;
-import software.coolstuff.springframework.owncloud.service.impl.local.OwncloudLocalUserData.User;
 
 @Slf4j
-class OwncloudLocalResourceServiceImpl implements OwncloudLocalResourceService {
+class OwncloudLocalResourceServiceImpl implements OwncloudResourceService {
 
   @Autowired
   private OwncloudLocalProperties properties;
@@ -71,7 +75,10 @@ class OwncloudLocalResourceServiceImpl implements OwncloudLocalResourceService {
   @Autowired
   private OwncloudLocalUserDataService userDataService;
 
-  private Map<String, Long> usedSpaces = new ConcurrentHashMap<>();
+  @Autowired
+  private OwncloudLocalUserModificationService userModificationService;
+
+  private Map<String, OwncloudLocalQuota> quotas = new HashMap<>();
 
   @PostConstruct
   protected void afterPropertiesSet() throws Exception {
@@ -82,25 +89,67 @@ class OwncloudLocalResourceServiceImpl implements OwncloudLocalResourceService {
     Path baseLocation = resourceProperties.getLocation();
     OwncloudLocalUtils.checkPrivilegesOnDirectory(baseLocation);
 
-    calculateUsedSpace(baseLocation);
+    calculateQuotas(baseLocation);
+    userModificationService.registerSaveUserCallback(this::notifyUserModification);
+    userModificationService.registerDeleteUserCallback(this::notifyRemovedUser);
   }
 
-  private void calculateUsedSpace(Path baseLocation) throws IOException {
-    for (User user : userDataService.getUsers()) {
-      String username = user.getUsername();
-      Path userBaseLocation = baseLocation.resolve(username);
+  private void calculateQuotas(Path baseLocation) throws IOException {
+    quotas.clear();
+    userDataService.getUsers()
+        .forEach(user -> {
+          String username = user.getUsername();
+          OwncloudLocalQuota quota = getOrCreateQuota(username, baseLocation);
+          quota.setTotal(user.getQuota());
+          quotas.put(username, quota);
+        });
+  }
 
-      if (Files.notExists(userBaseLocation)) {
-        usedSpaces.put(username, 0L);
-        continue;
-      }
+  private OwncloudLocalQuota getOrCreateQuota(String username, Path baseLocation) {
+    Path userBaseLocation = baseLocation.resolve(username);
 
-      long usedSpace = 0;
-      for (Path path : Files.newDirectoryStream(userBaseLocation, Files::isRegularFile)) {
-        usedSpace += Files.size(path);
-      }
-      usedSpaces.put(username, usedSpace);
+    if (Files.notExists(userBaseLocation)) {
+      return OwncloudLocalQuota.builder()
+          .location(baseLocation)
+          .build();
     }
+
+    try {
+      OwncloudLocalQuota quota = OwncloudLocalQuota.builder()
+          .location(userBaseLocation)
+          .build();
+      Files.walkFileTree(userBaseLocation, new UsedSpaceFileVisitor(quota::increaseUsed));
+      return quota;
+    } catch (IOException e) {
+      String logMessage = "IOException while calculating the used Space of Location " + userBaseLocation.toAbsolutePath().normalize().toString();
+      log.error(logMessage);
+      throw new OwncloudLocalResourceException(logMessage, e);
+    }
+  }
+
+  @RequiredArgsConstructor
+  private static class UsedSpaceFileVisitor extends SimpleFileVisitor<Path> {
+    private final Consumer<Long> usedSpaceIncreaseConsumer;
+
+    @Override
+    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+      usedSpaceIncreaseConsumer.accept(Files.size(file));
+      return FileVisitResult.CONTINUE;
+    }
+  }
+
+  private void notifyUserModification(OwncloudUserDetails userDetails) {
+    OwncloudLocalQuota quota = quotas.computeIfAbsent(userDetails.getUsername(), this::getOrCreateQuota);
+    quota.setTotal(userDetails.getQuota());
+  }
+
+  private OwncloudLocalQuota getOrCreateQuota(String username) {
+    ResourceServiceProperties resourceProperties = properties.getResourceService();
+    return getOrCreateQuota(username, resourceProperties.getLocation());
+  }
+
+  private void notifyRemovedUser(String username) {
+    quotas.remove(username);
   }
 
   @Override
@@ -274,10 +323,28 @@ class OwncloudLocalResourceServiceImpl implements OwncloudLocalResourceService {
   public void delete(OwncloudResource resource) {
     Path path = resolveLocation(resource.getHref());
     checkPathExists(path, resource);
+    removeExistingPath(path);
+  }
+
+  private void checkPathExists(Path path, OwncloudResource resource) {
+    if (Files.notExists(path)) {
+      Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+      throw new OwncloudResourceNotFoundException(resource.getHref(), authentication.getName());
+    }
+  }
+
+  private void removeExistingPath(Path path) {
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    OwncloudLocalQuota quota = quotas.get(authentication.getName());
+    removeExistingPathAndRecalculateSpaceAndChecksum(path, quota);
+  }
+
+  private void removeExistingPathAndRecalculateSpaceAndChecksum(Path path, OwncloudLocalQuota quota) {
     try {
       if (Files.isDirectory(path)) {
-        recursivlyDeleteDirectory(path);
+        Files.walkFileTree(path, new DeleteFileVisitor(quota::reduceUsed));
       } else {
+        quota.reduceUsed(Files.size(path));
         Files.delete(path);
       }
     } catch (IOException e) {
@@ -287,29 +354,22 @@ class OwncloudLocalResourceServiceImpl implements OwncloudLocalResourceService {
     }
   }
 
-  private void checkPathExists(Path path, OwncloudResource resource) {
-    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-    if (Files.notExists(path)) {
-      throw new OwncloudResourceNotFoundException(resource.getHref(), authentication.getName());
+  @RequiredArgsConstructor
+  private static class DeleteFileVisitor extends SimpleFileVisitor<Path> {
+    private final Consumer<Long> usedSpaceReductionConsumer;
+
+    @Override
+    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+      usedSpaceReductionConsumer.accept(Files.size(file));
+      Files.delete(file);
+      return FileVisitResult.CONTINUE;
     }
-  }
 
-  private void recursivlyDeleteDirectory(Path path) throws IOException {
-    Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
-
-      @Override
-      public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-        Files.delete(file);
-        return FileVisitResult.CONTINUE;
-      }
-
-      @Override
-      public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-        Files.delete(dir);
-        return FileVisitResult.CONTINUE;
-      }
-
-    });
+    @Override
+    public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+      Files.delete(dir);
+      return FileVisitResult.CONTINUE;
+    }
   }
 
   @Override
@@ -344,27 +404,39 @@ class OwncloudLocalResourceServiceImpl implements OwncloudLocalResourceService {
     return pipedStreamSynchronizer.getOutputStream();
   }
 
-  private void checkQuota(Authentication authentication, int length) {
-    // TODO: implement me !!!
+  private void checkQuota(QuotaCheckEnvironment environment) {
+    Optional
+        .ofNullable(quotas.get(environment.getUsername()))
+        .ifPresent(quota -> {
+          checkSpace(quota, environment);
+          quota.increaseUsed(environment.getWrittenBytes());
+        });
   }
 
-  private void resetQuota(Authentication authentication, long writtenBytes) {
-    // TODO: implement me !!!
+  private void checkSpace(OwncloudQuota quota, QuotaCheckEnvironment environment) {
+    if (isNoMoreSpaceLeft(quota, environment)) {
+      throw new OwncloudQuotaExceededException(environment.getUri(), environment.getUsername());
+    }
+  }
+
+  private boolean isNoMoreSpaceLeft(OwncloudQuota quota, QuotaCheckEnvironment environment) {
+    return quota.getFree() < environment.getWrittenBytes();
+  }
+
+  private void resetQuota(String username, long writtenBytes) {
+    OwncloudLocalQuota quota = quotas.get(username);
+    if (quota == null) {
+      return;
+    }
+    synchronized (quota) {
+      quota.reduceUsed(writtenBytes);
+    }
   }
 
   @Override
   public OwncloudQuota getQuota() {
-    // TODO: implement me !!!
-    throw new RuntimeException("not implemented now");
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    return quotas.get(authentication.getName());
   }
 
-  @Override
-  public void notifyUserModification(OwncloudUserDetails userDetails) {
-    // TODO implement me !!!
-  }
-
-  @Override
-  public void notifyRemovedUser(String username) {
-    // TODO implement me !!!
-  }
 }

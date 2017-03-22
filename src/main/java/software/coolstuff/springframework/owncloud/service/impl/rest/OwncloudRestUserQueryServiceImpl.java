@@ -29,10 +29,10 @@ import org.springframework.security.access.AccessDeniedException;
 import lombok.extern.slf4j.Slf4j;
 import software.coolstuff.springframework.owncloud.exception.auth.OwncloudGroupNotFoundException;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
-import software.coolstuff.springframework.owncloud.service.api.OwncloudUserQueryService;
+import software.coolstuff.springframework.owncloud.service.impl.rest.Ocs.User.Data.Quota;
 
 @Slf4j
-class OwncloudRestUserQueryServiceImpl extends AbstractOwncloudRestServiceImpl implements OwncloudUserQueryService {
+class OwncloudRestUserQueryServiceImpl extends AbstractOwncloudRestServiceImpl implements OwncloudRestUserQueryService {
 
   OwncloudRestUserQueryServiceImpl(RestTemplateBuilder builder) {
     super(builder);
@@ -134,4 +134,16 @@ class OwncloudRestUserQueryServiceImpl extends AbstractOwncloudRestServiceImpl i
     return convert(username, user, groups);
   }
 
+  @Override
+  public OwncloudRestQuota getQuota(String username) {
+    log.debug("Get Information about User {} from Location {}", username, getLocation());
+    Ocs.User user = exchange("/cloud/users/{user}", HttpMethod.GET, emptyEntity(), Ocs.User.class, username);
+    Quota quota = user.getData().getQuota();
+    return OwncloudRestQuota.builder()
+        .free(quota.getFree())
+        .used(quota.getUsed())
+        .total(quota.getTotal())
+        .relative(quota.getRelative())
+        .build();
+  }
 }

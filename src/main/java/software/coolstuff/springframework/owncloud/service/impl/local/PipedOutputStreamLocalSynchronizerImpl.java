@@ -40,6 +40,7 @@ import software.coolstuff.springframework.owncloud.exception.resource.OwncloudLo
 import software.coolstuff.springframework.owncloud.exception.resource.OwncloudNoFileResourceException;
 import software.coolstuff.springframework.owncloud.exception.resource.OwncloudResourceException;
 import software.coolstuff.springframework.owncloud.service.impl.AbstractPipedStreamSynchronizerImpl;
+import software.coolstuff.springframework.owncloud.service.impl.QuotaCheckEnvironment;
 import software.coolstuff.springframework.owncloud.service.impl.local.OwncloudLocalProperties.ResourceServiceProperties;
 
 @Slf4j
@@ -48,8 +49,8 @@ class PipedOutputStreamLocalSynchronizerImpl extends AbstractPipedStreamSynchron
   private final Path outputFile;
   private final OwncloudLocalProperties owncloudLocalProperties;
   private final SynchronizedPipedOutputStream pipedOutputStream;
-  private final BiConsumer<Authentication, Integer> quotaChecker;
-  private final BiConsumer<Authentication, Long> quotaResetter;
+  private final Consumer<QuotaCheckEnvironment> quotaChecker;
+  private final BiConsumer<String, Long> quotaResetter;
   private final Optional<Consumer<Path>> onCloseCallback;
 
   private Path temporaryFile;
@@ -59,8 +60,8 @@ class PipedOutputStreamLocalSynchronizerImpl extends AbstractPipedStreamSynchron
       final URI uri,
       final Function<URI, Path> uriResolver,
       final OwncloudLocalProperties owncloudLocalProperties,
-      final BiConsumer<Authentication, Integer> quotaChecker,
-      final BiConsumer<Authentication, Long> quotaResetter,
+      final Consumer<QuotaCheckEnvironment> quotaChecker,
+      final BiConsumer<String, Long> quotaResetter,
       final Consumer<Path> onCloseCallback) {
     super(authentication, owncloudLocalProperties, uri);
     this.outputFile = getOutputFile(uri, uriResolver);
@@ -102,8 +103,8 @@ class PipedOutputStreamLocalSynchronizerImpl extends AbstractPipedStreamSynchron
       final URI uri,
       final Function<URI, Path> uriResolver,
       final OwncloudLocalProperties owncloudLocalProperties,
-      final BiConsumer<Authentication, Integer> quotaChecker,
-      final BiConsumer<Authentication, Long> quotaResetter,
+      final Consumer<QuotaCheckEnvironment> quotaChecker,
+      final BiConsumer<String, Long> quotaResetter,
       final Consumer<Path> onCloseCallback) {
     return new PipedOutputStreamLocalSynchronizerImpl(
         authentication,

@@ -24,6 +24,7 @@ import java.net.URI;
 import java.util.Optional;
 import java.util.concurrent.CyclicBarrier;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 import org.springframework.boot.logging.LogLevel;
 import org.springframework.security.core.Authentication;
@@ -168,14 +169,18 @@ public abstract class AbstractPipedStreamSynchronizerImpl {
         .build());
   }
 
-  protected void copy(CopyEnvironment environment) throws IOException {
+  protected void copy(CopyEnvironment copyEnvironment) throws IOException {
     long sumLength = 0;
     try {
       byte[] buffer = new byte[getBufferSize()];
-      InputStream input = environment.getInputStream();
-      OutputStream output = environment.getOutputStream();
+      InputStream input = copyEnvironment.getInputStream();
+      OutputStream output = copyEnvironment.getOutputStream();
+      QuotaCheckEnvironment quotaCheckEnvironment = QuotaCheckEnvironment.builder()
+          .uri(getUri())
+          .username(getUsername())
+          .build();
       for (int length = 0; (length = input.read(buffer)) != EOF; sumLength += length) {
-        environment.checkQuota(authentication, length);
+        copyEnvironment.checkQuota(quotaCheckEnvironment, length);
         output.write(buffer, 0, length);
         if (isInterrupted()) {
           log.warn("Background Thread has been interrupted -> stop the Copy Process");
@@ -183,7 +188,7 @@ public abstract class AbstractPipedStreamSynchronizerImpl {
         }
       }
     } catch (Exception e) {
-      environment.resetQuota(authentication, sumLength);
+      copyEnvironment.resetQuota(authentication, sumLength);
       throw e;
     }
   }
@@ -195,18 +200,19 @@ public abstract class AbstractPipedStreamSynchronizerImpl {
     private final InputStream inputStream;
     @Getter
     private final OutputStream outputStream;
-    private BiConsumer<Authentication, Integer> quotaChecker;
-    private BiConsumer<Authentication, Long> quotaResetter;
+    private Consumer<QuotaCheckEnvironment> quotaChecker;
+    private BiConsumer<String, Long> quotaResetter;
 
-    public void checkQuota(Authentication authentication, int length) {
+    public void checkQuota(QuotaCheckEnvironment quotaCheckEnvironment, int length) {
       if (quotaChecker != null) {
-        quotaChecker.accept(authentication, length);
+        quotaCheckEnvironment.setWrittenBytes(length);
+        quotaChecker.accept(quotaCheckEnvironment);
       }
     }
 
     public void resetQuota(Authentication authentication, long sumLength) {
       if (quotaResetter != null) {
-        quotaResetter.accept(authentication, sumLength);
+        quotaResetter.accept(authentication.getName(), sumLength);
       }
     }
   }
