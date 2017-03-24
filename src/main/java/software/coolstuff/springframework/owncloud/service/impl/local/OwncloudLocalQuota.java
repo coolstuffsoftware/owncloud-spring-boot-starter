@@ -27,6 +27,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import software.coolstuff.springframework.owncloud.exception.resource.OwncloudLocalResourceException;
 import software.coolstuff.springframework.owncloud.model.OwncloudQuota;
@@ -37,6 +38,7 @@ import software.coolstuff.springframework.owncloud.model.OwncloudQuota;
  */
 @Data
 @Getter(AccessLevel.NONE)
+@ToString(exclude = "location")
 @Builder
 @Slf4j
 class OwncloudLocalQuota implements OwncloudQuota {

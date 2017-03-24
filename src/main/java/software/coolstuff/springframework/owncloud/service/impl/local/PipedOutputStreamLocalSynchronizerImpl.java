@@ -177,6 +177,7 @@ class PipedOutputStreamLocalSynchronizerImpl extends AbstractPipedStreamSynchron
       try {
         moveTemporaryToRealFile();
         onCloseCallback.ifPresent(callback -> callback.accept(outputFile));
+        removeRealFileOnException();
         throwOptionalIOException();
         owncloudResourceException.ifPresent(OwncloudResourceException::reThrow);
       } finally {
@@ -193,6 +194,17 @@ class PipedOutputStreamLocalSynchronizerImpl extends AbstractPipedStreamSynchron
 
     private boolean isExceptionAvailable() {
       return iOException != null || owncloudResourceException.isPresent();
+    }
+
+    private void removeRealFileOnException() throws IOException {
+      if (isNoExceptionAvailable()) {
+        return;
+      }
+      Files.delete(outputFile);
+    }
+
+    private boolean isNoExceptionAvailable() {
+      return !isExceptionAvailable();
     }
 
     private void throwOptionalIOException() throws IOException {

@@ -18,12 +18,15 @@
 package software.coolstuff.springframework.owncloud.service.impl.local;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.Writer;
 import java.net.URI;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -32,20 +35,26 @@ import java.util.List;
 import java.util.Optional;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.junit.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestExecutionListeners;
 
 import software.coolstuff.springframework.owncloud.exception.resource.OwncloudLocalResourceChecksumServiceException;
 import software.coolstuff.springframework.owncloud.exception.resource.OwncloudLocalResourceException;
+import software.coolstuff.springframework.owncloud.exception.resource.OwncloudQuotaExceededException;
+import software.coolstuff.springframework.owncloud.model.OwncloudQuota;
 import software.coolstuff.springframework.owncloud.model.OwncloudResource;
 import software.coolstuff.springframework.owncloud.service.AbstractOwncloudResourceServiceTest;
+import software.coolstuff.springframework.owncloud.service.api.OwncloudResourceService;
 import software.coolstuff.springframework.owncloud.service.impl.OwncloudUtils;
 import software.coolstuff.springframework.owncloud.service.impl.local.OwncloudLocalProperties.ResourceServiceProperties;
 
@@ -55,11 +64,16 @@ import software.coolstuff.springframework.owncloud.service.impl.local.OwncloudLo
 })
 public class OwncloudLocalResourceServiceTest extends AbstractOwncloudResourceServiceTest {
 
+  private final static String RANDOM_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
   @Autowired
   private OwncloudLocalProperties properties;
 
   @MockBean
   private OwncloudLocalResourceChecksumService checksumService;
+
+  @Autowired
+  private OwncloudResourceService resourceService;
 
   @Override
   protected OwncloudResource prepare_OwncloudTestResourceImpl_equalsTo_OwncloudResourceImpl(OwncloudResource expected) throws Exception {
@@ -185,10 +199,7 @@ public class OwncloudLocalResourceServiceTest extends AbstractOwncloudResourceSe
   protected void check_getOutputStream_OK_CreateNewFile(URI href, MediaType mediaType, String testFileContent) throws Exception {
     Path resourcePath = resolveRelativePath(Paths.get(href.getPath()));
     assertThat(resourcePath).exists();
-    try (InputStream input = Files.newInputStream(resourcePath)) {
-      String actual = new String(IOUtils.toByteArray(input));
-      assertThat(actual).isEqualTo(testFileContent);
-    }
+    assertThat(resourcePath).hasContent(testFileContent);
   }
 
   @Override
@@ -225,10 +236,7 @@ public class OwncloudLocalResourceServiceTest extends AbstractOwncloudResourceSe
     Path resourcePath = resolveRelativePath(Paths.get(href.getPath()));
     assertThat(resourcePath).exists();
     assertThat(resourcePath).isRegularFile();
-    try (InputStream input = Files.newInputStream(resourcePath)) {
-      String actual = new String(IOUtils.toByteArray(input));
-      assertThat(actual).isEqualTo(testFileContent);
-    }
+    assertThat(resourcePath).hasContent(testFileContent);
   }
 
   @Override
@@ -295,5 +303,45 @@ public class OwncloudLocalResourceServiceTest extends AbstractOwncloudResourceSe
   @Override
   protected void prepare_createDirectory_OK_AlreadyExists(OwncloudTestResourceImpl expected) throws Exception {
     createResource(expected);
+  }
+
+  @Test
+  @WithMockUser(username = "user1", password = "s3cr3t")
+  public void test_createBigFile_SecondFileFails_ModifyUserQuota_SecondFileWillBeWritten() throws Exception {
+    MediaType mediaType = MediaType.TEXT_PLAIN;
+
+    // check the quota (must be 1024)
+    OwncloudQuota quota = resourceService.getQuota();
+    assertThat(quota.getTotal()).isEqualTo(1024);
+    assertThat(quota.getUsed()).isEqualTo(0);
+
+    // first create a File with a Length of 768 Bytes
+    URI uriBigFile = URI.create("/bigFile.txt");
+    String bigFileContent = RandomStringUtils.random(768, RANDOM_CHARS.toCharArray());
+    try (OutputStream output = resourceService.getOutputStream(uriBigFile, mediaType)) {
+      IOUtils.write(bigFileContent, output, Charset.forName("utf8"));
+    } finally {
+      Path pathBigFile = resolveRelativePath(Paths.get(uriBigFile.getPath()));
+      assertThat(pathBigFile).exists();
+      assertThat(pathBigFile).isRegularFile();
+      assertThat(pathBigFile).hasContent(bigFileContent);
+    }
+
+    quota = resourceService.getQuota();
+    assertThat(quota.getUsed()).isEqualTo(768);
+
+    // second try to create a File with a Length of 512 Bytes
+    URI uriNotSoBigFile = URI.create("/notSoBigFile.txt");
+    String notSoBigFileContent = RandomStringUtils.random(512, RANDOM_CHARS.toCharArray());
+    try (OutputStream output = resourceService.getOutputStream(uriNotSoBigFile, mediaType)) {
+      IOUtils.write(notSoBigFileContent, output, Charset.forName("utf8"));
+      fail("Quota is more than " + (768 + 512) + " Bytes");
+    } catch (OwncloudQuotaExceededException ignored) {
+      System.out.println("Quota exceeded");
+      // this is ok --> Quota is exceeded
+    } finally {
+      Path pathNotSoBigFile = resolveRelativePath(Paths.get(uriNotSoBigFile.getPath()));
+      assertThat(pathNotSoBigFile).doesNotExist();
+    }
   }
 }

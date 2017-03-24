@@ -428,9 +428,7 @@ class OwncloudLocalResourceServiceImpl implements OwncloudResourceService {
     if (quota == null) {
       return;
     }
-    synchronized (quota) {
-      quota.reduceUsed(writtenBytes);
-    }
+    quota.reduceUsed(writtenBytes);
   }
 
   @Override
