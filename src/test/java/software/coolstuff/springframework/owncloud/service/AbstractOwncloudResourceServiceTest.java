@@ -30,6 +30,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,6 +65,7 @@ import software.coolstuff.springframework.owncloud.config.IgnoreOnComponentScan;
 import software.coolstuff.springframework.owncloud.config.VelocityConfiguration;
 import software.coolstuff.springframework.owncloud.exception.resource.OwncloudNoDirectoryResourceException;
 import software.coolstuff.springframework.owncloud.exception.resource.OwncloudNoFileResourceException;
+import software.coolstuff.springframework.owncloud.exception.resource.OwncloudQuotaExceededException;
 import software.coolstuff.springframework.owncloud.exception.resource.OwncloudResourceException;
 import software.coolstuff.springframework.owncloud.exception.resource.OwncloudResourceNotFoundException;
 import software.coolstuff.springframework.owncloud.model.OwncloudFileResource;
@@ -421,8 +423,9 @@ public abstract class AbstractOwncloudResourceServiceTest {
     prepare_getOutputStream_OK_CreateNewFile(href, mediaType, TEST_FILE_CONTENT);
     try (OutputStream output = resourceService.getOutputStream(href, mediaType)) {
       IOUtils.write(TEST_FILE_CONTENT, output, Charset.forName("utf8"));
+    } finally {
+      check_getOutputStream_OK_CreateNewFile(href, mediaType, TEST_FILE_CONTENT);
     }
-    check_getOutputStream_OK_CreateNewFile(href, mediaType, TEST_FILE_CONTENT);
   }
 
   protected void prepare_getOutputStream_OK_CreateNewFile(URI href, MediaType mediaType, String testFileContent) throws Exception {}
@@ -601,4 +604,22 @@ public abstract class AbstractOwncloudResourceServiceTest {
   protected void prepare_createDirectory_OK_AlreadyExists(OwncloudTestResourceImpl expected) throws Exception {}
 
   protected void check_createDirectory_OK_AlreadyExists(OwncloudTestResourceImpl expected) throws Exception {}
+
+  @Test(expected = OwncloudQuotaExceededException.class)
+  @WithMockUser(username = "user1", password = "s3cr3t")
+  public void test_getOutputStram_NOK_FileTooBig() throws Exception {
+    URI uri = URI.create("/tooBig.txt");
+    MediaType mediaType = MediaType.APPLICATION_OCTET_STREAM;
+    String testFileContent = RandomStringUtils.random(1025);
+    prepare_getOutputStram_NOK_FileTooBig(uri, mediaType, testFileContent);
+    try (OutputStream output = resourceService.getOutputStream(uri, mediaType)) {
+      IOUtils.write(testFileContent, output, Charset.forName("utf8"));
+    } finally {
+      check_getOutputStram_NOK_FileTooBig(uri);
+    }
+  }
+
+  protected void prepare_getOutputStram_NOK_FileTooBig(URI uri, MediaType mediaType, String testFileContent) throws Exception {}
+
+  protected void check_getOutputStram_NOK_FileTooBig(URI uri) throws Exception {}
 }

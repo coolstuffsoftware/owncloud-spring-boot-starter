@@ -363,7 +363,6 @@ public class OwncloudRestResourceServiceTest extends AbstractOwncloudResourceSer
         .andExpect(content().contentType(mediaType))
         .andExpect(content().string(testFileContent))
         .andRespond(withSuccess());
-
   }
 
   @Override
@@ -518,5 +517,25 @@ public class OwncloudRestResourceServiceTest extends AbstractOwncloudResourceSer
         .list(getResourcePath(expected.getHref()), 0);
     Mockito.verify(sardine, Mockito.never())
         .createDirectory(getResourcePath(expected.getHref()));
+  }
+
+  @Override
+  protected void prepare_getOutputStram_NOK_FileTooBig(URI href, MediaType mediaType, String testFileContent) throws Exception {
+    Mockito
+        .when(sardine.list(getResourcePath(href), 0))
+        .thenThrow(new SardineException("No File", HttpStatus.NOT_FOUND.value(), null));
+    mockServer
+        .expect(requestToWithPrefix(href))
+        .andExpect(method(HttpMethod.PUT))
+        .andExpect(header(HttpHeaders.AUTHORIZATION, getBasicAuthorizationHeader()))
+        .andExpect(header(HttpHeaders.CONNECTION, "keep-alive"))
+        .andExpect(content().contentType(mediaType))
+        .andExpect(content().string(testFileContent))
+        .andRespond(withStatus(HttpStatus.INSUFFICIENT_STORAGE));
+  }
+
+  @Override
+  protected void check_getOutputStram_NOK_FileTooBig(URI uri) throws Exception {
+    Mockito.verify(sardine).list(getResourcePath(uri), 0);
   }
 }
