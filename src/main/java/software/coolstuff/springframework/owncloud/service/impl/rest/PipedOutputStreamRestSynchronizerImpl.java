@@ -122,9 +122,12 @@ class PipedOutputStreamRestSynchronizerImpl extends AbstractPipedStreamRestSynch
 
     @Override
     public void close() throws IOException {
-      super.close();
-      setPipeReady();
-      restClientException.ifPresent(this::handleRestClientException);
+      try {
+        super.close();
+      } finally {
+        setPipeReady();
+        restClientException.ifPresent(this::handleRestClientException);
+      }
     }
 
     private void handleRestClientException(RestClientException exception) {
