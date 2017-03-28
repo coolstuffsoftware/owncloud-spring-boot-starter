@@ -41,6 +41,7 @@ import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.ClientHttpRequest;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.http.converter.ByteArrayHttpMessageConverter;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -95,7 +96,10 @@ class OwncloudRestResourceServiceImpl implements OwncloudResourceService, Ownclo
     this.properties = properties;
     URL locationURL = OwncloudRestUtils.checkAndConvertLocation(properties.getLocation());
     rootUri = appendOptionalSuffix(locationURL, URI_SUFFIX);
+    HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory();
+    requestFactory.setBufferRequestBody(false);
     restOperations = builder
+        .requestFactory(requestFactory)
         .messageConverters(new ByteArrayHttpMessageConverter())
         .rootUri(rootUri)
         .build();

@@ -60,7 +60,6 @@ import software.coolstuff.springframework.owncloud.model.OwncloudResource;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudResourceService;
 import software.coolstuff.springframework.owncloud.service.impl.OwncloudUtils;
-import software.coolstuff.springframework.owncloud.service.impl.QuotaCheckEnvironment;
 import software.coolstuff.springframework.owncloud.service.impl.local.OwncloudLocalProperties.ResourceServiceProperties;
 
 @Slf4j
@@ -394,9 +393,7 @@ class OwncloudLocalResourceServiceImpl implements OwncloudResourceService {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     PipedOutputStreamLocalSynchronizer pipedStreamSynchronizer = PipedOutputStreamLocalSynchronizer.builder()
         .authentication(authentication)
-        .quotaChecker(this::checkQuota)
-        .quotaResetter(this::resetQuota)
-        .onCloseCallback(checksumService::recalculateChecksum)
+        .afterCopyCallback(this::afterCopy)
         .owncloudLocalProperties(properties)
         .uri(href)
         .uriResolver(this::resolveLocation)
@@ -404,31 +401,26 @@ class OwncloudLocalResourceServiceImpl implements OwncloudResourceService {
     return pipedStreamSynchronizer.getOutputStream();
   }
 
-  private void checkQuota(QuotaCheckEnvironment environment) {
+  private void afterCopy(PipedOutputStreamAfterCopyEnvironment environment) {
     Optional
         .ofNullable(quotas.get(environment.getUsername()))
         .ifPresent(quota -> {
           checkSpace(quota, environment);
-          quota.increaseUsed(environment.getWrittenBytes());
+          quota.increaseUsed(environment.getContentLength());
         });
+    if (Files.exists(environment.getPath())) {
+      checksumService.recalculateChecksum(environment.getPath());
+    }
   }
 
-  private void checkSpace(OwncloudQuota quota, QuotaCheckEnvironment environment) {
+  private void checkSpace(OwncloudQuota quota, PipedOutputStreamAfterCopyEnvironment environment) {
     if (isNoMoreSpaceLeft(quota, environment)) {
       throw new OwncloudQuotaExceededException(environment.getUri(), environment.getUsername());
     }
   }
 
-  private boolean isNoMoreSpaceLeft(OwncloudQuota quota, QuotaCheckEnvironment environment) {
-    return quota.getFree() < environment.getWrittenBytes();
-  }
-
-  private void resetQuota(String username, long writtenBytes) {
-    OwncloudLocalQuota quota = quotas.get(username);
-    if (quota == null) {
-      return;
-    }
-    quota.reduceUsed(writtenBytes);
+  private boolean isNoMoreSpaceLeft(OwncloudQuota quota, PipedOutputStreamAfterCopyEnvironment environment) {
+    return quota.getFree() < environment.getContentLength();
   }
 
   @Override

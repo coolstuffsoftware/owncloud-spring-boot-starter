@@ -23,15 +23,11 @@ import java.io.OutputStream;
 import java.net.URI;
 import java.util.Optional;
 import java.util.concurrent.CyclicBarrier;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 
 import org.springframework.boot.logging.LogLevel;
 import org.springframework.security.core.Authentication;
 
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import software.coolstuff.springframework.owncloud.exception.resource.OwncloudResourcePipeSynchronizationException;
@@ -43,7 +39,7 @@ import software.coolstuff.springframework.owncloud.service.impl.OwncloudProperti
 @Slf4j
 public abstract class AbstractPipedStreamSynchronizerImpl {
 
-  private static final int EOF = -1;
+  protected static final int EOF = -1;
 
   @Getter(AccessLevel.PROTECTED)
   private final Authentication authentication;
@@ -162,62 +158,21 @@ public abstract class AbstractPipedStreamSynchronizerImpl {
     return uri;
   }
 
-  protected void copy(InputStream input, OutputStream output) throws IOException {
-    copy(CopyEnvironment.builder()
-        .inputStream(input)
-        .outputStream(output)
-        .build());
-  }
-
-  protected void copy(CopyEnvironment copyEnvironment) throws IOException {
-    long sumLength = 0;
-    try {
-      byte[] buffer = new byte[getBufferSize()];
-      InputStream input = copyEnvironment.getInputStream();
-      OutputStream output = copyEnvironment.getOutputStream();
-      QuotaCheckEnvironment quotaCheckEnvironment = QuotaCheckEnvironment.builder()
-          .uri(getUri())
-          .username(getUsername())
-          .build();
-      for (int length = 0; (length = input.read(buffer)) != EOF; sumLength += length) {
-        copyEnvironment.checkQuota(quotaCheckEnvironment, length);
-        output.write(buffer, 0, length);
-        if (isInterrupted()) {
-          log.warn("Background Thread has been interrupted -> stop the Copy Process");
-          return;
-        }
-      }
-    } catch (Exception e) {
-      copyEnvironment.resetQuota(authentication, sumLength);
-      throw e;
-    }
-  }
-
-  @AllArgsConstructor(access = AccessLevel.PRIVATE)
-  @Builder
-  protected static class CopyEnvironment {
-    @Getter
-    private final InputStream inputStream;
-    @Getter
-    private final OutputStream outputStream;
-    private Consumer<QuotaCheckEnvironment> quotaChecker;
-    private BiConsumer<String, Long> quotaResetter;
-
-    public void checkQuota(QuotaCheckEnvironment quotaCheckEnvironment, int length) {
-      if (quotaChecker != null) {
-        quotaCheckEnvironment.setWrittenBytes(length);
-        quotaChecker.accept(quotaCheckEnvironment);
+  protected long copy(InputStream input, OutputStream output) throws IOException {
+    long contentLength = 0;
+    byte[] buffer = new byte[getBufferSize()];
+    for (int length = 0; (length = input.read(buffer)) != EOF;) {
+      output.write(buffer, 0, length);
+      contentLength += length;
+      if (isInterrupted()) {
+        log.warn("Background Thread has been interrupted -> stop the Copy Process");
+        return contentLength;
       }
     }
-
-    public void resetQuota(Authentication authentication, long sumLength) {
-      if (quotaResetter != null) {
-        quotaResetter.accept(authentication.getName(), sumLength);
-      }
-    }
+    return contentLength;
   }
 
-  private int getBufferSize() {
+  protected int getBufferSize() {
     return Optional.ofNullable(owncloudProperties)
         .map(this::extractBufferSize)
         .orElse(OwncloudProperties.DEFAULT_BUFFER_SIZE);

@@ -27,7 +27,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.Optional;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -40,7 +39,6 @@ import software.coolstuff.springframework.owncloud.exception.resource.OwncloudLo
 import software.coolstuff.springframework.owncloud.exception.resource.OwncloudNoFileResourceException;
 import software.coolstuff.springframework.owncloud.exception.resource.OwncloudResourceException;
 import software.coolstuff.springframework.owncloud.service.impl.AbstractPipedStreamSynchronizerImpl;
-import software.coolstuff.springframework.owncloud.service.impl.QuotaCheckEnvironment;
 import software.coolstuff.springframework.owncloud.service.impl.local.OwncloudLocalProperties.ResourceServiceProperties;
 
 @Slf4j
@@ -49,33 +47,33 @@ class PipedOutputStreamLocalSynchronizerImpl extends AbstractPipedStreamSynchron
   private final Path outputFile;
   private final OwncloudLocalProperties owncloudLocalProperties;
   private final SynchronizedPipedOutputStream pipedOutputStream;
-  private final Consumer<QuotaCheckEnvironment> quotaChecker;
-  private final BiConsumer<String, Long> quotaResetter;
-  private final Optional<Consumer<Path>> onCloseCallback;
+  private final Optional<Consumer<PipedOutputStreamAfterCopyEnvironment>> afterCopyCallback;
 
   private Path temporaryFile;
+
+  private PipedOutputStreamAfterCopyEnvironment afterCopyCallbackEnvironment;
 
   private PipedOutputStreamLocalSynchronizerImpl(
       final Authentication authentication,
       final URI uri,
       final Function<URI, Path> uriResolver,
       final OwncloudLocalProperties owncloudLocalProperties,
-      final Consumer<QuotaCheckEnvironment> quotaChecker,
-      final BiConsumer<String, Long> quotaResetter,
-      final Consumer<Path> onCloseCallback) {
+      final Consumer<PipedOutputStreamAfterCopyEnvironment> afterCopyCallback) {
     super(authentication, owncloudLocalProperties, uri);
     this.outputFile = getOutputFile(uri, uriResolver);
     this.owncloudLocalProperties = owncloudLocalProperties;
     this.pipedOutputStream = new SynchronizedPipedOutputStream();
-    this.quotaChecker = quotaChecker;
-    this.quotaResetter = quotaResetter;
-    this.onCloseCallback = Optional.ofNullable(onCloseCallback);
+    this.afterCopyCallback = Optional.ofNullable(afterCopyCallback);
+    afterCopyCallbackEnvironment = PipedOutputStreamAfterCopyEnvironment.builder()
+        .path(outputFile)
+        .uri(getUri())
+        .username(getUsername())
+        .build();
   }
 
   private Path getOutputFile(URI uri, Function<URI, Path> uriResolver) {
     Path path = uriResolver.apply(uri);
     checkIsDirectory(path, uri);
-    createFileIfNotExists(path);
     return path;
   }
 
@@ -85,35 +83,19 @@ class PipedOutputStreamLocalSynchronizerImpl extends AbstractPipedStreamSynchron
     }
   }
 
-  private void createFileIfNotExists(Path path) {
-    try {
-      if (Files.notExists(path)) {
-        Files.createFile(path);
-      }
-    } catch (IOException e) {
-      String exceptionMessage = "Error while creating empty File " + path.toAbsolutePath().normalize().toString();
-      log.error(exceptionMessage, e);
-      throw new OwncloudLocalResourceException(exceptionMessage, e);
-    }
-  }
-
   @Builder
   private static PipedOutputStreamLocalSynchronizer build(
       final Authentication authentication,
       final URI uri,
       final Function<URI, Path> uriResolver,
       final OwncloudLocalProperties owncloudLocalProperties,
-      final Consumer<QuotaCheckEnvironment> quotaChecker,
-      final BiConsumer<String, Long> quotaResetter,
-      final Consumer<Path> onCloseCallback) {
+      final Consumer<PipedOutputStreamAfterCopyEnvironment> afterCopyCallback) {
     return new PipedOutputStreamLocalSynchronizerImpl(
         authentication,
         uri,
         uriResolver,
         owncloudLocalProperties,
-        quotaChecker,
-        quotaResetter,
-        onCloseCallback);
+        afterCopyCallback);
   }
 
   @Override
@@ -142,13 +124,8 @@ class PipedOutputStreamLocalSynchronizerImpl extends AbstractPipedStreamSynchron
     try (InputStream input = new PipedInputStream(pipedOutputStream);
         OutputStream output = Files.newOutputStream(temporaryFile)) {
       setPipeReady();
-      CopyEnvironment copyEnvironment = CopyEnvironment.builder()
-          .inputStream(input)
-          .outputStream(output)
-          .quotaChecker(quotaChecker)
-          .quotaResetter(quotaResetter)
-          .build();
-      copy(copyEnvironment);
+      long contentLength = copy(input, output);
+      afterCopyCallbackEnvironment.setContentLength(contentLength);
     } catch (OwncloudResourceException e) {
       pipedOutputStream.setOwncloudResourceException(e);
       throw e;
@@ -156,60 +133,79 @@ class PipedOutputStreamLocalSynchronizerImpl extends AbstractPipedStreamSynchron
       pipedOutputStream.setIOException(e);
       throw new OwncloudLocalResourceException(e);
     } finally {
-      waitForPipeReady();
-    }
-  }
-
-  private class SynchronizedPipedOutputStream extends PipedOutputStream {
-
-    @Setter
-    private IOException iOException;
-
-    private Optional<OwncloudResourceException> owncloudResourceException = Optional.empty();
-
-    public void setOwncloudResourceException(OwncloudResourceException owncloudResourceException) {
-      this.owncloudResourceException = Optional.ofNullable(owncloudResourceException);
-    }
-
-    @Override
-    public void close() throws IOException {
-      super.close();
       try {
-        moveTemporaryToRealFile();
-        onCloseCallback.ifPresent(callback -> callback.accept(outputFile));
-        removeRealFileOnException();
-        throwOptionalIOException();
-        owncloudResourceException.ifPresent(OwncloudResourceException::reThrow);
+        handleFiles();
+        afterCopyCallback.ifPresent(consumer -> consumer.accept(afterCopyCallbackEnvironment));
+      } catch (OwncloudResourceException e) {
+        pipedOutputStream.setOwncloudResourceException(e);
       } finally {
         setPipeReady();
       }
     }
+  }
 
-    private void moveTemporaryToRealFile() throws IOException {
-      if (isExceptionAvailable()) {
-        return;
-      }
+  private void handleFiles() {
+    if (pipedOutputStream.isExceptionAvailable()) {
+      removeFiles();
+      return;
+    }
+    moveTemporaryFile();
+  }
+
+  private void removeFiles() {
+    removeFile(temporaryFile, "temporary File");
+    removeFile(outputFile, "regular Output File");
+  }
+
+  private void removeFile(Path path, String fileType) {
+    try {
+      Files.delete(path);
+    } catch (IOException e) {
+      throw new OwncloudLocalResourceException("Error while removing " + fileType, e);
+    }
+  }
+
+  private void moveTemporaryFile() {
+    try {
       Files.move(temporaryFile, outputFile, StandardCopyOption.REPLACE_EXISTING);
+    } catch (IOException e) {
+      final String logMessage = String.format("Error while moving the temporary File %s to %s",
+          temporaryFile.toAbsolutePath(),
+          outputFile.toAbsolutePath().normalize());
+      throw new OwncloudLocalResourceException(logMessage, e);
+    }
+  }
+
+  @Setter
+  private class SynchronizedPipedOutputStream extends PipedOutputStream {
+
+    private IOException iOException;
+    private OwncloudResourceException owncloudResourceException;
+
+    public boolean isExceptionAvailable() {
+      return iOException != null || owncloudResourceException != null;
     }
 
-    private boolean isExceptionAvailable() {
-      return iOException != null || owncloudResourceException.isPresent();
-    }
-
-    private void removeRealFileOnException() throws IOException {
-      if (isNoExceptionAvailable()) {
-        return;
+    @Override
+    public void close() throws IOException {
+      try {
+        super.close();
+      } finally {
+        waitForPipeReady();
       }
-      Files.delete(outputFile);
+      throwExistingIOException();
+      throwExistingOwncloudResourceException();
     }
 
-    private boolean isNoExceptionAvailable() {
-      return !isExceptionAvailable();
-    }
-
-    private void throwOptionalIOException() throws IOException {
+    private void throwExistingIOException() throws IOException {
       if (iOException != null) {
         throw iOException;
+      }
+    }
+
+    private void throwExistingOwncloudResourceException() {
+      if (owncloudResourceException != null) {
+        throw owncloudResourceException;
       }
     }
   }

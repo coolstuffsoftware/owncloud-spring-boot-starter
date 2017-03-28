@@ -15,20 +15,19 @@
    along with this program; if not, write to the Free Software Foundation,
    Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 */
-package software.coolstuff.springframework.owncloud.service.impl;
+package software.coolstuff.springframework.owncloud.service.impl.local;
 
 import java.net.URI;
+import java.nio.file.Path;
 
 import lombok.Builder;
 import lombok.Data;
 
-/**
- * @author mufasa1976
- */
 @Data
 @Builder
-public class QuotaCheckEnvironment {
+class PipedOutputStreamAfterCopyEnvironment {
+  private final Path path;
   private final URI uri;
   private final String username;
-  private int writtenBytes;
+  private long contentLength = 0;
 }
