@@ -59,7 +59,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 import lombok.Builder;
 import lombok.Getter;
 import software.coolstuff.springframework.owncloud.config.IgnoreOnComponentScan;
-import software.coolstuff.springframework.owncloud.exception.resource.OwncloudLocalResourceChecksumServiceException;
 import software.coolstuff.springframework.owncloud.service.impl.local.OwncloudLocalProperties.ResourceServiceProperties;
 
 /**
@@ -254,7 +253,7 @@ public class OwncloudLocalResourceChecksumServiceTest {
     assertThat(checksumOfParentDirectory.get()).isEqualTo(expectedDirectoryChecksumAfterFileAdded);
   }
 
-  @Test(expected = OwncloudLocalResourceChecksumServiceException.class)
+  @Test
   public void testRecalculateChecksumOnMissingFile() throws Exception {
     Path file = resolvePath(Paths.get("user1", "directory", "notExists.txt"));
 
