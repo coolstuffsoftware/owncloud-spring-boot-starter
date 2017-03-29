@@ -78,7 +78,7 @@ class PipedInputStreamRestSynchronizerImpl extends AbstractPipedStreamRestSynchr
       setPipeReady();
       ExecutionEnvironment executionEnvironment = ExecutionEnvironment.builder()
           .responseExtractor(response -> copy(response.getBody(), output))
-          .restClientExceptionHandler(pipedInputStream::setRestClientException)
+          .runtimeExceptionHandler(pipedInputStream::setRuntimeException)
           .build();
       execute(executionEnvironment);
     } catch (IOException e) {
@@ -94,16 +94,23 @@ class PipedInputStreamRestSynchronizerImpl extends AbstractPipedStreamRestSynchr
 
   private class SynchronizedPipedInputStream extends PipedInputStream {
 
-    private Optional<RestClientException> restClientException = Optional.empty();
+    private Optional<RuntimeException> runtimeException = Optional.empty();
 
-    public void setRestClientException(RestClientException restClientException) {
-      this.restClientException = Optional.ofNullable(restClientException);
+    public void setRuntimeException(RuntimeException runtimeException) {
+      this.runtimeException = Optional.ofNullable(runtimeException);
     }
 
     @Override
     public void close() throws IOException {
       super.close();
-      restClientException.ifPresent(this::handleRestClientException);
+      runtimeException.ifPresent(this::handleRuntimeException);
+    }
+
+    private void handleRuntimeException(RuntimeException exception) {
+      if (exception instanceof RestClientException) {
+        handleRestClientException((RestClientException) exception);
+      }
+      throw exception;
     }
 
     private void handleRestClientException(RestClientException exception) {

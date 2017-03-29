@@ -97,7 +97,6 @@ class OwncloudRestResourceServiceImpl implements OwncloudResourceService, Ownclo
     URL locationURL = OwncloudRestUtils.checkAndConvertLocation(properties.getLocation());
     rootUri = appendOptionalSuffix(locationURL, URI_SUFFIX);
     HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory();
-    requestFactory.setBufferRequestBody(false);
     restOperations = builder
         .requestFactory(requestFactory)
         .messageConverters(new ByteArrayHttpMessageConverter())

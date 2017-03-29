@@ -30,7 +30,6 @@ import org.springframework.http.client.ClientHttpRequest;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.client.RequestCallback;
-import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestOperations;
 
 import lombok.AccessLevel;
@@ -87,10 +86,10 @@ abstract class AbstractPipedStreamRestSynchronizerImpl extends AbstractPipedStre
     Optional<ConsumerWithoutArgument> afterExecutionCallback = executionEnvironment.getAfterExecutionCallback();
     try {
       callRestWith(executionEnvironment);
-    } catch (RestClientException restClientException) {
-      Optional<Consumer<RestClientException>> restClientExceptionHandler = executionEnvironment.getRestClientExceptionHandler();
-      restClientExceptionHandler.ifPresent(consumer -> consumer.accept(restClientException));
-      throw restClientException;
+    } catch (RuntimeException runtimeException) {
+      Optional<Consumer<RuntimeException>> runtimeExceptionHandler = executionEnvironment.getRuntimeExceptionHandler();
+      runtimeExceptionHandler.ifPresent(consumer -> consumer.accept(runtimeException));
+      throw runtimeException;
     } finally {
       afterExecutionCallback.ifPresent(consumer -> consumer.apply());
     }
@@ -120,11 +119,11 @@ abstract class AbstractPipedStreamRestSynchronizerImpl extends AbstractPipedStre
   static class ExecutionEnvironment {
     private final RequestCallback requestCallback;
     private VoidResponseExtractor responseExtractor;
-    private Consumer<RestClientException> restClientExceptionHandler;
+    private Consumer<RuntimeException> runtimeExceptionHandler;
     private ConsumerWithoutArgument afterExecutionCallback;
 
-    public Optional<Consumer<RestClientException>> getRestClientExceptionHandler() {
-      return Optional.ofNullable(restClientExceptionHandler);
+    public Optional<Consumer<RuntimeException>> getRuntimeExceptionHandler() {
+      return Optional.ofNullable(runtimeExceptionHandler);
     }
 
     public Optional<ConsumerWithoutArgument> getAfterExecutionCallback() {

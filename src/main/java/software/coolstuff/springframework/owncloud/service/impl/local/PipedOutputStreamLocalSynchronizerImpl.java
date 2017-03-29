@@ -34,14 +34,12 @@ import org.springframework.security.core.Authentication;
 
 import lombok.Builder;
 import lombok.Setter;
-import lombok.extern.slf4j.Slf4j;
 import software.coolstuff.springframework.owncloud.exception.resource.OwncloudLocalResourceException;
 import software.coolstuff.springframework.owncloud.exception.resource.OwncloudNoFileResourceException;
 import software.coolstuff.springframework.owncloud.exception.resource.OwncloudResourceException;
 import software.coolstuff.springframework.owncloud.service.impl.AbstractPipedStreamSynchronizerImpl;
 import software.coolstuff.springframework.owncloud.service.impl.local.OwncloudLocalProperties.ResourceServiceProperties;
 
-@Slf4j
 class PipedOutputStreamLocalSynchronizerImpl extends AbstractPipedStreamSynchronizerImpl implements PipedOutputStreamLocalSynchronizer {
 
   private final Path outputFile;

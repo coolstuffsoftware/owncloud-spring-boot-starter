@@ -142,6 +142,10 @@ class OwncloudLocalResourceChecksumServiceImpl implements OwncloudLocalResourceC
   @Override
   public void recalculateChecksum(Path path) throws OwncloudResourceException {
     Validate.notNull(path);
+    if (Files.notExists(path)) {
+      checksums.remove(path.toAbsolutePath().normalize());
+      return;
+    }
     if (Files.isDirectory(path)) {
       createDirectoryChecksumRecursively(path);
       return;

@@ -415,12 +415,22 @@ class OwncloudLocalResourceServiceImpl implements OwncloudResourceService {
 
   private void checkSpace(OwncloudQuota quota, PipedOutputStreamAfterCopyEnvironment environment) {
     if (isNoMoreSpaceLeft(quota, environment)) {
+      removeFile(environment);
       throw new OwncloudQuotaExceededException(environment.getUri(), environment.getUsername());
     }
   }
 
   private boolean isNoMoreSpaceLeft(OwncloudQuota quota, PipedOutputStreamAfterCopyEnvironment environment) {
     return quota.getFree() < environment.getContentLength();
+  }
+
+  private void removeFile(PipedOutputStreamAfterCopyEnvironment environment) {
+    try {
+      Files.delete(environment.getPath());
+    } catch (IOException e) {
+      final String logMessage = String.format("Error while removing File %s", environment.getPath().toAbsolutePath().normalize());
+      throw new OwncloudLocalResourceException(logMessage, e);
+    }
   }
 
   @Override
