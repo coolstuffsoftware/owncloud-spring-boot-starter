@@ -76,10 +76,12 @@ public class OwncloudRestUserModificationServiceTest extends AbstractOwncloudUse
               .method(GET)
               .url("/cloud/users/" + userModification.getExistingUser().getUsername())
               .build(),
-          userModification.getExistingUser().isEnabled(),
-          userModification.getExistingUser().getEmail(),
-          userModification.getExistingUser().getDisplayname(),
-          userModification.getExistingUser().getQuota());
+          UserResponse.builder()
+              .enabled(userModification.getExistingUser().isEnabled())
+              .email(userModification.getExistingUser().getEmail())
+              .displayname(userModification.getExistingUser().getDisplayname())
+              .quota(userModification.getExistingUser().getQuota())
+              .build());
     } else {
       respondFailure(
           RestRequest.builder()
@@ -107,10 +109,10 @@ public class OwncloudRestUserModificationServiceTest extends AbstractOwncloudUse
               .method(GET)
               .url("/cloud/users/" + userModification.getNewUser().getUsername())
               .build(),
-          true,
-          null,
-          userModification.getNewUser().getUsername(),
-          null);
+          UserResponse.builder()
+              .enabled(true)
+              .displayname(userModification.getNewUser().getUsername())
+              .build());
     }
 
     // change the Displayname
@@ -272,10 +274,12 @@ public class OwncloudRestUserModificationServiceTest extends AbstractOwncloudUse
             .method(GET)
             .url("/cloud/users/" + userModification.getNewUser().getUsername())
             .build(),
-        userModification.getNewUser().isEnabled(),
-        userModification.getNewUser().getEmail(),
-        userModification.getNewUser().getDisplayname(),
-        userModification.getNewUser().getQuota());
+        UserResponse.builder()
+            .enabled(userModification.getNewUser().isEnabled())
+            .email(userModification.getNewUser().getEmail())
+            .displayname(userModification.getNewUser().getDisplayname())
+            .quota(userModification.getNewUser().getQuota())
+            .build());
     respondGroups(
         RestRequest.builder()
             .server(queryServer)

@@ -37,16 +37,13 @@ public class OwncloudRestUserDetailsServiceWithAuthorityAppenderTest extends Abs
   }
 
   @Override
-  protected void prepareTestAppendedGroups(String username, boolean enabled, String email, String displayName, Long quota, String... groups) throws Exception {
+  protected void prepareTestAppendedGroups(String username, UserResponse userResponse, String... groups) throws Exception {
     respondUser(
         RestRequest.builder()
             .method(GET)
             .url("/cloud/users/" + username)
             .build(),
-        enabled,
-        email,
-        displayName,
-        quota);
+        userResponse);
     respondGroups(
         RestRequest.builder()
             .method(GET)

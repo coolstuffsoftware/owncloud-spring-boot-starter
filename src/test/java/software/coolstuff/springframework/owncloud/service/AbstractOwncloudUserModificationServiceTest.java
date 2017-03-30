@@ -17,8 +17,8 @@
 */
 package software.coolstuff.springframework.owncloud.service;
 
-import org.apache.commons.collections4.CollectionUtils;
-import org.junit.Assert;
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.client.RestClientTest;
@@ -57,13 +57,13 @@ public abstract class AbstractOwncloudUserModificationServiceTest extends Abstra
     OwncloudModificationUser modificationUser = new OwncloudModificationUser(userDetails);
     verifyServer();
 
-    Assert.assertNotNull(modificationUser);
-    Assert.assertEquals(userDetails.getUsername(), modificationUser.getUsername());
-    Assert.assertEquals(userDetails.getPassword(), modificationUser.getPassword());
-    Assert.assertEquals(userDetails.isEnabled(), modificationUser.isEnabled());
-    Assert.assertEquals(userDetails.getDisplayname(), modificationUser.getDisplayname());
-    Assert.assertEquals(userDetails.getEmail(), modificationUser.getEmail());
-    Assert.assertTrue(CollectionUtils.isEqualCollection(modificationUser.getGroups(), Lists.newArrayList("group1", "group2")));
+    assertThat(modificationUser).isNotNull();
+    assertThat(modificationUser.getUsername()).isEqualTo(userDetails.getUsername());
+    assertThat(modificationUser.getPassword()).isEqualTo(userDetails.getPassword());
+    assertThat(modificationUser.isEnabled()).isEqualTo(userDetails.isEnabled());
+    assertThat(modificationUser.getDisplayname()).isEqualTo(userDetails.getDisplayname());
+    assertThat(modificationUser.getEmail()).isEqualTo(userDetails.getEmail());
+    assertThat(modificationUser.getGroups()).containsOnly("group1", "group2");
   }
 
   @Test
@@ -79,13 +79,13 @@ public abstract class AbstractOwncloudUserModificationServiceTest extends Abstra
     OwncloudModificationUser modificationUser = new OwncloudModificationUser(userDetails);
     verifyServer();
 
-    Assert.assertNotNull(modificationUser);
-    Assert.assertEquals(userDetails.getUsername(), modificationUser.getUsername());
-    Assert.assertEquals(userDetails.getPassword(), modificationUser.getPassword());
-    Assert.assertEquals(userDetails.isEnabled(), modificationUser.isEnabled());
-    Assert.assertEquals(userDetails.getDisplayname(), modificationUser.getDisplayname());
-    Assert.assertEquals(userDetails.getEmail(), modificationUser.getEmail());
-    Assert.assertTrue(CollectionUtils.isEmpty(modificationUser.getGroups()));
+    assertThat(modificationUser).isNotNull();
+    assertThat(modificationUser.getUsername()).isEqualTo(userDetails.getUsername());
+    assertThat(modificationUser.getPassword()).isEqualTo(userDetails.getPassword());
+    assertThat(modificationUser.isEnabled()).isEqualTo(userDetails.isEnabled());
+    assertThat(modificationUser.getDisplayname()).isEqualTo(userDetails.getDisplayname());
+    assertThat(modificationUser.getEmail()).isEqualTo(userDetails.getEmail());
+    assertThat(modificationUser.getGroups()).isEmpty();
   }
 
   @Test
@@ -105,12 +105,12 @@ public abstract class AbstractOwncloudUserModificationServiceTest extends Abstra
     OwncloudUserDetails createdUser = userModificationService.saveUser(newUser);
     verifyServer();
 
-    Assert.assertNotNull(createdUser);
-    Assert.assertEquals(newUser.getUsername(), createdUser.getUsername());
-    Assert.assertNull(createdUser.getPassword());
-    Assert.assertEquals(newUser.isEnabled(), createdUser.isEnabled());
-    Assert.assertEquals(newUser.getDisplayname(), createdUser.getDisplayname());
-    Assert.assertEquals(newUser.getEmail(), createdUser.getEmail());
+    assertThat(createdUser).isNotNull();
+    assertThat(createdUser.getUsername()).isEqualTo(newUser.getUsername());
+    assertThat(createdUser.getPassword()).isNull();
+    assertThat(createdUser.isEnabled()).isEqualTo(newUser.isEnabled());
+    assertThat(createdUser.getDisplayname()).isEqualTo(newUser.getDisplayname());
+    assertThat(createdUser.getEmail()).isEqualTo(newUser.getEmail());
 
     checkAuthorities(createdUser.getUsername(), createdUser.getAuthorities());
   }
@@ -136,12 +136,12 @@ public abstract class AbstractOwncloudUserModificationServiceTest extends Abstra
     OwncloudUserDetails createdUser = userModificationService.saveUser(newUser);
     verifyServer();
 
-    Assert.assertNotNull(createdUser);
-    Assert.assertEquals(newUser.getUsername(), createdUser.getUsername());
-    Assert.assertNull(createdUser.getPassword());
-    Assert.assertEquals(newUser.isEnabled(), createdUser.isEnabled());
-    Assert.assertEquals(newUser.getDisplayname(), createdUser.getDisplayname());
-    Assert.assertEquals(newUser.getEmail(), createdUser.getEmail());
+    assertThat(createdUser).isNotNull();
+    assertThat(createdUser.getUsername()).isEqualTo(newUser.getUsername());
+    assertThat(createdUser.getPassword()).isNull();
+    assertThat(createdUser.isEnabled()).isEqualTo(newUser.isEnabled());
+    assertThat(createdUser.getDisplayname()).isEqualTo(newUser.getDisplayname());
+    assertThat(createdUser.getEmail()).isEqualTo(newUser.getEmail());
 
     checkAuthorities(createdUser.getUsername(), createdUser.getAuthorities(), "group1", "group2");
   }
@@ -174,14 +174,14 @@ public abstract class AbstractOwncloudUserModificationServiceTest extends Abstra
     OwncloudUserDetails updatedUser = userModificationService.saveUser(updateUser);
     verifyServer();
 
-    Assert.assertNotNull(updatedUser);
-    Assert.assertEquals(updateUser.getUsername(), updatedUser.getUsername());
-    Assert.assertNull(updatedUser.getPassword());
-    Assert.assertEquals(updateUser.isEnabled(), updatedUser.isEnabled());
-    Assert.assertEquals(updateUser.getDisplayname(), updatedUser.getDisplayname());
-    Assert.assertEquals(updateUser.getEmail(), updatedUser.getEmail());
-    Assert.assertEquals(updateUser.getQuota(), updatedUser.getQuota());
-    Assert.assertTrue(CollectionUtils.isEmpty(updatedUser.getAuthorities()));
+    assertThat(updatedUser).isNotNull();
+    assertThat(updatedUser.getUsername()).isEqualTo(updateUser.getUsername());
+    assertThat(updatedUser.getPassword()).isNull();
+    assertThat(updatedUser.isEnabled()).isEqualTo(updateUser.isEnabled());
+    assertThat(updatedUser.getDisplayname()).isEqualTo(updateUser.getDisplayname());
+    assertThat(updatedUser.getEmail()).isEqualTo(updateUser.getEmail());
+    assertThat(updatedUser.getQuota()).isEqualTo(updateUser.getQuota());
+    assertThat(updatedUser.getAuthorities()).isEmpty();
   }
 
   protected void prepareTestSaveUser_UpdateUser_OK_WithoutGroups(OwncloudModificationUser existingUser, OwncloudModificationUser updateUser) throws Exception {}
@@ -214,12 +214,14 @@ public abstract class AbstractOwncloudUserModificationServiceTest extends Abstra
     OwncloudUserDetails updatedUser = userModificationService.saveUser(updateUser);
     verifyServer();
 
-    Assert.assertNotNull(updatedUser);
-    Assert.assertEquals(updateUser.getUsername(), updatedUser.getUsername());
-    Assert.assertNull(updatedUser.getPassword());
-    Assert.assertEquals(updateUser.isEnabled(), updatedUser.isEnabled());
-    Assert.assertEquals(updateUser.getDisplayname(), updatedUser.getDisplayname());
-    Assert.assertEquals(updateUser.getEmail(), updatedUser.getEmail());
+    assertThat(updatedUser).isNotNull();
+    assertThat(updatedUser.getUsername()).isEqualTo(updateUser.getUsername());
+    assertThat(updatedUser.getPassword()).isNull();
+    assertThat(updatedUser.isEnabled()).isEqualTo(updateUser.isEnabled());
+    assertThat(updatedUser.getDisplayname()).isEqualTo(updateUser.getDisplayname());
+    assertThat(updatedUser.getEmail()).isEqualTo(updateUser.getEmail());
+    assertThat(updatedUser.getQuota()).isEqualTo(updateUser.getQuota());
+
     checkAuthorities(updatedUser.getUsername(), updatedUser.getAuthorities(), updateUser.getGroups().toArray(new String[] {}));
   }
 

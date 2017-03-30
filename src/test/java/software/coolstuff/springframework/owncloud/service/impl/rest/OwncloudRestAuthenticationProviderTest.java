@@ -52,17 +52,14 @@ public class OwncloudRestAuthenticationProviderTest extends AbstractOwncloudAuth
   }
 
   @Override
-  protected void prepareTestAuthenticate_OK(Credentials credentials, boolean enabled, String email, String displayName, Long quota, String... groups) throws IOException {
+  protected void prepareTestAuthenticate_OK(Credentials credentials, UserResponse userResponse, String... groups) throws IOException {
     respondUser(
         RestRequest.builder()
             .method(GET)
             .url("/cloud/users/" + credentials.getUsername())
             .basicAuthentication(credentials.getBasicAuthorizationHeader())
             .build(),
-        enabled,
-        email,
-        displayName,
-        quota);
+        userResponse);
     respondGroups(
         RestRequest.builder()
             .server(createServer(userDetailsService))
@@ -102,10 +99,12 @@ public class OwncloudRestAuthenticationProviderTest extends AbstractOwncloudAuth
             .url("/cloud/users/" + credentials.getUsername())
             .basicAuthentication(credentials.getBasicAuthorizationHeader())
             .build(),
-        false,
-        "user2@example.com",
-        "Mrs. User 2",
-        1024L);
+        UserResponse.builder()
+            .enabled(false)
+            .email("user2@example.com")
+            .displayname("Mrs. User 2")
+            .quota(1024L)
+            .build());
   }
 
   @Test(expected = HttpStatusCodeException.class)

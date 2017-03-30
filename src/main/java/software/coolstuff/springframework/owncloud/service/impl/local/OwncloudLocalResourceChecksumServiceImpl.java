@@ -47,8 +47,8 @@ import lombok.Builder;
 import lombok.extern.slf4j.Slf4j;
 import software.coolstuff.springframework.owncloud.exception.resource.OwncloudLocalResourceChecksumServiceException;
 import software.coolstuff.springframework.owncloud.exception.resource.OwncloudResourceException;
-import software.coolstuff.springframework.owncloud.service.impl.local.OwncloudLocalProperties.MessageDigestAlgorithm;
 import software.coolstuff.springframework.owncloud.service.impl.local.OwncloudLocalProperties.ResourceServiceProperties;
+import software.coolstuff.springframework.owncloud.service.impl.local.OwncloudLocalProperties.ResourceServiceProperties.MessageDigestAlgorithm;
 
 @Slf4j
 class OwncloudLocalResourceChecksumServiceImpl implements OwncloudLocalResourceChecksumService {

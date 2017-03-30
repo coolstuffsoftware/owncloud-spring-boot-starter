@@ -17,9 +17,12 @@
 */
 package software.coolstuff.springframework.owncloud.exception.resource;
 
+import software.coolstuff.springframework.owncloud.service.api.OwncloudResourceService;
+
 /**
+ * Thrown when there was an Error during the Usage of the Sardine Cache
+ * of the REST Implementation of {@link OwncloudResourceService}
  * @author mufasa1976
- *
  */
 public class OwncloudSardineCacheException extends OwncloudResourceException {
 

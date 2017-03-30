@@ -18,8 +18,9 @@
 package software.coolstuff.springframework.owncloud.exception.resource;
 
 /**
- * @author mufasa1976
+ * Thrown when there is an Exception during the Checksum Calculation
  *
+ * @author mufasa1976
  */
 public class OwncloudLocalResourceChecksumServiceException extends OwncloudResourceException {
 

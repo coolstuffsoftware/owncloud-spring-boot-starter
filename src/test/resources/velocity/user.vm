@@ -8,10 +8,10 @@
   <data>
     <enabled>${enabled}</enabled>
     <quota>
-      <free>817928385</free>
-      <used>255813439</used>
+      <free>$!{free}</free>
+      <used>$!{used}</used>
       <total>$!{quota}</total>
-      <relative>23.82</relative>
+      <relative>$!{relative}</relative>
     </quota>
 #if ( ${email} )
     <email>${email}</email>

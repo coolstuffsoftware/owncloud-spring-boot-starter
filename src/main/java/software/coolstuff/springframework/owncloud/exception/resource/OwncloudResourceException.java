@@ -17,7 +17,11 @@
 */
 package software.coolstuff.springframework.owncloud.exception.resource;
 
+import software.coolstuff.springframework.owncloud.service.api.OwncloudResourceService;
+
 /**
+ * Any SubClass of this Exception will be thrown during the Usage
+ * of the {@link OwncloudResourceService}
  * @author mufasa1976
  */
 public abstract class OwncloudResourceException extends RuntimeException {
@@ -38,14 +42,6 @@ public abstract class OwncloudResourceException extends RuntimeException {
 
   protected OwncloudResourceException(String message, Throwable throwable) {
     super(message, throwable);
-  }
-
-  /**
-   * Rethrow the given OwncloudResourceException
-   * @param owncloudResourceException rethrowable Exception
-   */
-  public static void reThrow(OwncloudResourceException owncloudResourceException) {
-    throw owncloudResourceException;
   }
 
 }

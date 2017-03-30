@@ -17,6 +17,7 @@
 */
 package software.coolstuff.springframework.owncloud.service.impl;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.content;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.header;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
@@ -40,14 +41,13 @@ import java.util.List;
 
 import javax.validation.constraints.NotNull;
 
-import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
 import org.apache.velocity.context.Context;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -77,6 +77,7 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.Setter;
 import software.coolstuff.springframework.owncloud.config.AuthorityAppenderConfiguration;
 import software.coolstuff.springframework.owncloud.config.AuthorityMapperConfiguration;
 import software.coolstuff.springframework.owncloud.config.IgnoreOnComponentScan;
@@ -107,7 +108,7 @@ public abstract class AbstractOwncloudServiceTest {
   private final static String DEFAULT_PATH = "/ocs/v1.php";
   private final static String VELOCITY_PATH_PREFIX = "/velocity/";
 
-  private final static Format QUOTA_FORMAT = new DecimalFormat("###########0");
+  private final static Format LONG_FORMAT = new DecimalFormat("###########0");
 
   @Autowired(required = false)
   private OwncloudGrantedAuthoritiesMapper owncloudGrantedAuthoritiesMapper;
@@ -130,6 +131,10 @@ public abstract class AbstractOwncloudServiceTest {
     }
   }
 
+  protected Format getQuotaFormat() {
+    return LONG_FORMAT;
+  }
+
   protected final MockRestServiceServer createServer(OwncloudRestService owncloudService) {
     return MockRestServiceServer.createServer(owncloudService.getRestTemplate());
   }
@@ -138,10 +143,6 @@ public abstract class AbstractOwncloudServiceTest {
     if (server != null) {
       server.verify();
     }
-  }
-
-  protected Format getQuotaFormat() {
-    return QUOTA_FORMAT;
   }
 
   protected final MockRestServiceServer getServer() {
@@ -280,7 +281,7 @@ public abstract class AbstractOwncloudServiceTest {
     context.put("message", message != null ? message : "");
   }
 
-  protected void respondUser(RestRequest request, boolean enabled, String email, String displayname, Long quota)
+  protected void respondUser(RestRequest request, UserResponse userResponse)
       throws IOException {
     if (isNoRestTestClass()) {
       return;
@@ -289,28 +290,64 @@ public abstract class AbstractOwncloudServiceTest {
 
     Context context = new VelocityContext();
     setSuccessMetaInformation(context);
-    context.put("enabled", Boolean.toString(enabled));
-    context.put("email", email);
-    context.put("displayname", displayname);
-    context.put("quota", quota != null ? QUOTA_FORMAT.format(quota) : null);
+    userResponse.fillContext(context);
 
     preparedRequest.andRespond(withSuccess(merge("user.vm", context), MediaType.TEXT_XML));
   }
 
+  @Setter
+  @Builder
+  public static class UserResponse {
+    private final static String ENABLED = "enabled";
+    private final static String EMAIL = "email";
+    private final static String DISPLAY_NAME = "displayname";
+    private final static String QUOTA = "quota";
+    private final static String USED = "used";
+    private final static String FREE = "free";
+    private final static String RELATIVE = "relative";
+
+    private final static Format FLOAT_FORMAT = new DecimalFormat("###########0.00");
+
+    private boolean enabled;
+    private String email;
+    private String displayname;
+    private Long quota;
+    private Long used;
+    private Long free;
+    private Float relative;
+
+    public static class UserResponseBuilder {
+      private boolean enabled = true;
+      private Long free = 817928385L;
+      private Long used = 255813439L;
+      private Float relative = 23.82F;
+    }
+
+    public void fillContext(Context context) {
+      context.put(ENABLED, Boolean.toString(enabled));
+      context.put(EMAIL, email);
+      context.put(DISPLAY_NAME, displayname);
+      context.put(QUOTA, quota != null ? LONG_FORMAT.format(quota) : null);
+      context.put(USED, used != null ? LONG_FORMAT.format(used) : null);
+      context.put(FREE, free != null ? LONG_FORMAT.format(free) : null);
+      context.put(RELATIVE, relative != null ? FLOAT_FORMAT.format(relative) : null);
+    }
+  }
+
   protected void checkAuthorities(String username, Collection<? extends GrantedAuthority> actual, String... expected) {
-    Assert.assertEquals(expected.length, actual == null ? 0 : actual.size());
-    List<SimpleGrantedAuthority> authorities = new ArrayList<>();
+    assertThat(actual == null ? 0 : actual.size()).isEqualTo(expected.length);
+    List<GrantedAuthority> authorities = new ArrayList<>();
     if (ArrayUtils.isNotEmpty(expected)) {
       for (String authority : expected) {
         authorities.add(new SimpleGrantedAuthority(authority));
       }
     }
     if (owncloudGrantedAuthoritiesMapper != null) {
-      Assert.assertTrue(CollectionUtils.isEqualCollection(actual, owncloudGrantedAuthoritiesMapper.mapAuthorities(username, authorities)));
+      assertThat(CollectionUtils.isEqualCollection(actual, owncloudGrantedAuthoritiesMapper.mapAuthorities(username, authorities))).isTrue();
     } else if (grantedAuthoritiesMapper != null) {
-      Assert.assertTrue(CollectionUtils.isEqualCollection(actual, grantedAuthoritiesMapper.mapAuthorities(authorities)));
+      assertThat(CollectionUtils.isEqualCollection(actual, grantedAuthoritiesMapper.mapAuthorities(authorities))).isTrue();
     } else {
-      Assert.assertTrue(CollectionUtils.isEqualCollection(actual, authorities));
+      assertThat(CollectionUtils.isEqualCollection(actual, authorities)).isTrue();
     }
   }
 

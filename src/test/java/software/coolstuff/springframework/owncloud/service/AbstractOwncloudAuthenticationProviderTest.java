@@ -17,9 +17,10 @@
 */
 package software.coolstuff.springframework.owncloud.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.util.Base64;
 
-import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.client.RestClientTest;
@@ -44,15 +45,15 @@ public abstract class AbstractOwncloudAuthenticationProviderTest extends Abstrac
 
   @Test
   public void testCorrectClass() {
-    Assert.assertEquals(getAuthenticationProviderClass(), authenticationProvider.getClass());
+    assertThat(authenticationProvider.getClass()).isEqualTo(getAuthenticationProviderClass());
   }
 
   protected abstract Class<? extends AuthenticationProvider> getAuthenticationProviderClass();
 
   @Test
   public void testSupportedAuthenticationTokens() {
-    Assert.assertTrue(authenticationProvider.supports(UsernamePasswordAuthenticationToken.class));
-    Assert.assertFalse(authenticationProvider.supports(RememberMeAuthenticationToken.class));
+    assertThat(authenticationProvider.supports(UsernamePasswordAuthenticationToken.class)).isTrue();
+    assertThat(authenticationProvider.supports(RememberMeAuthenticationToken.class)).isFalse();
   }
 
   @Test
@@ -60,29 +61,38 @@ public abstract class AbstractOwncloudAuthenticationProviderTest extends Abstrac
   public void testAuthenticate_OK() throws Exception {
     Credentials credentials = Credentials.builder().username("user1").password("s3cr3t").build();
 
-    prepareTestAuthenticate_OK(credentials, true, "user1@example.com", "Mr. User 1", 1024L, "group1", "group2");
+    prepareTestAuthenticate_OK(
+        credentials,
+        UserResponse.builder()
+            .enabled(true)
+            .email("user1@example.com")
+            .displayname("Mr. User 1")
+            .quota(1024L)
+            .build(),
+        "group1",
+        "group2");
 
     Authentication authentication = authenticationProvider.authenticate(credentials.getUsernamePasswordAuthenticationToken());
     verifyServer();
 
-    Assert.assertNotNull(authentication);
-    Assert.assertTrue(UsernamePasswordAuthenticationToken.class.isAssignableFrom(authentication.getClass()));
+    assertThat(authentication).isNotNull();
+    assertThat(authentication.getClass()).isAssignableFrom(UsernamePasswordAuthenticationToken.class);
     checkAuthorities(authentication.getName(), authentication.getAuthorities(), "group1", "group2");
 
-    Assert.assertEquals(credentials.getUsername(), authentication.getName());
-    Assert.assertEquals(credentials.getPassword(), authentication.getCredentials());
+    assertThat(authentication.getName()).isEqualTo(credentials.getUsername());
+    assertThat(authentication.getCredentials()).isEqualTo(credentials.getPassword());
 
-    Assert.assertNotNull(authentication.getPrincipal());
-    Assert.assertTrue(OwncloudUserDetails.class.isAssignableFrom(authentication.getPrincipal().getClass()));
+    assertThat(authentication.getPrincipal()).isNotNull();
+    assertThat(authentication.getPrincipal().getClass()).isAssignableFrom(OwncloudUserDetails.class);
     OwncloudUserDetails principal = (OwncloudUserDetails) authentication.getPrincipal();
-    Assert.assertTrue(principal.isEnabled());
-    Assert.assertEquals("Mr. User 1", principal.getDisplayname());
-    Assert.assertEquals("user1@example.com", principal.getEmail());
-    Assert.assertEquals(Long.valueOf(1024), principal.getQuota());
-    Assert.assertEquals(2, principal.getAuthorities().size());
+    assertThat(principal.isEnabled()).isTrue();
+    assertThat(principal.getDisplayname()).isEqualTo("Mr. User 1");
+    assertThat(principal.getEmail()).isEqualTo("user1@example.com");
+    assertThat(principal.getQuota()).isEqualTo(1024);
+    assertThat(principal.getAuthorities()).hasSize(2);
   }
 
-  protected void prepareTestAuthenticate_OK(Credentials credentials, boolean enabled, String email, String displayName, Long quota, String... groups) throws Exception {};
+  protected void prepareTestAuthenticate_OK(Credentials credentials, UserResponse userResponse, String... groups) throws Exception {};
 
   @Test(expected = BadCredentialsException.class)
   public void testAuthenticate_NOK() throws Exception {

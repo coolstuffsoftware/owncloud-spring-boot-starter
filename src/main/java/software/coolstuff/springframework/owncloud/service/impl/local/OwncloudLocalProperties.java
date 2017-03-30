@@ -25,40 +25,64 @@ import javax.validation.constraints.NotNull;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import lombok.ToString;
+import lombok.Setter;
 import software.coolstuff.springframework.owncloud.service.impl.OwncloudProperties;
 
-@Data
-@EqualsAndHashCode(callSuper = true)
-@ToString(callSuper = true)
+/**
+ * advanced Properties for local Implementation of the Owncloud Services
+ *
+ * @author mufasa1976
+ */
+@Getter
+@Setter
 @ConfigurationProperties("owncloud")
-class OwncloudLocalProperties extends OwncloudProperties {
+public class OwncloudLocalProperties extends OwncloudProperties {
 
-  @RequiredArgsConstructor
-  static enum MessageDigestAlgorithm {
+  /**
+   * advanced Properties for the local Resource Service Implementation
+   *
+   * @author mufasa1976
+   */
+  @Getter
+  @Setter
+  public static class ResourceServiceProperties extends OwncloudProperties.ResourceServiceProperties {
 
-    MD5("MD5");
+    /**
+     * Message Digest Algorithms for the Checksum Service.
+     * <p/>
+     * Actually the following Algorithms are supported:
+     * <ul>
+     *   <li><code>MD5</code></li>
+     * </ul>
+     * @author mufasa1976
+     */
+    @RequiredArgsConstructor
+    public static enum MessageDigestAlgorithm {
+      /** MD5 Algorithm */
+      MD5("MD5");
 
-    private final String algorithm;
+      private final String algorithm;
 
-    public MessageDigest getMessageDigest() throws NoSuchAlgorithmException {
-      return MessageDigest.getInstance(this.algorithm);
+      /** The Message Digest */
+      public MessageDigest getMessageDigest() throws NoSuchAlgorithmException {
+        return MessageDigest.getInstance(this.algorithm);
+      }
     }
-  }
 
-  @Data
-  @EqualsAndHashCode(callSuper = true)
-  @ToString(callSuper = true)
-  static class ResourceServiceProperties extends OwncloudProperties.ResourceServiceProperties {
-    private Path location;
+    /** Message Digest Algorithm used by the Checksum Service */
     @NotNull
     private MessageDigestAlgorithm messageDigestAlgorithm = MessageDigestAlgorithm.MD5;
+
+    /** Base Location for the WebDAV Resources */
+    private Path location;
+
+    /** File Name Prefix for the temporarily generated WebDAV Resource */
     @NotNull
     private String pipedStreamTemporaryFilePrefix = "owncloud";
   }
 
+  /** advanced Properties for the local Resource Service Implementation */
   private ResourceServiceProperties resourceService = new ResourceServiceProperties();
 }

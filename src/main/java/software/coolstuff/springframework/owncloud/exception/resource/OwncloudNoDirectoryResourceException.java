@@ -23,8 +23,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 import lombok.RequiredArgsConstructor;
+import software.coolstuff.springframework.owncloud.model.OwncloudResource;
 
 /**
+ * Thrown when {@link OwncloudResource} is not a Directory
  * @author mufasa1976
  */
 @RequiredArgsConstructor

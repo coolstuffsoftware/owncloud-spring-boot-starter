@@ -17,6 +17,8 @@
 */
 package software.coolstuff.springframework.owncloud.service.impl.local;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -34,7 +36,6 @@ import java.util.Map.Entry;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
-import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.DisposableBean;
@@ -262,7 +263,9 @@ public class OwncloudLocalFileTestExecutionListener extends AbstractTestExecutio
           .ignoreWhitespace()
           .withNodeMatcher(new DefaultNodeMatcher(ElementSelectors.byNameAndText))
           .build();
-      Assert.assertFalse(diff.toString(), diff.hasDifferences());
+      assertThat(diff.hasDifferences())
+          .as(diff.toString())
+          .isFalse();
     }
   }
 

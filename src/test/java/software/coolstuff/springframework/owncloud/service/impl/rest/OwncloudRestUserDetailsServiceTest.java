@@ -50,16 +50,13 @@ public class OwncloudRestUserDetailsServiceTest extends AbstractOwncloudUserDeta
   }
 
   @Override
-  protected void prepareTestUserDetails_OK(String user, boolean enabled, String email, String displayName, Long quota, String... groups) throws Exception {
+  protected void prepareTestUserDetails_OK(String user, UserResponse userResponse, String... groups) throws Exception {
     respondUser(
         RestRequest.builder()
             .method(GET)
             .url("/cloud/users/" + user)
             .build(),
-        enabled,
-        email,
-        displayName,
-        quota);
+        userResponse);
     respondGroups(
         RestRequest.builder()
             .method(GET)
@@ -113,10 +110,12 @@ public class OwncloudRestUserDetailsServiceTest extends AbstractOwncloudUserDeta
             .method(GET)
             .url("/cloud/user/user1")
             .build(),
-        true,
-        "user1@example.com",
-        "Mr. User 1",
-        1024L);
+        UserResponse.builder()
+            .enabled(true)
+            .email("user1@example.com")
+            .displayname("Mr. User 1")
+            .quota(1024L)
+            .build());
 
     userDetailsService.loadUserByUsername("user1");
   }

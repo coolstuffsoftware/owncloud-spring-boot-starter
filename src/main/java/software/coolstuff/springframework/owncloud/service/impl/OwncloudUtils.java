@@ -140,6 +140,10 @@ public final class OwncloudUtils {
     return !isDirectory(owncloudResource);
   }
 
+  /**
+   * Get the MediaType of a Directory (<code>httpd/unix-directory</code>)
+   * @return MediaType of a Directory
+   */
   public static MediaType getDirectoryMediaType() {
     return MediaType.valueOf(UNIX_DIRECTORY);
   }

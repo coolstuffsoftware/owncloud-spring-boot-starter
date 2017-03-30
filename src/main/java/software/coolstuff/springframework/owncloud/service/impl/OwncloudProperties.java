@@ -21,8 +21,10 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
 import org.springframework.boot.logging.LogLevel;
+import org.springframework.validation.annotation.Validated;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudUserModificationService;
 
 /**
@@ -30,10 +32,10 @@ import software.coolstuff.springframework.owncloud.service.api.OwncloudUserModif
  *
  * The Configuration Properties will be implemented by 2 Classes
  * <ul>
- *   <li>software.coolstuff.springframework.owncloud.service.impl.resource.OwncloudResourceProperties<br/>
+ *   <li><code>software.coolstuff.springframework.owncloud.service.impl.resource.OwncloudResourceProperties</code><br/>
  *       Implements Resource specific Properties
  *   </li>
- *   <li>software.coolstuff.springframework.owncloud.service.impl.rest.OwncloudRestProperties<br/>
+ *   <li><code>software.coolstuff.springframework.owncloud.service.impl.rest.OwncloudRestProperties</code><br/>
  *       Implements REST specific Properties
  *   </li>
  * </ul>
@@ -42,25 +44,25 @@ import software.coolstuff.springframework.owncloud.service.api.OwncloudUserModif
  *
  * @author mufasa1976
  */
-@Data
+@Validated
+@Getter
+@Setter
 public abstract class OwncloudProperties {
 
-  /**
-   * Default Buffer Size
-   */
-  public static final int DEFAULT_BUFFER_SIZE = 2048;
+  /** Default Buffer Size */
+  public static final int DEFAULT_BUFFER_SIZE = 8192;
 
   /**
    * Common Properties for the UserService
    *
    * @author mufasa1976
    */
-  @Data
+  @Validated
+  @Getter
+  @Setter
   public static class UserService {
 
-    /**
-     * Should Modifications through {@link OwncloudUserModificationService} be allowed
-     */
+    /** Should Modifications through {@link OwncloudUserModificationService} be allowed */
     private boolean enableModifications = false;
 
   }
@@ -70,24 +72,19 @@ public abstract class OwncloudProperties {
    *
    * @author mufasa1976
    */
-  @Data
+  @Validated
+  @Getter
+  @Setter
   public static class ResourceServiceProperties {
 
-    /**
-     * Add .. to the List of returned OwncloudResources (on list-Methods) (Default: <code>true</code>)
-     */
+    /** Add &quot;..&quot; to the List of returned OwncloudResources (on list-Methods) */
     private boolean addRelativeDownPath = true;
 
-    /**
-     * Buffer Size for the Copy Process (Default: <code>2048</code>)
-     */
+    /** Buffer Size for the Copy Process */
     @Min(1)
     private int pipedStreamBufferSize = DEFAULT_BUFFER_SIZE;
 
-    /**
-     * Log-Level of any uncaught Exception while running the Background-Thread
-     * of the PipedStream-Synchronizer.
-     */
+    /** Log-Level of any uncaught Exception while running the Background-Thread of the PipedStream-Synchronizer. */
     @NotNull
     private LogLevel pipedStreamUncaughtExceptionLogLevel = LogLevel.ERROR;
   }
@@ -117,14 +114,9 @@ public abstract class OwncloudProperties {
    */
   private String location;
 
-  /**
-   * User Service common Properties
-   */
+  /** User Service common Properties */
   private UserService userService = new UserService();
 
-  /**
-   * WebDAV common Properties
-   */
+  /** WebDAV common Properties */
   private ResourceServiceProperties resourceService = new ResourceServiceProperties();
-
 }

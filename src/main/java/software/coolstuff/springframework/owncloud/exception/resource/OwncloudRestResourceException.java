@@ -17,7 +17,11 @@
 */
 package software.coolstuff.springframework.owncloud.exception.resource;
 
+import software.coolstuff.springframework.owncloud.service.api.OwncloudResourceService;
+
 /**
+ * Thrown when there are any unexpected Exceptions during the
+ * Usage of the REST Implementation of the {@link OwncloudResourceService}
  * @author mufasa1976
  */
 public class OwncloudRestResourceException extends OwncloudResourceException {

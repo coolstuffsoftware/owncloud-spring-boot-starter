@@ -17,7 +17,8 @@
 */
 package software.coolstuff.springframework.owncloud.service.impl;
 
-import org.junit.Assert;
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.client.RestClientTest;
@@ -45,17 +46,26 @@ public abstract class AbstractOwncloudUserDetailsServiceWithAuthorityAppenderTes
   @Test
   @WithMockUser(username = "test1", password = "password")
   public void testAppendedGroups() throws Exception {
-    prepareTestAppendedGroups("user1", true, "user1@example.com", "Mr. User 1", 1024L, "group1", "group2");
+    prepareTestAppendedGroups(
+        "user1",
+        UserResponse.builder()
+            .enabled(true)
+            .email("user1@example.com")
+            .displayname("Mr. User 1")
+            .quota(1024L)
+            .build(),
+        "group1",
+        "group2");
 
     UserDetails userDetails = userDetailsService.loadUserByUsername("user1");
     verifyServer();
 
-    Assert.assertNotNull(userDetails);
-    Assert.assertEquals("user1", userDetails.getUsername());
+    assertThat(userDetails).isNotNull();
+    assertThat(userDetails.getUsername()).isEqualTo("user1");
 
     checkAuthorities(userDetails.getUsername(), userDetails.getAuthorities(), "group1", "group2", "group98", "group99");
   }
 
-  protected void prepareTestAppendedGroups(String username, boolean enable, String email, String displayName, Long quota, String... groups) throws Exception {}
+  protected void prepareTestAppendedGroups(String username, UserResponse userResponse, String... groups) throws Exception {}
 
 }

@@ -19,41 +19,75 @@ package software.coolstuff.springframework.owncloud.service.impl.rest;
 
 import java.util.concurrent.TimeUnit;
 
+import javax.validation.constraints.Min;
+
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.ToString;
+import lombok.Getter;
+import lombok.Setter;
 import software.coolstuff.springframework.owncloud.service.impl.OwncloudProperties;
 
-@Data
-@EqualsAndHashCode(callSuper = true)
-@ToString(callSuper = true)
+/**
+ * advanced Properties for REST Implementation of the Owncloud Services
+ *
+ * @author mufasa1976
+ */
+@Getter
+@Setter
 @ConfigurationProperties("owncloud")
-class OwncloudRestProperties extends OwncloudProperties {
+public class OwncloudRestProperties extends OwncloudProperties {
 
-  @Data
-  @EqualsAndHashCode(callSuper = true)
-  @ToString(callSuper = true)
-  static class ResourceServiceProperties extends OwncloudProperties.ResourceServiceProperties {
+  /**
+   * advanced Properties for the REST Resource Service Implementation
+   *
+   * @author mufasa1976
+   */
+  @Getter
+  @Setter
+  public static class ResourceServiceProperties extends OwncloudProperties.ResourceServiceProperties {
 
-    @Data
+    /**
+     * Google-Cache Properties for the Sardine Library Cache
+     *
+     * @author mufasa1976
+     */
+    @Getter
+    @Setter
     public static class CacheProperties {
+      /** allowed update Concurrency */
+      @Min(1)
       private Integer concurrencyLevel;
+      /** When will the Entry be removed from the Cache after last Access */
+      @Min(0)
       private Long expireAfterAccess;
+      /** Time Unit for {@link #expireAfterAccess}. Default: <code>SECONDS</code> */
       private TimeUnit expireAfterAccessTimeUnit = TimeUnit.SECONDS;
+      /** When will the Entry be removed from the Cache after last Write */
+      @Min(0)
       private Long expireAfterWrite;
+      /** Time Unit for {@link #expireAfterWrite}. Default: <code>SECONDS</code> */
       private TimeUnit expireAfterWriteTimeUnit = TimeUnit.SECONDS;
+      /** Initial Capacity for the Cache */
+      @Min(0)
       private Integer initialCapacity;
+      /** maximum Entries for the Cache */
+      @Min(0)
       private Long maximumSize;
+      /** maximum Weight for the Cache */
+      @Min(0)
       private Long maximumWeight;
+      /** When will the Entry be refreshed after the last Write */
+      @Min(1)
       private Long refreshAfterWrite;
-      private TimeUnit refreshAfterWriteTimeUnit;
+      /** Time Unit for {@link #refreshAfterWrite}. Default: <code>SECONDS</code> */
+      private TimeUnit refreshAfterWriteTimeUnit = TimeUnit.SECONDS;
     }
 
+    /** Google-Cache Properties for the Sardine Library Cache */
     private CacheProperties cache = new CacheProperties();
   }
 
+  /** advanced Properties for the REST Resource Service Implementation */
   private ResourceServiceProperties resourceService = new ResourceServiceProperties();
 
 }

@@ -24,10 +24,11 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import software.coolstuff.springframework.owncloud.model.OwncloudResource;
 
 /**
+ * Thrown when the {@link OwncloudResource} already exists
  * @author mufasa1976
- *
  */
 @ResponseStatus(HttpStatus.CONFLICT)
 @RequiredArgsConstructor

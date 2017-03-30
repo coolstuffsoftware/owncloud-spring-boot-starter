@@ -76,11 +76,12 @@ public abstract class AbstractPipedStreamSynchronizerImpl {
 
   protected void setPipeReady() {
     try {
-      log.debug("Release the Cyclic Barrier for the synchronized piped Stream");
+      log.debug("Release the Cyclic Barrier for the synchronized piped Stream of Thread {}", Thread.currentThread());
       pipeSync.await();
     } catch (Exception e) {
-      log.error("Error while waiting for PipedStream-Barrier", e);
-      throw new OwncloudResourcePipeSynchronizationException(e);
+      final String logMessage = String.format("Error while waiting for the PipedStream-Barrier by Thread %s", Thread.currentThread());
+      log.error(logMessage, e);
+      throw new OwncloudResourcePipeSynchronizationException(logMessage, e);
     }
   }
 
@@ -114,9 +115,7 @@ public abstract class AbstractPipedStreamSynchronizerImpl {
     if (logLevel == LogLevel.OFF) {
       return;
     }
-    String logMessage = new StringBuilder("Error while executing ")
-        .append(thread.getName())
-        .toString();
+    final String logMessage = String.format("Error while executing %s", thread);
     switch (logLevel) {
       case TRACE:
         log.trace(logMessage, cause);
@@ -142,7 +141,7 @@ public abstract class AbstractPipedStreamSynchronizerImpl {
 
   protected void waitForPipeReady() {
     try {
-      log.debug("Wait for the Background Thread of the synchronized piped Stream");
+      log.debug("Thread {} waits for the Background Thread of the synchronized piped Stream", Thread.currentThread());
       pipeSync.await();
     } catch (Exception e) {
       log.error("Error while waiting for PipedStream-Barrier", e);

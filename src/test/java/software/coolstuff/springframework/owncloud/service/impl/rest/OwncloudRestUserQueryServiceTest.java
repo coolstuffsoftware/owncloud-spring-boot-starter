@@ -122,10 +122,12 @@ public class OwncloudRestUserQueryServiceTest extends AbstractOwncloudUserQueryS
             .method(GET)
             .url("/cloud/users/" + expectedUser.getUsername())
             .build(),
-        expectedUser.isEnabled(),
-        expectedUser.getEmail(),
-        expectedUser.getDisplayname(),
-        expectedUser.getQuota());
+        UserResponse.builder()
+            .enabled(expectedUser.isEnabled())
+            .email(expectedUser.getEmail())
+            .displayname(expectedUser.getDisplayname())
+            .quota(expectedUser.getQuota())
+            .build());
     respondGroups(
         RestRequest.builder()
             .method(GET)

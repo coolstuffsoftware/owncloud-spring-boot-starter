@@ -24,8 +24,10 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import software.coolstuff.springframework.owncloud.model.OwncloudResource;
 
 /**
+ * Thrown when the {@link OwncloudResource} couldn't be found
  * @author mufasa1976
  */
 @ResponseStatus(HttpStatus.NOT_FOUND)
@@ -40,7 +42,7 @@ public class OwncloudResourceNotFoundException extends OwncloudResourceException
 
   @Override
   public String getMessage() {
-    return "Error while accessing Resource " + uri + " for User " + username;
+    return "Error while accessing Resource " + uri + " by User " + username;
   }
 
 }

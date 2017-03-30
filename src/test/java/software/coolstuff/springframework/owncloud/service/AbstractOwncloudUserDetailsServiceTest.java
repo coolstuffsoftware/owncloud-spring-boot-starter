@@ -17,7 +17,8 @@
 */
 package software.coolstuff.springframework.owncloud.service;
 
-import org.junit.Assert;
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.client.RestClientTest;
@@ -37,7 +38,7 @@ public abstract class AbstractOwncloudUserDetailsServiceTest extends AbstractOwn
 
   @Test
   public void testCorrectClass() {
-    Assert.assertEquals(getUserDetailsServiceClass(), userDetailsService.getClass());
+    assertThat(userDetailsService.getClass()).isEqualTo(getUserDetailsServiceClass());
   }
 
   protected abstract Class<? extends UserDetailsService> getUserDetailsServiceClass();
@@ -45,25 +46,34 @@ public abstract class AbstractOwncloudUserDetailsServiceTest extends AbstractOwn
   @Test
   @WithMockUser(username = "user1", password = "password")
   public void testUserDetails_OK() throws Exception {
-    prepareTestUserDetails_OK("user1", true, "user1@example.com", "Mr. User 1", 1024L, "group1", "group2");
+    prepareTestUserDetails_OK(
+        "user1",
+        UserResponse.builder()
+            .enabled(true)
+            .email("user1@example.com")
+            .displayname("Mr. User 1")
+            .quota(1024L)
+            .build(),
+        "group1",
+        "group2");
 
     UserDetails userDetails = userDetailsService.loadUserByUsername("user1");
     verifyServer();
 
-    Assert.assertNotNull(userDetails);
+    assertThat(userDetails).isNotNull();
 
-    Assert.assertEquals("user1", userDetails.getUsername());
-    Assert.assertNull(userDetails.getPassword());
+    assertThat(userDetails.getUsername()).isEqualTo("user1");
+    assertThat(userDetails.getPassword()).isNull();
     checkAuthorities(userDetails.getUsername(), userDetails.getAuthorities(), "group1", "group2");
 
-    Assert.assertTrue(OwncloudUserDetails.class.isAssignableFrom(userDetails.getClass()));
+    assertThat(userDetails.getClass()).isAssignableFrom(OwncloudUserDetails.class);
     OwncloudUserDetails owncloudUserDetails = (OwncloudUserDetails) userDetails;
-    Assert.assertEquals("Mr. User 1", owncloudUserDetails.getDisplayname());
-    Assert.assertEquals("user1@example.com", owncloudUserDetails.getEmail());
-    Assert.assertEquals(Long.valueOf(1024), owncloudUserDetails.getQuota());
+    assertThat(owncloudUserDetails.getDisplayname()).isEqualTo("Mr. User 1");
+    assertThat(owncloudUserDetails.getEmail()).isEqualTo("user1@example.com");
+    assertThat(owncloudUserDetails.getQuota()).isEqualTo(1024);
   }
 
-  protected void prepareTestUserDetails_OK(String user, boolean enabled, String email, String displayName, Long quota, String... groups) throws Exception {}
+  protected void prepareTestUserDetails_OK(String user, UserResponse userResponse, String... groups) throws Exception {}
 
   @Test(expected = UsernameNotFoundException.class)
   @WithMockUser(username = "user1", password = "password")

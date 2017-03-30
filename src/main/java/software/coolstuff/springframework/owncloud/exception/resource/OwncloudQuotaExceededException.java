@@ -23,10 +23,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 import lombok.RequiredArgsConstructor;
+import software.coolstuff.springframework.owncloud.model.OwncloudQuota;
 
 /**
+ * Thrown when the {@link OwncloudQuota} of the User as been exceeded
  * @author mufasa1976
- *
  */
 @ResponseStatus(HttpStatus.INSUFFICIENT_STORAGE)
 @RequiredArgsConstructor

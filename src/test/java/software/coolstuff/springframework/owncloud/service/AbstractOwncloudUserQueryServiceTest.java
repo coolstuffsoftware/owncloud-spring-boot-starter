@@ -17,12 +17,10 @@
 */
 package software.coolstuff.springframework.owncloud.service;
 
-import java.util.ArrayList;
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.util.List;
 
-import org.apache.commons.collections4.CollectionUtils;
-import org.assertj.core.util.Lists;
-import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.client.RestClientTest;
@@ -48,11 +46,9 @@ public abstract class AbstractOwncloudUserQueryServiceTest extends AbstractOwncl
     List<String> users = userQueryService.findAllUsers();
     verifyServer();
 
-    Assert.assertNotNull(users);
-    Assert.assertFalse(users.isEmpty());
-    Assert.assertEquals(2, users.size());
-
-    Assert.assertTrue(CollectionUtils.isEqualCollection(users, Lists.newArrayList("user1", "user2")));
+    assertThat(users)
+        .isNotNull()
+        .containsOnly("user1", "user2");
   }
 
   protected void prepareTestFindAllUsers(String... users) throws Exception {}
@@ -65,10 +61,9 @@ public abstract class AbstractOwncloudUserQueryServiceTest extends AbstractOwncl
     List<String> users = userQueryService.findAllUsers("User 1");
     verifyServer();
 
-    Assert.assertNotNull(users);
-    Assert.assertEquals(1, users.size());
-
-    Assert.assertTrue(CollectionUtils.isEqualCollection(users, Lists.newArrayList("user1")));
+    assertThat(users)
+        .isNotNull()
+        .containsOnly("user1");
   }
 
   protected void prepareTestFindAllUsersWithFilter(String filter, String... users) throws Exception {}
@@ -81,11 +76,9 @@ public abstract class AbstractOwncloudUserQueryServiceTest extends AbstractOwncl
     List<String> groups = userQueryService.findAllGroups();
     verifyServer();
 
-    Assert.assertNotNull(groups);
-    Assert.assertFalse(groups.isEmpty());
-    Assert.assertEquals(3, groups.size());
-
-    Assert.assertTrue(CollectionUtils.isEqualCollection(groups, Lists.newArrayList("group1", "group2", "group3")));
+    assertThat(groups)
+        .isNotNull()
+        .containsOnly("group1", "group2", "group3");
   }
 
   protected void prepareTestFindAllGroups(String... groups) throws Exception {}
@@ -98,10 +91,9 @@ public abstract class AbstractOwncloudUserQueryServiceTest extends AbstractOwncl
     List<String> groups = userQueryService.findAllGroups("p2");
     verifyServer();
 
-    Assert.assertNotNull(groups);
-    Assert.assertEquals(1, groups.size());
-
-    Assert.assertTrue(CollectionUtils.isEqualCollection(groups, Lists.newArrayList("group2")));
+    assertThat(groups)
+        .isNotNull()
+        .containsOnly("group2");
   }
 
   protected void prepareTestFindAllGroupsWithFilter(String filter, String... groups) throws Exception {}
@@ -114,16 +106,9 @@ public abstract class AbstractOwncloudUserQueryServiceTest extends AbstractOwncl
     List<String> membersOfGroup = userQueryService.findAllMembersOfGroup("group1");
     verifyServer();
 
-    Assert.assertNotNull(membersOfGroup);
-    Assert.assertFalse(membersOfGroup.isEmpty());
-    Assert.assertEquals(1, membersOfGroup.size());
-
-    ArrayList<String> expectedUsers = Lists.newArrayList("user1");
-    for (String user : membersOfGroup) {
-      Assert.assertTrue(expectedUsers.contains(user));
-      expectedUsers.remove(user);
-    }
-    Assert.assertTrue(expectedUsers.isEmpty());
+    assertThat(membersOfGroup)
+        .isNotNull()
+        .containsOnly("user1");
   }
 
   protected void prepareTestFindAllMembersOfGroup_OK(String group, String... users) throws Exception {}
@@ -142,8 +127,9 @@ public abstract class AbstractOwncloudUserQueryServiceTest extends AbstractOwncl
   public void testFindAllMembersOfGroup_GroupWithoutMembers() throws Exception {
     prepareTestFindAllMembersOfGroup_GroupWithoutMembers("group3");
     List<String> membersOfGroup = userQueryService.findAllMembersOfGroup("group3");
-    Assert.assertNotNull(membersOfGroup);
-    Assert.assertTrue(membersOfGroup.isEmpty());
+    assertThat(membersOfGroup)
+        .isNotNull()
+        .isEmpty();;
   }
 
   protected void prepareTestFindAllMembersOfGroup_GroupWithoutMembers(String groupname) throws Exception {}
@@ -175,12 +161,12 @@ public abstract class AbstractOwncloudUserQueryServiceTest extends AbstractOwncl
     OwncloudUserDetails actualUser = userQueryService.findOneUser("user1");
     verifyServer();
 
-    Assert.assertNotNull(actualUser);
-    Assert.assertEquals(expectedUser.getUsername(), actualUser.getUsername());
-    Assert.assertNull(actualUser.getPassword());
-    Assert.assertEquals(expectedUser.getDisplayname(), actualUser.getDisplayname());
-    Assert.assertEquals(expectedUser.getEmail(), actualUser.getEmail());
-    Assert.assertEquals(expectedUser.getQuota(), actualUser.getQuota());
+    assertThat(actualUser).isNotNull();
+    assertThat(actualUser.getUsername()).isEqualTo(expectedUser.getUsername());
+    assertThat(actualUser.getPassword()).isNull();
+    assertThat(actualUser.getDisplayname()).isEqualTo(expectedUser.getDisplayname());
+    assertThat(actualUser.getEmail()).isEqualTo(expectedUser.getEmail());
+    assertThat(actualUser.getQuota()).isEqualByComparingTo(expectedUser.getQuota());
 
     checkAuthorities(actualUser.getUsername(), actualUser.getAuthorities(), "group1", "group2");
   }
@@ -216,10 +202,9 @@ public abstract class AbstractOwncloudUserQueryServiceTest extends AbstractOwncl
     List<String> groups = userQueryService.findAllGroupsOfUser("user1");
     verifyServer();
 
-    Assert.assertNotNull(groups);
-    Assert.assertEquals(2, groups.size());
-
-    Assert.assertTrue(CollectionUtils.isEqualCollection(Lists.newArrayList("group1", "group2"), groups));
+    assertThat(groups)
+        .isNotNull()
+        .containsOnly("group1", "group2");
   }
 
   protected void prepareTestFindAllGroupsOfUser_OK(String user, String... groups) throws Exception {}
@@ -232,8 +217,9 @@ public abstract class AbstractOwncloudUserQueryServiceTest extends AbstractOwncl
     List<String> groups = userQueryService.findAllGroupsOfUser("user2");
     verifyServer();
 
-    Assert.assertNotNull(groups);
-    Assert.assertTrue(groups.isEmpty());
+    assertThat(groups)
+        .isNotNull()
+        .isEmpty();
   }
 
   protected void prepareTestFindAllGroupsOfUser_OK_NoGroups(String user) throws Exception {}
