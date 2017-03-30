@@ -42,10 +42,12 @@ import software.coolstuff.springframework.owncloud.model.OwncloudQuota;
 @Builder
 @Slf4j
 class OwncloudLocalQuota implements OwncloudQuota {
+  @Getter
+  private final String username;
   private final Path location;
   private Long total;
   @Getter
-  @Setter(AccessLevel.NONE)
+  @Setter
   private long used = 0;
 
   static class OwncloudLocalQuotaBuilder {

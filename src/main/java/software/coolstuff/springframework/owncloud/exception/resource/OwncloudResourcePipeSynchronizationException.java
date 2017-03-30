@@ -22,7 +22,9 @@ import software.coolstuff.springframework.owncloud.service.impl.AbstractPipedStr
 /**
  * Thrown when there was an unexpected Exception during the Pipe Synchronization
  * @see AbstractPipedStreamSynchronizerImpl
+ *
  * @author mufasa1976
+ * @since 1.2.0
  */
 public class OwncloudResourcePipeSynchronizationException extends OwncloudResourceException {
 

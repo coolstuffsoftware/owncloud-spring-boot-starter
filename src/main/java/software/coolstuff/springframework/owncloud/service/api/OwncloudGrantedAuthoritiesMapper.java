@@ -63,6 +63,7 @@ import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
  *
  * @author mufasa1976
  * @see GrantedAuthoritiesMapper
+ * @since 1.0.0
  */
 @FunctionalInterface
 public interface OwncloudGrantedAuthoritiesMapper {

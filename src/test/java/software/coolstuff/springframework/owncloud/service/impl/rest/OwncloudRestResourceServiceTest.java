@@ -64,6 +64,7 @@ import com.github.sardine.impl.SardineException;
 import com.google.common.collect.Lists;
 
 import software.coolstuff.springframework.owncloud.model.OwncloudFileResource;
+import software.coolstuff.springframework.owncloud.model.OwncloudQuota;
 import software.coolstuff.springframework.owncloud.model.OwncloudResource;
 import software.coolstuff.springframework.owncloud.service.AbstractOwncloudResourceServiceTest;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudResourceService;
@@ -82,6 +83,9 @@ public class OwncloudRestResourceServiceTest extends AbstractOwncloudResourceSer
 
   @Autowired
   private OwncloudResourceService resourceService;
+
+  @MockBean
+  private OwncloudRestUserQueryService userQueryService;
 
   @Autowired
   private OwncloudRestProperties properties;
@@ -537,5 +541,58 @@ public class OwncloudRestResourceServiceTest extends AbstractOwncloudResourceSer
   @Override
   protected void check_getOutputStram_NOK_FileTooBig(URI uri) throws Exception {
     Mockito.verify(sardine).list(getResourcePath(uri), 0);
+  }
+
+  @Override
+  protected void prepare_getQuota_NoFiles(OwncloudQuota expected) throws Exception {
+    OwncloudRestQuota restQuota = OwncloudRestQuota.builder()
+        .username(expected.getUsername())
+        .free(expected.getFree())
+        .relative(expected.getRelative())
+        .total(expected.getTotal())
+        .used(expected.getUsed())
+        .build();
+    Mockito
+        .when(userQueryService.getQuota(expected.getUsername()))
+        .thenReturn(restQuota);
+  }
+
+  @Override
+  protected void prepare_getQuota_OneFile(URI uri, MediaType mediaType, String testFileContent, OwncloudQuota expectedFirst, OwncloudQuota expectedSecond) throws Exception {
+    mockServer
+        .expect(requestToWithPrefix(uri))
+        .andExpect(method(HttpMethod.PUT))
+        .andExpect(header(HttpHeaders.AUTHORIZATION, getBasicAuthorizationHeader()))
+        .andExpect(header(HttpHeaders.CONNECTION, "keep-alive"))
+        .andExpect(content().contentType(mediaType))
+        .andExpect(content().string(testFileContent))
+        .andRespond(withSuccess());
+
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    Mockito
+        .when(userQueryService.getQuota(authentication.getName()))
+        .then(new Answer<OwncloudQuota>() {
+          private int count = 0;
+
+          @Override
+          public OwncloudQuota answer(InvocationOnMock invocation) throws Throwable {
+            if (count++ == 0) {
+              return OwncloudRestQuota.builder()
+                  .username(expectedFirst.getUsername())
+                  .free(expectedFirst.getFree())
+                  .relative(expectedFirst.getRelative())
+                  .total(expectedFirst.getTotal())
+                  .used(expectedFirst.getUsed())
+                  .build();
+            }
+            return OwncloudRestQuota.builder()
+                .username(expectedSecond.getUsername())
+                .free(expectedSecond.getFree())
+                .relative(expectedSecond.getRelative())
+                .total(expectedSecond.getTotal())
+                .used(expectedSecond.getUsed())
+                .build();
+          }
+        });
   }
 }

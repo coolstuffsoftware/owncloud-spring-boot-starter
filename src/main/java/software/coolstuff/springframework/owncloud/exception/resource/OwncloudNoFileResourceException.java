@@ -27,7 +27,9 @@ import software.coolstuff.springframework.owncloud.model.OwncloudResource;
 
 /**
  * Thrown when {@link OwncloudResource} is not a File
+ *
  * @author mufasa1976
+ * @since 1.2.0
  */
 @RequiredArgsConstructor
 @ResponseStatus(code = HttpStatus.UNSUPPORTED_MEDIA_TYPE, reason = "No File Resource")

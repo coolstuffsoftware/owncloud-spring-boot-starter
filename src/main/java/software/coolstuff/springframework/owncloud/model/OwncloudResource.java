@@ -23,19 +23,29 @@ import java.util.Date;
 import org.springframework.http.MediaType;
 
 /**
- * @author mufasa1976
+ * Abstract Representation of a Owncloud Resource.
+ * <p/>
+ * This Representation can be either a regular File or a Directory.
  *
+ * @see OwncloudFileResource
+ * @author mufasa1976
+ * @since 1.2.0
  */
 public interface OwncloudResource {
 
+  /** URI of the Owncloud Resource based by the User Directory */
   URI getHref();
 
+  /** Name of the Resource */
   String getName();
 
+  /** Last modification Date */
   Date getLastModifiedAt();
 
+  /** Media Type of the Resource */
   MediaType getMediaType();
 
+  /** ETag of the Resource (used by Synchronization) */
   String getETag();
 
 }

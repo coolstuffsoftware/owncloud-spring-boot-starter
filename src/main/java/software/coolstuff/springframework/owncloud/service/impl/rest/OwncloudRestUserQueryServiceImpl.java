@@ -140,6 +140,7 @@ class OwncloudRestUserQueryServiceImpl extends AbstractOwncloudRestServiceImpl i
     Ocs.User user = exchange("/cloud/users/{user}", HttpMethod.GET, emptyEntity(), Ocs.User.class, username);
     Quota quota = user.getData().getQuota();
     return OwncloudRestQuota.builder()
+        .username(username)
         .free(quota.getFree())
         .used(quota.getUsed())
         .total(quota.getTotal())

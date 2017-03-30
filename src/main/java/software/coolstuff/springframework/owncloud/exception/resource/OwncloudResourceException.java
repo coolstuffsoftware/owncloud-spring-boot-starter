@@ -22,7 +22,9 @@ import software.coolstuff.springframework.owncloud.service.api.OwncloudResourceS
 /**
  * Any SubClass of this Exception will be thrown during the Usage
  * of the {@link OwncloudResourceService}
+ *
  * @author mufasa1976
+ * @since 1.2.0
  */
 public abstract class OwncloudResourceException extends RuntimeException {
 

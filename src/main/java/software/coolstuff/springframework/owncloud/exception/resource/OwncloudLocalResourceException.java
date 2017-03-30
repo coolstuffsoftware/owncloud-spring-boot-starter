@@ -22,7 +22,9 @@ import software.coolstuff.springframework.owncloud.service.api.OwncloudResourceS
 /**
  * Thrown when there are any unexpected Exceptions during the
  * Usage of the local Implementation of the {@link OwncloudResourceService}
+ *
  * @author mufasa1976
+ * @since 1.2.0
  */
 public class OwncloudLocalResourceException extends OwncloudResourceException {
 

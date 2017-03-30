@@ -26,6 +26,7 @@ import software.coolstuff.springframework.owncloud.exception.OwncloudStatusExcep
  * Thrown when the Username already exists.
  *
  * @author mufasa1976
+ * @since 1.0.0
  */
 @ResponseStatus(HttpStatus.CONFLICT)
 public class OwncloudUsernameAlreadyExistsException extends OwncloudStatusException {

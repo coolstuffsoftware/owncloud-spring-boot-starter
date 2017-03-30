@@ -56,6 +56,7 @@ import com.google.common.collect.Lists;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -69,6 +70,7 @@ import software.coolstuff.springframework.owncloud.exception.resource.OwncloudQu
 import software.coolstuff.springframework.owncloud.exception.resource.OwncloudResourceException;
 import software.coolstuff.springframework.owncloud.exception.resource.OwncloudResourceNotFoundException;
 import software.coolstuff.springframework.owncloud.model.OwncloudFileResource;
+import software.coolstuff.springframework.owncloud.model.OwncloudQuota;
 import software.coolstuff.springframework.owncloud.model.OwncloudResource;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudResourceService;
 import software.coolstuff.springframework.owncloud.service.impl.OwncloudUtils;
@@ -622,4 +624,71 @@ public abstract class AbstractOwncloudResourceServiceTest {
   protected void prepare_getOutputStram_NOK_FileTooBig(URI uri, MediaType mediaType, String testFileContent) throws Exception {}
 
   protected void check_getOutputStram_NOK_FileTooBig(URI uri) throws Exception {}
+
+  @Test
+  @WithMockUser(username = "user1", password = "s3cr3t")
+  public void test_getQuota_NoFiles() throws Exception {
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    OwncloudQuota expected = TestOwncloudQuota.builder()
+        .username(authentication.getName())
+        .total(1024)
+        .used(0)
+        .free(1024)
+        .relative(0.0f)
+        .build();
+    prepare_getQuota_NoFiles(expected);
+    OwncloudQuota quota = resourceService.getQuota();
+    assertThat(quota)
+        .isNotNull()
+        .isEqualToComparingOnlyGivenFields(expected, "username", "free", "used", "total", "relative");
+  }
+
+  @Data
+  @Builder
+  private static class TestOwncloudQuota implements OwncloudQuota {
+    private final String username;
+    private final long free;
+    private final long used;
+    private final long total;
+    private final float relative;
+  }
+
+  protected void prepare_getQuota_NoFiles(OwncloudQuota expected) throws Exception {}
+
+  public void test_getQuota_OneFile() throws Exception {
+    URI uri = URI.create("/testFile.txt");
+    MediaType mediaType = MediaType.TEXT_PLAIN;
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    OwncloudQuota expectedFirst = TestOwncloudQuota.builder()
+        .username(authentication.getName())
+        .total(1024)
+        .used(0)
+        .free(1024)
+        .relative(0.0f)
+        .build();
+    OwncloudQuota expectedSecond = TestOwncloudQuota.builder()
+        .username(authentication.getName())
+        .total(1024)
+        .used(TEST_FILE_CONTENT.length())
+        .free(1024 - TEST_FILE_CONTENT.length())
+        .relative(TEST_FILE_CONTENT.length() / 1024 * 100)
+        .build();
+    prepare_getQuota_OneFile(uri, mediaType, TEST_FILE_CONTENT, expectedFirst, expectedSecond);
+
+    OwncloudQuota actual = resourceService.getQuota();
+    assertThat(actual)
+        .isNotNull()
+        .isEqualToComparingOnlyGivenFields(expectedFirst, "username", "total", "free", "used", "relative");
+
+    try (OutputStream output = resourceService.getOutputStream(uri, mediaType)) {
+      IOUtils.write(TEST_FILE_CONTENT, output, Charset.forName("utf8"));
+    }
+
+    actual = resourceService.getQuota();
+    assertThat(actual)
+        .isNotNull()
+        .isEqualToComparingOnlyGivenFields(expectedSecond, "username", "total", "free", "used", "relative");
+  }
+
+  protected void prepare_getQuota_OneFile(URI uri, MediaType mediaType, String testFileContent, OwncloudQuota expectedFirst, OwncloudQuota expectedSecond) throws Exception {}
 }

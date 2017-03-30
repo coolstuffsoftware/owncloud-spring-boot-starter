@@ -29,6 +29,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 
 import software.coolstuff.springframework.owncloud.service.api.OwncloudResourceService;
+import software.coolstuff.springframework.owncloud.service.api.OwncloudUserModificationService;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudUserQueryService;
 
 @Configuration
@@ -46,7 +47,7 @@ class OwncloudLocalAutoConfiguration {
   }
 
   @Bean
-  public OwncloudLocalUserModificationService owncloudUserModificationService() {
+  public OwncloudUserModificationService owncloudUserModificationService() {
     return new OwncloudLocalUserModificationServiceImpl(owncloudLocalUserDataService());
   }
 
@@ -80,7 +81,7 @@ class OwncloudLocalAutoConfiguration {
   @Bean
   @ConditionalOnMissingBean(OwncloudResourceService.class)
   @ConditionalOnProperty("owncloud.resource-service.location")
-  public OwncloudResourceService owncloudResourceService() {
+  public OwncloudLocalResourceService owncloudResourceService() {
     return new OwncloudLocalResourceServiceImpl();
   }
 

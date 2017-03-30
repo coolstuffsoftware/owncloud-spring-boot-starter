@@ -27,7 +27,9 @@ import software.coolstuff.springframework.owncloud.model.OwncloudQuota;
 
 /**
  * Thrown when the {@link OwncloudQuota} of the User as been exceeded
+ *
  * @author mufasa1976
+ * @since 1.2.0
  */
 @ResponseStatus(HttpStatus.INSUFFICIENT_STORAGE)
 @RequiredArgsConstructor

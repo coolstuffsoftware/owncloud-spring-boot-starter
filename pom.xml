@@ -132,7 +132,7 @@
 
       <!-- AssertJ -->
       <!-- NOTE: This is just a Workaround because Version 2.6.0 -->
-      <!--       doesn't compare Collections correctly (Tests will fail) -->
+      <!-- doesn't compare Collections correctly (Tests will fail) -->
       <dependency>
         <groupId>org.assertj</groupId>
         <artifactId>assertj-core</artifactId>
@@ -407,6 +407,15 @@
             <goals>
               <goal>delombok</goal>
             </goals>
+            <configuration>
+              <formatPreferences>
+                <indent>2</indent>
+                <constructorProperties>skip</constructorProperties>
+                <generated>skip</generated>
+                <generateDelombokComment>skip</generateDelombokComment>
+                <suppressWarnings>skip</suppressWarnings>
+              </formatPreferences>
+            </configuration>
           </execution>
         </executions>
       </plugin>

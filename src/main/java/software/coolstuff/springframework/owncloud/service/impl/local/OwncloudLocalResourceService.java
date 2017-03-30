@@ -15,27 +15,16 @@
    along with this program; if not, write to the Free Software Foundation,
    Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 */
-package software.coolstuff.springframework.owncloud.exception.resource;
+package software.coolstuff.springframework.owncloud.service.impl.local;
 
 import software.coolstuff.springframework.owncloud.service.api.OwncloudResourceService;
 
 /**
- * Thrown when there are any unexpected Exceptions during the
- * Usage of the REST Implementation of the {@link OwncloudResourceService}
- *
  * @author mufasa1976
- * @since 1.2.0
+ *
  */
-public class OwncloudRestResourceException extends OwncloudResourceException {
+interface OwncloudLocalResourceService extends OwncloudResourceService {
 
-  private static final long serialVersionUID = -4576256215966606734L;
-
-  public OwncloudRestResourceException(String message, Throwable throwable) {
-    super(message, throwable);
-  }
-
-  public OwncloudRestResourceException(Throwable throwable) {
-    super(throwable);
-  }
+  void resetAllUsedSpace();
 
 }

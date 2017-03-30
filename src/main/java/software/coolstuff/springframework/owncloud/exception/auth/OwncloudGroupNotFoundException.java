@@ -27,6 +27,7 @@ import software.coolstuff.springframework.owncloud.exception.OwncloudStatusExcep
  * when a non-existing Group will be removed.
  *
  * @author mufasa1976
+ * @since 1.0.0
  */
 @ResponseStatus(code = HttpStatus.NOT_FOUND, reason = "Group not found")
 public class OwncloudGroupNotFoundException extends OwncloudStatusException {

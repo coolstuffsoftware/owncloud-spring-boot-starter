@@ -28,14 +28,18 @@ import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
 
 /**
  * Modify Information of Users and Groups on the Owncloud Server.
+ * <p/>
+ * This Service is only usable when the User has been authenticated
+ * by the OwncloudAuthenticationProvider.
  *
  * @author mufasa1976
+ * @since 1.0.0
  */
 public interface OwncloudUserModificationService {
 
   /**
    * Create a new User or Update User Details.
-   * 
+   *
    * @param userDetails
    *          User Details to be saved
    * @return saved User Details
@@ -50,7 +54,7 @@ public interface OwncloudUserModificationService {
 
   /**
    * Remove a User.
-   * 
+   *
    * @param username
    *          Name of the User to be removed
    * @throws AccessDeniedException
@@ -62,7 +66,7 @@ public interface OwncloudUserModificationService {
 
   /**
    * Create a new Group.
-   * 
+   *
    * @param groupname
    *          Name of the new Group
    * @throws AccessDeniedException
@@ -74,7 +78,7 @@ public interface OwncloudUserModificationService {
 
   /**
    * Remove an existing Group.
-   * 
+   *
    * @param groupname
    *          Name of the Group to be removed
    * @throws AccessDeniedException

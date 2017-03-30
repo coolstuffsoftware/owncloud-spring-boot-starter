@@ -22,6 +22,7 @@ package software.coolstuff.springframework.owncloud.exception;
  * and any concrete Java Exception
  *
  * @author mufasa1976
+ * @since 1.0.0
  */
 public abstract class OwncloudStatusException extends RuntimeException {
 

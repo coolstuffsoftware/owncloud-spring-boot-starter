@@ -18,10 +18,15 @@
 package software.coolstuff.springframework.owncloud.model;
 
 /**
+ * Abstract Representation of a Owncloud File Resource.
+ *
+ * @see OwncloudResource
  * @author mufasa1976
+ * @since 1.2.0
  */
 public interface OwncloudFileResource extends OwncloudResource {
 
+  /** Content Length of the File Resource */
   Long getContentLength();
 
 }

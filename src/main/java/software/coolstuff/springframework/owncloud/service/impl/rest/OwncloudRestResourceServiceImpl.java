@@ -484,18 +484,19 @@ class OwncloudRestResourceServiceImpl implements OwncloudResourceService, Ownclo
   }
 
   @Override
-  public OutputStream getOutputStream(URI href, MediaType mediaType) {
-    Optional<OwncloudResource> existingFile = find(href);
-    if (existingFile.isPresent()) {
-      return getOutputStream(existingFile
+  public OutputStream getOutputStream(URI path, MediaType mediaType) {
+    Optional<OwncloudResource> optionalExistingFile = find(path);
+    if (optionalExistingFile.isPresent()) {
+      OwncloudFileResource existingFile = optionalExistingFile
           .filter(OwncloudUtils::isNotDirectory)
           .map(OwncloudUtils::toOwncloudFileResource)
-          .orElseThrow(() -> new OwncloudNoFileResourceException(href)));
+          .orElseThrow(() -> new OwncloudNoFileResourceException(path));
+      return getOutputStream(existingFile);
     }
     OwncloudFileResource resource = OwncloudRestFileResourceImpl.fileBuilder()
         .owncloudResource(
             OwncloudRestResourceImpl.builder()
-                .href(href)
+                .href(path)
                 .mediaType(mediaType)
                 .build())
         .build();

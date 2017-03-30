@@ -58,12 +58,11 @@ import software.coolstuff.springframework.owncloud.model.OwncloudFileResource;
 import software.coolstuff.springframework.owncloud.model.OwncloudQuota;
 import software.coolstuff.springframework.owncloud.model.OwncloudResource;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
-import software.coolstuff.springframework.owncloud.service.api.OwncloudResourceService;
 import software.coolstuff.springframework.owncloud.service.impl.OwncloudUtils;
 import software.coolstuff.springframework.owncloud.service.impl.local.OwncloudLocalProperties.ResourceServiceProperties;
 
 @Slf4j
-class OwncloudLocalResourceServiceImpl implements OwncloudResourceService {
+class OwncloudLocalResourceServiceImpl implements OwncloudLocalResourceService {
 
   @Autowired
   private OwncloudLocalProperties properties;
@@ -109,12 +108,14 @@ class OwncloudLocalResourceServiceImpl implements OwncloudResourceService {
 
     if (Files.notExists(userBaseLocation)) {
       return OwncloudLocalQuota.builder()
+          .username(username)
           .location(baseLocation)
           .build();
     }
 
     try {
       OwncloudLocalQuota quota = OwncloudLocalQuota.builder()
+          .username(username)
           .location(userBaseLocation)
           .build();
       Files.walkFileTree(userBaseLocation, new UsedSpaceFileVisitor(quota::increaseUsed));
@@ -389,13 +390,13 @@ class OwncloudLocalResourceServiceImpl implements OwncloudResourceService {
   }
 
   @Override
-  public OutputStream getOutputStream(URI href, MediaType mediaType) {
+  public OutputStream getOutputStream(URI path, MediaType mediaType) {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     PipedOutputStreamLocalSynchronizer pipedStreamSynchronizer = PipedOutputStreamLocalSynchronizer.builder()
         .authentication(authentication)
         .afterCopyCallback(this::afterCopy)
         .owncloudLocalProperties(properties)
-        .uri(href)
+        .uri(path)
         .uriResolver(this::resolveLocation)
         .build();
     return pipedStreamSynchronizer.getOutputStream();
@@ -439,4 +440,12 @@ class OwncloudLocalResourceServiceImpl implements OwncloudResourceService {
     return quotas.get(authentication.getName());
   }
 
+  @Override
+  public void resetAllUsedSpace() {
+    quotas.forEach(this::resetUsedSpace);
+  }
+
+  private void resetUsedSpace(String username, OwncloudLocalQuota quota) {
+    quota.setUsed(0);
+  }
 }

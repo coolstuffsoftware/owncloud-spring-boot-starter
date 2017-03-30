@@ -45,6 +45,7 @@ import software.coolstuff.springframework.owncloud.service.api.OwncloudGrantedAu
  *
  * @author mufasa1976
  * @see UserDetails
+ * @since 1.0.0
  */
 @Data
 @NoArgsConstructor
@@ -111,9 +112,10 @@ public class OwncloudUserDetails implements UserDetails {
   private String email;
 
   /**
-   * Quota of the User.
-   * @param quota Quota of the User
-   * @return Quota of the User
+   * Quota of the User (in Bytes).
+   * @since 1.2.0
+   * @param quota Quota of the User (in Bytes)
+   * @return Quota of the User (in Bytes)
    */
   private Long quota;
 

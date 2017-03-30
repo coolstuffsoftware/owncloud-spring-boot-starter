@@ -28,7 +28,9 @@ import software.coolstuff.springframework.owncloud.model.OwncloudResource;
 
 /**
  * Thrown when the {@link OwncloudResource} already exists
+ *
  * @author mufasa1976
+ * @since 1.2.0
  */
 @ResponseStatus(HttpStatus.CONFLICT)
 @RequiredArgsConstructor

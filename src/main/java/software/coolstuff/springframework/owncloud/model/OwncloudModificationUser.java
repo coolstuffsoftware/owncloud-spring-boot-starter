@@ -36,6 +36,7 @@ import lombok.Singular;
  * This Class will be used for any User Modifications by <code>OwncloudUserModificationService.saveUser(OwncloudModificationUser)</code>
  *
  * @author mufasa1976
+ * @since 1.0.0
  */
 @Data
 @RequiredArgsConstructor
@@ -80,9 +81,10 @@ public class OwncloudModificationUser {
   private String email;
 
   /**
-   * Quota of the User to be modified.
-   * @param quota Quota of the User to be modified
-   * @return modified Quota
+   * Quota of the User to be modified (in Bytes).
+   * @since 1.2.0
+   * @param quota Quota of the User to be modified (in Bytes)
+   * @return modified Quota (in Bytes)
    */
   private Long quota;
 

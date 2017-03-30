@@ -18,17 +18,31 @@
 package software.coolstuff.springframework.owncloud.model;
 
 /**
- * @author mufasa1976
+ * Abstract Representation of the User Quota.
  *
+ * @author mufasa1976
+ * @since 1.2.0
  */
 public interface OwncloudQuota {
 
+  /** Username */
+  String getUsername();
+
+  /** Free Bytes */
   long getFree();
 
+  /** Used Bytes */
   long getUsed();
 
+  /**
+   * Total Bytes
+   *
+   * @see OwncloudUserDetails#getQuota()
+   * @see OwncloudUserDetails#setQuota(Long)
+   */
   long getTotal();
 
+  /** Used Space in relation to the total Space (Fill Grade in %) */
   float getRelative();
 
 }

@@ -24,6 +24,7 @@ import software.coolstuff.springframework.owncloud.model.OwncloudQuota;
 @Data
 @Builder
 class OwncloudRestQuota implements OwncloudQuota {
+  private final String username;
   private long free;
   private long used;
   private long total;

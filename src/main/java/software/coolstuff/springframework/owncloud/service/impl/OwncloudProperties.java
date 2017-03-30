@@ -43,26 +43,34 @@ import software.coolstuff.springframework.owncloud.service.api.OwncloudUserModif
  * Within this Class you find the common Properties used by both Implementations
  *
  * @author mufasa1976
+ * @since 1.0.0
  */
 @Validated
 @Getter
 @Setter
 public abstract class OwncloudProperties {
 
-  /** Default Buffer Size */
+  /**
+   * Default Buffer Size
+   * @since 1.2.0
+   */
   public static final int DEFAULT_BUFFER_SIZE = 8192;
 
   /**
    * Common Properties for the UserService
    *
    * @author mufasa1976
+   * @since 1.2.0
    */
   @Validated
   @Getter
   @Setter
   public static class UserService {
 
-    /** Should Modifications through {@link OwncloudUserModificationService} be allowed */
+    /**
+     * Should Modifications through {@link OwncloudUserModificationService} be allowed
+     * @since 1.2.0
+     */
     private boolean enableModifications = false;
 
   }
@@ -71,20 +79,30 @@ public abstract class OwncloudProperties {
    * Common Resource Service Properties
    *
    * @author mufasa1976
+   * @since 1.2.0
    */
   @Validated
   @Getter
   @Setter
   public static class ResourceServiceProperties {
 
-    /** Add &quot;..&quot; to the List of returned OwncloudResources (on list-Methods) */
+    /**
+     * Add &quot;..&quot; to the List of returned OwncloudResources (on list-Methods)
+     * @since 1.2.0
+     */
     private boolean addRelativeDownPath = true;
 
-    /** Buffer Size for the Copy Process */
+    /**
+     * Buffer Size for the Copy Process
+     * @since 1.2.0
+     */
     @Min(1)
     private int pipedStreamBufferSize = DEFAULT_BUFFER_SIZE;
 
-    /** Log-Level of any uncaught Exception while running the Background-Thread of the PipedStream-Synchronizer. */
+    /**
+     * Log-Level of any uncaught Exception while running the Background-Thread of the PipedStream-Synchronizer.
+     * @since 1.2.0
+     */
     @NotNull
     private LogLevel pipedStreamUncaughtExceptionLogLevel = LogLevel.ERROR;
   }
@@ -111,12 +129,19 @@ public abstract class OwncloudProperties {
    *     <td>Connects to the Owncloud Instance</td>
    *   </tr>
    * </table>
+   * @since 1.0.0
    */
   private String location;
 
-  /** User Service common Properties */
+  /**
+   * User Service common Properties
+   * @since 1.2.0
+   */
   private UserService userService = new UserService();
 
-  /** WebDAV common Properties */
+  /**
+   * WebDAV common Properties
+   * @since 1.2.0
+   */
   private ResourceServiceProperties resourceService = new ResourceServiceProperties();
 }

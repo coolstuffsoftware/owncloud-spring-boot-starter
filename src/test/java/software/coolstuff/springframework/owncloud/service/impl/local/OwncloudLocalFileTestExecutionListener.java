@@ -79,7 +79,7 @@ public class OwncloudLocalFileTestExecutionListener extends AbstractTestExecutio
 
   @Override
   public void beforeTestClass(TestContext testContext) throws Exception {
-    if (isTestClassAssignableFromOwncloudFileResourceTest(testContext)) {
+    if (isTestClassAssignableFromOwncloudLocalFileTest(testContext)) {
       Class<?> testClass = testContext.getTestClass();
       ActiveProfiles activeProfiles = AnnotationUtils.findAnnotation(testClass, ActiveProfiles.class);
       OwncloudProperties owncloudProperties = loadProperties(activeProfiles.value());
@@ -89,7 +89,7 @@ public class OwncloudLocalFileTestExecutionListener extends AbstractTestExecutio
     }
   }
 
-  private boolean isTestClassAssignableFromOwncloudFileResourceTest(TestContext testContext) {
+  private boolean isTestClassAssignableFromOwncloudLocalFileTest(TestContext testContext) {
     Class<?> testClass = testContext.getTestClass();
     return OwncloudLocalFileTest.class.isAssignableFrom(testClass);
   }
@@ -141,7 +141,7 @@ public class OwncloudLocalFileTestExecutionListener extends AbstractTestExecutio
 
   @Override
   public void beforeTestMethod(TestContext testContext) throws Exception {
-    if (isTestClassAssignableFromOwncloudFileResourceTest(testContext)) {
+    if (isTestClassAssignableFromOwncloudLocalFileTest(testContext)) {
       ApplicationContext applicationContext = testContext.getApplicationContext();
 
       ResourceLoader resourceLoader = applicationContext;
@@ -181,7 +181,7 @@ public class OwncloudLocalFileTestExecutionListener extends AbstractTestExecutio
 
   @Override
   public void afterTestMethod(TestContext testContext) throws Exception {
-    if (isTestClassAssignableFromOwncloudFileResourceTest(testContext)) {
+    if (isTestClassAssignableFromOwncloudLocalFileTest(testContext)) {
       ApplicationContext applicationContext = testContext.getApplicationContext();
 
       Class<?> testClass = testContext.getTestClass();

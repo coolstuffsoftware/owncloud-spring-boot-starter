@@ -22,6 +22,7 @@ import java.util.concurrent.TimeUnit;
 import javax.validation.constraints.Min;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.validation.annotation.Validated;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -32,6 +33,7 @@ import software.coolstuff.springframework.owncloud.service.impl.OwncloudProperti
  *
  * @author mufasa1976
  */
+@Validated
 @Getter
 @Setter
 @ConfigurationProperties("owncloud")
@@ -42,6 +44,7 @@ public class OwncloudRestProperties extends OwncloudProperties {
    *
    * @author mufasa1976
    */
+  @Validated
   @Getter
   @Setter
   public static class ResourceServiceProperties extends OwncloudProperties.ResourceServiceProperties {
@@ -51,6 +54,7 @@ public class OwncloudRestProperties extends OwncloudProperties {
      *
      * @author mufasa1976
      */
+    @Validated
     @Getter
     @Setter
     public static class CacheProperties {

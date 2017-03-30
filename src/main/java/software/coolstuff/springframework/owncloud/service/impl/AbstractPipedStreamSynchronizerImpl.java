@@ -20,6 +20,8 @@ package software.coolstuff.springframework.owncloud.service.impl;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
 import java.net.URI;
 import java.util.Optional;
 import java.util.concurrent.CyclicBarrier;
@@ -31,10 +33,28 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import software.coolstuff.springframework.owncloud.exception.resource.OwncloudResourcePipeSynchronizationException;
+import software.coolstuff.springframework.owncloud.service.api.OwncloudResourceService;
 import software.coolstuff.springframework.owncloud.service.impl.OwncloudProperties.ResourceServiceProperties;
 
 /**
+ * Abstract Class of the PipedStream Synchronizer Implementations.
+ * <p/>
+ * This Class provides only protected Methods used by
+ * the PipedStream Synchronizer Implementations.
+ * <p/>
+ * A PipedStream Synchronizer handles the Synchronization between
+ * {@link PipedInputStream} and {@link PipedOutputStream} and acts
+ * as a Proxy between the Application which uses the Owncloud API
+ * and the Implementation in the Background (either local or REST based).
+ * <p/>
+ * In fact, the Method {@link OwncloudResourceService#getInputStream(software.coolstuff.springframework.owncloud.model.OwncloudFileResource)}
+ * will return a {@link PipedInputStream} whereas the Methods {@link OwncloudResourceService#getOutputStream(software.coolstuff.springframework.owncloud.model.OwncloudFileResource)}
+ * and {@link OwncloudResourceService#getOutputStream(URI, org.springframework.http.MediaType)} will return a {@link PipedOutputStream}.
+ * <p/>
+ * The reverse Part of the returned Stream will be handled by a PipedStream Synchronizer Implementation
+ *
  * @author mufasa1976
+ * @since 1.2.0
  */
 @Slf4j
 public abstract class AbstractPipedStreamSynchronizerImpl {

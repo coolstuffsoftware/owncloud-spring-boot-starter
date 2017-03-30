@@ -27,6 +27,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
  * Thrown when trying to authenticate neither with {@link OwncloudAuthentication} nor with {@link UsernamePasswordAuthenticationToken}
  *
  * @author mufasa1976
+ * @since 1.0.0
  */
 @ResponseStatus(code = HttpStatus.UNAUTHORIZED, reason = "Invalid Authentication Object")
 public class OwncloudInvalidAuthenticationObjectException extends AuthenticationException {

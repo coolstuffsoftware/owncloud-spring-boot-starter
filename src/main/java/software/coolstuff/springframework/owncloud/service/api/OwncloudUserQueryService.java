@@ -27,8 +27,12 @@ import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
 
 /**
  * Get Information about Users and Groups from the Owncloud Server.
+ * <p/>
+ * This Service is only usable when the User has been authenticated
+ * by the OwncloudAuthenticationProvider.
  *
  * @author mufasa1976
+ * @since 1.0.0
  */
 public interface OwncloudUserQueryService {
 

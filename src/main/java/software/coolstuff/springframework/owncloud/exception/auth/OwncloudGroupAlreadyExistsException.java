@@ -26,6 +26,7 @@ import software.coolstuff.springframework.owncloud.exception.OwncloudStatusExcep
  * Thrown when a new Owncloud Group will be added and this Group already exists.
  *
  * @author mufasa1976
+ * @since 1.0.0
  */
 @ResponseStatus(HttpStatus.CONFLICT)
 public class OwncloudGroupAlreadyExistsException extends OwncloudStatusException {
