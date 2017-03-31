@@ -33,9 +33,6 @@ import org.springframework.test.context.TestContext;
 
 import lombok.extern.slf4j.Slf4j;
 
-/**
- * @author mufasa1976
- */
 @Slf4j
 public class OwncloudLocalResourceServiceCopyWebdavDirectoryTestExecutionListener extends AbstractOwncloudLocalResourceServiceTestExecutionListener {
 

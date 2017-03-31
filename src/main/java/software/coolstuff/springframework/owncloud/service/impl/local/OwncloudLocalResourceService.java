@@ -19,12 +19,10 @@ package software.coolstuff.springframework.owncloud.service.impl.local;
 
 import software.coolstuff.springframework.owncloud.service.api.OwncloudResourceService;
 
-/**
- * @author mufasa1976
- *
- */
 interface OwncloudLocalResourceService extends OwncloudResourceService {
 
   void resetAllUsedSpace();
+
+  void recalculateAllUsedSpace();
 
 }

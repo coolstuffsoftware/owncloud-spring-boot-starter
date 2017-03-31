@@ -78,6 +78,7 @@ import software.coolstuff.springframework.owncloud.service.impl.OwncloudUtils;
 @RunWith(SpringRunner.class)
 @SpringBootTest(
     webEnvironment = WebEnvironment.NONE,
+    properties = "debug=true",
     classes = {
         VelocityConfiguration.class
     })

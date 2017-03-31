@@ -41,7 +41,7 @@ import software.coolstuff.springframework.owncloud.model.OwncloudQuota;
 @ToString(exclude = "location")
 @Builder
 @Slf4j
-class OwncloudLocalQuota implements OwncloudQuota {
+class OwncloudLocalQuota implements OwncloudQuota, Cloneable {
   @Getter
   private final String username;
   private final Path location;
@@ -91,6 +91,7 @@ class OwncloudLocalQuota implements OwncloudQuota {
 
   @Override
   public float getRelative() {
-    return used * 100 / getTotal();
+    return Long.valueOf(used).floatValue() * 100f / Long.valueOf(getTotal()).floatValue();
   }
+
 }

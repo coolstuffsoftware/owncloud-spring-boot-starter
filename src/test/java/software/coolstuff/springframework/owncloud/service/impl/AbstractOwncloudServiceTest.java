@@ -90,6 +90,7 @@ import software.coolstuff.springframework.owncloud.service.impl.rest.OwncloudRes
 @RunWith(SpringRunner.class)
 @SpringBootTest(
     webEnvironment = WebEnvironment.NONE,
+    properties = "debug=true",
     classes = {
         VelocityConfiguration.class,
         AuthorityAppenderConfiguration.class,

@@ -67,6 +67,7 @@ import software.coolstuff.springframework.owncloud.service.impl.local.OwncloudLo
 @RunWith(SpringRunner.class)
 @SpringBootTest(
     webEnvironment = WebEnvironment.NONE,
+    properties = "debug=true",
     classes = {
         OwncloudLocalResourceChecksumServiceTest.BeanConfiguration.class
     })

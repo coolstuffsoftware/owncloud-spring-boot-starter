@@ -448,4 +448,17 @@ class OwncloudLocalResourceServiceImpl implements OwncloudLocalResourceService {
   private void resetUsedSpace(String username, OwncloudLocalQuota quota) {
     quota.setUsed(0);
   }
+
+  @Override
+  public void recalculateAllUsedSpace() {
+    ResourceServiceProperties resourceProperties = properties.getResourceService();
+    Path baseLocation = resourceProperties.getLocation();
+    quotas.forEach((username, unusedQuota) -> {
+      quotas.computeIfPresent(username, (unusedUsername, existingQuota) -> {
+        OwncloudLocalQuota quota = getOrCreateQuota(username, baseLocation);
+        quota.setTotal(existingQuota.getTotal());
+        return quota;
+      });
+    });
+  }
 }
