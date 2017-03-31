@@ -590,22 +590,22 @@ public abstract class AbstractOwncloudResourceServiceTest {
 
   @Test
   @WithMockUser(username = "user1", password = "s3cr3t")
-  public void test_createDirectory_OK_AlreadyExists() throws Exception {
+  public void test_createDirectory_OK_AlreadyExistsAsDirectory() throws Exception {
     URI uri = URI.create("/directory/");
     OwncloudTestResourceImpl expected = OwncloudTestResourceImpl.builder()
         .href(uri)
         .mediaType(OwncloudUtils.getDirectoryMediaType())
         .build();
-    prepare_createDirectory_OK_AlreadyExists(expected);
+    prepare_createDirectory_OK_AlreadyExistsAsDirectory(expected);
     OwncloudResource actual = resourceService.createDirectory(uri);
     assertThat(actual).isNotNull();
     assertThat(actual).isEqualTo(expected);
-    check_createDirectory_OK_AlreadyExists(expected);
+    check_createDirectory_OK_AlreadyExistsAsDirectory(expected);
   }
 
-  protected void prepare_createDirectory_OK_AlreadyExists(OwncloudTestResourceImpl expected) throws Exception {}
+  protected void prepare_createDirectory_OK_AlreadyExistsAsDirectory(OwncloudTestResourceImpl expected) throws Exception {}
 
-  protected void check_createDirectory_OK_AlreadyExists(OwncloudTestResourceImpl expected) throws Exception {}
+  protected void check_createDirectory_OK_AlreadyExistsAsDirectory(OwncloudTestResourceImpl expected) throws Exception {}
 
   @Test(expected = OwncloudQuotaExceededException.class)
   @WithMockUser(username = "user1", password = "s3cr3t")

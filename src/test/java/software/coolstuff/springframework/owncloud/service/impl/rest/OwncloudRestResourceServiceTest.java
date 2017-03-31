@@ -42,6 +42,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Test;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -53,6 +54,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.test.web.client.RequestMatcher;
@@ -63,6 +65,7 @@ import com.github.sardine.Sardine;
 import com.github.sardine.impl.SardineException;
 import com.google.common.collect.Lists;
 
+import software.coolstuff.springframework.owncloud.exception.resource.OwncloudRestResourceException;
 import software.coolstuff.springframework.owncloud.model.OwncloudFileResource;
 import software.coolstuff.springframework.owncloud.model.OwncloudQuota;
 import software.coolstuff.springframework.owncloud.model.OwncloudResource;
@@ -508,7 +511,7 @@ public class OwncloudRestResourceServiceTest extends AbstractOwncloudResourceSer
   }
 
   @Override
-  protected void prepare_createDirectory_OK_AlreadyExists(OwncloudTestResourceImpl expected) throws Exception {
+  protected void prepare_createDirectory_OK_AlreadyExistsAsDirectory(OwncloudTestResourceImpl expected) throws Exception {
     ArrayList<DavResource> result = Lists.newArrayList(createDavResourceFrom(expected, Locale.GERMAN));
     Mockito
         .when(sardine.list(getResourcePath(expected.getHref()), 0))
@@ -516,7 +519,7 @@ public class OwncloudRestResourceServiceTest extends AbstractOwncloudResourceSer
   }
 
   @Override
-  protected void check_createDirectory_OK_AlreadyExists(OwncloudTestResourceImpl expected) throws Exception {
+  protected void check_createDirectory_OK_AlreadyExistsAsDirectory(OwncloudTestResourceImpl expected) throws Exception {
     Mockito.verify(sardine)
         .list(getResourcePath(expected.getHref()), 0);
     Mockito.verify(sardine, Mockito.never())
@@ -594,5 +597,16 @@ public class OwncloudRestResourceServiceTest extends AbstractOwncloudResourceSer
                 .build();
           }
         });
+  }
+
+  @Test(expected = OwncloudRestResourceException.class)
+  @WithMockUser(username = "user1", password = "s3cr3t")
+  public void test_createDirectory_NOK_NotAllowed() throws Exception {
+    URI uri = URI.create("/testDirectory");
+    Mockito
+        .doThrow(new SardineException("not allowed", HttpStatus.METHOD_NOT_ALLOWED.value(), "Method not allowed"))
+        .when(sardine).createDirectory(getResourcePath(uri));
+
+    resourceService.createDirectory(uri);
   }
 }

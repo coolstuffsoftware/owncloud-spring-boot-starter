@@ -305,7 +305,7 @@ public class OwncloudLocalResourceServiceTest extends AbstractOwncloudResourceSe
   }
 
   @Override
-  protected void prepare_createDirectory_OK_AlreadyExists(OwncloudTestResourceImpl expected) throws Exception {
+  protected void prepare_createDirectory_OK_AlreadyExistsAsDirectory(OwncloudTestResourceImpl expected) throws Exception {
     createResource(expected);
   }
 

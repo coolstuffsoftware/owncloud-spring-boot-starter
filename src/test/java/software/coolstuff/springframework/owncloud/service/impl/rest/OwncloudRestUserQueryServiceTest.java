@@ -17,6 +17,7 @@
 */
 package software.coolstuff.springframework.owncloud.service.impl.rest;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.http.HttpMethod.GET;
 
 import org.junit.Test;
@@ -24,20 +25,24 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.util.UriUtils;
 
+import lombok.Builder;
+import lombok.Data;
+import software.coolstuff.springframework.owncloud.model.OwncloudQuota;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
 import software.coolstuff.springframework.owncloud.service.AbstractOwncloudUserQueryServiceTest;
-import software.coolstuff.springframework.owncloud.service.api.OwncloudUserQueryService;
 
 @ActiveProfiles("REST-USER-SERVICE")
 public class OwncloudRestUserQueryServiceTest extends AbstractOwncloudUserQueryServiceTest implements OwncloudRestServiceTest {
 
   @Autowired
-  private OwncloudUserQueryService userQueryService;
+  private OwncloudRestUserQueryService userQueryService;
 
   @Override
   public final OwncloudRestService owncloudService() {
@@ -215,5 +220,45 @@ public class OwncloudRestUserQueryServiceTest extends AbstractOwncloudUserQueryS
             .build(),
         999);
     userQueryService.findAllMembersOfGroup("group1");
+  }
+
+  @Test
+  @WithMockUser(username = "user1", password = "password")
+  public void test_getQuota_OK() throws Exception {
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    String username = authentication.getName();
+    OwncloudQuota expected = TestOwncloudQuota.builder()
+        .username(username)
+        .total(1024l)
+        .used(1024l)
+        .free(0l)
+        .relative(100.0f)
+        .build();
+    respondUser(
+        RestRequest.builder()
+            .method(GET)
+            .url("/cloud/users/" + username)
+            .build(),
+        UserResponse.builder()
+            .quota(expected.getTotal())
+            .used(expected.getUsed())
+            .free(expected.getFree())
+            .relative(expected.getRelative())
+            .build());
+
+    OwncloudRestQuota quota = userQueryService.getQuota(username);
+    assertThat(quota)
+        .isNotNull()
+        .isEqualToComparingOnlyGivenFields(expected, "username", "total", "used", "free", "relative");
+  }
+
+  @Data
+  @Builder
+  private static class TestOwncloudQuota implements OwncloudQuota {
+    private final String username;
+    private final long total;
+    private final long used;
+    private final long free;
+    private final float relative;
   }
 }
