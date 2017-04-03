@@ -97,13 +97,13 @@ class OwncloudLocalResourceServiceImpl implements OwncloudLocalResourceService {
     userDataService.getUsers()
         .forEach(user -> {
           String username = user.getUsername();
-          OwncloudLocalQuota quota = getOrCreateQuota(username, baseLocation);
+          OwncloudLocalQuota quota = calculateUsedSpace(username, baseLocation);
           quota.setTotal(user.getQuota());
           quotas.put(username, quota);
         });
   }
 
-  private OwncloudLocalQuota getOrCreateQuota(String username, Path baseLocation) {
+  private OwncloudLocalQuota calculateUsedSpace(String username, Path baseLocation) {
     Path userBaseLocation = baseLocation.resolve(username);
 
     if (Files.notExists(userBaseLocation)) {
@@ -118,6 +118,7 @@ class OwncloudLocalResourceServiceImpl implements OwncloudLocalResourceService {
           .username(username)
           .location(userBaseLocation)
           .build();
+      log.debug("Calculate the Space used by User {}", username);
       Files.walkFileTree(userBaseLocation, new UsedSpaceFileVisitor(quota::increaseUsed));
       return quota;
     } catch (IOException e) {
@@ -145,7 +146,7 @@ class OwncloudLocalResourceServiceImpl implements OwncloudLocalResourceService {
 
   private OwncloudLocalQuota getOrCreateQuota(String username) {
     ResourceServiceProperties resourceProperties = properties.getResourceService();
-    return getOrCreateQuota(username, resourceProperties.getLocation());
+    return calculateUsedSpace(username, resourceProperties.getLocation());
   }
 
   private void notifyRemovedUser(String username) {
@@ -455,7 +456,7 @@ class OwncloudLocalResourceServiceImpl implements OwncloudLocalResourceService {
     Path baseLocation = resourceProperties.getLocation();
     quotas.forEach((username, unusedQuota) -> {
       quotas.computeIfPresent(username, (unusedUsername, existingQuota) -> {
-        OwncloudLocalQuota quota = getOrCreateQuota(username, baseLocation);
+        OwncloudLocalQuota quota = calculateUsedSpace(username, baseLocation);
         quota.setTotal(existingQuota.getTotal());
         return quota;
       });
