@@ -74,7 +74,7 @@ class OwncloudLocalResourceServiceImpl implements OwncloudLocalResourceService {
   private OwncloudLocalUserDataService userDataService;
 
   @Autowired
-  private OwncloudLocalUserModificationService userModificationService;
+  private OwncloudLocalUserService localUserService;
 
   private Map<String, OwncloudLocalQuota> quotas = new HashMap<>();
 
@@ -88,8 +88,8 @@ class OwncloudLocalResourceServiceImpl implements OwncloudLocalResourceService {
     OwncloudLocalUtils.checkPrivilegesOnDirectory(baseLocation);
 
     calculateQuotas(baseLocation);
-    userModificationService.registerSaveUserCallback(this::notifyUserModification);
-    userModificationService.registerDeleteUserCallback(this::notifyRemovedUser);
+    localUserService.registerSaveUserCallback(this::notifyUserModification);
+    localUserService.registerDeleteUserCallback(this::notifyRemovedUser);
   }
 
   private void calculateQuotas(Path baseLocation) throws IOException {

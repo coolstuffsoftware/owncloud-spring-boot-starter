@@ -20,9 +20,9 @@ package software.coolstuff.springframework.owncloud.service.impl.local;
 import java.util.function.Consumer;
 
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
-import software.coolstuff.springframework.owncloud.service.api.OwncloudUserModificationService;
+import software.coolstuff.springframework.owncloud.service.api.OwncloudUserService;
 
-interface OwncloudLocalUserModificationService extends OwncloudUserModificationService {
+interface OwncloudLocalUserService extends OwncloudUserService {
 
   void registerSaveUserCallback(Consumer<OwncloudUserDetails> listener);
 

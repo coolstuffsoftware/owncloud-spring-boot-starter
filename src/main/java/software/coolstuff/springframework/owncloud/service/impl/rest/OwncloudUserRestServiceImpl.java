@@ -36,26 +36,25 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import com.google.common.collect.Lists;
 
 import lombok.extern.slf4j.Slf4j;
-import software.coolstuff.springframework.owncloud.exception.auth.OwncloudGroupAlreadyExistsException;
 import software.coolstuff.springframework.owncloud.exception.auth.OwncloudGroupNotFoundException;
 import software.coolstuff.springframework.owncloud.exception.auth.OwncloudUsernameAlreadyExistsException;
 import software.coolstuff.springframework.owncloud.model.OwncloudModificationUser;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
-import software.coolstuff.springframework.owncloud.service.api.OwncloudUserModificationService;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudUserQueryService;
+import software.coolstuff.springframework.owncloud.service.api.OwncloudUserService;
 
 @Slf4j
-class OwncloudRestUserModificationServiceImpl extends AbstractOwncloudRestServiceImpl implements OwncloudUserModificationService {
+class OwncloudUserRestServiceImpl extends AbstractOwncloudRestServiceImpl implements OwncloudUserService {
 
   @Autowired
   private OwncloudUserQueryService userQueryService;
 
-  OwncloudRestUserModificationServiceImpl(RestTemplateBuilder builder) {
+  OwncloudUserRestServiceImpl(RestTemplateBuilder builder) {
     super(builder);
   }
 
   @Override
-  public OwncloudUserDetails saveUser(OwncloudModificationUser user) {
+  public OwncloudUserDetails save(OwncloudModificationUser user) {
     Validate.notNull(user);
     Validate.notBlank(user.getUsername());
 
@@ -71,7 +70,7 @@ class OwncloudRestUserModificationServiceImpl extends AbstractOwncloudRestServic
       createUser(user);
     }
 
-    OwncloudUserDetails foundUserDetails = userQueryService.findOneUser(user.getUsername());
+    OwncloudUserDetails foundUserDetails = userQueryService.findOne(user.getUsername());
     return foundUserDetails;
   }
 
@@ -155,7 +154,7 @@ class OwncloudRestUserModificationServiceImpl extends AbstractOwncloudRestServic
 
   private boolean isQuotaChanged(OwncloudModificationUser user, Ocs.User.Data existingUser) {
     Long newQuota = user.getQuota();
-    Long existingQuota = (existingUser.getQuota() != null ? existingUser.getQuota().getTotal() : null);
+    Long existingQuota = existingUser.getQuota() != null ? existingUser.getQuota().getTotal() : null;
     return ObjectUtils.compare(newQuota, existingQuota) != 0;
   }
 
@@ -364,7 +363,7 @@ class OwncloudRestUserModificationServiceImpl extends AbstractOwncloudRestServic
   }
 
   @Override
-  public void deleteUser(String username) {
+  public void delete(String username) {
     Validate.notBlank(username);
 
     log.debug("Delete User {} from Location {}", username, getLocation());
@@ -388,97 +387,6 @@ class OwncloudRestUserModificationServiceImpl extends AbstractOwncloudRestServic
       case 101:
         log.error("Error 101: User {} not found", username);
         throw new UsernameNotFoundException(username);
-      case 997:
-        exceptionMessage = String.format("User %s is not authorized to access Resource %s", authenticatedUser, uri);
-        log.warn("Error 997: {}", exceptionMessage);
-        throw new AccessDeniedException(exceptionMessage);
-      default:
-        exceptionMessage = String.format("Unknown Error Code %d. Reason: %s", meta.getStatuscode(), StringUtils.defaultIfEmpty(meta.getMessage(), ""));
-        log.error(exceptionMessage);
-        throw new IllegalStateException(exceptionMessage);
-    }
-  }
-
-  @Override
-  public void createGroup(String groupname) {
-    Validate.notBlank(groupname);
-
-    log.trace("Create Message Body for Create Request of Group {}", groupname);
-    Map<String, List<String>> data = new HashMap<>();
-    data.put("groupid", Lists.newArrayList(groupname));
-
-    log.debug("Create Group {} on Location {}", groupname, getLocation());
-    exchange(
-        "/cloud/groups/{group}",
-        HttpMethod.POST,
-        multiValuedEntity(data),
-        Ocs.Void.class,
-        (authenticatedUser, uri, meta) -> checkCreateGroup(authenticatedUser, uri, meta, groupname),
-        groupname);
-    log.info("Group {} successfully created on Location {}", groupname, getLocation());
-  }
-
-  private void checkCreateGroup(String authenticatedUser, String uri, Ocs.Meta meta, String groupname) {
-    if ("ok".equals(meta.getStatus())) {
-      return;
-    }
-
-    String exceptionMessage;
-    switch (meta.getStatuscode()) {
-      case 101:
-        log.error("Error 101: {}", meta.getMessage());
-        throw new IllegalArgumentException(meta.getMessage());
-      case 102:
-        log.warn("Error 102: Group {} already exists", groupname);
-        throw new OwncloudGroupAlreadyExistsException(groupname);
-      case 103:
-        exceptionMessage = String.format("Failed to create Group %s. Reason: %s", groupname, StringUtils.defaultIfEmpty(meta.getMessage(), ""));
-        log.error("Error 103: {}", exceptionMessage);
-        throw new IllegalStateException(exceptionMessage);
-      case 997:
-        exceptionMessage = String.format("User %s is not authorized to access Resource %s", authenticatedUser, uri);
-        log.warn("Error 997: {}", exceptionMessage);
-        throw new AccessDeniedException(exceptionMessage);
-      default:
-        exceptionMessage = String.format("Unknown Error Code %d. Reason: %s", meta.getStatuscode(), StringUtils.defaultIfEmpty(meta.getMessage(), ""));
-        log.error(exceptionMessage);
-        throw new IllegalStateException(exceptionMessage);
-    }
-  }
-
-  @Override
-  public void deleteGroup(String groupname) {
-    Validate.notBlank(groupname);
-
-    log.trace("Create Message Body for Delete Request of Group {}", groupname);
-    Map<String, List<String>> data = new HashMap<>();
-    data.put("groupid", Lists.newArrayList(groupname));
-
-    log.debug("Delete Group {} on Location {}", groupname, getLocation());
-    exchange(
-        "/cloud/groups/{group}",
-        HttpMethod.DELETE,
-        multiValuedEntity(data),
-        Ocs.Void.class,
-        (authenticatedUser, uri, meta) -> checkDeleteGroup(authenticatedUser, uri, meta, groupname),
-        groupname);
-    log.info("Group {} successfully removed from Location {}", groupname, getLocation());
-  }
-
-  private void checkDeleteGroup(String authenticatedUser, String uri, Ocs.Meta meta, String groupname) {
-    if ("ok".equals(meta.getStatus())) {
-      return;
-    }
-
-    String exceptionMessage;
-    switch (meta.getStatuscode()) {
-      case 101:
-        log.warn("Error 101: Group {} not exists", groupname);
-        throw new OwncloudGroupNotFoundException(groupname);
-      case 102:
-        exceptionMessage = String.format("Failed to delete Group %s. Reason: %s", groupname, StringUtils.defaultIfEmpty(meta.getMessage(), ""));
-        log.error("Error 102: {}", exceptionMessage);
-        throw new IllegalStateException(exceptionMessage);
       case 997:
         exceptionMessage = String.format("User %s is not authorized to access Resource %s", authenticatedUser, uri);
         log.warn("Error 997: {}", exceptionMessage);

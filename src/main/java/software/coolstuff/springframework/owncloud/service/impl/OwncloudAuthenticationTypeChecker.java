@@ -19,7 +19,8 @@ class OwncloudAuthenticationTypeChecker {
 
   private final OwncloudProperties owncloudProperties;
 
-  @Before("execution(* software.coolstuff.springframework.owncloud.service.api.OwncloudUserModificationService.*(..))")
+  @Before("execution(* software.coolstuff.springframework.owncloud.service.api.OwncloudUserService.*(..)) ||"
+      + " execution(* software.coolstuff.springframework.owncloud.service.api.OwncloudGroupService.*(..))")
   void checkModificationsAllowed(JoinPoint joinPoint) {
     if (modificationsNotAllowed()) {
       log.warn("Access denied for Method {}.{}() because Modifications are not allowed",
@@ -33,7 +34,9 @@ class OwncloudAuthenticationTypeChecker {
   }
 
   @Before("execution(* software.coolstuff.springframework.owncloud.service.api.OwncloudUserQueryService.*(..)) ||"
-      + " execution(* software.coolstuff.springframework.owncloud.service.api.OwncloudUserModificationService.*(..)) ||"
+      + " execution(* software.coolstuff.springframework.owncloud.service.api.OwncloudGroupQueryService.*(..)) ||"
+      + " execution(* software.coolstuff.springframework.owncloud.service.api.OwncloudUserService.*(..)) ||"
+      + " execution(* software.coolstuff.springframework.owncloud.service.api.OwncloudGroupService.*(..)) ||"
       + " execution(* software.coolstuff.springframework.owncloud.service.api.OwncloudResourceService.*(..))")
   void checkAuthenticationObject(JoinPoint joinPoint) {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
