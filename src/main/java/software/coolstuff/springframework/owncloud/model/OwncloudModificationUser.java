@@ -19,9 +19,9 @@ package software.coolstuff.springframework.owncloud.model;
 
 import java.security.Principal;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
 import org.springframework.security.core.GrantedAuthority;
 
@@ -33,7 +33,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.Singular;
 
 /**
- * This Class will be used for any User Modifications by <code>OwncloudUserModificationService.saveUser(OwncloudModificationUser)</code>
+ * This Class will be used for any User Modifications by
+ * <code>OwncloudUserModificationService.saveUser(OwncloudModificationUser)</code>
  *
  * @author mufasa1976
  * @since 1.0.0
@@ -46,6 +47,7 @@ public class OwncloudModificationUser {
 
   /**
    * Username of the User to be saved
+   *
    * @return Username of the User to be saved
    */
   private final String username;
@@ -54,64 +56,85 @@ public class OwncloudModificationUser {
    * Password of the new User.
    * <p/>
    * This Paramter will only be used, when the User will be created
-   * @param password Password of the new User
+   *
+   * @param password
+   *            Password of the new User
    * @return Password of the new User
    */
   private String password;
 
   /**
    * State of the User to be modified.
-   * @param enabled set the User to be enabled (<code>true</code>) or disabled (<code>false</code>)
-   * @return is the User enabled (<code>true</code>) or disabled (<code>false</code>)
+   *
+   * @param enabled
+   *            set the User to be enabled (<code>true</code>) or disabled
+   *            (<code>false</code>)
+   * @return is the User enabled (<code>true</code>) or disabled
+   *         (<code>false</code>)
    */
   private boolean enabled = true;
 
   /**
    * Display Name of the User to be modified.
-   * @param displayName Display Name of the User to be modified
+   *
+   * @param displayName
+   *            Display Name of the User to be modified
    * @return modified Display Name
    */
   private String displayname;
 
   /**
    * Email of the User to be modified.
-   * @param email Email of the User to be modified
+   *
+   * @param email
+   *            Email of the User to be modified
    * @return modified Email
    */
   private String email;
 
   /**
    * Quota of the User to be modified (in Bytes).
+   *
    * @since 1.2.0
-   * @param quota Quota of the User to be modified (in Bytes)
+   * @param quota
+   *            Quota of the User to be modified (in Bytes)
    * @return modified Quota (in Bytes)
    */
   private Long quota;
 
   /**
    * Group Memberships of the User to be modified.
-   * @param groups Group Memberships of the User to be modified
+   *
+   * @param groups
+   *            Group Memberships of the User to be modified
    * @return modified Group Memberships
    */
   @Singular("group")
   private List<String> groups = new ArrayList<>();
 
   public static class OwncloudModificationUserBuilder {
+
     private boolean enabled = true;
   }
 
   /**
    * Constructor by any existing {@link OwncloudUserDetails} Object.
    * <p/>
-   * A {@link OwncloudUserDetails} Object will be returned by the <code>OwncloudUserDetailsService.loadUserByUsername(String)</code>
-   * during the Authentication Process of the <code>OwncloudAuthenticationProvider.authenticate(org.springframework.security.core.Authentication)</code>
-   * and resist as a {@link Principal} within the {@link OwncloudAuthentication} Object (returned by {@link OwncloudAuthentication#getPrincipal()}
-   * @param userDetails existing {@link OwncloudUserDetails} Object
+   * A {@link OwncloudUserDetails} Object will be returned by the
+   * <code>OwncloudUserDetailsService.loadUserByUsername(String)</code> during
+   * the Authentication Process of the
+   * <code>OwncloudAuthenticationProvider.authenticate(org.springframework.security.core.Authentication)</code>
+   * and resist as a {@link Principal} within the
+   * {@link OwncloudAuthentication} Object (returned by
+   * {@link OwncloudAuthentication#getPrincipal()}
+   *
+   * @param userDetails
+   *            existing {@link OwncloudUserDetails} Object
    */
   public OwncloudModificationUser(OwncloudUserDetails userDetails) {
     Validate.notNull(userDetails);
 
-    this.username = userDetails.getUsername();
+    username = userDetails.getUsername();
     setPassword(userDetails.getPassword());
 
     setEnabled(userDetails.isEnabled());
@@ -119,11 +142,16 @@ public class OwncloudModificationUser {
     setDisplayname(userDetails.getDisplayname());
     setEmail(userDetails.getEmail());
     setQuota(userDetails.getQuota());
+    setAuthorities(userDetails);
+  }
 
-    if (CollectionUtils.isNotEmpty(userDetails.getAuthorities())) {
-      for (GrantedAuthority authority : userDetails.getAuthorities()) {
-        groups.add(authority.getAuthority());
-      }
+  private void setAuthorities(OwncloudUserDetails userDetails) {
+    Collection<? extends GrantedAuthority> authorities = userDetails.getAuthorities();
+    if (authorities == null) {
+      return;
     }
+    authorities.stream()
+        .map(GrantedAuthority::getAuthority)
+        .forEach(groups::add);
   }
 }

@@ -25,7 +25,7 @@ import org.springframework.validation.annotation.Validated;
 
 import lombok.Getter;
 import lombok.Setter;
-import software.coolstuff.springframework.owncloud.service.api.OwncloudUserModificationService;
+import software.coolstuff.springframework.owncloud.service.api.OwncloudUserService;
 
 /**
  * Owncloud Configuration Properties.
@@ -68,7 +68,7 @@ public abstract class OwncloudProperties {
   public static class UserService {
 
     /**
-     * Should Modifications through {@link OwncloudUserModificationService} be allowed
+     * Should Modifications through {@link OwncloudUserService} be allowed
      * @since 1.2.0
      */
     private boolean enableModifications = false;

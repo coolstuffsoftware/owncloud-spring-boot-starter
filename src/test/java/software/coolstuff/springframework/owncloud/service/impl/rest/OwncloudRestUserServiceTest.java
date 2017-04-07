@@ -46,15 +46,15 @@ import lombok.Data;
 import software.coolstuff.springframework.owncloud.exception.auth.OwncloudGroupNotFoundException;
 import software.coolstuff.springframework.owncloud.exception.auth.OwncloudUsernameAlreadyExistsException;
 import software.coolstuff.springframework.owncloud.model.OwncloudModificationUser;
-import software.coolstuff.springframework.owncloud.service.AbstractOwncloudUserModificationServiceTest;
-import software.coolstuff.springframework.owncloud.service.api.OwncloudUserModificationService;
+import software.coolstuff.springframework.owncloud.service.AbstractOwncloudUserServiceTest;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudUserQueryService;
+import software.coolstuff.springframework.owncloud.service.api.OwncloudUserService;
 
 @ActiveProfiles("REST-USER-SERVICE")
-public class OwncloudRestUserModificationServiceTest extends AbstractOwncloudUserModificationServiceTest implements OwncloudRestServiceTest {
+public class OwncloudRestUserServiceTest extends AbstractOwncloudUserServiceTest implements OwncloudRestServiceTest {
 
   @Autowired
-  private OwncloudUserModificationService userModificationService;
+  private OwncloudUserService userModificationService;
 
   @Autowired
   private OwncloudUserQueryService userQueryService;
@@ -334,35 +334,6 @@ public class OwncloudRestUserModificationServiceTest extends AbstractOwncloudUse
         101);
   }
 
-  @Override
-  protected void prepareTestCreateGroup_OK(String groupname) throws Exception {
-    respondSuccess(
-        RestRequest.builder()
-            .method(POST)
-            .url("/cloud/groups/" + groupname)
-            .build());
-  }
-
-  @Override
-  protected void prepareTestCreateGroup_NOK_OwncloudGroupAlreadyExists(String groupname) throws Exception {
-    respondFailure(RestRequest.builder().method(POST).url("/cloud/groups/" + groupname).build(), 102);
-  }
-
-  @Override
-  protected void prepareTestDeleteGroup_OK(String groupname) throws Exception {
-    respondSuccess(RestRequest.builder().method(DELETE).url("/cloud/groups/" + groupname).build());
-  }
-
-  @Override
-  protected void prepareTestDeleteGroup_NOK_GroupNotFound(String groupname) throws Exception {
-    respondFailure(
-        RestRequest.builder()
-            .method(DELETE)
-            .url("/cloud/groups/" + groupname)
-            .build(),
-        101);
-  }
-
   @Test(expected = IllegalArgumentException.class)
   @WithMockUser(username = "user1", password = "password")
   public void testSaveUser_CreateUser_NOK_IllegalArgument() throws Exception {
@@ -380,7 +351,7 @@ public class OwncloudRestUserModificationServiceTest extends AbstractOwncloudUse
             .errorCodeCreateUser(101)
             .build());
 
-    userModificationService.saveUser(user);
+    userModificationService.save(user);
   }
 
   @Test(expected = OwncloudUsernameAlreadyExistsException.class)
@@ -400,7 +371,7 @@ public class OwncloudRestUserModificationServiceTest extends AbstractOwncloudUse
             .errorCodeCreateUser(102)
             .build());
 
-    userModificationService.saveUser(user);
+    userModificationService.save(user);
   }
 
   @Test(expected = IllegalStateException.class)
@@ -420,7 +391,7 @@ public class OwncloudRestUserModificationServiceTest extends AbstractOwncloudUse
             .errorCodeCreateUser(103)
             .build());
 
-    userModificationService.saveUser(user);
+    userModificationService.save(user);
   }
 
   @Test(expected = AccessDeniedException.class)
@@ -440,7 +411,7 @@ public class OwncloudRestUserModificationServiceTest extends AbstractOwncloudUse
             .errorCodeCreateUser(997)
             .build());
 
-    userModificationService.saveUser(user);
+    userModificationService.save(user);
   }
 
   @Test(expected = IllegalStateException.class)
@@ -460,7 +431,7 @@ public class OwncloudRestUserModificationServiceTest extends AbstractOwncloudUse
             .errorCodeCreateUser(999)
             .build());
 
-    userModificationService.saveUser(user);
+    userModificationService.save(user);
   }
 
   @Test(expected = IllegalStateException.class)
@@ -489,7 +460,7 @@ public class OwncloudRestUserModificationServiceTest extends AbstractOwncloudUse
             .errorCodeUpdateDisplayName(101)
             .build());
 
-    userModificationService.saveUser(updateUser);
+    userModificationService.save(updateUser);
   }
 
   @Test(expected = IllegalStateException.class)
@@ -518,7 +489,7 @@ public class OwncloudRestUserModificationServiceTest extends AbstractOwncloudUse
             .errorCodeUpdateDisplayName(102)
             .build());
 
-    userModificationService.saveUser(updateUser);
+    userModificationService.save(updateUser);
   }
 
   @Test(expected = AccessDeniedException.class)
@@ -547,7 +518,7 @@ public class OwncloudRestUserModificationServiceTest extends AbstractOwncloudUse
             .errorCodeUpdateDisplayName(997)
             .build());
 
-    userModificationService.saveUser(updateUser);
+    userModificationService.save(updateUser);
   }
 
   @Test(expected = IllegalStateException.class)
@@ -576,7 +547,7 @@ public class OwncloudRestUserModificationServiceTest extends AbstractOwncloudUse
             .errorCodeUpdateDisplayName(999)
             .build());
 
-    userModificationService.saveUser(updateUser);
+    userModificationService.save(updateUser);
   }
 
   @Test(expected = IllegalStateException.class)
@@ -605,7 +576,7 @@ public class OwncloudRestUserModificationServiceTest extends AbstractOwncloudUse
             .errorCodeUpdateEmail(101)
             .build());
 
-    userModificationService.saveUser(updateUser);
+    userModificationService.save(updateUser);
   }
 
   @Test(expected = IllegalStateException.class)
@@ -634,7 +605,7 @@ public class OwncloudRestUserModificationServiceTest extends AbstractOwncloudUse
             .errorCodeUpdateEmail(102)
             .build());
 
-    userModificationService.saveUser(updateUser);
+    userModificationService.save(updateUser);
   }
 
   @Test(expected = AccessDeniedException.class)
@@ -663,7 +634,7 @@ public class OwncloudRestUserModificationServiceTest extends AbstractOwncloudUse
             .errorCodeUpdateEmail(997)
             .build());
 
-    userModificationService.saveUser(updateUser);
+    userModificationService.save(updateUser);
   }
 
   @Test(expected = IllegalStateException.class)
@@ -692,7 +663,7 @@ public class OwncloudRestUserModificationServiceTest extends AbstractOwncloudUse
             .errorCodeUpdateEmail(999)
             .build());
 
-    userModificationService.saveUser(updateUser);
+    userModificationService.save(updateUser);
   }
 
   @Test(expected = IllegalStateException.class)
@@ -723,7 +694,7 @@ public class OwncloudRestUserModificationServiceTest extends AbstractOwncloudUse
             .errorCodeUpdateQuota(101)
             .build());
 
-    userModificationService.saveUser(updateUser);
+    userModificationService.save(updateUser);
   }
 
   @Test(expected = IllegalStateException.class)
@@ -754,7 +725,7 @@ public class OwncloudRestUserModificationServiceTest extends AbstractOwncloudUse
             .errorCodeUpdateQuota(102)
             .build());
 
-    userModificationService.saveUser(updateUser);
+    userModificationService.save(updateUser);
   }
 
   @Test(expected = IllegalStateException.class)
@@ -785,7 +756,7 @@ public class OwncloudRestUserModificationServiceTest extends AbstractOwncloudUse
             .errorCodeUpdateQuota(103)
             .build());
 
-    userModificationService.saveUser(updateUser);
+    userModificationService.save(updateUser);
   }
 
   @Test(expected = AccessDeniedException.class)
@@ -816,7 +787,7 @@ public class OwncloudRestUserModificationServiceTest extends AbstractOwncloudUse
             .errorCodeUpdateQuota(997)
             .build());
 
-    userModificationService.saveUser(updateUser);
+    userModificationService.save(updateUser);
   }
 
   @Test(expected = IllegalStateException.class)
@@ -847,7 +818,7 @@ public class OwncloudRestUserModificationServiceTest extends AbstractOwncloudUse
             .errorCodeUpdateQuota(999)
             .build());
 
-    userModificationService.saveUser(updateUser);
+    userModificationService.save(updateUser);
   }
 
   @Test(expected = IllegalStateException.class)
@@ -876,7 +847,7 @@ public class OwncloudRestUserModificationServiceTest extends AbstractOwncloudUse
             .errorCodeEnableDisable(101)
             .build());
 
-    userModificationService.saveUser(updateUser);
+    userModificationService.save(updateUser);
   }
 
   @Test(expected = IllegalStateException.class)
@@ -905,7 +876,7 @@ public class OwncloudRestUserModificationServiceTest extends AbstractOwncloudUse
             .errorCodeEnableDisable(102)
             .build());
 
-    userModificationService.saveUser(updateUser);
+    userModificationService.save(updateUser);
   }
 
   @Test(expected = AccessDeniedException.class)
@@ -934,7 +905,7 @@ public class OwncloudRestUserModificationServiceTest extends AbstractOwncloudUse
             .errorCodeEnableDisable(997)
             .build());
 
-    userModificationService.saveUser(updateUser);
+    userModificationService.save(updateUser);
   }
 
   @Test(expected = IllegalStateException.class)
@@ -963,7 +934,7 @@ public class OwncloudRestUserModificationServiceTest extends AbstractOwncloudUse
             .errorCodeEnableDisable(999)
             .build());
 
-    userModificationService.saveUser(updateUser);
+    userModificationService.save(updateUser);
   }
 
   @Test(expected = IllegalStateException.class)
@@ -992,7 +963,7 @@ public class OwncloudRestUserModificationServiceTest extends AbstractOwncloudUse
             .errorCodeEnableDisable(101)
             .build());
 
-    userModificationService.saveUser(updateUser);
+    userModificationService.save(updateUser);
   }
 
   @Test(expected = IllegalStateException.class)
@@ -1021,7 +992,7 @@ public class OwncloudRestUserModificationServiceTest extends AbstractOwncloudUse
             .errorCodeEnableDisable(102)
             .build());
 
-    userModificationService.saveUser(updateUser);
+    userModificationService.save(updateUser);
   }
 
   @Test(expected = AccessDeniedException.class)
@@ -1050,7 +1021,7 @@ public class OwncloudRestUserModificationServiceTest extends AbstractOwncloudUse
             .errorCodeEnableDisable(997)
             .build());
 
-    userModificationService.saveUser(updateUser);
+    userModificationService.save(updateUser);
   }
 
   @Test(expected = IllegalStateException.class)
@@ -1079,7 +1050,7 @@ public class OwncloudRestUserModificationServiceTest extends AbstractOwncloudUse
             .errorCodeEnableDisable(999)
             .build());
 
-    userModificationService.saveUser(updateUser);
+    userModificationService.save(updateUser);
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -1111,7 +1082,7 @@ public class OwncloudRestUserModificationServiceTest extends AbstractOwncloudUse
             .errorCodeAddGroup(101)
             .build());
 
-    userModificationService.saveUser(updateUser);
+    userModificationService.save(updateUser);
   }
 
   @Test(expected = OwncloudGroupNotFoundException.class)
@@ -1143,7 +1114,7 @@ public class OwncloudRestUserModificationServiceTest extends AbstractOwncloudUse
             .errorCodeAddGroup(102)
             .build());
 
-    userModificationService.saveUser(updateUser);
+    userModificationService.save(updateUser);
   }
 
   @Test(expected = IllegalStateException.class)
@@ -1175,7 +1146,7 @@ public class OwncloudRestUserModificationServiceTest extends AbstractOwncloudUse
             .errorCodeAddGroup(103)
             .build());
 
-    userModificationService.saveUser(updateUser);
+    userModificationService.save(updateUser);
   }
 
   @Test(expected = AccessDeniedException.class)
@@ -1207,7 +1178,7 @@ public class OwncloudRestUserModificationServiceTest extends AbstractOwncloudUse
             .errorCodeAddGroup(104)
             .build());
 
-    userModificationService.saveUser(updateUser);
+    userModificationService.save(updateUser);
   }
 
   @Test(expected = IllegalStateException.class)
@@ -1239,7 +1210,7 @@ public class OwncloudRestUserModificationServiceTest extends AbstractOwncloudUse
             .errorCodeAddGroup(105)
             .build());
 
-    userModificationService.saveUser(updateUser);
+    userModificationService.save(updateUser);
   }
 
   @Test(expected = AccessDeniedException.class)
@@ -1271,7 +1242,7 @@ public class OwncloudRestUserModificationServiceTest extends AbstractOwncloudUse
             .errorCodeAddGroup(997)
             .build());
 
-    userModificationService.saveUser(updateUser);
+    userModificationService.save(updateUser);
   }
 
   @Test(expected = IllegalStateException.class)
@@ -1303,7 +1274,7 @@ public class OwncloudRestUserModificationServiceTest extends AbstractOwncloudUse
             .errorCodeAddGroup(999)
             .build());
 
-    userModificationService.saveUser(updateUser);
+    userModificationService.save(updateUser);
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -1335,7 +1306,7 @@ public class OwncloudRestUserModificationServiceTest extends AbstractOwncloudUse
             .errorCodeRemoveGroup(101)
             .build());
 
-    userModificationService.saveUser(updateUser);
+    userModificationService.save(updateUser);
   }
 
   @Test(expected = OwncloudGroupNotFoundException.class)
@@ -1367,7 +1338,7 @@ public class OwncloudRestUserModificationServiceTest extends AbstractOwncloudUse
             .errorCodeRemoveGroup(102)
             .build());
 
-    userModificationService.saveUser(updateUser);
+    userModificationService.save(updateUser);
   }
 
   @Test(expected = IllegalStateException.class)
@@ -1399,7 +1370,7 @@ public class OwncloudRestUserModificationServiceTest extends AbstractOwncloudUse
             .errorCodeRemoveGroup(103)
             .build());
 
-    userModificationService.saveUser(updateUser);
+    userModificationService.save(updateUser);
   }
 
   @Test(expected = AccessDeniedException.class)
@@ -1431,7 +1402,7 @@ public class OwncloudRestUserModificationServiceTest extends AbstractOwncloudUse
             .errorCodeRemoveGroup(104)
             .build());
 
-    userModificationService.saveUser(updateUser);
+    userModificationService.save(updateUser);
   }
 
   @Test(expected = IllegalStateException.class)
@@ -1463,7 +1434,7 @@ public class OwncloudRestUserModificationServiceTest extends AbstractOwncloudUse
             .errorCodeRemoveGroup(105)
             .build());
 
-    userModificationService.saveUser(updateUser);
+    userModificationService.save(updateUser);
   }
 
   @Test(expected = AccessDeniedException.class)
@@ -1495,7 +1466,7 @@ public class OwncloudRestUserModificationServiceTest extends AbstractOwncloudUse
             .errorCodeRemoveGroup(997)
             .build());
 
-    userModificationService.saveUser(updateUser);
+    userModificationService.save(updateUser);
   }
 
   @Test(expected = IllegalStateException.class)
@@ -1527,7 +1498,7 @@ public class OwncloudRestUserModificationServiceTest extends AbstractOwncloudUse
             .errorCodeRemoveGroup(999)
             .build());
 
-    userModificationService.saveUser(updateUser);
+    userModificationService.save(updateUser);
   }
 
   @Test(expected = AccessDeniedException.class)
@@ -1539,7 +1510,7 @@ public class OwncloudRestUserModificationServiceTest extends AbstractOwncloudUse
             .url("/cloud/users/user1")
             .build(),
         997);
-    userModificationService.deleteUser("user1");
+    userModificationService.delete("user1");
   }
 
   @Test(expected = IllegalStateException.class)
@@ -1551,91 +1522,7 @@ public class OwncloudRestUserModificationServiceTest extends AbstractOwncloudUse
             .url("/cloud/users/user1")
             .build(),
         999);
-    userModificationService.deleteUser("user1");
-  }
-
-  @Test(expected = IllegalArgumentException.class)
-  @WithMockUser(username = "user1", password = "password")
-  public void testCreateGroup_NOK_IllegalArgumentException() throws Exception {
-    respondFailure(
-        RestRequest.builder()
-            .method(POST)
-            .url("/cloud/groups/group4")
-            .build(),
-        101);
-    userModificationService.createGroup("group4");
-  }
-
-  @Test(expected = IllegalStateException.class)
-  @WithMockUser(username = "user1", password = "password")
-  public void testCreateGroup_NOK_CannotCreateGroup() throws Exception {
-    respondFailure(
-        RestRequest.builder()
-            .method(POST)
-            .url("/cloud/groups/group4")
-            .build(),
-        103);
-    userModificationService.createGroup("group4");
-  }
-
-  @Test(expected = AccessDeniedException.class)
-  @WithMockUser(username = "user1", password = "password")
-  public void testCreateGroup_NOK_AccessDeniedException() throws Exception {
-    respondFailure(
-        RestRequest.builder()
-            .method(POST)
-            .url("/cloud/groups/group4")
-            .build(),
-        997);
-    userModificationService.createGroup("group4");
-  }
-
-  @Test(expected = IllegalStateException.class)
-  @WithMockUser(username = "user1", password = "password")
-  public void testCreateGroup_NOK_UnknownError() throws Exception {
-    respondFailure(
-        RestRequest.builder()
-            .method(POST)
-            .url("/cloud/groups/group4")
-            .build(),
-        999);
-    userModificationService.createGroup("group4");
-  }
-
-  @Test(expected = IllegalStateException.class)
-  @WithMockUser(username = "user1", password = "password")
-  public void testDeleteGroup_NOK_CannotDeleteGroup() throws Exception {
-    respondFailure(
-        RestRequest.builder()
-            .method(DELETE)
-            .url("/cloud/groups/group4")
-            .build(),
-        102);
-    userModificationService.deleteGroup("group4");
-  }
-
-  @Test(expected = AccessDeniedException.class)
-  @WithMockUser(username = "user1", password = "password")
-  public void testDeleteGroup_NOK_AccessDeniedException() throws Exception {
-    respondFailure(
-        RestRequest.builder()
-            .method(DELETE)
-            .url("/cloud/groups/group4")
-            .build(),
-        997);
-    userModificationService.deleteGroup("group4");
-  }
-
-  @Test(expected = IllegalStateException.class)
-  @WithMockUser(username = "user1", password = "password")
-  public void testDeleteGroup_NOK_UnknownError() throws Exception {
-    respondFailure(
-        RestRequest.builder()
-            .method(DELETE)
-            .url("/cloud/groups/group4")
-            .build(),
-        999);
-    userModificationService.deleteGroup("group4");
+    userModificationService.delete("user1");
   }
 
   @Data
