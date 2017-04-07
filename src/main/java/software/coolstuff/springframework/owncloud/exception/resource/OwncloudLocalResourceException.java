@@ -30,6 +30,10 @@ public class OwncloudLocalResourceException extends OwncloudResourceException {
 
   private static final long serialVersionUID = 4711308341542197128L;
 
+  public OwncloudLocalResourceException(String message) {
+    super(message);
+  }
+
   public OwncloudLocalResourceException(String message, Throwable throwable) {
     super(message, throwable);
   }

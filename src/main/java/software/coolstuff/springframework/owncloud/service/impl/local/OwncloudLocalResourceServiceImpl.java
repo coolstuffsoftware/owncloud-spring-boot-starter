@@ -37,6 +37,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.annotation.PostConstruct;
 
@@ -49,6 +50,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import lombok.RequiredArgsConstructor;
+import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 import software.coolstuff.springframework.owncloud.exception.resource.OwncloudLocalResourceException;
 import software.coolstuff.springframework.owncloud.exception.resource.OwncloudNoDirectoryResourceException;
@@ -88,6 +90,8 @@ class OwncloudLocalResourceServiceImpl implements OwncloudLocalResourceService {
     OwncloudLocalUtils.checkPrivilegesOnDirectory(baseLocation);
 
     calculateQuotas(baseLocation);
+
+    log.debug("Register Usermodification Callbacks");
     userModificationService.registerSaveUserCallback(this::notifyUserModification);
     userModificationService.registerDeleteUserCallback(this::notifyRemovedUser);
   }
@@ -140,6 +144,7 @@ class OwncloudLocalResourceServiceImpl implements OwncloudLocalResourceService {
   }
 
   private void notifyUserModification(OwncloudUserDetails userDetails) {
+    log.debug("User {} has been changed or created -> change the Quota to {}", userDetails.getUsername(), userDetails.getQuota());
     OwncloudLocalQuota quota = quotas.computeIfAbsent(userDetails.getUsername(), this::getOrCreateQuota);
     quota.setTotal(userDetails.getQuota());
   }
@@ -150,61 +155,22 @@ class OwncloudLocalResourceServiceImpl implements OwncloudLocalResourceService {
   }
 
   private void notifyRemovedUser(String username) {
+    log.debug("User {} has been removed -> remove the Quota Information", username);
     quotas.remove(username);
   }
 
   @Override
   public List<OwncloudResource> list(URI relativeTo) {
     Path location = resolveLocation(relativeTo);
-    List<OwncloudResource> owncloudResources = new ArrayList<>();
-    if (Files.isDirectory(location)) {
-      addDirectoryResource(location, owncloudResources);
-    } else {
-      owncloudResources.add(createOwncloudResourceOf(location));
-    }
-    return owncloudResources;
-  }
-
-  private void addDirectoryResource(Path location, List<OwncloudResource> owncloudResources) {
-    try {
-      OwncloudModifyingLocalResource actualDirectory = createOwncloudResourceOf(location);
-      actualDirectory.setName(".");
-      owncloudResources.add(actualDirectory);
-      owncloudResources.addAll(
-          Files.list(location)
-              .map(path -> createOwncloudResourceOf(path))
-              .collect(Collectors.toList()));
-      appendParentDirectoryOf(location, owncloudResources);
-    } catch (IOException e) {
-      throw new OwncloudLocalResourceException(e);
-    }
-  }
-
-  private void appendParentDirectoryOf(Path location, List<OwncloudResource> owncloudResources) {
-    if (isParentDirectoryAppendable(location)) {
-      location = location.resolve("..").normalize();
-      OwncloudModifyingLocalResource superDirectory = createOwncloudResourceOf(location);
-      superDirectory.setName("..");
-      owncloudResources.add(superDirectory);
-    }
-  }
-
-  private boolean isParentDirectoryAppendable(Path location) {
-    return properties.getResourceService().isAddRelativeDownPath() && isNotRootDirectory(location);
+    return resourcesOf(location);
   }
 
   private Path resolveLocation(URI relativeTo) {
     Path location = getRootLocationOfAuthenticatedUser();
-    if (Files.notExists(location)) {
-      try {
-        Files.createDirectories(location);
-      } catch (IOException e) {
-        throw new OwncloudLocalResourceException(e);
-      }
-    }
     if (relativeTo == null || StringUtils.isBlank(relativeTo.getPath())) {
       return location;
     }
+    createDirectoryIfNotExists(location);
     String relativeToPath = relativeTo.getPath();
     if (StringUtils.startsWith(relativeToPath, "/")) {
       relativeToPath = relativeToPath.substring(1);
@@ -213,11 +179,75 @@ class OwncloudLocalResourceServiceImpl implements OwncloudLocalResourceService {
   }
 
   private Path getRootLocationOfAuthenticatedUser() {
-    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     ResourceServiceProperties resourceProperties = properties.getResourceService();
     Path location = resourceProperties.getLocation();
-    location = location.resolve(authentication.getName());
+    val username = getUsername();
+    location = location.resolve(username);
+    checkIfExistingDirectory(location);
+    log.debug("Resolved Base Location of User {}: {}", username, location);
     return location;
+  }
+
+  private String getUsername() {
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    return authentication.getName();
+  }
+
+  private void checkIfExistingDirectory(Path location) {
+    if (isNotExistingDirectory(location)) {
+      val logMessage = String.format("Existing Path %s is not a Directory", location);
+      log.error(logMessage);
+      throw new OwncloudLocalResourceException(logMessage);
+    }
+  }
+
+  private boolean isNotExistingDirectory(Path location) {
+    return Files.exists(location) && !Files.isDirectory(location);
+  }
+
+  private void createDirectoryIfNotExists(Path location) {
+    if (Files.notExists(location)) {
+      try {
+        log.debug("Create Directory {}", location);
+        Files.createDirectories(location);
+      } catch (IOException e) {
+        val logMessage = String.format("Could not create Directory %s", location);
+        log.error(logMessage, e);
+        throw new OwncloudLocalResourceException(logMessage, e);
+      }
+    }
+  }
+
+  private List<OwncloudResource> resourcesOf(Path location) {
+    if (Files.isDirectory(location)) {
+      return getDirectoryResources(location);
+    }
+    return Stream.of(createOwncloudResourceOf(location))
+        .peek(resource -> log.debug("Add Resource {} to the Result", resource.getHref()))
+        .collect(Collectors.toList());
+  }
+
+  private List<OwncloudResource> getDirectoryResources(Path location) {
+    try {
+      List<OwncloudResource> owncloudResources = new ArrayList<>();
+      owncloudResources.add(getActualDirectoryOf(location));
+      Files.list(location)
+          .map(path -> createOwncloudResourceOf(path))
+          .peek(resource -> log.debug("Add Resource {} to the Result", resource.getHref()))
+          .forEach(owncloudResources::add);
+      getParentDirectoryOf(location)
+          .ifPresent(owncloudResources::add);
+      return owncloudResources;
+    } catch (IOException e) {
+      throw new OwncloudLocalResourceException(e);
+    }
+  }
+
+  private OwncloudModifyingLocalResource getActualDirectoryOf(Path location) {
+    OwncloudModifyingLocalResource actualDirectory = createOwncloudResourceOf(location);
+    log.debug("Add actual Directory {} to the Result", actualDirectory.getHref());
+    actualDirectory.setName(".");
+    return actualDirectory;
   }
 
   private OwncloudModifyingLocalResource createOwncloudResourceOf(Path path) {
@@ -268,17 +298,25 @@ class OwncloudLocalResourceServiceImpl implements OwncloudLocalResourceService {
     } catch (NoSuchFileException e) {
       throw new OwncloudResourceNotFoundException(href, getUsername());
     } catch (IOException e) {
-      throw new OwncloudLocalResourceException(e);
+      val logMessage = String.format("Cannot create OwncloudResource from Path %s", path);
+      log.error(logMessage, e);
+      throw new OwncloudLocalResourceException(logMessage, e);
     }
   }
 
-  private String getUsername() {
-    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-    return authentication.getName();
+  private Optional<OwncloudModifyingLocalResource> getParentDirectoryOf(Path location) {
+    if (isParentDirectoryNotAppendable(location)) {
+      return Optional.empty();
+    }
+
+    OwncloudModifyingLocalResource superDirectory = createOwncloudResourceOf(location.resolve("..").normalize());
+    log.debug("Add parent Directory of Location {} ({}) to the Result", location, superDirectory.getHref());
+    superDirectory.setName("..");
+    return Optional.of(superDirectory);
   }
 
-  private boolean isNotRootDirectory(Path location) {
-    return !isRootDirectory(location);
+  private boolean isParentDirectoryNotAppendable(Path location) {
+    return !properties.getResourceService().isAddRelativeDownPath() || isRootDirectory(location);
   }
 
   private boolean isRootDirectory(Path location) {
@@ -289,7 +327,9 @@ class OwncloudLocalResourceServiceImpl implements OwncloudLocalResourceService {
     try {
       return Files.isSameFile(location, rootLocation);
     } catch (IOException e) {
-      throw new OwncloudLocalResourceException(e);
+      val logMessage = String.format("Cannot determine the equality of path %s to the base Location %s", location, rootLocation);
+      log.error(logMessage, e);
+      throw new OwncloudLocalResourceException(logMessage, e);
     }
   }
 
@@ -299,6 +339,7 @@ class OwncloudLocalResourceServiceImpl implements OwncloudLocalResourceService {
     if (Files.notExists(location)) {
       return Optional.empty();
     }
+    log.debug("Get Information about Resource %s", path);
     return Optional.ofNullable(createOwncloudResourceOf(location));
   }
 
@@ -312,22 +353,25 @@ class OwncloudLocalResourceServiceImpl implements OwncloudLocalResourceService {
       throw new OwncloudNoDirectoryResourceException(directory);
     }
     try {
+      log.debug("Create Directory {}", location.toAbsolutePath().normalize());
       Files.createDirectory(location);
       checksumService.recalculateChecksum(location);
       return createOwncloudResourceOf(location);
     } catch (IOException e) {
-      throw new OwncloudLocalResourceException(e);
+      val logMessage = String.format("Cannot create Directory %s", location.toAbsolutePath().normalize());
+      log.error(logMessage, e);
+      throw new OwncloudLocalResourceException(logMessage, e);
     }
   }
 
   @Override
   public void delete(OwncloudResource resource) {
     Path path = resolveLocation(resource.getHref());
-    checkPathExists(path, resource);
+    checkExistence(path, resource);
     removeExistingPath(path);
   }
 
-  private void checkPathExists(Path path, OwncloudResource resource) {
+  private void checkExistence(Path path, OwncloudResource resource) {
     if (Files.notExists(path)) {
       Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
       throw new OwncloudResourceNotFoundException(resource.getHref(), authentication.getName());
@@ -343,13 +387,17 @@ class OwncloudLocalResourceServiceImpl implements OwncloudLocalResourceService {
   private void removeExistingPathAndRecalculateSpaceAndChecksum(Path path, OwncloudLocalQuota quota) {
     try {
       if (Files.isDirectory(path)) {
+        log.debug("Remove Directory {} with all its Content and reduce the used Space of User {}", path.toAbsolutePath().normalize(), quota.getUsername());
         Files.walkFileTree(path, new DeleteFileVisitor(quota::reduceUsed));
       } else {
+        log.debug("Remove File {} and reduce the used Space of User {}", path.toAbsolutePath().normalize(), quota.getUsername());
         quota.reduceUsed(Files.size(path));
         Files.delete(path);
       }
     } catch (IOException e) {
-      throw new OwncloudLocalResourceException(e);
+      val logMessage = String.format("Cannot remove Path %s", path.toAbsolutePath().normalize());
+      log.error(logMessage, e);
+      throw new OwncloudLocalResourceException(logMessage, e);
     } finally {
       checksumService.recalculateChecksum(path);
     }
@@ -377,11 +425,15 @@ class OwncloudLocalResourceServiceImpl implements OwncloudLocalResourceService {
   public InputStream getInputStream(OwncloudFileResource resource) {
     Path location = resolveLocation(resource.getHref());
     try {
+      log.debug("Return InputStream of File {}", location.toAbsolutePath().normalize());
       return Files.newInputStream(location);
     } catch (NoSuchFileException e) {
+      log.warn("File {} not found", location.toAbsolutePath().normalize());
       throw new OwncloudResourceNotFoundException(resource.getHref(), getUsername());
     } catch (IOException e) {
-      throw new OwncloudLocalResourceException(e);
+      val logMessage = String.format("Cannot get InputStream of File %s", location.toAbsolutePath().normalize());
+      log.error(logMessage, e);
+      throw new OwncloudLocalResourceException(logMessage, e);
     }
   }
 
@@ -393,6 +445,7 @@ class OwncloudLocalResourceServiceImpl implements OwncloudLocalResourceService {
   @Override
   public OutputStream getOutputStream(URI path, MediaType mediaType) {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    log.debug("Create a piped OutputStream to control the written Data (because of the Quota of User {}", authentication.getName());
     PipedOutputStreamLocalSynchronizer pipedStreamSynchronizer = PipedOutputStreamLocalSynchronizer.builder()
         .authentication(authentication)
         .afterCopyCallback(this::afterCopy)
@@ -417,6 +470,7 @@ class OwncloudLocalResourceServiceImpl implements OwncloudLocalResourceService {
 
   private void checkSpace(OwncloudQuota quota, PipedOutputStreamAfterCopyEnvironment environment) {
     if (isNoMoreSpaceLeft(quota, environment)) {
+      log.error("User {} exceeded its Quota of {} Bytes", quota.getUsername(), quota.getTotal());
       removeFile(environment);
       throw new OwncloudQuotaExceededException(environment.getUri(), environment.getUsername());
     }
@@ -428,9 +482,11 @@ class OwncloudLocalResourceServiceImpl implements OwncloudLocalResourceService {
 
   private void removeFile(PipedOutputStreamAfterCopyEnvironment environment) {
     try {
+      log.debug("Remove File {}", environment.getPath().toAbsolutePath().normalize());
       Files.delete(environment.getPath());
     } catch (IOException e) {
       final String logMessage = String.format("Error while removing File %s", environment.getPath().toAbsolutePath().normalize());
+      log.error(logMessage, e);
       throw new OwncloudLocalResourceException(logMessage, e);
     }
   }
@@ -438,6 +494,7 @@ class OwncloudLocalResourceServiceImpl implements OwncloudLocalResourceService {
   @Override
   public OwncloudQuota getQuota() {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    log.debug("Return the actual Quota of User {}", authentication.getName());
     return quotas.get(authentication.getName());
   }
 
@@ -447,6 +504,7 @@ class OwncloudLocalResourceServiceImpl implements OwncloudLocalResourceService {
   }
 
   private void resetUsedSpace(String username, OwncloudLocalQuota quota) {
+    log.debug("Reset the used Space of User {}", username);
     quota.setUsed(0);
   }
 
