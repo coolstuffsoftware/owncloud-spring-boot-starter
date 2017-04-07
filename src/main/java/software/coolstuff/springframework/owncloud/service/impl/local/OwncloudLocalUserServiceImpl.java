@@ -7,20 +7,18 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import software.coolstuff.springframework.owncloud.exception.auth.OwncloudGroupAlreadyExistsException;
 import software.coolstuff.springframework.owncloud.exception.auth.OwncloudGroupNotFoundException;
 import software.coolstuff.springframework.owncloud.model.OwncloudModificationUser;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
 
 @RequiredArgsConstructor
 @Slf4j
-class OwncloudLocalUserModificationServiceImpl implements OwncloudLocalUserModificationService {
+class OwncloudLocalUserServiceImpl implements OwncloudLocalUserService {
 
   private final OwncloudLocalUserDataService localDataService;
 
@@ -28,7 +26,7 @@ class OwncloudLocalUserModificationServiceImpl implements OwncloudLocalUserModif
   private final List<Consumer<String>> deleteUserListeners = new ArrayList<>();
 
   @Override
-  public OwncloudUserDetails saveUser(OwncloudModificationUser modificationUser) {
+  public OwncloudUserDetails save(OwncloudModificationUser modificationUser) {
     Validate.notNull(modificationUser);
     Validate.notBlank(modificationUser.getUsername());
 
@@ -79,7 +77,7 @@ class OwncloudLocalUserModificationServiceImpl implements OwncloudLocalUserModif
   }
 
   @Override
-  public void deleteUser(String username) {
+  public void delete(String username) {
     Validate.notBlank(username);
     if (localDataService.userNotExists(username)) {
       log.error("User {} doesn't exist", username);
@@ -91,39 +89,6 @@ class OwncloudLocalUserModificationServiceImpl implements OwncloudLocalUserModif
     deleteUserListeners.stream()
         .forEach(listener -> listener.accept(username));
     log.info("User {} successfully removed", username);
-  }
-
-  @Override
-  public void createGroup(String groupname) {
-    Validate.notBlank(groupname);
-    if (localDataService.groupExists(groupname)) {
-      log.error("Group {} already exists", groupname);
-      throw new OwncloudGroupAlreadyExistsException(groupname);
-    }
-    log.debug("Create Group {}", groupname);
-    localDataService.addGroup(groupname);
-    log.info("Group {} successfully created");
-  }
-
-  @Override
-  public void deleteGroup(String groupname) {
-    Validate.notBlank(groupname);
-
-    log.debug("Get Information of Group {} from the Resource Service", groupname);
-    String group = localDataService.getGroup(groupname);
-    if (StringUtils.isBlank(group)) {
-      throw new OwncloudGroupNotFoundException(groupname);
-    }
-
-    for (OwncloudLocalUserData.User user : localDataService.getUsers()) {
-      if (user.getGroups() != null) {
-        log.trace("Revoke Assignment of Group {} from User {}", groupname, user.getUsername());
-        user.getGroups().remove(group);
-      }
-    }
-    log.debug("Remove Group {}", groupname);
-    localDataService.removeGroup(groupname);
-    log.info("Group {} successfully removed", groupname);
   }
 
   @Override

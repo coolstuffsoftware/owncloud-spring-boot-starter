@@ -22,14 +22,10 @@ import static org.springframework.http.HttpMethod.GET;
 
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.util.UriUtils;
 
 import lombok.Builder;
@@ -70,57 +66,6 @@ public class OwncloudRestUserQueryServiceTest extends AbstractOwncloudUserQueryS
   }
 
   @Override
-  protected void prepareTestFindAllGroups(String... groups) throws Exception {
-    respondGroups(
-        RestRequest.builder()
-            .method(GET)
-            .url("/cloud/groups")
-            .build(),
-        groups);
-  }
-
-  @Override
-  protected void prepareTestFindAllGroupsWithFilter(String filter, String... groups) throws Exception {
-    respondGroups(
-        RestRequest.builder()
-            .method(GET)
-            .url("/cloud/groups?search=" + UriUtils.encode(filter, "UTF8"))
-            .build(),
-        groups);
-  }
-
-  @Override
-  protected void prepareTestFindAllMembersOfGroup_OK(String group, String... users) throws Exception {
-    respondUsers(
-        RestRequest.builder()
-            .method(GET)
-            .url("/cloud/groups/" + group)
-            .build(),
-        users);
-  }
-
-  @Override
-  protected void prepareTestFindAllMembersOfGroup_UnknownGroup(String group) throws Exception {
-    respondFailure(
-        RestRequest.builder()
-            .method(GET)
-            .url("/cloud/groups/" + group)
-            .build(),
-        998,
-        "The requested group could not be found");
-  }
-
-  @Override
-  protected void prepareTestFindAllMembersOfGroup_GroupWithoutMembers(String groupname) throws Exception {
-    respondUsers(
-        RestRequest.builder()
-            .method(GET)
-            .url("/cloud/groups/" + groupname)
-            .build(),
-        new String[] {});
-  }
-
-  @Override
   protected void prepareTestFindOneUser_OK(OwncloudUserDetails expectedUser, String... groups) throws Exception {
     respondUser(
         RestRequest.builder()
@@ -150,76 +95,6 @@ public class OwncloudRestUserQueryServiceTest extends AbstractOwncloudUserQueryS
             .build(),
         998,
         "The requested user could not be found");
-  }
-
-  @Override
-  protected void prepareTestFindAllGroupsOfUser_OK(String user, String... groups) throws Exception {
-    respondGroups(
-        RestRequest.builder()
-            .method(GET)
-            .url("/cloud/users/" + user + "/groups")
-            .build(),
-        groups);
-  }
-
-  @Override
-  protected void prepareTestFindAllGroupsOfUser_OK_NoGroups(String user) throws Exception {
-    respondGroups(
-        RestRequest.builder()
-            .method(GET)
-            .url("/cloud/users/" + user + "/groups")
-            .build(),
-        new String[] {});
-  }
-
-  @Test(expected = BadCredentialsException.class)
-  @WithMockUser(username = "user1", password = "password")
-  public void testBadCredentialsBy401() throws Exception {
-    respondHttpStatus(
-        RestRequest.builder()
-            .method(GET)
-            .url("/cloud/groups")
-            .build(),
-        HttpStatus.UNAUTHORIZED);
-
-    userQueryService.findAllGroups();
-  }
-
-  @Test(expected = HttpClientErrorException.class)
-  @WithMockUser(username = "user1", password = "password")
-  public void testNotFound() throws Exception {
-    respondHttpStatus(
-        RestRequest.builder()
-            .method(GET)
-            .url("/cloud/groups")
-            .build(),
-        HttpStatus.NOT_FOUND);
-
-    userQueryService.findAllGroups();
-  }
-
-  @Test(expected = AccessDeniedException.class)
-  @WithMockUser(username = "user1", password = "password")
-  public void testFindAllMembersOfGroup_NOK_AccessDenied() throws Exception {
-    respondFailure(
-        RestRequest.builder()
-            .method(GET)
-            .url("/cloud/groups/group1")
-            .build(),
-        997);
-    userQueryService.findAllMembersOfGroup("group1");
-  }
-
-  @Test(expected = IllegalStateException.class)
-  @WithMockUser(username = "user1", password = "password")
-  public void testFindAllMembersOfGroup_NOK_UnknownError() throws Exception {
-    respondFailure(
-        RestRequest.builder()
-            .method(GET)
-            .url("/cloud/groups/group1")
-            .build(),
-        999);
-    userQueryService.findAllMembersOfGroup("group1");
   }
 
   @Test

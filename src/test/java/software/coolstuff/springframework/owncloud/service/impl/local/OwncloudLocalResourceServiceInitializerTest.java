@@ -48,7 +48,7 @@ import software.coolstuff.springframework.owncloud.model.OwncloudModificationUse
 import software.coolstuff.springframework.owncloud.model.OwncloudQuota;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudResourceService;
-import software.coolstuff.springframework.owncloud.service.api.OwncloudUserModificationService;
+import software.coolstuff.springframework.owncloud.service.api.OwncloudUserService;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudUserQueryService;
 
 @RunWith(SpringRunner.class)
@@ -79,16 +79,16 @@ public class OwncloudLocalResourceServiceInitializerTest {
   private OwncloudUserQueryService userQueryService;
 
   @Autowired
-  private OwncloudUserModificationService userModificationService;
+  private OwncloudUserService userModificationService;
 
   @Before
   public void setUp() throws Exception {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     String username = authentication.getName();
-    OwncloudUserDetails user = userQueryService.findOneUser(username);
+    OwncloudUserDetails user = userQueryService.findOne(username);
     OwncloudModificationUser modificationUser = new OwncloudModificationUser(user);
     modificationUser.setQuota(1024L);
-    userModificationService.saveUser(modificationUser);
+    userModificationService.save(modificationUser);
   }
 
   @After
@@ -141,13 +141,13 @@ public class OwncloudLocalResourceServiceInitializerTest {
         .isNotNull()
         .isEqualToComparingOnlyGivenFields(expectedBeforeChange, "username", "total", "used", "free", "relative");
 
-    OwncloudUserDetails user = userQueryService.findOneUser(username);
+    OwncloudUserDetails user = userQueryService.findOne(username);
     assertThat(user).isNotNull();
     assertThat(user.getQuota()).isEqualTo(1024);
 
     OwncloudModificationUser modificationUser = new OwncloudModificationUser(user);
     modificationUser.setQuota(2048L);
-    user = userModificationService.saveUser(modificationUser);
+    user = userModificationService.save(modificationUser);
     assertThat(user).isNotNull();
     assertThat(user.getQuota()).isEqualTo(2048);
 
