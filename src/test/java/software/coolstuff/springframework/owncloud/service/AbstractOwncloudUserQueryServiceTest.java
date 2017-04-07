@@ -27,7 +27,6 @@ import org.springframework.boot.test.autoconfigure.web.client.RestClientTest;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.test.context.support.WithMockUser;
 
-import software.coolstuff.springframework.owncloud.exception.auth.OwncloudGroupNotFoundException;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudUserQueryService;
 import software.coolstuff.springframework.owncloud.service.impl.AbstractOwncloudServiceTest;
@@ -43,7 +42,7 @@ public abstract class AbstractOwncloudUserQueryServiceTest extends AbstractOwncl
   public void testFindAllUsers() throws Exception {
     prepareTestFindAllUsers("user1", "user2");
 
-    List<String> users = userQueryService.findAllUsers();
+    List<String> users = userQueryService.findAll();
     verifyServer();
 
     assertThat(users)
@@ -58,7 +57,7 @@ public abstract class AbstractOwncloudUserQueryServiceTest extends AbstractOwncl
   public void testFindAllUsersWithFilter() throws Exception {
     prepareTestFindAllUsersWithFilter("User 1", "user1");
 
-    List<String> users = userQueryService.findAllUsers("User 1");
+    List<String> users = userQueryService.findAll("User 1");
     verifyServer();
 
     assertThat(users)
@@ -67,84 +66,6 @@ public abstract class AbstractOwncloudUserQueryServiceTest extends AbstractOwncl
   }
 
   protected void prepareTestFindAllUsersWithFilter(String filter, String... users) throws Exception {}
-
-  @Test
-  @WithMockUser(username = "user1", password = "password")
-  public void testFindAllGroups() throws Exception {
-    prepareTestFindAllGroups("group1", "group2", "group3");
-
-    List<String> groups = userQueryService.findAllGroups();
-    verifyServer();
-
-    assertThat(groups)
-        .isNotNull()
-        .containsOnly("group1", "group2", "group3");
-  }
-
-  protected void prepareTestFindAllGroups(String... groups) throws Exception {}
-
-  @Test
-  @WithMockUser(username = "user1", password = "password")
-  public void testFindAllGroupsWithFilter() throws Exception {
-    prepareTestFindAllGroupsWithFilter("p2", "group2");
-
-    List<String> groups = userQueryService.findAllGroups("p2");
-    verifyServer();
-
-    assertThat(groups)
-        .isNotNull()
-        .containsOnly("group2");
-  }
-
-  protected void prepareTestFindAllGroupsWithFilter(String filter, String... groups) throws Exception {}
-
-  @Test
-  @WithMockUser(username = "user1", password = "password")
-  public void testFindAllMembersOfGroup_OK() throws Exception {
-    prepareTestFindAllMembersOfGroup_OK("group1", "user1");
-
-    List<String> membersOfGroup = userQueryService.findAllMembersOfGroup("group1");
-    verifyServer();
-
-    assertThat(membersOfGroup)
-        .isNotNull()
-        .containsOnly("user1");
-  }
-
-  protected void prepareTestFindAllMembersOfGroup_OK(String group, String... users) throws Exception {}
-
-  @Test(expected = OwncloudGroupNotFoundException.class)
-  @WithMockUser(username = "user1", password = "password")
-  public void testFindAllMembersOfGroup_UnknownGroup() throws Exception {
-    prepareTestFindAllMembersOfGroup_UnknownGroup("group4");
-    userQueryService.findAllMembersOfGroup("group4");
-  }
-
-  protected void prepareTestFindAllMembersOfGroup_UnknownGroup(String group) throws Exception {}
-
-  @Test
-  @WithMockUser(username = "user1", password = "password")
-  public void testFindAllMembersOfGroup_GroupWithoutMembers() throws Exception {
-    prepareTestFindAllMembersOfGroup_GroupWithoutMembers("group3");
-    List<String> membersOfGroup = userQueryService.findAllMembersOfGroup("group3");
-    assertThat(membersOfGroup)
-        .isNotNull()
-        .isEmpty();;
-  }
-
-  protected void prepareTestFindAllMembersOfGroup_GroupWithoutMembers(String groupname) throws Exception {}
-
-  @Test(expected = NullPointerException.class)
-  @WithMockUser(username = "user1", password = "password")
-  public void testFindAllMembersOfGroup_NoGroup() {
-    userQueryService.findAllMembersOfGroup(null);
-  }
-
-  @Test(expected = IllegalArgumentException.class)
-  @WithMockUser(username = "user1", password = "password")
-  public void testFindAllMembersOfGroup_BlankGroup() {
-    userQueryService.findAllMembersOfGroup("");
-  }
 
   @Test
   @WithMockUser(username = "user1", password = "password")
@@ -158,7 +79,7 @@ public abstract class AbstractOwncloudUserQueryServiceTest extends AbstractOwncl
         .build();
     prepareTestFindOneUser_OK(expectedUser, "group1", "group2");
 
-    OwncloudUserDetails actualUser = userQueryService.findOneUser("user1");
+    OwncloudUserDetails actualUser = userQueryService.findOne("user1");
     verifyServer();
 
     assertThat(actualUser).isNotNull();
@@ -177,7 +98,7 @@ public abstract class AbstractOwncloudUserQueryServiceTest extends AbstractOwncl
   @WithMockUser(username = "user3", password = "password")
   public void testFindOneUser_UnknownUser() throws Exception {
     prepareTestFindOneUser_UnknownUser("user3");
-    userQueryService.findOneUser("user3");
+    userQueryService.findOne("user3");
   }
 
   protected void prepareTestFindOneUser_UnknownUser(String user) throws Exception {}
@@ -185,42 +106,12 @@ public abstract class AbstractOwncloudUserQueryServiceTest extends AbstractOwncl
   @Test(expected = NullPointerException.class)
   @WithMockUser(username = "user1", password = "password")
   public void testFindOneUser_NoUser() {
-    userQueryService.findOneUser(null);
+    userQueryService.findOne(null);
   }
 
   @Test(expected = IllegalArgumentException.class)
   @WithMockUser(username = "user1", password = "password")
   public void testFindOneUser_BlankUser() {
-    userQueryService.findOneUser("");
+    userQueryService.findOne("");
   }
-
-  @Test
-  @WithMockUser(username = "user1", password = "password")
-  public void testFindAllGroupsOfUser_OK() throws Exception {
-    prepareTestFindAllGroupsOfUser_OK("user1", "group1", "group2");
-
-    List<String> groups = userQueryService.findAllGroupsOfUser("user1");
-    verifyServer();
-
-    assertThat(groups)
-        .isNotNull()
-        .containsOnly("group1", "group2");
-  }
-
-  protected void prepareTestFindAllGroupsOfUser_OK(String user, String... groups) throws Exception {}
-
-  @Test
-  @WithMockUser(username = "user2", password = "password")
-  public void testFindAllGroupsOfUser_OK_NoGroups() throws Exception {
-    prepareTestFindAllGroupsOfUser_OK_NoGroups("user2");
-
-    List<String> groups = userQueryService.findAllGroupsOfUser("user2");
-    verifyServer();
-
-    assertThat(groups)
-        .isNotNull()
-        .isEmpty();
-  }
-
-  protected void prepareTestFindAllGroupsOfUser_OK_NoGroups(String user) throws Exception {}
 }

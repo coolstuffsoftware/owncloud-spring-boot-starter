@@ -15,7 +15,7 @@
    along with this program; if not, write to the Free Software Foundation,
    Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 */
-package software.coolstuff.springframework.owncloud.service.impl.local;
+package software.coolstuff.springframework.owncloud.service.impl.rest;
 
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,39 +24,32 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 
-import software.coolstuff.springframework.owncloud.model.OwncloudModificationUser;
-import software.coolstuff.springframework.owncloud.service.api.OwncloudUserModificationService;
+import software.coolstuff.springframework.owncloud.service.api.OwncloudGroupService;
+import software.coolstuff.springframework.owncloud.service.api.OwncloudUserService;
 import software.coolstuff.springframework.owncloud.service.impl.AbstractOwncloudServiceTest;
 
-@RestClientTest(OwncloudUserModificationService.class)
-@ActiveProfiles("LOCAL-NO-MODIFICATION-USER-SERVICE")
-public class OwncloudLocalUserModificationServiceNoModificationTest extends AbstractOwncloudServiceTest {
+@RestClientTest(OwncloudUserService.class)
+@ActiveProfiles("REST-NO-MODIFICATION-USER-SERVICE")
+public class OwncloudRestGroupServiceNoModificationTest extends AbstractOwncloudServiceTest implements OwncloudRestServiceTest {
 
   @Autowired
-  private OwncloudUserModificationService userModificationService;
+  private OwncloudGroupService groupService;
 
-  @Test(expected = AccessDeniedException.class)
-  @WithMockUser(username = "user", password = "s3cr3t")
-  public void testSaveUser() {
-    userModificationService.saveUser(new OwncloudModificationUser("user99"));
+  @Override
+  public final OwncloudRestService owncloudService() {
+    return (OwncloudRestService) groupService;
   }
 
   @Test(expected = AccessDeniedException.class)
   @WithMockUser(username = "user", password = "s3cr3t")
   public void testCreateGroup() {
-    userModificationService.createGroup("shouldBeAccessDenied");
+    groupService.create("shouldBeAccessDenied");
   }
 
   @Test(expected = AccessDeniedException.class)
   @WithMockUser(username = "user", password = "s3cr3t")
   public void testDeleteGroup() {
-    userModificationService.deleteGroup("shouldBeAccessDenied");
-  }
-
-  @Test(expected = AccessDeniedException.class)
-  @WithMockUser(username = "user", password = "s3cr3t")
-  public void testDeleteUser() {
-    userModificationService.deleteUser("shouldBeAccessDenied");
+    groupService.delete("shouldBeAccessDenied");
   }
 
 }
