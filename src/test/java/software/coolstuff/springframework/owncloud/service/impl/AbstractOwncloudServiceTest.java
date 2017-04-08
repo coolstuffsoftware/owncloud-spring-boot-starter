@@ -32,12 +32,9 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.text.Format;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 import javax.validation.constraints.NotNull;
 
@@ -109,7 +106,7 @@ public abstract class AbstractOwncloudServiceTest {
   private final static String DEFAULT_PATH = "/ocs/v1.php";
   private final static String VELOCITY_PATH_PREFIX = "/velocity/";
 
-  private final static Format LONG_FORMAT = new DecimalFormat("###########0");
+  private final static Format LONG_FORMAT = new DecimalFormat("###########0", DecimalFormatSymbols.getInstance(Locale.ENGLISH));
 
   @Autowired(required = false)
   private OwncloudGrantedAuthoritiesMapper owncloudGrantedAuthoritiesMapper;
@@ -307,7 +304,7 @@ public abstract class AbstractOwncloudServiceTest {
     private final static String FREE = "free";
     private final static String RELATIVE = "relative";
 
-    private final static Format FLOAT_FORMAT = new DecimalFormat("###########0.00");
+    private final static Format FLOAT_FORMAT = new DecimalFormat("###########0.00", DecimalFormatSymbols.getInstance(Locale.ENGLISH));
 
     private boolean enabled;
     private String email;
@@ -319,8 +316,8 @@ public abstract class AbstractOwncloudServiceTest {
 
     public static class UserResponseBuilder {
       private boolean enabled = true;
-      private Long free = 817928385L;
-      private Long used = 255813439L;
+      private Long free = 817_928_385L;
+      private Long used = 255_813_439L;
       private Float relative = 23.82F;
     }
 
