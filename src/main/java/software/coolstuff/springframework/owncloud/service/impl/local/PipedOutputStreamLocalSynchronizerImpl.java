@@ -33,21 +33,25 @@ import java.util.function.Function;
 import org.springframework.security.core.Authentication;
 
 import lombok.Builder;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 import software.coolstuff.springframework.owncloud.exception.resource.OwncloudLocalResourceException;
 import software.coolstuff.springframework.owncloud.exception.resource.OwncloudNoFileResourceException;
 import software.coolstuff.springframework.owncloud.exception.resource.OwncloudResourceException;
 import software.coolstuff.springframework.owncloud.service.impl.AbstractPipedStreamSynchronizerImpl;
 import software.coolstuff.springframework.owncloud.service.impl.local.OwncloudLocalProperties.ResourceServiceProperties;
 
+@Slf4j
 class PipedOutputStreamLocalSynchronizerImpl extends AbstractPipedStreamSynchronizerImpl implements PipedOutputStreamLocalSynchronizer {
 
   private final Path outputFile;
   private final OwncloudLocalProperties owncloudLocalProperties;
-  private final SynchronizedPipedOutputStream pipedOutputStream;
   private final Optional<Consumer<PipedOutputStreamAfterCopyEnvironment>> afterCopyCallback;
 
   private Path temporaryFile;
+  private SynchronizedPipedOutputStream pipedOutputStream;
 
   private PipedOutputStreamAfterCopyEnvironment afterCopyCallbackEnvironment;
 
@@ -60,7 +64,6 @@ class PipedOutputStreamLocalSynchronizerImpl extends AbstractPipedStreamSynchron
     super(authentication, owncloudLocalProperties, uri);
     this.outputFile = getOutputFile(uri, uriResolver);
     this.owncloudLocalProperties = owncloudLocalProperties;
-    this.pipedOutputStream = new SynchronizedPipedOutputStream();
     this.afterCopyCallback = Optional.ofNullable(afterCopyCallback);
     afterCopyCallbackEnvironment = PipedOutputStreamAfterCopyEnvironment.builder()
         .path(outputFile)
@@ -70,13 +73,16 @@ class PipedOutputStreamLocalSynchronizerImpl extends AbstractPipedStreamSynchron
   }
 
   private Path getOutputFile(URI uri, Function<URI, Path> uriResolver) {
+    log.debug("Resolve Path from URI {}", uri);
     Path path = uriResolver.apply(uri);
     checkIsDirectory(path, uri);
     return path;
   }
 
   private void checkIsDirectory(Path path, URI uri) {
+    log.debug("Check if Path {} is a Directory", path.toAbsolutePath().normalize());
     if (Files.isDirectory(path)) {
+      log.error("Cannot get OutputStream on Directory {}", path.toAbsolutePath().normalize());
       throw new OwncloudNoFileResourceException(uri);
     }
   }
@@ -104,17 +110,26 @@ class PipedOutputStreamLocalSynchronizerImpl extends AbstractPipedStreamSynchron
   @Override
   public OutputStream getOutputStream() {
     createTemporaryFile();
+    preparePipedOutputStream();
     startThreadAndWaitForConnectedPipe();
     return pipedOutputStream;
   }
 
   private void createTemporaryFile() {
+    ResourceServiceProperties resourceProperties = owncloudLocalProperties.getResourceService();
+    String temporaryFilePrefix = resourceProperties.getPipedStreamTemporaryFilePrefix();
     try {
-      ResourceServiceProperties resourceProperties = owncloudLocalProperties.getResourceService();
-      temporaryFile = Files.createTempFile(resourceProperties.getPipedStreamTemporaryFilePrefix(), null);
+      log.debug("Create a temporary File with Prefix {}", temporaryFilePrefix);
+      temporaryFile = Files.createTempFile(temporaryFilePrefix, null);
     } catch (IOException e) {
-      throw new OwncloudLocalResourceException(e);
+      val logMessage = String.format("Cannot create temporary File with Prefix %s", temporaryFilePrefix);
+      log.error(logMessage, e);
+      throw new OwncloudLocalResourceException(logMessage, e);
     }
+  }
+
+  private void preparePipedOutputStream() {
+    pipedOutputStream = new SynchronizedPipedOutputStream(temporaryFile);
   }
 
   @Override
@@ -133,7 +148,10 @@ class PipedOutputStreamLocalSynchronizerImpl extends AbstractPipedStreamSynchron
     } finally {
       try {
         handleFiles();
-        afterCopyCallback.ifPresent(consumer -> consumer.accept(afterCopyCallbackEnvironment));
+        afterCopyCallback.ifPresent(consumer -> {
+          log.debug("Reinforcement after the Stream has been closed and the temporary File has been moved");
+          consumer.accept(afterCopyCallbackEnvironment);
+        });
       } catch (OwncloudResourceException e) {
         pipedOutputStream.setOwncloudResourceException(e);
       } finally {
@@ -157,25 +175,32 @@ class PipedOutputStreamLocalSynchronizerImpl extends AbstractPipedStreamSynchron
 
   private void removeFile(Path path, String fileType) {
     try {
+      log.debug("Remove File {}", path.toAbsolutePath().normalize());
       Files.delete(path);
     } catch (IOException e) {
+      log.error(String.format("Cannot remove %s %s", fileType, path.toAbsolutePath().normalize()), e);
       throw new OwncloudLocalResourceException("Error while removing " + fileType, e);
     }
   }
 
   private void moveTemporaryFile() {
     try {
+      log.debug("Move temporary File {} to {}", temporaryFile.toAbsolutePath().normalize(), outputFile.toAbsolutePath().normalize());
       Files.move(temporaryFile, outputFile, StandardCopyOption.REPLACE_EXISTING);
     } catch (IOException e) {
       final String logMessage = String.format("Error while moving the temporary File %s to %s",
           temporaryFile.toAbsolutePath(),
           outputFile.toAbsolutePath().normalize());
+      log.error(logMessage, e);
       throw new OwncloudLocalResourceException(logMessage, e);
     }
   }
 
   @Setter
+  @RequiredArgsConstructor
   private class SynchronizedPipedOutputStream extends PipedOutputStream {
+
+    private final Path outputPath;
 
     private IOException iOException;
     private OwncloudResourceException owncloudResourceException;
@@ -187,6 +212,7 @@ class PipedOutputStreamLocalSynchronizerImpl extends AbstractPipedStreamSynchron
     @Override
     public void close() throws IOException {
       try {
+        log.debug("Close the PipedOutputStream of Path {}", outputPath.toAbsolutePath().normalize());
         super.close();
       } finally {
         waitForPipeReady();

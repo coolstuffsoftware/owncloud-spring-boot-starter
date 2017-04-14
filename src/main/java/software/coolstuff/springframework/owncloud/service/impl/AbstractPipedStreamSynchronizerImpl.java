@@ -179,7 +179,9 @@ public abstract class AbstractPipedStreamSynchronizerImpl {
 
   protected long copy(InputStream input, OutputStream output) throws IOException {
     long contentLength = 0;
-    byte[] buffer = new byte[getBufferSize()];
+    int bufferSize = getBufferSize();
+    log.debug("Copy Content with a Buffersize of {} Bytes", bufferSize);
+    byte[] buffer = new byte[bufferSize];
     for (int length = 0; (length = input.read(buffer)) != EOF;) {
       output.write(buffer, 0, length);
       contentLength += length;

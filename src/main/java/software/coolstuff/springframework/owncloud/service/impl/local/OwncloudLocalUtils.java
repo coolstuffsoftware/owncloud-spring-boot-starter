@@ -25,8 +25,10 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
+@Slf4j
 final class OwncloudLocalUtils {
 
   public static void validateUserNotNull(OwncloudLocalUserData.User user, String username) {
@@ -36,6 +38,7 @@ final class OwncloudLocalUtils {
   }
 
   public static void checkPrivilegesOnDirectory(Path location) {
+    log.debug("Check the Location {}", location);
     Validate.isTrue(Files.exists(location));
     Validate.isTrue(Files.isDirectory(location));
     Validate.isTrue(Files.isReadable(location)); // List Files within Directory
