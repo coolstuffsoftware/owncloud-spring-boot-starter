@@ -19,11 +19,7 @@ package software.coolstuff.springframework.owncloud.service.impl.rest;
 
 import java.net.URI;
 
-/**
- * @author mufasa1976
- *
- */
-interface OwncloudResolveRootUriService {
+public interface OwncloudResolveRootUriService {
 
   URI getResolvedRootUri(String username);
 

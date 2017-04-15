@@ -80,11 +80,11 @@ class OwncloudRestUserQueryServiceImpl extends AbstractOwncloudRestServiceImpl i
   }
 
   @Override
-  public OwncloudRestQuota getQuota(String username) {
+  public OwncloudRestQuotaImpl getQuota(String username) {
     log.debug("Get Information about User {} from Location {}", username, getLocation());
     Ocs.User user = exchange("/cloud/users/{user}", HttpMethod.GET, emptyEntity(), Ocs.User.class, username);
     Quota quota = user.getData().getQuota();
-    return OwncloudRestQuota.builder()
+    return OwncloudRestQuotaImpl.builder()
         .username(username)
         .free(quota.getFree())
         .used(quota.getUsed())

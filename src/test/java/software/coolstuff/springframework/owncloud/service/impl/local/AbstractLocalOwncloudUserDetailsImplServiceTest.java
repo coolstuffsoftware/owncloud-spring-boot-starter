@@ -3,13 +3,13 @@ package software.coolstuff.springframework.owncloud.service.impl.local;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
 import software.coolstuff.springframework.owncloud.service.AbstractOwncloudUserDetailsServiceTest;
-import software.coolstuff.springframework.owncloud.service.impl.local.OwncloudLocalUserDetailsService;
+import software.coolstuff.springframework.owncloud.service.impl.local.OwncloudLocalUserDetailsServiceImpl;
 
-public abstract class AbstractLocalOwncloudUserDetailsServiceTest extends AbstractOwncloudUserDetailsServiceTest {
+public abstract class AbstractLocalOwncloudUserDetailsImplServiceTest extends AbstractOwncloudUserDetailsServiceTest {
 
   @Override
   protected Class<? extends UserDetailsService> getUserDetailsServiceClass() {
-    return OwncloudLocalUserDetailsService.class;
+    return OwncloudLocalUserDetailsServiceImpl.class;
   }
 
 }

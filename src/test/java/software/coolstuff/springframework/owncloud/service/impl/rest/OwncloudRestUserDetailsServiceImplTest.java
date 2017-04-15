@@ -34,7 +34,7 @@ import software.coolstuff.springframework.owncloud.exception.auth.OwncloudInvali
 import software.coolstuff.springframework.owncloud.service.AbstractOwncloudUserDetailsServiceTest;
 
 @ActiveProfiles("REST-USER-SERVICE")
-public class OwncloudRestUserDetailsServiceTest extends AbstractOwncloudUserDetailsServiceTest implements OwncloudRestServiceTest {
+public class OwncloudRestUserDetailsServiceImplTest extends AbstractOwncloudUserDetailsServiceTest implements OwncloudRestServiceTest {
 
   @Autowired
   private UserDetailsService userDetailsService;
@@ -46,7 +46,7 @@ public class OwncloudRestUserDetailsServiceTest extends AbstractOwncloudUserDeta
 
   @Override
   protected Class<? extends UserDetailsService> getUserDetailsServiceClass() {
-    return OwncloudRestUserDetailsService.class;
+    return OwncloudRestUserDetailsServiceImpl.class;
   }
 
   @Override

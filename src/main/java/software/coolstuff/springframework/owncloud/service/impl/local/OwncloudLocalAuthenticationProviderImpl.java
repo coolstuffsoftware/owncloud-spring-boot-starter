@@ -19,14 +19,14 @@ import software.coolstuff.springframework.owncloud.service.impl.OwncloudUtils;
 
 @RequiredArgsConstructor
 @Slf4j
-class OwncloudLocalAuthenticationProvider implements AuthenticationProvider {
+class OwncloudLocalAuthenticationProviderImpl implements AuthenticationProvider {
 
   private MessageSourceAccessor messages = SpringSecurityMessageSource.getAccessor();
 
   private final OwncloudLocalUserDataService localDataService;
 
   @Autowired
-  private OwncloudLocalUserDetailsService userDetailsService;
+  private OwncloudLocalUserDetailsServiceImpl userDetailsService;
 
   @Override
   public Authentication authenticate(Authentication authentication) throws AuthenticationException {

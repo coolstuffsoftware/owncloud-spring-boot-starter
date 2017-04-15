@@ -11,7 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @RequiredArgsConstructor
 @Slf4j
-class OwncloudLocalUserDetailsService implements UserDetailsService {
+class OwncloudLocalUserDetailsServiceImpl implements UserDetailsService {
 
   private final OwncloudLocalUserDataService localDataService;
 

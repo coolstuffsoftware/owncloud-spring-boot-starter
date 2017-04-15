@@ -15,13 +15,13 @@
    along with this program; if not, write to the Free Software Foundation,
    Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 */
-package software.coolstuff.springframework.owncloud.service.impl.local.classpath;
+package software.coolstuff.springframework.owncloud.service.impl.local;
 
 import org.springframework.test.context.ActiveProfiles;
 
-import software.coolstuff.springframework.owncloud.service.impl.local.AbstractLocalOwncloudAuthenticationProviderTest;
+import software.coolstuff.springframework.owncloud.service.impl.AbstractOwncloudUserDetailsServiceWithAuthorityMapperTest;
 
-@ActiveProfiles("LOCAL-CLASSPATH-USER-SERVICE")
-public class OwncloudLocalAuthenticationProviderClasspathTest extends AbstractLocalOwncloudAuthenticationProviderTest {
+@ActiveProfiles("LOCAL-AUTHORITY-MAPPER-USER-SERVICE")
+public class OwncloudLocalUserDetailsServiceImplWithAuthorityMapperTest extends AbstractOwncloudUserDetailsServiceWithAuthorityMapperTest {
 
 }

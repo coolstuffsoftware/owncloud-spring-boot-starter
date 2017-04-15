@@ -22,12 +22,7 @@ import java.nio.file.Path;
 
 import org.apache.commons.io.FileSystemUtils;
 
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 import software.coolstuff.springframework.owncloud.exception.resource.OwncloudLocalResourceException;
 import software.coolstuff.springframework.owncloud.model.OwncloudQuota;
@@ -41,7 +36,7 @@ import software.coolstuff.springframework.owncloud.model.OwncloudQuota;
 @ToString(exclude = "location")
 @Builder
 @Slf4j
-class OwncloudLocalQuota implements OwncloudQuota, Cloneable {
+class OwncloudLocalQuotaImpl implements OwncloudQuota, Cloneable {
   @Getter
   private final String username;
   private final Path location;

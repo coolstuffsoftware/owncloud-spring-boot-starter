@@ -1,5 +1,5 @@
 /*
-   Copyright (C) 2016 by the original Authors.
+   Copyright (C) 2017 by the original Authors.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -15,13 +15,18 @@
    along with this program; if not, write to the Free Software Foundation,
    Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 */
-package software.coolstuff.springframework.owncloud.service.impl.local.classpath;
+package software.coolstuff.springframework.owncloud.service.impl.rest;
 
-import org.springframework.test.context.ActiveProfiles;
+import lombok.Builder;
+import lombok.Data;
+import software.coolstuff.springframework.owncloud.model.OwncloudQuota;
 
-import software.coolstuff.springframework.owncloud.service.impl.local.AbstractLocalOwncloudUserDetailsServiceTest;
-
-@ActiveProfiles("LOCAL-CLASSPATH-USER-SERVICE")
-public class OwncloudLocalUserDetailsServiceClasspathTest extends AbstractLocalOwncloudUserDetailsServiceTest {
-
+@Data
+@Builder
+public class OwncloudRestQuotaImpl implements OwncloudQuota, Cloneable {
+  private final String username;
+  private long free;
+  private long used;
+  private long total;
+  private float relative;
 }

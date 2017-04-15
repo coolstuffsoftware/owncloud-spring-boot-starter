@@ -33,13 +33,13 @@ import org.springframework.web.client.HttpStatusCodeException;
 import software.coolstuff.springframework.owncloud.service.AbstractOwncloudAuthenticationProviderTest;
 
 @ActiveProfiles("REST-USER-SERVICE")
-public class OwncloudRestAuthenticationProviderTest extends AbstractOwncloudAuthenticationProviderTest implements OwncloudRestServiceTest {
+public class OwncloudRestAuthenticationProviderImplTest extends AbstractOwncloudAuthenticationProviderTest implements OwncloudRestServiceTest {
 
   @Autowired
   private AuthenticationProvider authenticationProvider;
 
   @Autowired
-  private OwncloudRestUserDetailsService userDetailsService;
+  private OwncloudRestUserDetailsServiceImpl userDetailsService;
 
   @Override
   public final OwncloudRestService owncloudService() {
@@ -48,7 +48,7 @@ public class OwncloudRestAuthenticationProviderTest extends AbstractOwncloudAuth
 
   @Override
   protected Class<? extends AuthenticationProvider> getAuthenticationProviderClass() {
-    return OwncloudRestAuthenticationProvider.class;
+    return OwncloudRestAuthenticationProviderImpl.class;
   }
 
   @Override

@@ -22,10 +22,28 @@ import java.util.function.Consumer;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudUserService;
 
-interface OwncloudLocalUserService extends OwncloudUserService {
+/**
+ * Extensions of {@link OwncloudUserService} for local UserQueries
+ *
+ * @author mufasa1976
+ * @since 1.2.0
+ */
+public interface OwncloudLocalUserService extends OwncloudUserService {
 
+  /**
+   * Register a Callback Consumer which will be called when
+   * some User Modifications has been taken.
+   *
+   * @param listener Callback Consumer
+   */
   void registerSaveUserCallback(Consumer<OwncloudUserDetails> listener);
 
+  /**
+   * Register a Callback Consumer which will be called
+   * when a User has been removed.
+   *
+   * @param listener Callback Consumer
+   */
   void registerDeleteUserCallback(Consumer<String> listener);
 
 }

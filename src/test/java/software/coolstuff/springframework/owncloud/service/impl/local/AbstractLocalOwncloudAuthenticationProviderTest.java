@@ -8,7 +8,7 @@ public abstract class AbstractLocalOwncloudAuthenticationProviderTest extends Ab
 
   @Override
   protected Class<? extends AuthenticationProvider> getAuthenticationProviderClass() {
-    return OwncloudLocalAuthenticationProvider.class;
+    return OwncloudLocalAuthenticationProviderImpl.class;
   }
 
 }

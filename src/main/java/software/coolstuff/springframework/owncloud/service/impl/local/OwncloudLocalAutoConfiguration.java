@@ -64,16 +64,16 @@ class OwncloudLocalAutoConfiguration {
 
   @Bean
   @Qualifier("owncloudAuthenticationProvider")
-  @ConditionalOnMissingBean(OwncloudLocalAuthenticationProvider.class)
-  public OwncloudLocalAuthenticationProvider owncloudAuthenticationProvider() {
-    return new OwncloudLocalAuthenticationProvider(owncloudLocalUserDataService());
+  @ConditionalOnMissingBean(OwncloudLocalAuthenticationProviderImpl.class)
+  public OwncloudLocalAuthenticationProviderImpl owncloudAuthenticationProvider() {
+    return new OwncloudLocalAuthenticationProviderImpl(owncloudLocalUserDataService());
   }
 
   @Bean
   @Qualifier("owncloudUserDetailsService")
-  @ConditionalOnMissingBean(OwncloudLocalUserDetailsService.class)
-  public OwncloudLocalUserDetailsService owncloudUserDetailsService() {
-    return new OwncloudLocalUserDetailsService(owncloudLocalUserDataService());
+  @ConditionalOnMissingBean(OwncloudLocalUserDetailsServiceImpl.class)
+  public OwncloudLocalUserDetailsServiceImpl owncloudUserDetailsService() {
+    return new OwncloudLocalUserDetailsServiceImpl(owncloudLocalUserDataService());
   }
 
   @Bean

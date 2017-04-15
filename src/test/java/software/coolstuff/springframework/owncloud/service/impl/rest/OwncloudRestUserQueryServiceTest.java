@@ -121,7 +121,7 @@ public class OwncloudRestUserQueryServiceTest extends AbstractOwncloudUserQueryS
             .relative(expected.getRelative())
             .build());
 
-    OwncloudRestQuota quota = userQueryService.getQuota(username);
+    OwncloudRestQuotaImpl quota = userQueryService.getQuota(username);
     assertThat(quota)
         .isNotNull()
         .isEqualToComparingOnlyGivenFields(expected, "username", "total", "used", "free", "relative");

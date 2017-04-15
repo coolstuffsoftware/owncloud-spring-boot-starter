@@ -15,13 +15,13 @@
    along with this program; if not, write to the Free Software Foundation,
    Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 */
-package software.coolstuff.springframework.owncloud.service.impl.local.file;
+package software.coolstuff.springframework.owncloud.service.impl.local;
 
 import org.springframework.test.context.ActiveProfiles;
 
-import software.coolstuff.springframework.owncloud.service.impl.local.AbstractLocalOwncloudUserDetailsServiceTest;
+import software.coolstuff.springframework.owncloud.service.impl.AbstractOwncloudUserDetailsServiceWithAuthorityAppenderTest;
 
-@ActiveProfiles("LOCAL-FILE-USER-SERVICE")
-public class OwncloudLocalUserDetailsServiceFileTest extends AbstractLocalOwncloudUserDetailsServiceTest implements OwncloudLocalFileTest {
+@ActiveProfiles("LOCAL-AUTHORITY-APPENDER-USER-SERVICE")
+public class OwncloudLocalUserDetailsServiceImplWithAuthorityAppenderTest extends AbstractOwncloudUserDetailsServiceWithAuthorityAppenderTest {
 
 }

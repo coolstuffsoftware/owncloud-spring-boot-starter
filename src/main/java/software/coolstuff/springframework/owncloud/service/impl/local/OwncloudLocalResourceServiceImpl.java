@@ -23,18 +23,9 @@ import java.io.OutputStream;
 import java.net.FileNameMap;
 import java.net.URI;
 import java.net.URLConnection;
-import java.nio.file.FileVisitResult;
-import java.nio.file.Files;
-import java.nio.file.NoSuchFileException;
-import java.nio.file.Path;
-import java.nio.file.SimpleFileVisitor;
+import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -78,7 +69,7 @@ class OwncloudLocalResourceServiceImpl implements OwncloudLocalResourceService {
   @Autowired
   private OwncloudLocalUserService userService;
 
-  private Map<String, OwncloudLocalQuota> quotas = new HashMap<>();
+  private Map<String, OwncloudLocalQuotaImpl> quotas = new HashMap<>();
 
   @PostConstruct
   protected void afterPropertiesSet() throws Exception {
@@ -101,24 +92,24 @@ class OwncloudLocalResourceServiceImpl implements OwncloudLocalResourceService {
     userDataService.getUsers()
         .forEach(user -> {
           String username = user.getUsername();
-          OwncloudLocalQuota quota = calculateUsedSpace(username, baseLocation);
+          OwncloudLocalQuotaImpl quota = calculateUsedSpace(username, baseLocation);
           quota.setTotal(user.getQuota());
           quotas.put(username, quota);
         });
   }
 
-  private OwncloudLocalQuota calculateUsedSpace(String username, Path baseLocation) {
+  private OwncloudLocalQuotaImpl calculateUsedSpace(String username, Path baseLocation) {
     Path userBaseLocation = baseLocation.resolve(username);
 
     if (Files.notExists(userBaseLocation)) {
-      return OwncloudLocalQuota.builder()
+      return OwncloudLocalQuotaImpl.builder()
           .username(username)
           .location(baseLocation)
           .build();
     }
 
     try {
-      OwncloudLocalQuota quota = OwncloudLocalQuota.builder()
+      OwncloudLocalQuotaImpl quota = OwncloudLocalQuotaImpl.builder()
           .username(username)
           .location(userBaseLocation)
           .build();
@@ -145,11 +136,11 @@ class OwncloudLocalResourceServiceImpl implements OwncloudLocalResourceService {
 
   private void notifyUserModification(OwncloudUserDetails userDetails) {
     log.debug("User {} has been changed or created -> change the Quota to {}", userDetails.getUsername(), userDetails.getQuota());
-    OwncloudLocalQuota quota = quotas.computeIfAbsent(userDetails.getUsername(), this::getOrCreateQuota);
+    OwncloudLocalQuotaImpl quota = quotas.computeIfAbsent(userDetails.getUsername(), this::getOrCreateQuota);
     quota.setTotal(userDetails.getQuota());
   }
 
-  private OwncloudLocalQuota getOrCreateQuota(String username) {
+  private OwncloudLocalQuotaImpl getOrCreateQuota(String username) {
     ResourceServiceProperties resourceProperties = properties.getResourceService();
     return calculateUsedSpace(username, resourceProperties.getLocation());
   }
@@ -380,11 +371,11 @@ class OwncloudLocalResourceServiceImpl implements OwncloudLocalResourceService {
 
   private void removeExistingPath(Path path) {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-    OwncloudLocalQuota quota = quotas.get(authentication.getName());
+    OwncloudLocalQuotaImpl quota = quotas.get(authentication.getName());
     removeExistingPathAndRecalculateSpaceAndChecksum(path, quota);
   }
 
-  private void removeExistingPathAndRecalculateSpaceAndChecksum(Path path, OwncloudLocalQuota quota) {
+  private void removeExistingPathAndRecalculateSpaceAndChecksum(Path path, OwncloudLocalQuotaImpl quota) {
     try {
       if (Files.isDirectory(path)) {
         log.debug("Remove Directory {} with all its Content and reduce the used Space of User {}", path.toAbsolutePath().normalize(), quota.getUsername());
@@ -503,7 +494,7 @@ class OwncloudLocalResourceServiceImpl implements OwncloudLocalResourceService {
     quotas.forEach(this::resetUsedSpace);
   }
 
-  private void resetUsedSpace(String username, OwncloudLocalQuota quota) {
+  private void resetUsedSpace(String username, OwncloudLocalQuotaImpl quota) {
     log.debug("Reset the used Space of User {}", username);
     quota.setUsed(0);
   }
@@ -514,7 +505,7 @@ class OwncloudLocalResourceServiceImpl implements OwncloudLocalResourceService {
     Path baseLocation = resourceProperties.getLocation();
     quotas.forEach((username, unusedQuota) -> {
       quotas.computeIfPresent(username, (unusedUsername, existingQuota) -> {
-        OwncloudLocalQuota quota = calculateUsedSpace(username, baseLocation);
+        OwncloudLocalQuotaImpl quota = calculateUsedSpace(username, baseLocation);
         quota.setTotal(existingQuota.getTotal());
         return quota;
       });

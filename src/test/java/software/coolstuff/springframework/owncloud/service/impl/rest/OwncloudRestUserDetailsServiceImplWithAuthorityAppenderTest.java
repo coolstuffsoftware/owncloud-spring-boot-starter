@@ -23,10 +23,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.test.context.ActiveProfiles;
 
-import software.coolstuff.springframework.owncloud.service.impl.AbstractOwncloudUserDetailsServiceWithAuthorityMapperTest;
+import software.coolstuff.springframework.owncloud.service.impl.AbstractOwncloudUserDetailsServiceWithAuthorityAppenderTest;
 
-@ActiveProfiles("REST-AUTHORITY-MAPPER-USER-SERVICE")
-public class OwncloudRestUserDetailsServiceWithAuthorityMapperTest extends AbstractOwncloudUserDetailsServiceWithAuthorityMapperTest implements OwncloudRestServiceTest {
+@ActiveProfiles("REST-AUTHORITY-APPENDER-USER-SERVICE")
+public class OwncloudRestUserDetailsServiceImplWithAuthorityAppenderTest extends AbstractOwncloudUserDetailsServiceWithAuthorityAppenderTest implements OwncloudRestServiceTest {
 
   @Autowired
   private UserDetailsService userDetailsService;
@@ -37,7 +37,7 @@ public class OwncloudRestUserDetailsServiceWithAuthorityMapperTest extends Abstr
   }
 
   @Override
-  protected void prepareTestMappedGroups(String username, UserResponse userResponse, String... groups) throws Exception {
+  protected void prepareTestAppendedGroups(String username, UserResponse userResponse, String... groups) throws Exception {
     respondUser(
         RestRequest.builder()
             .method(GET)

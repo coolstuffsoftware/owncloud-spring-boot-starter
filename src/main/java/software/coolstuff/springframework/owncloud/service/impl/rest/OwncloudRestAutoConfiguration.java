@@ -65,16 +65,16 @@ class OwncloudRestAutoConfiguration {
 
   @Bean
   @Qualifier("owncloudAuthenticationProvider")
-  @ConditionalOnMissingBean(OwncloudRestAuthenticationProvider.class)
-  public OwncloudRestAuthenticationProvider owncloudRestAuthenticationProvider(RestTemplateBuilder builder) {
-    return new OwncloudRestAuthenticationProvider(builder);
+  @ConditionalOnMissingBean(OwncloudRestAuthenticationProviderImpl.class)
+  public OwncloudRestAuthenticationProviderImpl owncloudRestAuthenticationProvider(RestTemplateBuilder builder) {
+    return new OwncloudRestAuthenticationProviderImpl(builder);
   }
 
   @Bean
   @Qualifier("owncloudUserDetailsService")
-  @ConditionalOnMissingBean(OwncloudRestUserDetailsService.class)
-  public OwncloudRestUserDetailsService owncloudRestUserDetailsService(RestTemplateBuilder builder) {
-    return new OwncloudRestUserDetailsService(builder);
+  @ConditionalOnMissingBean(OwncloudRestUserDetailsServiceImpl.class)
+  public OwncloudRestUserDetailsServiceImpl owncloudRestUserDetailsService(RestTemplateBuilder builder) {
+    return new OwncloudRestUserDetailsServiceImpl(builder);
   }
 
   @Bean

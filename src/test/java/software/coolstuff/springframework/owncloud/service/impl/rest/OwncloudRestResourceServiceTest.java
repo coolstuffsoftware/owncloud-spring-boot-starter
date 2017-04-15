@@ -18,25 +18,15 @@
 package software.coolstuff.springframework.owncloud.service.impl.rest;
 
 import static org.junit.Assert.fail;
-import static org.springframework.test.web.client.match.MockRestRequestMatchers.content;
-import static org.springframework.test.web.client.match.MockRestRequestMatchers.header;
-import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
-import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
-import static org.springframework.test.web.client.response.MockRestResponseCreators.withNoContent;
-import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
-import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.*;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.*;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.Base64;
+import java.util.*;
 import java.util.Base64.Encoder;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
@@ -355,7 +345,7 @@ public class OwncloudRestResourceServiceTest extends AbstractOwncloudResourceSer
         .andExpect(content().contentType(owncloudFileResource.getMediaType()))
         .andExpect(content().bytes(new byte[] { 1 }))
         .andRespond(withStatus(HttpStatus.UNAUTHORIZED));
-  };
+  }
 
   @Override
   protected void prepare_getOutputStream_OK_CreateNewFile(URI href, MediaType mediaType, String testFileContent) throws Exception {
@@ -548,7 +538,7 @@ public class OwncloudRestResourceServiceTest extends AbstractOwncloudResourceSer
 
   @Override
   protected void prepare_getQuota_NoFiles(OwncloudQuota expected) throws Exception {
-    OwncloudRestQuota restQuota = OwncloudRestQuota.builder()
+    OwncloudRestQuotaImpl restQuota = OwncloudRestQuotaImpl.builder()
         .username(expected.getUsername())
         .free(expected.getFree())
         .relative(expected.getRelative())
@@ -580,7 +570,7 @@ public class OwncloudRestResourceServiceTest extends AbstractOwncloudResourceSer
           @Override
           public OwncloudQuota answer(InvocationOnMock invocation) throws Throwable {
             if (count++ == 0) {
-              return OwncloudRestQuota.builder()
+              return OwncloudRestQuotaImpl.builder()
                   .username(expectedFirst.getUsername())
                   .free(expectedFirst.getFree())
                   .relative(expectedFirst.getRelative())
@@ -588,7 +578,7 @@ public class OwncloudRestResourceServiceTest extends AbstractOwncloudResourceSer
                   .used(expectedFirst.getUsed())
                   .build();
             }
-            return OwncloudRestQuota.builder()
+            return OwncloudRestQuotaImpl.builder()
                 .username(expectedSecond.getUsername())
                 .free(expectedSecond.getFree())
                 .relative(expectedSecond.getRelative())
