@@ -18,7 +18,7 @@
 package software.coolstuff.springframework.owncloud.model;
 
 import java.net.URI;
-import java.util.Date;
+import java.time.LocalDateTime;
 
 import org.springframework.http.MediaType;
 
@@ -40,7 +40,7 @@ public interface OwncloudResource {
   String getName();
 
   /** Last modification Date */
-  Date getLastModifiedAt();
+  LocalDateTime getLastModifiedAt();
 
   /** Media Type of the Resource */
   MediaType getMediaType();

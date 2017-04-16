@@ -44,12 +44,12 @@ import software.coolstuff.springframework.owncloud.service.impl.OwncloudProperti
 abstract class AbstractPipedStreamRestSynchronizerImpl extends AbstractPipedStreamSynchronizerImpl {
 
   @FunctionalInterface
-  static interface VoidResponseExtractor {
+  interface VoidResponseExtractor {
     void extractData(ClientHttpResponse clientHttpResponse) throws IOException;
   }
 
   @FunctionalInterface
-  static interface ConsumerWithoutArgument {
+  interface ConsumerWithoutArgument {
     void apply();
   }
 
@@ -72,26 +72,35 @@ abstract class AbstractPipedStreamRestSynchronizerImpl extends AbstractPipedStre
     return getHttpMethod() + " " + getResolvedURI();
   }
 
-  protected abstract HttpMethod getHttpMethod();
-
-  protected URI getResolvedURI() {
-    URI unresolvedUri = getUri();
-    return uriResolver
-        .map(resolver -> resolver.apply(unresolvedUri, getUsername()))
-        .orElse(unresolvedUri);
-  }
-
   protected void execute(ExecutionEnvironment executionEnvironment) {
     Validate.notNull(executionEnvironment);
     Optional<ConsumerWithoutArgument> afterExecutionCallback = executionEnvironment.getAfterExecutionCallback();
     try {
       callRestWith(executionEnvironment);
     } catch (RuntimeException runtimeException) {
-      Optional<Consumer<RuntimeException>> runtimeExceptionHandler = executionEnvironment.getRuntimeExceptionHandler();
-      runtimeExceptionHandler.ifPresent(consumer -> consumer.accept(runtimeException));
+      executionEnvironment.getRuntimeExceptionHandler()
+          .ifPresent(consumer -> consumer.accept(runtimeException));
       throw runtimeException;
     } finally {
-      afterExecutionCallback.ifPresent(consumer -> consumer.apply());
+      afterExecutionCallback.ifPresent(ConsumerWithoutArgument::apply);
+    }
+  }
+
+  @Getter
+  @AllArgsConstructor(access = AccessLevel.PRIVATE)
+  @Builder
+  static class ExecutionEnvironment {
+    private final RequestCallback requestCallback;
+    private VoidResponseExtractor responseExtractor;
+    private Consumer<RuntimeException> runtimeExceptionHandler;
+    private ConsumerWithoutArgument afterExecutionCallback;
+
+    Optional<Consumer<RuntimeException>> getRuntimeExceptionHandler() {
+      return Optional.ofNullable(runtimeExceptionHandler);
+    }
+
+    Optional<ConsumerWithoutArgument> getAfterExecutionCallback() {
+      return Optional.ofNullable(afterExecutionCallback);
     }
   }
 
@@ -100,7 +109,6 @@ abstract class AbstractPipedStreamRestSynchronizerImpl extends AbstractPipedStre
     VoidResponseExtractor responseExtractor = executionEnvironment.getResponseExtractor();
     URI uri = getResolvedURI();
     HttpMethod httpMethod = getHttpMethod();
-    log.debug("Execute {} on {}", httpMethod, uri);
     restOperations.execute(
         uri,
         httpMethod,
@@ -113,25 +121,17 @@ abstract class AbstractPipedStreamRestSynchronizerImpl extends AbstractPipedStre
         });
   }
 
-  @Getter
-  @AllArgsConstructor(access = AccessLevel.PRIVATE)
-  @Builder
-  static class ExecutionEnvironment {
-    private final RequestCallback requestCallback;
-    private VoidResponseExtractor responseExtractor;
-    private Consumer<RuntimeException> runtimeExceptionHandler;
-    private ConsumerWithoutArgument afterExecutionCallback;
-
-    public Optional<Consumer<RuntimeException>> getRuntimeExceptionHandler() {
-      return Optional.ofNullable(runtimeExceptionHandler);
-    }
-
-    public Optional<ConsumerWithoutArgument> getAfterExecutionCallback() {
-      return Optional.ofNullable(afterExecutionCallback);
-    }
+  protected URI getResolvedURI() {
+    URI unresolvedUri = getUri();
+    return uriResolver
+        .map(resolver -> resolver.apply(unresolvedUri, getUsername()))
+        .orElse(unresolvedUri);
   }
 
+  protected abstract HttpMethod getHttpMethod();
+
   private void wrapRequestCallback(ClientHttpRequest clientHttpRequest, RequestCallback requestCallback) throws IOException {
+    log.debug("Execute {} on {}", clientHttpRequest.getMethod(), clientHttpRequest.getURI());
     OwncloudRestUtils.addAuthorizationHeader(clientHttpRequest.getHeaders(), getAuthentication());
     addKeepAliveConnectionHeader(clientHttpRequest);
     if (requestCallback != null) {

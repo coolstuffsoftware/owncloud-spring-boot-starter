@@ -17,7 +17,6 @@
 */
 package software.coolstuff.springframework.owncloud.service.impl.rest;
 
-import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -27,6 +26,7 @@ import com.github.sardine.Sardine;
 import com.github.sardine.impl.SardineImpl;
 import com.google.common.cache.CacheLoader;
 
+import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -35,20 +35,24 @@ class SardineCacheLoader extends CacheLoader<String, Sardine> {
   @Override
   public Sardine load(String username) throws Exception {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-    if (!StringUtils.equals(username, authentication.getName())) {
-      final String errorMessage = String.format("requested Username %s does not equal to the Username of the SecurityContextHolder %s", username, authentication.getName());
-      log.error(errorMessage);
-      throw new IllegalStateException(errorMessage);
-    }
-    if (isCredentialsAvailable(authentication)) {
-      return new SardineImpl(authentication.getName(), (String) authentication.getCredentials());
-    }
-    UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-    return new SardineImpl(userDetails.getUsername(), userDetails.getPassword());
+    checkUsername(username, authentication);
+    return createSardineImplementation(authentication);
   }
 
-  private boolean isCredentialsAvailable(Authentication authentication) {
-    return authentication.getCredentials() != null && ClassUtils.isAssignable(authentication.getCredentials().getClass(), String.class);
+  private void checkUsername(String username, Authentication authentication) {
+    log.debug("Check if the Username {} equals to the Name of the Authentication {}", username, authentication.getName());
+    if (!StringUtils.equals(username, authentication.getName())) {
+      val logMessage = String.format("requested Username %s does not equal to the Username of the SecurityContextHolder %s", username, authentication.getName());
+      log.error(logMessage);
+      throw new IllegalStateException(logMessage);
+    }
+  }
+
+  private Sardine createSardineImplementation(Authentication authentication) {
+    UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+    String username = userDetails.getUsername();
+    log.debug("Create Sardine Implementation based on the UserDetails Object of User {}", username);
+    return new SardineImpl(username, userDetails.getPassword());
   }
 
 }

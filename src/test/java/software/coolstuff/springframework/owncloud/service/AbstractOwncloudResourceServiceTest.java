@@ -24,7 +24,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
 import java.nio.charset.Charset;
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -53,22 +53,10 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import com.google.common.collect.Lists;
 
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 import software.coolstuff.springframework.owncloud.config.IgnoreOnComponentScan;
 import software.coolstuff.springframework.owncloud.config.VelocityConfiguration;
-import software.coolstuff.springframework.owncloud.exception.resource.OwncloudNoDirectoryResourceException;
-import software.coolstuff.springframework.owncloud.exception.resource.OwncloudNoFileResourceException;
-import software.coolstuff.springframework.owncloud.exception.resource.OwncloudQuotaExceededException;
-import software.coolstuff.springframework.owncloud.exception.resource.OwncloudResourceException;
-import software.coolstuff.springframework.owncloud.exception.resource.OwncloudResourceNotFoundException;
+import software.coolstuff.springframework.owncloud.exception.resource.*;
 import software.coolstuff.springframework.owncloud.model.OwncloudFileResource;
 import software.coolstuff.springframework.owncloud.model.OwncloudQuota;
 import software.coolstuff.springframework.owncloud.model.OwncloudResource;
@@ -105,7 +93,7 @@ public abstract class AbstractOwncloudResourceServiceTest {
         .backendName("user")
         .eTag(eTag)
         .href(URI.create("https://owncloud.example.com/remote.php/dav/files/user/"))
-        .lastModifiedAt(new Date())
+        .lastModifiedAt(LocalDateTime.now())
         .mediaType(OwncloudUtils.getDirectoryMediaType())
         .name(".")
         .build();
@@ -127,7 +115,7 @@ public abstract class AbstractOwncloudResourceServiceTest {
             .backendETag(UUID.randomUUID().toString())
             .backendName("user")
             .href(URI.create("/"))
-            .lastModifiedAt(new Date())
+            .lastModifiedAt(LocalDateTime.now())
             .mediaType(OwncloudUtils.getDirectoryMediaType())
             .name(".")
             .build(),
@@ -137,7 +125,7 @@ public abstract class AbstractOwncloudResourceServiceTest {
                 .backendName("resource1")
                 .eTag(eTag)
                 .href(URI.create("/resource1"))
-                .lastModifiedAt(new Date())
+                .lastModifiedAt(LocalDateTime.now())
                 .mediaType(MediaType.APPLICATION_OCTET_STREAM)
                 .name("resource1")
                 .build())
@@ -158,7 +146,7 @@ public abstract class AbstractOwncloudResourceServiceTest {
     private String name;
     private String backendName;
     @Setter
-    private Date lastModifiedAt;
+    private LocalDateTime lastModifiedAt;
     private MediaType mediaType;
     private String eTag;
     private String backendETag;
@@ -205,7 +193,7 @@ public abstract class AbstractOwncloudResourceServiceTest {
             .backendName("directory")
             .eTag(eTagSearchPath)
             .href(appendPath(searchPath, "/"))
-            .lastModifiedAt(new Date())
+            .lastModifiedAt(LocalDateTime.now())
             .mediaType(OwncloudUtils.getDirectoryMediaType())
             .name(".")
             .build(),
@@ -215,7 +203,7 @@ public abstract class AbstractOwncloudResourceServiceTest {
                 .backendName("resource1")
                 .eTag(eTagFileResource)
                 .href(appendPath(searchPath, "/resource1"))
-                .lastModifiedAt(new Date())
+                .lastModifiedAt(LocalDateTime.now())
                 .mediaType(MediaType.APPLICATION_OCTET_STREAM)
                 .name("resource1")
                 .build())
@@ -226,7 +214,7 @@ public abstract class AbstractOwncloudResourceServiceTest {
             .backendName("directory")
             .eTag(eTagSuperPath)
             .href(appendPath(searchPath, "/../"))
-            .lastModifiedAt(new Date())
+            .lastModifiedAt(LocalDateTime.now())
             .mediaType(OwncloudUtils.getDirectoryMediaType())
             .name("..")
             .build());
@@ -272,7 +260,7 @@ public abstract class AbstractOwncloudResourceServiceTest {
             .backendName("file.txt")
             .eTag(eTag)
             .href(searchPath)
-            .lastModifiedAt(new Date())
+            .lastModifiedAt(LocalDateTime.now())
             .mediaType(MediaType.TEXT_PLAIN)
             .name("file.txt")
             .build())
@@ -308,7 +296,7 @@ public abstract class AbstractOwncloudResourceServiceTest {
         .backendName(authentication.getName())
         .eTag(null)
         .href(URI.create("/"))
-        .lastModifiedAt(new Date())
+        .lastModifiedAt(LocalDateTime.now())
         .mediaType(OwncloudUtils.getDirectoryMediaType())
         .name("/")
         .build();

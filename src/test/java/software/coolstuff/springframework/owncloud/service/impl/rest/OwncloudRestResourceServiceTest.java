@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.Base64.Encoder;
 import java.util.stream.Collectors;
@@ -131,14 +132,18 @@ public class OwncloudRestResourceServiceTest extends AbstractOwncloudResourceSer
         .orElse(null);
     String name = owncloudResource.getBackendName();
     String eTag = owncloudResource.getBackendETag();
+    Date davResourceDate = new Date();
+    if (owncloudResource.getLastModifiedAt() != null) {
+      davResourceDate = Date.from(owncloudResource.getLastModifiedAt().atZone(ZoneId.systemDefault()).toInstant());
+    }
     if (isRoot(owncloudResource.getHref())) {
       eTag = null;
     }
     try {
       return new OwncloudDavResource(
           prefixedHref.getPath(),
-          owncloudResource.getLastModifiedAt(),
-          owncloudResource.getLastModifiedAt(),
+          davResourceDate,
+          davResourceDate,
           owncloudResource.getMediaType().toString(),
           owncloudResource instanceof OwncloudFileResource ? ((OwncloudFileResource) owncloudResource).getContentLength() : null,
           eTag,

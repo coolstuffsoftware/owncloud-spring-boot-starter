@@ -25,6 +25,8 @@ import java.net.URI;
 import java.net.URLConnection;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -265,7 +267,7 @@ class OwncloudLocalResourceServiceImpl implements OwncloudLocalResourceService {
       }
     }
     try {
-      Date lastModifiedAt = Date.from(Files.getLastModifiedTime(path).toInstant());
+      LocalDateTime lastModifiedAt = LocalDateTime.ofInstant(Files.getLastModifiedTime(path).toInstant(), ZoneId.systemDefault());
       Optional<String> checksum = checksumService.getChecksum(path);
       if (Files.isSameFile(rootPath, path)) {
         name = "/";

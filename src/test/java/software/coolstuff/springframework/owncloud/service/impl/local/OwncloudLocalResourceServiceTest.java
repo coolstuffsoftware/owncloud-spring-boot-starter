@@ -19,17 +19,14 @@ package software.coolstuff.springframework.owncloud.service.impl.local;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.Writer;
+import java.io.*;
 import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Date;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 
@@ -139,7 +136,8 @@ public class OwncloudLocalResourceServiceTest extends AbstractOwncloudResourceSe
   private void modifyResourceInformationBasedOnPathInformation(OwncloudTestResourceImpl owncloudResource) {
     Path resourcePath = resolveRelativePath(Paths.get(owncloudResource.getHref().getPath()));
     try {
-      owncloudResource.setLastModifiedAt(Date.from(Files.getLastModifiedTime(resourcePath).toInstant()));
+      LocalDateTime lastModifiedAt = LocalDateTime.ofInstant(Files.getLastModifiedTime(resourcePath).toInstant(), ZoneId.systemDefault());
+      owncloudResource.setLastModifiedAt(lastModifiedAt);
     } catch (IOException e) {
       e.printStackTrace(System.err);
       throw new IllegalStateException("Error while getting last modified time of Resource " + resourcePath, e);
@@ -167,7 +165,7 @@ public class OwncloudLocalResourceServiceTest extends AbstractOwncloudResourceSe
   @Override
   protected void prepare_getInputStream_OK(OwncloudTestFileResourceImpl owncloudFileResource) throws Exception {
     createResource(owncloudFileResource);
-  };
+  }
 
   @Override
   protected void check_getOutputStream_OK(OwncloudTestFileResourceImpl owncloudFileResource) throws Exception {
@@ -185,7 +183,7 @@ public class OwncloudLocalResourceServiceTest extends AbstractOwncloudResourceSe
     Mockito
         .doThrow(OwncloudLocalResourceException.class)
         .when(checksumService).recalculateChecksum(resourcePath);
-  };
+  }
 
   @Override
   protected void prepare_getOutputStream_OK_CreateNewFile(URI href, MediaType mediaType, String testFileContent) throws Exception {

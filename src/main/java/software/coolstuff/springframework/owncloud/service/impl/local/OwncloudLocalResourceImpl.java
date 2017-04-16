@@ -18,19 +18,14 @@
 package software.coolstuff.springframework.owncloud.service.impl.local;
 
 import java.net.URI;
-import java.util.Date;
+import java.time.LocalDateTime;
 
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.springframework.http.MediaType;
 
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 import software.coolstuff.springframework.owncloud.model.OwncloudResource;
 
 @Getter
@@ -42,7 +37,7 @@ class OwncloudLocalResourceImpl implements OwncloudModifyingLocalResource {
   private URI href;
   @Setter(AccessLevel.PUBLIC)
   private String name;
-  private Date lastModifiedAt;
+  private LocalDateTime lastModifiedAt;
   private MediaType mediaType;
   private String eTag;
 
