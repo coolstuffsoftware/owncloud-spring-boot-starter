@@ -21,12 +21,24 @@ import lombok.Builder;
 import lombok.Data;
 import software.coolstuff.springframework.owncloud.model.OwncloudQuota;
 
+/**
+ * REST Implementation of the {@link OwncloudQuota}
+ */
 @Data
 @Builder
 public class OwncloudRestQuotaImpl implements OwncloudQuota, Cloneable {
+  /** Username */
   private final String username;
+
+  /** Free Space */
   private long free;
+
+  /** used Space */
   private long used;
+
+  /** total Quota of the User */
   private long total;
+
+  /** Percent of used Space */
   private float relative;
 }

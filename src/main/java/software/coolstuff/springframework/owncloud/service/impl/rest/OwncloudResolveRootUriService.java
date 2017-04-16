@@ -19,8 +19,21 @@ package software.coolstuff.springframework.owncloud.service.impl.rest;
 
 import java.net.URI;
 
+/**
+ * Service Interface to resolve a root URI.
+ *
+ * @author mufasa1976
+ * @since 1.2.0
+ */
 public interface OwncloudResolveRootUriService {
 
+  /**
+   * Get resolved Root URI.
+   * <p/>
+   * Would be used to the the resolved Root URI within the Test Classes
+   * @param username Username to resolve te Root URI to
+   * @return resolved root URI
+   */
   URI getResolvedRootUri(String username);
 
 }

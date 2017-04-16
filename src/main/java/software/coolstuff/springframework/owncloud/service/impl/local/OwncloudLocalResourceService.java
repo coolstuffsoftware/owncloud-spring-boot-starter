@@ -20,9 +20,10 @@ package software.coolstuff.springframework.owncloud.service.impl.local;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudResourceService;
 
 /**
- * Extension of @{link OwncloudResourceService} for the local Service
+ * Extension of {@link OwncloudResourceService} for the local Service
  *
  * @author mufasa1976
+ * @since 1.2.0
  */
 public interface OwncloudLocalResourceService extends OwncloudResourceService {
 
