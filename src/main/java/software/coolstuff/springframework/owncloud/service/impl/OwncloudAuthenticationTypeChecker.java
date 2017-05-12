@@ -15,7 +15,7 @@ import software.coolstuff.springframework.owncloud.exception.auth.OwncloudInvali
 @RequiredArgsConstructor
 @Aspect
 @Slf4j
-class OwncloudAuthenticationTypeChecker {
+public class OwncloudAuthenticationTypeChecker {
 
   private final OwncloudProperties owncloudProperties;
 

@@ -21,14 +21,7 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
@@ -51,7 +44,7 @@ import software.coolstuff.springframework.owncloud.service.impl.OwncloudProperti
 import software.coolstuff.springframework.owncloud.service.impl.OwncloudUserDetailsMappingService;
 
 @Slf4j
-class OwncloudLocalUserDataServiceImpl implements OwncloudLocalUserDataService, InitializingBean, DisposableBean {
+public class OwncloudLocalUserDataServiceImpl implements OwncloudLocalUserDataService, InitializingBean, DisposableBean {
 
   private final XmlMapper xmlMapper;
 

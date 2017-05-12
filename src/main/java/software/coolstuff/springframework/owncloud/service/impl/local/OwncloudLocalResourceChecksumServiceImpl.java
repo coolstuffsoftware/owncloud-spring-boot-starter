@@ -17,16 +17,8 @@
 */
 package software.coolstuff.springframework.owncloud.service.impl.local;
 
-import java.io.BufferedInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.FileVisitResult;
-import java.nio.file.FileVisitor;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.SimpleFileVisitor;
+import java.io.*;
+import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -52,7 +44,7 @@ import software.coolstuff.springframework.owncloud.service.impl.local.OwncloudLo
 import software.coolstuff.springframework.owncloud.service.impl.local.OwncloudLocalProperties.ResourceServiceProperties.MessageDigestAlgorithm;
 
 @Slf4j
-class OwncloudLocalResourceChecksumServiceImpl implements OwncloudLocalResourceChecksumService {
+public class OwncloudLocalResourceChecksumServiceImpl implements OwncloudLocalResourceChecksumService {
 
   @Autowired
   private OwncloudLocalProperties properties;

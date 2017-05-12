@@ -14,7 +14,7 @@ import software.coolstuff.springframework.owncloud.service.api.OwncloudGroupQuer
 
 @RequiredArgsConstructor
 @Slf4j
-class OwncloudLocalGroupQueryServiceImpl implements OwncloudGroupQueryService {
+public class OwncloudLocalGroupQueryServiceImpl implements OwncloudGroupQueryService {
 
   private final OwncloudLocalUserDataService localDataService;
 

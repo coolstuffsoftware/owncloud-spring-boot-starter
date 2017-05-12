@@ -18,7 +18,7 @@ import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
 
 @RequiredArgsConstructor
 @Slf4j
-class OwncloudLocalUserServiceImpl implements OwncloudLocalUserService {
+public class OwncloudLocalUserServiceImpl implements OwncloudLocalUserService {
 
   private final OwncloudLocalUserDataService localDataService;
 

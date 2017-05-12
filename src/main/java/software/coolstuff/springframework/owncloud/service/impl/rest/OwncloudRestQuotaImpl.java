@@ -26,7 +26,7 @@ import software.coolstuff.springframework.owncloud.model.OwncloudQuota;
  */
 @Data
 @Builder
-class OwncloudRestQuotaImpl implements OwncloudQuota, Cloneable {
+public class OwncloudRestQuotaImpl implements OwncloudQuota, Cloneable {
   /** Username */
   private final String username;
 

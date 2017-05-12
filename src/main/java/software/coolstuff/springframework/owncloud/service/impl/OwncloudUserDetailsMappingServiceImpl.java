@@ -25,7 +25,7 @@ import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudGrantedAuthoritiesMapper;
 
 @Slf4j
-class OwncloudUserDetailsMappingServiceImpl implements OwncloudUserDetailsMappingService {
+public class OwncloudUserDetailsMappingServiceImpl implements OwncloudUserDetailsMappingService {
 
   @Autowired(required = false)
   private OwncloudGrantedAuthoritiesMapper owncloudGrantedAuthoritiesMapper;

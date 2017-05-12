@@ -13,7 +13,7 @@ import software.coolstuff.springframework.owncloud.service.api.OwncloudUserQuery
 
 @RequiredArgsConstructor
 @Slf4j
-class OwncloudLocalUserQueryServiceImpl implements OwncloudUserQueryService {
+public class OwncloudLocalUserQueryServiceImpl implements OwncloudUserQueryService {
 
   private final OwncloudLocalUserDataService localDataService;
 

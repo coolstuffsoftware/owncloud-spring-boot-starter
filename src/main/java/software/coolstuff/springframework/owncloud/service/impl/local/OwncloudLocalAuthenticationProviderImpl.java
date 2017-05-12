@@ -19,7 +19,7 @@ import software.coolstuff.springframework.owncloud.service.impl.OwncloudUtils;
 
 @RequiredArgsConstructor
 @Slf4j
-class OwncloudLocalAuthenticationProviderImpl implements AuthenticationProvider {
+public class OwncloudLocalAuthenticationProviderImpl implements AuthenticationProvider {
 
   private MessageSourceAccessor messages = SpringSecurityMessageSource.getAccessor();
 

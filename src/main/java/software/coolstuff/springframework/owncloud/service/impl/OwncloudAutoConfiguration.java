@@ -26,7 +26,7 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy;
 @Configuration
 @ConditionalOnProperty(prefix = "owncloud", name = "location")
 @EnableAspectJAutoProxy
-class OwncloudAutoConfiguration {
+public class OwncloudAutoConfiguration {
 
   @Bean
   public OwncloudAuthenticationTypeChecker owncloudUserModificationChecker(OwncloudProperties owncloudProperties) {

@@ -377,7 +377,8 @@
                     <sourcepath>${project.build.directory}/delombok</sourcepath>
                     <sourceFileExcludes>
                         <sourceFileExclude>**/impl/**/*Impl.java</sourceFileExclude>
-                        <sourceFileExclude>**/impl/**/*Configuration.java</sourceFileExclude>
+                        <sourceFileExclude>**/*Configuration.java</sourceFileExclude>
+                        <sourceFileExclude>**/OwncloudAuthenticationTypeChecker.java</sourceFileExclude>
                     </sourceFileExcludes>
                 </configuration>
             </plugin>

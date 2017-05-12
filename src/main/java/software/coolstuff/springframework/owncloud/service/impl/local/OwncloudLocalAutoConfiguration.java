@@ -17,7 +17,6 @@
 */
 package software.coolstuff.springframework.owncloud.service.impl.local;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
@@ -28,19 +27,20 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 
+import lombok.RequiredArgsConstructor;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudGroupQueryService;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudGroupService;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudResourceService;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudUserQueryService;
 
 @Configuration
+@RequiredArgsConstructor
 @ConditionalOnClass(Jackson2ObjectMapperBuilder.class)
 @ConditionalOnExpression("#{'${owncloud.location}' matches 'file:.*' or '${owncloud.location}' matches 'classpath:.*'}")
 @EnableConfigurationProperties(OwncloudLocalProperties.class)
-class OwncloudLocalAutoConfiguration {
+public class OwncloudLocalAutoConfiguration {
 
-  @Autowired
-  private Jackson2ObjectMapperBuilder jackson2ObjectMapperBuilder;
+  private final Jackson2ObjectMapperBuilder jackson2ObjectMapperBuilder;
 
   @Bean
   public OwncloudUserQueryService owncloudUserQueryService() {
