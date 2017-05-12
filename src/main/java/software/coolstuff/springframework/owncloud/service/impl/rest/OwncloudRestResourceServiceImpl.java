@@ -17,17 +17,20 @@
 */
 package software.coolstuff.springframework.owncloud.service.impl.rest;
 
-import com.github.sardine.DavResource;
-import com.github.sardine.Sardine;
-import com.github.sardine.impl.SardineException;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.LoadingCache;
-import com.google.common.collect.Lists;
-import lombok.Builder;
-import lombok.Data;
-import lombok.Getter;
-import lombok.extern.slf4j.Slf4j;
-import lombok.val;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URL;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Stream;
+
+import javax.annotation.PostConstruct;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.apache.http.HttpStatus;
@@ -43,6 +46,19 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
+
+import com.github.sardine.DavResource;
+import com.github.sardine.Sardine;
+import com.github.sardine.impl.SardineException;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.LoadingCache;
+import com.google.common.collect.Lists;
+
+import lombok.Builder;
+import lombok.Data;
+import lombok.Getter;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 import software.coolstuff.springframework.owncloud.exception.resource.*;
 import software.coolstuff.springframework.owncloud.model.OwncloudFileResource;
 import software.coolstuff.springframework.owncloud.model.OwncloudQuota;
@@ -51,20 +67,8 @@ import software.coolstuff.springframework.owncloud.service.api.OwncloudResourceS
 import software.coolstuff.springframework.owncloud.service.impl.OwncloudUtils;
 import software.coolstuff.springframework.owncloud.service.impl.rest.OwncloudRestProperties.ResourceServiceProperties.CacheProperties;
 
-import javax.annotation.PostConstruct;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URL;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Stream;
-
-@Slf4j class OwncloudRestResourceServiceImpl implements OwncloudResourceService, OwncloudRestService, OwncloudResolveRootUriService {
+@Slf4j
+class OwncloudRestResourceServiceImpl implements OwncloudResourceService, OwncloudRestService, OwncloudResolveRootUriService {
 
   private static final String URI_SUFFIX = "/remote.php/dav/files/{username}/";
 
@@ -146,11 +150,10 @@ import java.util.stream.Stream;
     try {
       return listAllOwncloudResourcesOf(searchPath);
     } catch (SardineException e) {
-      SardineExceptionHandlerEnvironment handlerEnvironment =
-          SardineExceptionHandlerEnvironment.builder()
-              .uri(URI.create(searchPath.toString()))
-              .sardineException(e)
-              .build();
+      SardineExceptionHandlerEnvironment handlerEnvironment = SardineExceptionHandlerEnvironment.builder()
+          .uri(URI.create(searchPath.toString()))
+          .sardineException(e)
+          .build();
       return handleSardineException(handlerEnvironment)
           .map(Lists::newArrayList)
           .orElse(new ArrayList<>());
@@ -374,11 +377,10 @@ import java.util.stream.Stream;
     try {
       return findOwncloudResourceOn(searchPath);
     } catch (SardineException e) {
-      SardineExceptionHandlerEnvironment handlerEnvironment =
-          SardineExceptionHandlerEnvironment.builder()
-              .uri(URI.create(searchPath.toString()))
-              .sardineException(e)
-              .build();
+      SardineExceptionHandlerEnvironment handlerEnvironment = SardineExceptionHandlerEnvironment.builder()
+          .uri(URI.create(searchPath.toString()))
+          .sardineException(e)
+          .build();
       handlerEnvironment.registerHandler(HttpStatus.SC_NOT_FOUND, environment -> Optional.empty());
       return handleSardineException(handlerEnvironment);
     } catch (IOException e) {
