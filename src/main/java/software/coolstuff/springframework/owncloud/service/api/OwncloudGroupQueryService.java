@@ -52,7 +52,7 @@ public interface OwncloudGroupQueryService {
 
   /**
    * Find all Users that are members of a Group
-   * @param group Name of the Group
+   * @param groupname Name of the Group
    * @return List of all Users that are Members of the Group
    * @throws AccessDeniedException Not an Administrator
    * @throws OwncloudGroupNotFoundException Group doesn&apos;t exist

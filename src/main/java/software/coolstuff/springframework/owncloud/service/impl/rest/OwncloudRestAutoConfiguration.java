@@ -41,7 +41,7 @@ import software.coolstuff.springframework.owncloud.service.api.OwncloudUserServi
 })
 @ConditionalOnExpression("#{!('${owncloud.location}' matches 'file:.*') and !('${owncloud.location}' matches 'classpath:.*')}")
 @EnableConfigurationProperties(OwncloudRestProperties.class)
-class OwncloudRestAutoConfiguration {
+public class OwncloudRestAutoConfiguration {
 
   @Bean
   public OwncloudRestUserQueryService owncloudUserQueryRestService(RestTemplateBuilder builder) {

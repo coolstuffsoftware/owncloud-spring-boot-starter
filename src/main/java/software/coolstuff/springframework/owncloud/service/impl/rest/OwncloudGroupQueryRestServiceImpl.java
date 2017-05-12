@@ -31,7 +31,7 @@ import software.coolstuff.springframework.owncloud.exception.auth.OwncloudGroupN
 import software.coolstuff.springframework.owncloud.service.api.OwncloudGroupQueryService;
 
 @Slf4j
-class OwncloudGroupQueryRestServiceImpl extends AbstractOwncloudRestServiceImpl implements OwncloudGroupQueryService {
+public class OwncloudGroupQueryRestServiceImpl extends AbstractOwncloudRestServiceImpl implements OwncloudGroupQueryService {
 
   OwncloudGroupQueryRestServiceImpl(RestTemplateBuilder builder) {
     super(builder);

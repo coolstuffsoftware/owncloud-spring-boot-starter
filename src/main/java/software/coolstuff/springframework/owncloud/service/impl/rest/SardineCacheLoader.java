@@ -30,7 +30,7 @@ import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-class SardineCacheLoader extends CacheLoader<String, Sardine> {
+public class SardineCacheLoader extends CacheLoader<String, Sardine> {
 
   @Override
   public Sardine load(String username) throws Exception {

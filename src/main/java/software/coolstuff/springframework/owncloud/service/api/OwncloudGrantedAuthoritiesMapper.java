@@ -23,6 +23,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
 
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
+import software.coolstuff.springframework.owncloud.service.impl.rest.OwncloudRestUserDetailsServiceImpl;
 
 /**
  * An Implementation of this Interface can be seen as an Alternative to {@link GrantedAuthoritiesMapper}.
@@ -59,7 +60,7 @@ import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
  * Whereas the Tables <code>Users</code>, <code>Groups</code> and <code>Memberships</code> are implemented by Owncloud.
  * <p/>
  * So, in simple Words, by implementing this Interface as a Service you can put the Authorities of your own Application into the
- * {@link OwncloudUserDetails} Object returned by the {@link OwncloudRestUserDetailsService#loadUserByUsername(String)}
+ * {@link OwncloudUserDetails} Object returned by the {@link OwncloudRestUserDetailsServiceImpl#loadUserByUsername(String)}
  *
  * @author mufasa1976
  * @see GrantedAuthoritiesMapper

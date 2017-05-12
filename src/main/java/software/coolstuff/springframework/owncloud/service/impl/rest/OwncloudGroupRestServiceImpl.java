@@ -35,7 +35,7 @@ import software.coolstuff.springframework.owncloud.exception.auth.OwncloudGroupN
 import software.coolstuff.springframework.owncloud.service.api.OwncloudGroupService;
 
 @Slf4j
-class OwncloudGroupRestServiceImpl extends AbstractOwncloudRestServiceImpl implements OwncloudGroupService {
+public class OwncloudGroupRestServiceImpl extends AbstractOwncloudRestServiceImpl implements OwncloudGroupService {
 
   private static final String GROUP_PATH = "/cloud/groups/{group}";
 

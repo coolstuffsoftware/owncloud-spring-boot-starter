@@ -25,7 +25,7 @@ import software.coolstuff.springframework.owncloud.model.OwncloudResource;
 
 @Getter
 @ToString(callSuper = true)
-class OwncloudRestFileResourceImpl extends OwncloudRestResourceImpl implements OwncloudFileResource {
+public class OwncloudRestFileResourceImpl extends OwncloudRestResourceImpl implements OwncloudFileResource {
 
   private Long contentLength;
 

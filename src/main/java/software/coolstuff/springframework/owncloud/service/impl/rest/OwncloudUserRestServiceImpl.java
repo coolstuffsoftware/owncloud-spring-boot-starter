@@ -44,7 +44,7 @@ import software.coolstuff.springframework.owncloud.service.api.OwncloudUserQuery
 import software.coolstuff.springframework.owncloud.service.api.OwncloudUserService;
 
 @Slf4j
-class OwncloudUserRestServiceImpl extends AbstractOwncloudRestServiceImpl implements OwncloudUserService {
+public class OwncloudUserRestServiceImpl extends AbstractOwncloudRestServiceImpl implements OwncloudUserService {
 
   @Autowired
   private OwncloudUserQueryService userQueryService;

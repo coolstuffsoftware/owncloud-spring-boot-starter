@@ -29,13 +29,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudGrantedAuthoritiesMapper;
 
 /**
@@ -67,8 +61,6 @@ public class OwncloudUserDetails implements UserDetails {
    * Password of the authenticated User.
    * <p/>
    * <u>Note:</u> The Password will be hidden when calling {@link #toString()}
-   * @param password Password of the authenticated User
-   * @return Password of the authenticated User
    */
   @Getter(AccessLevel.NONE)
   private char[] password;
@@ -99,7 +91,7 @@ public class OwncloudUserDetails implements UserDetails {
 
   /**
    * Display Name of the authenticated User.
-   * @param displayName Display Name of the authenticated User
+   * @param displayname Display Name of the authenticated User
    * @return Display Name of the authenticated User
    */
   private String displayname;

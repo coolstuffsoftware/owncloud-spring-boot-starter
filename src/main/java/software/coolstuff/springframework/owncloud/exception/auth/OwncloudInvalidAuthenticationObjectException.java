@@ -24,7 +24,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 /**
- * Thrown when trying to authenticate neither with {@link OwncloudAuthentication} nor with {@link UsernamePasswordAuthenticationToken}
+ * Thrown when not trying to authenticate with {@link UsernamePasswordAuthenticationToken}
  *
  * @author mufasa1976
  * @since 1.0.0

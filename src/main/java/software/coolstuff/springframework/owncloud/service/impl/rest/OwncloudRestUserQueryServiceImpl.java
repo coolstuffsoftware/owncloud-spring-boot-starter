@@ -30,7 +30,7 @@ import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
 import software.coolstuff.springframework.owncloud.service.impl.rest.Ocs.User.Data.Quota;
 
 @Slf4j
-class OwncloudRestUserQueryServiceImpl extends AbstractOwncloudRestServiceImpl implements OwncloudRestUserQueryService {
+public class OwncloudRestUserQueryServiceImpl extends AbstractOwncloudRestServiceImpl implements OwncloudRestUserQueryService {
 
   OwncloudRestUserQueryServiceImpl(RestTemplateBuilder builder) {
     super(builder);

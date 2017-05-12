@@ -28,9 +28,9 @@ import lombok.extern.slf4j.Slf4j;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
 
 @Slf4j
-class OwncloudRestUserDetailsServiceImpl extends AbstractOwncloudRestServiceImpl implements UserDetailsService {
+public class OwncloudRestUserDetailsServiceImpl extends AbstractOwncloudRestServiceImpl implements UserDetailsService {
 
-  public OwncloudRestUserDetailsServiceImpl(RestTemplateBuilder builder) {
+  OwncloudRestUserDetailsServiceImpl(RestTemplateBuilder builder) {
     super(builder);
   }
 

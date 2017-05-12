@@ -25,12 +25,7 @@ import java.util.List;
 import org.apache.commons.lang3.Validate;
 import org.springframework.security.core.GrantedAuthority;
 
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.RequiredArgsConstructor;
-import lombok.Singular;
+import lombok.*;
 
 /**
  * This Class will be used for any User Modifications by
@@ -77,7 +72,7 @@ public class OwncloudModificationUser {
   /**
    * Display Name of the User to be modified.
    *
-   * @param displayName
+   * @param displayname
    *            Display Name of the User to be modified
    * @return modified Display Name
    */
@@ -125,8 +120,8 @@ public class OwncloudModificationUser {
    * the Authentication Process of the
    * <code>OwncloudAuthenticationProvider.authenticate(org.springframework.security.core.Authentication)</code>
    * and resist as a {@link Principal} within the
-   * {@link OwncloudAuthentication} Object (returned by
-   * {@link OwncloudAuthentication#getPrincipal()}
+   * {@link org.springframework.security.core.Authentication} Object (returned by
+   * {@link org.springframework.security.core.Authentication#getPrincipal()}
    *
    * @param userDetails
    *            existing {@link OwncloudUserDetails} Object
