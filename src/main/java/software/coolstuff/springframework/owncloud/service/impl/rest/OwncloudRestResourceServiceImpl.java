@@ -82,7 +82,7 @@ public class OwncloudRestResourceServiceImpl implements OwncloudResourceService,
   private SardineCacheLoader sardineCacheLoader;
 
   @Autowired
-  private OwncloudRestUserQueryService userQueryService;
+  private OwncloudRestUserServiceExtension userQueryService;
 
   public OwncloudRestResourceServiceImpl(
       final RestTemplateBuilder builder,
@@ -235,7 +235,7 @@ public class OwncloudRestResourceServiceImpl implements OwncloudResourceService,
     private String renamedSearchPath;
   }
 
-  private OwncloudModifyingRestResource createOwncloudResourceFrom(DavResource davResource, OwncloudResourceConversionProperties conversionProperties) {
+  private OwncloudRestResourceExtension createOwncloudResourceFrom(DavResource davResource, OwncloudResourceConversionProperties conversionProperties) {
     log.debug("Create OwncloudResource based on DavResource {}", davResource.getHref());
     MediaType mediaType = MediaType.valueOf(davResource.getContentType());
     URI rootPath = conversionProperties.getRootPath();
@@ -247,7 +247,7 @@ public class OwncloudRestResourceServiceImpl implements OwncloudResourceService,
     LocalDateTime lastModifiedAt = LocalDateTime.ofInstant(davResource.getModified().toInstant(), ZoneId.systemDefault());
     href = rootPath.relativize(href);
     href = URI.create("/").resolve(href).normalize(); // prepend "/" to the href
-    OwncloudModifyingRestResource owncloudResource = OwncloudRestResourceImpl.builder()
+    OwncloudRestResourceExtension owncloudResource = OwncloudRestResourceImpl.builder()
         .href(href)
         .name(name)
         .lastModifiedAt(lastModifiedAt)
@@ -263,7 +263,7 @@ public class OwncloudRestResourceServiceImpl implements OwncloudResourceService,
         .build();
   }
 
-  private OwncloudModifyingRestResource renameOwncloudResource(OwncloudModifyingRestResource resource, OwncloudResourceConversionProperties conversionProperties) {
+  private OwncloudRestResourceExtension renameOwncloudResource(OwncloudRestResourceExtension resource, OwncloudResourceConversionProperties conversionProperties) {
     if (StringUtils.isBlank(conversionProperties.getRenamedSearchPath())) {
       return resource;
     }

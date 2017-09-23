@@ -69,7 +69,7 @@ class OwncloudLocalResourceServiceImpl implements OwncloudLocalResourceService {
   private OwncloudLocalUserDataService userDataService;
 
   @Autowired
-  private OwncloudLocalUserService userService;
+  private OwncloudLocalUserServiceExtension userService;
 
   private Map<String, OwncloudLocalQuotaImpl> quotas = new HashMap<>();
 
@@ -236,14 +236,14 @@ class OwncloudLocalResourceServiceImpl implements OwncloudLocalResourceService {
     }
   }
 
-  private OwncloudModifyingLocalResource getActualDirectoryOf(Path location) {
-    OwncloudModifyingLocalResource actualDirectory = createOwncloudResourceOf(location);
+  private OwncloudLocalResourceExtension getActualDirectoryOf(Path location) {
+    OwncloudLocalResourceExtension actualDirectory = createOwncloudResourceOf(location);
     log.debug("Add actual Directory {} to the Result", actualDirectory.getHref());
     actualDirectory.setName(".");
     return actualDirectory;
   }
 
-  private OwncloudModifyingLocalResource createOwncloudResourceOf(Path path) {
+  private OwncloudLocalResourceExtension createOwncloudResourceOf(Path path) {
     Path rootPath = getRootLocationOfAuthenticatedUser();
     Path relativePath = rootPath.toAbsolutePath().relativize(path.toAbsolutePath());
     URI href = URI.create(
@@ -273,7 +273,7 @@ class OwncloudLocalResourceServiceImpl implements OwncloudLocalResourceService {
         name = "/";
         checksum = Optional.empty();
       }
-      OwncloudModifyingLocalResource resource = OwncloudLocalResourceImpl.builder()
+      OwncloudLocalResourceExtension resource = OwncloudLocalResourceImpl.builder()
           .href(href)
           .name(name)
           .eTag(checksum.orElse(null))
@@ -297,12 +297,12 @@ class OwncloudLocalResourceServiceImpl implements OwncloudLocalResourceService {
     }
   }
 
-  private Optional<OwncloudModifyingLocalResource> getParentDirectoryOf(Path location) {
+  private Optional<OwncloudLocalResourceExtension> getParentDirectoryOf(Path location) {
     if (isParentDirectoryNotAppendable(location)) {
       return Optional.empty();
     }
 
-    OwncloudModifyingLocalResource superDirectory = createOwncloudResourceOf(location.resolve("..").normalize());
+    OwncloudLocalResourceExtension superDirectory = createOwncloudResourceOf(location.resolve("..").normalize());
     log.debug("Add parent Directory of Location {} ({}) to the Result", location, superDirectory.getHref());
     superDirectory.setName("..");
     return Optional.of(superDirectory);

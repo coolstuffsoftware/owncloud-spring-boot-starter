@@ -15,13 +15,12 @@
    along with this program; if not, write to the Free Software Foundation,
    Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 */
-package software.coolstuff.springframework.owncloud.service.impl.local.file;
+package software.coolstuff.springframework.owncloud.service.impl.local;
 
-import org.springframework.test.context.ActiveProfiles;
+import software.coolstuff.springframework.owncloud.model.OwncloudResource;
 
-import software.coolstuff.springframework.owncloud.service.impl.local.AbstractLocalOwncloudUserQueryServiceTest;
+interface OwncloudLocalResourceExtension extends OwncloudResource {
 
-@ActiveProfiles("LOCAL-FILE-USER-SERVICE")
-public class OwncloudLocalUserQueryServiceFileTest extends AbstractLocalOwncloudUserQueryServiceTest implements OwncloudLocalFileTest {
+  void setName(String name);
 
 }

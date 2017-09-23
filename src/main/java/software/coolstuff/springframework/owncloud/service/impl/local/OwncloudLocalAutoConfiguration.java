@@ -28,10 +28,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 
 import lombok.RequiredArgsConstructor;
-import software.coolstuff.springframework.owncloud.service.api.OwncloudGroupQueryService;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudGroupService;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudResourceService;
-import software.coolstuff.springframework.owncloud.service.api.OwncloudUserQueryService;
 
 @Configuration
 @RequiredArgsConstructor
@@ -43,17 +41,7 @@ public class OwncloudLocalAutoConfiguration {
   private final Jackson2ObjectMapperBuilder jackson2ObjectMapperBuilder;
 
   @Bean
-  public OwncloudUserQueryService owncloudUserQueryService() {
-    return new OwncloudLocalUserQueryServiceImpl(owncloudLocalUserDataService());
-  }
-
-  @Bean
-  public OwncloudGroupQueryService owncloudGroupQueryService() {
-    return new OwncloudLocalGroupQueryServiceImpl(owncloudLocalUserDataService());
-  }
-
-  @Bean
-  public OwncloudLocalUserService owncloudLocalUserService() {
+  public OwncloudLocalUserServiceExtension owncloudLocalUserService() {
     return new OwncloudLocalUserServiceImpl(owncloudLocalUserDataService());
   }
 

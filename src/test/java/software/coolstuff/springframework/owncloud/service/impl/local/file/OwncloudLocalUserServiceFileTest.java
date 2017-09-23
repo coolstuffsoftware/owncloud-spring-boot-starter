@@ -23,10 +23,10 @@ import org.springframework.core.io.ResourceLoader;
 import org.springframework.test.context.ActiveProfiles;
 
 import software.coolstuff.springframework.owncloud.config.CompareResourceAfter;
-import software.coolstuff.springframework.owncloud.service.impl.local.AbstractLocalOwncloudUserModificationServiceTest;
+import software.coolstuff.springframework.owncloud.service.impl.local.AbstractLocalOwncloudUserServiceTest;
 
 @ActiveProfiles("LOCAL-FILE-USER-SERVICE")
-public class OwncloudLocalUserModificationServiceFileTest extends AbstractLocalOwncloudUserModificationServiceTest implements OwncloudLocalModifyingFileTest {
+public class OwncloudLocalUserServiceFileTest extends AbstractLocalOwncloudUserServiceTest implements OwncloudLocalModifyingFileTest {
 
   @Autowired
   private ResourceLoader resourceLoader;

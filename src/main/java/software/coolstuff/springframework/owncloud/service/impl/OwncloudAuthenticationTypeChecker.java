@@ -19,8 +19,8 @@ public class OwncloudAuthenticationTypeChecker {
 
   private final OwncloudProperties owncloudProperties;
 
-  @Before("execution(* software.coolstuff.springframework.owncloud.service.api.OwncloudUserService.*(..)) ||"
-      + " execution(* software.coolstuff.springframework.owncloud.service.api.OwncloudGroupService.*(..))")
+  @Before("execution(* software.coolstuff.springframework.owncloud.service.api..*.*(..)) && "
+      + "@annotation(software.coolstuff.springframework.owncloud.service.impl.WithOwncloudModificationCheck)")
   void checkModificationsAllowed(JoinPoint joinPoint) {
     if (modificationsNotAllowed()) {
       log.warn("Access denied for Method {}.{}() because Modifications are not allowed",
@@ -33,9 +33,7 @@ public class OwncloudAuthenticationTypeChecker {
     return owncloudProperties.getUserService() == null || !owncloudProperties.getUserService().isEnableModifications();
   }
 
-  @Before("execution(* software.coolstuff.springframework.owncloud.service.api.OwncloudUserQueryService.*(..)) ||"
-      + " execution(* software.coolstuff.springframework.owncloud.service.api.OwncloudGroupQueryService.*(..)) ||"
-      + " execution(* software.coolstuff.springframework.owncloud.service.api.OwncloudUserService.*(..)) ||"
+  @Before("execution(* software.coolstuff.springframework.owncloud.service.api.OwncloudUserService.*(..)) ||"
       + " execution(* software.coolstuff.springframework.owncloud.service.api.OwncloudGroupService.*(..)) ||"
       + " execution(* software.coolstuff.springframework.owncloud.service.api.OwncloudResourceService.*(..))")
   void checkAuthenticationObject(JoinPoint joinPoint) {

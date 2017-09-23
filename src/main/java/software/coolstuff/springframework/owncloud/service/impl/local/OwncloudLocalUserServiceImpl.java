@@ -7,31 +7,58 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import software.coolstuff.springframework.owncloud.exception.auth.OwncloudGroupNotFoundException;
 import software.coolstuff.springframework.owncloud.model.OwncloudModificationUser;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
+import software.coolstuff.springframework.owncloud.service.impl.WithOwncloudModificationCheck;
 
-@RequiredArgsConstructor
 @Slf4j
-public class OwncloudLocalUserServiceImpl implements OwncloudLocalUserService {
-
-  private final OwncloudLocalUserDataService localDataService;
+public class OwncloudLocalUserServiceImpl extends AbstractOwncloudLocalUserAndGroupServiceImpl implements OwncloudLocalUserServiceExtension {
 
   private final List<Consumer<OwncloudUserDetails>> saveUserListeners = new ArrayList<>();
   private final List<Consumer<String>> deleteUserListeners = new ArrayList<>();
 
+  public OwncloudLocalUserServiceImpl(OwncloudLocalUserDataService localUserDataService) {
+    super(localUserDataService);
+  }
+
   @Override
+  public List<String> findAll() {
+    return findAll(null);
+  }
+
+  @Override
+  public List<String> findAll(String filter) {
+    log.debug("Get all Users with a DisplayName like {}", filter);
+    List<String> filteredUsers = new ArrayList<>();
+    for (OwncloudLocalUserData.User user : getLocalUserDataService().getUsers()) {
+      if (StringUtils.isBlank(filter) || StringUtils.contains(user.getDisplayname(), filter)) {
+        log.trace("add User {} to the Result", user.getUsername());
+        filteredUsers.add(user.getUsername());
+      }
+    }
+    return filteredUsers;
+  }
+
+  @Override
+  public OwncloudUserDetails findOne(String username) {
+    OwncloudLocalUserData.User user = getCheckedUser(username);
+    return getLocalUserDataService().convert(user);
+  }
+
+  @Override
+  @WithOwncloudModificationCheck
   public OwncloudUserDetails save(OwncloudModificationUser modificationUser) {
     Validate.notNull(modificationUser);
     Validate.notBlank(modificationUser.getUsername());
 
     log.debug("Try to get User Information of User {} from the Resource Service", modificationUser.getUsername());
-    OwncloudLocalUserData.User existingUser = localDataService.getUser(modificationUser.getUsername());
+    OwncloudLocalUserData.User existingUser = getLocalUserDataService().getUser(modificationUser.getUsername());
 
     if (existingUser == null) {
       Validate.notBlank(modificationUser.getPassword());
@@ -40,7 +67,7 @@ public class OwncloudLocalUserServiceImpl implements OwncloudLocalUserService {
       existingUser = new OwncloudLocalUserData.User();
       existingUser.setUsername(modificationUser.getUsername());
       existingUser.setPassword(modificationUser.getPassword());
-      localDataService.addUser(existingUser);
+      getLocalUserDataService().addUser(existingUser);
       log.info("User {} successfully created", existingUser.getUsername());
     }
 
@@ -52,7 +79,7 @@ public class OwncloudLocalUserServiceImpl implements OwncloudLocalUserService {
 
     manageGroups(existingUser, modificationUser);
 
-    OwncloudUserDetails changedUserDetails = localDataService.convert(existingUser);
+    OwncloudUserDetails changedUserDetails = getLocalUserDataService().convert(existingUser);
     log.debug("Notify registered Listeners about changed UserDetails {}", changedUserDetails);
     saveUserListeners.stream()
         .forEach(listener -> listener.accept(changedUserDetails));
@@ -65,7 +92,7 @@ public class OwncloudLocalUserServiceImpl implements OwncloudLocalUserService {
     if (CollectionUtils.isNotEmpty(newUser.getGroups())) {
       log.debug("Modify the Group Memberships of User {}", existingUser.getUsername());
       for (String groupname : newUser.getGroups()) {
-        if (localDataService.groupNotExists(groupname)) {
+        if (getLocalUserDataService().groupNotExists(groupname)) {
           log.error("Group {} doesn't exist. Can't assign the User {} to this non-existing Group", groupname, existingUser.getUsername());
           throw new OwncloudGroupNotFoundException(groupname);
         }
@@ -77,14 +104,15 @@ public class OwncloudLocalUserServiceImpl implements OwncloudLocalUserService {
   }
 
   @Override
+  @WithOwncloudModificationCheck
   public void delete(String username) {
     Validate.notBlank(username);
-    if (localDataService.userNotExists(username)) {
+    if (getLocalUserDataService().userNotExists(username)) {
       log.error("User {} doesn't exist", username);
       throw new UsernameNotFoundException(username);
     }
     log.debug("Remove User {}", username);
-    localDataService.removeUser(username);
+    getLocalUserDataService().removeUser(username);
     log.debug("Notify registered Listeners about removed User {}", username);
     deleteUserListeners.stream()
         .forEach(listener -> listener.accept(username));

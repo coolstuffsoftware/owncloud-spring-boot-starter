@@ -1,5 +1,5 @@
 /*
-   Copyright (C) 2016 by the original Authors.
+   Copyright (C) 2017 by the original Authors.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -15,13 +15,24 @@
    along with this program; if not, write to the Free Software Foundation,
    Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 */
-package software.coolstuff.springframework.owncloud.service.impl.local.classpath;
+package software.coolstuff.springframework.owncloud.service.impl.rest;
 
-import org.springframework.test.context.ActiveProfiles;
+import software.coolstuff.springframework.owncloud.service.api.OwncloudUserQueryService;
+import software.coolstuff.springframework.owncloud.service.api.OwncloudUserService;
 
-import software.coolstuff.springframework.owncloud.service.impl.local.AbstractLocalOwncloudUserQueryServiceTest;
+/**
+ * Extensions of {@link OwncloudUserQueryService} for the REST Service
+ *
+ * @author mufasa1976
+ * @since 1.2.0
+ */
+public interface OwncloudRestUserServiceExtension extends OwncloudUserService {
 
-@ActiveProfiles("LOCAL-CLASSPATH-USER-SERVICE")
-public class OwncloudLocalUserQueryServiceClasspathTest extends AbstractLocalOwncloudUserQueryServiceTest {
+  /**
+   * Get the Quota of the given User
+   * @param username Username of the User
+   * @return Quota of the User
+   */
+  OwncloudRestQuotaImpl getQuota(String username);
 
 }

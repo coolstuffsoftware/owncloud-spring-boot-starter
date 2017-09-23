@@ -17,13 +17,6 @@
 */
 package software.coolstuff.springframework.owncloud.service.api;
 
-import java.util.List;
-
-import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-
-import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
-
 /**
  * Get Information about Users from the Owncloud Server.
  * <p/>
@@ -32,31 +25,8 @@ import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
  *
  * @author mufasa1976
  * @since 1.0.0
+ * @deprecated 
  */
 public interface OwncloudUserQueryService {
-
-  /**
-   * Get the Details of a User
-   * @param username Name of the User
-   * @return Details of the User
-   * @throws AccessDeniedException Neither an Administrator nor the Owner
-   * @throws UsernameNotFoundException User doesn&apos;t exist
-   */
-  OwncloudUserDetails findOne(String username);
-
-  /**
-   * Find all Users.
-   * @return List of all Users
-   * @throws AccessDeniedException Not an Administrator
-   */
-  List<String> findAll();
-
-  /**
-   * Find all Users whose Display Name confirm to the Filter Criterion.
-   * @param filter Filter Criterion for Display Name
-   * @return List of all Users whose Display Name confirm to the Filter Criterion
-   * @throws AccessDeniedException Not an Administrator
-   */
-  List<String> findAll(String filter);
 
 }

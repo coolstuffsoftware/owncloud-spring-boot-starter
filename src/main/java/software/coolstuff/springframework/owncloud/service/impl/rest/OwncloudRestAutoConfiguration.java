@@ -29,10 +29,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.converter.xml.MappingJackson2XmlHttpMessageConverter;
 
-import software.coolstuff.springframework.owncloud.service.api.OwncloudGroupQueryService;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudGroupService;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudResourceService;
-import software.coolstuff.springframework.owncloud.service.api.OwncloudUserService;
 
 @Configuration
 @ConditionalOnClass({
@@ -44,23 +42,13 @@ import software.coolstuff.springframework.owncloud.service.api.OwncloudUserServi
 public class OwncloudRestAutoConfiguration {
 
   @Bean
-  public OwncloudRestUserQueryService owncloudUserQueryRestService(RestTemplateBuilder builder) {
-    return new OwncloudRestUserQueryServiceImpl(builder);
-  }
-
-  @Bean
-  public OwncloudGroupQueryService owncloudGroupQueryService(RestTemplateBuilder builder) {
-    return new OwncloudGroupQueryRestServiceImpl(builder);
-  }
-
-  @Bean
-  public OwncloudUserService owncloudUserRestService(RestTemplateBuilder builder) {
-    return new OwncloudUserRestServiceImpl(builder);
+  public OwncloudRestUserServiceExtension owncloudUserRestService(RestTemplateBuilder builder) {
+    return new OwncloudRestUserServiceImpl(builder);
   }
 
   @Bean
   public OwncloudGroupService owncloudGroupRestService(RestTemplateBuilder builder) {
-    return new OwncloudGroupRestServiceImpl(builder);
+    return new OwncloudRestGroupServiceImpl(builder);
   }
 
   @Bean

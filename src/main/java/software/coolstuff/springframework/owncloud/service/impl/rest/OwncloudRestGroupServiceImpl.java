@@ -17,6 +17,7 @@
 */
 package software.coolstuff.springframework.owncloud.service.impl.rest;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,17 +34,87 @@ import lombok.extern.slf4j.Slf4j;
 import software.coolstuff.springframework.owncloud.exception.auth.OwncloudGroupAlreadyExistsException;
 import software.coolstuff.springframework.owncloud.exception.auth.OwncloudGroupNotFoundException;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudGroupService;
+import software.coolstuff.springframework.owncloud.service.impl.WithOwncloudModificationCheck;
 
 @Slf4j
-public class OwncloudGroupRestServiceImpl extends AbstractOwncloudRestServiceImpl implements OwncloudGroupService {
+public class OwncloudRestGroupServiceImpl extends AbstractOwncloudRestServiceImpl implements OwncloudGroupService {
 
   private static final String GROUP_PATH = "/cloud/groups/{group}";
 
-  OwncloudGroupRestServiceImpl(RestTemplateBuilder builder) {
+  OwncloudRestGroupServiceImpl(RestTemplateBuilder builder) {
     super(builder);
   }
 
   @Override
+  public List<String> findAll() {
+    return findAll(null);
+  }
+
+  @Override
+  public List<String> findAll(String filter) {
+    Ocs.Groups ocsGroups = null;
+    if (StringUtils.isBlank(filter)) {
+      log.debug("Get all Groups by Filter Criteria {} from Location {}", filter, getLocation());
+      ocsGroups = exchange("/cloud/groups", HttpMethod.GET, emptyEntity(), Ocs.Groups.class);
+    } else {
+      log.debug("Get all Groups from Location {}", getLocation());
+      ocsGroups = exchange("/cloud/groups?search={filter}", HttpMethod.GET, emptyEntity(), Ocs.Groups.class, filter);
+    }
+    return OwncloudRestUtils.convertGroups(ocsGroups);
+  }
+
+  @Override
+  public List<String> findAllUsers(String groupname) {
+    Validate.notBlank(groupname);
+    log.debug("Get all Users assigned to Group {} from Location {}", groupname, getLocation());
+    Ocs.Users users = exchange("/cloud/groups/{group}", HttpMethod.GET, emptyEntity(), Ocs.Users.class, (authorizationUser, uri, meta) -> {
+      if ("ok".equals(meta.getStatus())) {
+        return;
+      }
+
+      String exceptionMessage;
+      switch (meta.getStatuscode()) {
+        case 997:
+          exceptionMessage = String.format("User %s is not authorized to access Resource %s", authorizationUser, uri);
+          log.warn("Error 997: {}", exceptionMessage);
+          throw new AccessDeniedException(exceptionMessage);
+        case 998:
+          log.error("Error 998: Group {} not found", groupname);
+          throw new OwncloudGroupNotFoundException(groupname);
+        default:
+          exceptionMessage = String.format("Unknown Error Code %d. Reason: %s", meta.getStatuscode(), StringUtils.defaultIfEmpty(meta.getMessage(), ""));
+          log.error(exceptionMessage);
+          throw new IllegalStateException(exceptionMessage);
+      }
+    }, groupname);
+    return convertUsers(users);
+  }
+
+  private List<String> convertUsers(Ocs.Users ocsUsers) {
+    List<String> users = new ArrayList<>();
+    if (isUsersNotNull(ocsUsers)) {
+      for (Ocs.Users.Data.Element element : ocsUsers.getData().getUsers()) {
+        log.trace("Add User {} to the Result List", element.getElement());
+        users.add(element.getElement());
+      }
+    }
+    return users;
+  }
+
+  private boolean isUsersNotNull(Ocs.Users ocsUsers) {
+    return ocsUsers != null && ocsUsers.getData() != null && ocsUsers.getData().getUsers() != null;
+  }
+
+  @Override
+  public List<String> findAllGroups(String username) {
+    Validate.notBlank(username);
+    log.debug("Get all Groups assigned to User {} from Location {}", username, getLocation());
+    Ocs.Groups ocsGroups = exchange("/cloud/users/{user}/groups", HttpMethod.GET, emptyEntity(), Ocs.Groups.class, username);
+    return OwncloudRestUtils.convertGroups(ocsGroups);
+  }
+
+  @Override
+  @WithOwncloudModificationCheck
   public void create(String groupname) {
     Validate.notBlank(groupname);
 
@@ -91,6 +162,7 @@ public class OwncloudGroupRestServiceImpl extends AbstractOwncloudRestServiceImp
   }
 
   @Override
+  @WithOwncloudModificationCheck
   public void delete(String groupname) {
     Validate.notBlank(groupname);
 

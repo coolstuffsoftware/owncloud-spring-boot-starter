@@ -79,7 +79,7 @@ public class OwncloudRestResourceServiceTest extends AbstractOwncloudResourceSer
   private OwncloudResourceService resourceService;
 
   @MockBean
-  private OwncloudRestUserQueryService userQueryService;
+  private OwncloudRestUserServiceExtension userQueryService;
 
   @Autowired
   private OwncloudRestProperties properties;

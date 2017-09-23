@@ -19,6 +19,7 @@ package software.coolstuff.springframework.owncloud.service.impl.rest;
 
 import java.text.DecimalFormat;
 import java.text.Format;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,7 +28,6 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.access.AccessDeniedException;
@@ -40,20 +40,74 @@ import software.coolstuff.springframework.owncloud.exception.auth.OwncloudGroupN
 import software.coolstuff.springframework.owncloud.exception.auth.OwncloudUsernameAlreadyExistsException;
 import software.coolstuff.springframework.owncloud.model.OwncloudModificationUser;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
-import software.coolstuff.springframework.owncloud.service.api.OwncloudUserQueryService;
-import software.coolstuff.springframework.owncloud.service.api.OwncloudUserService;
+import software.coolstuff.springframework.owncloud.service.impl.WithOwncloudModificationCheck;
 
 @Slf4j
-public class OwncloudUserRestServiceImpl extends AbstractOwncloudRestServiceImpl implements OwncloudUserService {
+public class OwncloudRestUserServiceImpl extends AbstractOwncloudRestServiceImpl implements OwncloudRestUserServiceExtension {
 
-  @Autowired
-  private OwncloudUserQueryService userQueryService;
-
-  OwncloudUserRestServiceImpl(RestTemplateBuilder builder) {
+  OwncloudRestUserServiceImpl(RestTemplateBuilder builder) {
     super(builder);
   }
 
   @Override
+  public OwncloudUserDetails findOne(String username) {
+    Validate.notBlank(username);
+    log.debug("Get Information about User {} from Location {}", username, getLocation());
+    Ocs.User user = exchange("/cloud/users/{user}", HttpMethod.GET, emptyEntity(), Ocs.User.class, username);
+    log.debug("Get all Groups assigned to User {} from Location {}", username, getLocation());
+    Ocs.Groups groups = exchange("/cloud/users/{user}/groups", HttpMethod.GET, emptyEntity(), Ocs.Groups.class, username);
+    return convert(username, user, groups);
+  }
+
+  @Override
+  public List<String> findAll() {
+    return findAll(null);
+  }
+
+  @Override
+  public List<String> findAll(String filter) {
+    Ocs.Users users = null;
+    if (StringUtils.isBlank(filter)) {
+      log.debug("Get all Users by Filter Criteria {} from Location {}", filter, getLocation());
+      users = exchange("/cloud/users", HttpMethod.GET, emptyEntity(), Ocs.Users.class);
+    } else {
+      log.debug("Get all Users from Location {}", getLocation());
+      users = exchange("/cloud/users?search={filter}", HttpMethod.GET, emptyEntity(), Ocs.Users.class, filter);
+    }
+    return convertUsers(users);
+  }
+
+  private List<String> convertUsers(Ocs.Users ocsUsers) {
+    List<String> users = new ArrayList<>();
+    if (isUsersNotNull(ocsUsers)) {
+      for (Ocs.Users.Data.Element element : ocsUsers.getData().getUsers()) {
+        log.trace("Add User {} to the Result List", element.getElement());
+        users.add(element.getElement());
+      }
+    }
+    return users;
+  }
+
+  private boolean isUsersNotNull(Ocs.Users ocsUsers) {
+    return ocsUsers != null && ocsUsers.getData() != null && ocsUsers.getData().getUsers() != null;
+  }
+
+  @Override
+  public OwncloudRestQuotaImpl getQuota(String username) {
+    log.debug("Get Information about User {} from Location {}", username, getLocation());
+    Ocs.User user = exchange("/cloud/users/{user}", HttpMethod.GET, emptyEntity(), Ocs.User.class, username);
+    Ocs.User.Data.Quota quota = user.getData().getQuota();
+    return OwncloudRestQuotaImpl.builder()
+        .username(username)
+        .free(quota.getFree())
+        .used(quota.getUsed())
+        .total(quota.getTotal())
+        .relative(quota.getRelative())
+        .build();
+  }
+
+  @Override
+  @WithOwncloudModificationCheck
   public OwncloudUserDetails save(OwncloudModificationUser user) {
     Validate.notNull(user);
     Validate.notBlank(user.getUsername());
@@ -70,7 +124,7 @@ public class OwncloudUserRestServiceImpl extends AbstractOwncloudRestServiceImpl
       createUser(user);
     }
 
-    OwncloudUserDetails foundUserDetails = userQueryService.findOne(user.getUsername());
+    OwncloudUserDetails foundUserDetails = findOne(user.getUsername());
     return foundUserDetails;
   }
 
@@ -363,6 +417,7 @@ public class OwncloudUserRestServiceImpl extends AbstractOwncloudRestServiceImpl
   }
 
   @Override
+  @WithOwncloudModificationCheck
   public void delete(String username) {
     Validate.notBlank(username);
 

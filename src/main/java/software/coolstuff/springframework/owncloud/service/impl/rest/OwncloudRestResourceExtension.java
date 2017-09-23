@@ -1,5 +1,5 @@
 /*
-   Copyright (C) 2016 by the original Authors.
+   Copyright (C) 2017 by the original Authors.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -15,11 +15,15 @@
    along with this program; if not, write to the Free Software Foundation,
    Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 */
-package software.coolstuff.springframework.owncloud.service.impl.local;
+package software.coolstuff.springframework.owncloud.service.impl.rest;
 
 import software.coolstuff.springframework.owncloud.model.OwncloudResource;
 
-interface OwncloudModifyingLocalResource extends OwncloudResource {
+/**
+ * @author mufasa1976
+ *
+ */
+interface OwncloudRestResourceExtension extends OwncloudResource {
 
   void setName(String name);
 

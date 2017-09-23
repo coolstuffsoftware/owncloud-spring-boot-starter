@@ -32,7 +32,7 @@ import software.coolstuff.springframework.owncloud.model.OwncloudResource;
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 @Builder
 @ToString
-public class OwncloudRestResourceImpl implements OwncloudModifyingRestResource {
+public class OwncloudRestResourceImpl implements OwncloudRestResourceExtension {
 
   private URI href;
   @Setter(AccessLevel.PUBLIC)

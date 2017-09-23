@@ -28,7 +28,7 @@ import software.coolstuff.springframework.owncloud.service.api.OwncloudUserServi
  * @author mufasa1976
  * @since 1.2.0
  */
-public interface OwncloudLocalUserService extends OwncloudUserService {
+public interface OwncloudLocalUserServiceExtension extends OwncloudUserService {
 
   /**
    * Register a Callback Consumer which will be called when

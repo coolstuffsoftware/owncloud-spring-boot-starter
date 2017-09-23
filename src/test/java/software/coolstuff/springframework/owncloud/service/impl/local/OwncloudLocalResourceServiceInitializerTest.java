@@ -49,7 +49,6 @@ import software.coolstuff.springframework.owncloud.model.OwncloudQuota;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudResourceService;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudUserService;
-import software.coolstuff.springframework.owncloud.service.api.OwncloudUserQueryService;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(
@@ -76,19 +75,16 @@ public class OwncloudLocalResourceServiceInitializerTest {
   private OwncloudLocalResourceService resourceService;
 
   @Autowired
-  private OwncloudUserQueryService userQueryService;
-
-  @Autowired
-  private OwncloudUserService userModificationService;
+  private OwncloudUserService userService;
 
   @Before
   public void setUp() throws Exception {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     String username = authentication.getName();
-    OwncloudUserDetails user = userQueryService.findOne(username);
+    OwncloudUserDetails user = userService.findOne(username);
     OwncloudModificationUser modificationUser = new OwncloudModificationUser(user);
     modificationUser.setQuota(1024L);
-    userModificationService.save(modificationUser);
+    userService.save(modificationUser);
   }
 
   @After
@@ -141,13 +137,13 @@ public class OwncloudLocalResourceServiceInitializerTest {
         .isNotNull()
         .isEqualToComparingOnlyGivenFields(expectedBeforeChange, "username", "total", "used", "free", "relative");
 
-    OwncloudUserDetails user = userQueryService.findOne(username);
+    OwncloudUserDetails user = userService.findOne(username);
     assertThat(user).isNotNull();
     assertThat(user.getQuota()).isEqualTo(1024);
 
     OwncloudModificationUser modificationUser = new OwncloudModificationUser(user);
     modificationUser.setQuota(2048L);
-    user = userModificationService.save(modificationUser);
+    user = userService.save(modificationUser);
     assertThat(user).isNotNull();
     assertThat(user.getQuota()).isEqualTo(2048);
 
