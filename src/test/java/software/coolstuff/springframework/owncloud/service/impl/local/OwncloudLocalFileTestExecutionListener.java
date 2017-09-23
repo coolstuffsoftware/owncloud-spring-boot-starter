@@ -19,15 +19,7 @@ package software.coolstuff.springframework.owncloud.service.impl.local;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Map;
@@ -118,8 +110,6 @@ public class OwncloudLocalFileTestExecutionListener extends AbstractTestExecutio
               }
               owncloudProperties.getUserService().setEnableModifications((Boolean) property.getValue());
               break;
-            default:
-              continue;
           }
         }
         Validate.notNull(owncloudProperties.getLocation());

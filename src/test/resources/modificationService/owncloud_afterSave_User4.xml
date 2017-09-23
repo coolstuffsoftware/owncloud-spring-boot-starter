@@ -21,6 +21,18 @@
       <quota/>
     </user>
     <user>
+      <username>user5</username>
+      <password>s3cr3t</password>
+      <enabled>true</enabled>
+      <displayname>Mr. User 5</displayname>
+      <email>user5@example.com</email>
+      <quota>1024</quota>
+      <groups>
+        <group>group1</group>
+        <group>group2</group>
+      </groups>
+    </user>
+    <user>
       <username>user4</username>
       <password>password</password>
       <enabled>true</enabled>

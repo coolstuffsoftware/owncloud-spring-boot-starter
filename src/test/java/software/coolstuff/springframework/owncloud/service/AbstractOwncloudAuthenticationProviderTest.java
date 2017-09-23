@@ -24,11 +24,7 @@ import java.util.Base64;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.client.RestClientTest;
-import org.springframework.security.authentication.AuthenticationProvider;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.DisabledException;
-import org.springframework.security.authentication.RememberMeAuthenticationToken;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.authentication.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.test.context.support.WithMockUser;
 
@@ -92,7 +88,7 @@ public abstract class AbstractOwncloudAuthenticationProviderTest extends Abstrac
     assertThat(principal.getAuthorities()).hasSize(2);
   }
 
-  protected void prepareTestAuthenticate_OK(Credentials credentials, UserResponse userResponse, String... groups) throws Exception {};
+  protected void prepareTestAuthenticate_OK(Credentials credentials, UserResponse userResponse, String... groups) throws Exception {}
 
   @Test(expected = BadCredentialsException.class)
   public void testAuthenticate_NOK() throws Exception {
@@ -103,7 +99,7 @@ public abstract class AbstractOwncloudAuthenticationProviderTest extends Abstrac
     authenticationProvider.authenticate(credentials.getUsernamePasswordAuthenticationToken());
   }
 
-  protected void prepareTestAuthenticate_NOK(Credentials credentials) throws Exception {};
+  protected void prepareTestAuthenticate_NOK(Credentials credentials) throws Exception {}
 
   @Test(expected = BadCredentialsException.class)
   public void testAuthentication_NOK_NoUser() throws Exception {

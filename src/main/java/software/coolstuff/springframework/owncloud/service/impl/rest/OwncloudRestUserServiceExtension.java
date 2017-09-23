@@ -17,11 +17,10 @@
 */
 package software.coolstuff.springframework.owncloud.service.impl.rest;
 
-import software.coolstuff.springframework.owncloud.service.api.OwncloudUserQueryService;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudUserService;
 
 /**
- * Extensions of {@link OwncloudUserQueryService} for the REST Service
+ * Extensions of {@link OwncloudUserService} for the REST Service
  *
  * @author mufasa1976
  * @since 1.2.0

@@ -15,18 +15,13 @@
    along with this program; if not, write to the Free Software Foundation,
    Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 */
-package software.coolstuff.springframework.owncloud.service.api;
+package software.coolstuff.springframework.owncloud.service.impl.local.classpath;
 
-/**
- * Get Information about Users from the Owncloud Server.
- * <p/>
- * This Service is only usable when the User has been authenticated
- * by the OwncloudAuthenticationProvider.
- *
- * @author mufasa1976
- * @since 1.0.0
- * @deprecated 
- */
-public interface OwncloudUserQueryService {
+import org.springframework.test.context.ActiveProfiles;
+
+import software.coolstuff.springframework.owncloud.service.impl.local.AbstractLocalOwncloudUserServiceQueryTest;
+
+@ActiveProfiles("LOCAL-NO-MODIFICATION-USER-SERVICE")
+public class OwncloudLocalUserServiceQueryClasspathTest extends AbstractLocalOwncloudUserServiceQueryTest {
 
 }

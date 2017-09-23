@@ -17,11 +17,7 @@
 */
 package software.coolstuff.springframework.owncloud.service.impl;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
+import java.io.*;
 import java.net.URI;
 import java.util.Optional;
 import java.util.concurrent.CyclicBarrier;
