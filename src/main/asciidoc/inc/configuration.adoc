@@ -4,8 +4,14 @@ All Services of this Spring-Boot Starter will be managed by the following http:/
 |===
 | Name | mandatory | Data Type |Default | Description
 | owncloud.location | true | String | - | The Location of the Owncloud Instance
-| owncloud.enable-modifications | false | boolean | `false`
-  | Modifications through `OwncloudUserModificationService` are allowed/disallowed
+| owncloud.user-service.enable-modifications | false | boolean | `false`
+  | Modifications through `OwncloudUserService` and `OwncloudGroupService` are allowed/disallowed
+| owncloud.resource-service.add-relative-down-path | true | boolean | `true`
+  | add `..` to the List of available Owncloud-Resource within a Directory
+| owncloud.resource-service.piped-stream-buffer-size | true | Integer | 8192
+  | Buffer Size (in Bytes) for Content-Streaming (InputStream/OutputStream)
+| owncloud.resource-service.piped-stream-uncaught-exception-log-level | true
+  | LogLevel | `error` | Log Level for any uncaught Exceptions while Content-Streaming
 |===
 
 === owncloud.location
@@ -23,7 +29,6 @@ It can have one of the following Values:
 |===
 
 Normally you would provide the Web-Address of the Owncloud-Instance.
-
 But for local Development or Tests it could be useful, to have an Owncloud Instance which
 always behaves the same (returns the same Users, the same Groups, ...).
 
@@ -46,6 +51,8 @@ This XML-Resource should have the following Format:
         <group>group1</group>
         <group>group2</group>
       </groups>
+
+      <quota>10240</quota> <7>
     </user>
     <user>
       <username>user2</username>
@@ -56,7 +63,7 @@ This XML-Resource should have the following Format:
     </user>
   </users>
   
-  <groups> <7>
+  <groups> <8>
     <group>group1</group>
     <group>group2</group>
     <group>group3</group>
@@ -69,7 +76,8 @@ This XML-Resource should have the following Format:
 <4> unencrypted Password (because you're in local Development or Test Environment)
 <5> optional Parameters
 <6> Group Memberships of the User.
-<7> All available Groups of the InMemory Owncloud Instance
+<7> File Quota of the User (in Bytes). If omitted the User has unlimited Quota on the File-System.
+<8> All available Groups of the InMemory Owncloud Instance
 
 NOTE: All Groups, which are referenced as a User-Membership will be checked
       when the Service starts. +
