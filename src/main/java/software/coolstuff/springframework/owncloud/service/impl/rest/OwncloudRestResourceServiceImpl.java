@@ -17,20 +17,17 @@
 */
 package software.coolstuff.springframework.owncloud.service.impl.rest;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URL;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Stream;
-
-import javax.annotation.PostConstruct;
-
+import com.github.sardine.DavResource;
+import com.github.sardine.Sardine;
+import com.github.sardine.impl.SardineException;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.LoadingCache;
+import com.google.common.collect.Lists;
+import lombok.Builder;
+import lombok.Data;
+import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
+import lombok.val;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.apache.http.HttpStatus;
@@ -46,19 +43,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
-
-import com.github.sardine.DavResource;
-import com.github.sardine.Sardine;
-import com.github.sardine.impl.SardineException;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.LoadingCache;
-import com.google.common.collect.Lists;
-
-import lombok.Builder;
-import lombok.Data;
-import lombok.Getter;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
 import software.coolstuff.springframework.owncloud.exception.resource.*;
 import software.coolstuff.springframework.owncloud.model.OwncloudFileResource;
 import software.coolstuff.springframework.owncloud.model.OwncloudQuota;
@@ -67,10 +51,25 @@ import software.coolstuff.springframework.owncloud.service.api.OwncloudResourceS
 import software.coolstuff.springframework.owncloud.service.impl.OwncloudUtils;
 import software.coolstuff.springframework.owncloud.service.impl.rest.OwncloudRestProperties.ResourceServiceProperties.CacheProperties;
 
+import javax.annotation.PostConstruct;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URL;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Stream;
+
 @Slf4j
 public class OwncloudRestResourceServiceImpl implements OwncloudResourceService, OwncloudRestService, OwncloudResolveRootUriService {
 
   private static final String URI_SUFFIX = "/remote.php/dav/files/{username}/";
+  private static final String SLASH = "/";
+  private static final String QUOTE = "\"";
 
   private final RestTemplate restTemplate;
   private final OwncloudRestProperties properties;
@@ -103,7 +102,7 @@ public class OwncloudRestResourceServiceImpl implements OwncloudResourceService,
     if (StringUtils.isBlank(suffix)) {
       return url.toString();
     }
-    return StringUtils.stripEnd(url.toString(), "/") + "/" + StringUtils.stripStart(suffix, "/");
+    return StringUtils.stripEnd(url.toString(), SLASH) + SLASH + StringUtils.stripStart(suffix, SLASH);
   }
 
   @Override
@@ -118,7 +117,7 @@ public class OwncloudRestResourceServiceImpl implements OwncloudResourceService,
   }
 
   protected LoadingCache<String, Sardine> buildSardineCache() {
-    CacheProperties cacheProperties = properties.getResourceService().getCache();
+    CacheProperties cacheProperties = properties.getResourceService().getSardineCache();
     CacheBuilder<Object, Object> builder = CacheBuilder.newBuilder();
     if (cacheProperties.getConcurrencyLevel() != null) {
       builder.concurrencyLevel(cacheProperties.getConcurrencyLevel());
@@ -150,10 +149,11 @@ public class OwncloudRestResourceServiceImpl implements OwncloudResourceService,
     try {
       return listAllOwncloudResourcesOf(searchPath);
     } catch (SardineException e) {
-      SardineExceptionHandlerEnvironment handlerEnvironment = SardineExceptionHandlerEnvironment.builder()
-          .uri(URI.create(searchPath.toString()))
-          .sardineException(e)
-          .build();
+      SardineExceptionHandlerEnvironment handlerEnvironment =
+          SardineExceptionHandlerEnvironment.builder()
+                                            .uri(URI.create(searchPath.toString()))
+                                            .sardineException(e)
+                                            .build();
       return handleSardineException(handlerEnvironment)
           .map(Lists::newArrayList)
           .orElse(new ArrayList<>());
@@ -169,10 +169,10 @@ public class OwncloudRestResourceServiceImpl implements OwncloudResourceService,
     }
     return URI.create(
         UriComponentsBuilder.fromUri(userRoot)
-            .path(relativeTo.getPath())
-            .path("/")
-            .toUriString())
-        .normalize();
+                            .path(relativeTo.getPath())
+                            .path(SLASH)
+                            .toUriString())
+              .normalize();
   }
 
   private URI getUserRoot() {
@@ -204,14 +204,15 @@ public class OwncloudRestResourceServiceImpl implements OwncloudResourceService,
     URI userRoot = getUserRoot();
     log.debug("Get the List of WebDAV Resources based by URI {}", searchPath);
     List<DavResource> davResources = sardine.list(searchPath.toString());
-    val searchPathConversionProperties = OwncloudResourceConversionProperties.builder()
-        .rootPath(userRoot)
-        .searchPath(searchPath)
-        .renamedSearchPath(".")
-        .build();
+    val searchPathConversionProperties =
+        OwncloudResourceConversionProperties.builder()
+                                            .rootPath(userRoot)
+                                            .searchPath(searchPath)
+                                            .renamedSearchPath(".")
+                                            .build();
     return davResources.stream()
-        .map(davResource -> createOwncloudResourceFrom(davResource, searchPathConversionProperties))
-        .map(modifyingResource -> renameOwncloudResource(modifyingResource, searchPathConversionProperties));
+                       .map(davResource -> createOwncloudResourceFrom(davResource, searchPathConversionProperties))
+                       .map(modifyingResource -> renameOwncloudResource(modifyingResource, searchPathConversionProperties));
   }
 
   protected Sardine getSardine() throws OwncloudSardineCacheException {
@@ -229,7 +230,7 @@ public class OwncloudRestResourceServiceImpl implements OwncloudResourceService,
 
   @Data
   @Builder
-  static class OwncloudResourceConversionProperties {
+  private static class OwncloudResourceConversionProperties {
     private final URI rootPath;
     private URI searchPath;
     private String renamedSearchPath;
@@ -242,25 +243,26 @@ public class OwncloudRestResourceServiceImpl implements OwncloudResourceService,
     URI href = rootPath.resolve(davResource.getHref());
     String name = davResource.getName();
     if (davResource.isDirectory() && href.equals(rootPath)) {
-      name = "/";
+      name = SLASH;
     }
     LocalDateTime lastModifiedAt = LocalDateTime.ofInstant(davResource.getModified().toInstant(), ZoneId.systemDefault());
     href = rootPath.relativize(href);
-    href = URI.create("/").resolve(href).normalize(); // prepend "/" to the href
-    OwncloudRestResourceExtension owncloudResource = OwncloudRestResourceImpl.builder()
-        .href(href)
-        .name(name)
-        .lastModifiedAt(lastModifiedAt)
-        .mediaType(mediaType)
-        .eTag(StringUtils.strip(davResource.getEtag(), "\""))
-        .build();
+    href = URI.create(SLASH).resolve(href).normalize(); // prepend "/" to the href
+    OwncloudRestResourceExtension owncloudResource =
+        OwncloudRestResourceImpl.builder()
+                                .href(href)
+                                .name(name)
+                                .lastModifiedAt(lastModifiedAt)
+                                .mediaType(mediaType)
+                                .eTag(StringUtils.strip(davResource.getEtag(), QUOTE))
+                                .build();
     if (davResource.isDirectory()) {
       return owncloudResource;
     }
     return OwncloudRestFileResourceImpl.fileBuilder()
-        .owncloudResource(owncloudResource)
-        .contentLength(davResource.getContentLength())
-        .build();
+                                       .owncloudResource(owncloudResource)
+                                       .contentLength(davResource.getContentLength())
+                                       .build();
   }
 
   private OwncloudRestResourceExtension renameOwncloudResource(OwncloudRestResourceExtension resource, OwncloudResourceConversionProperties conversionProperties) {
@@ -269,9 +271,9 @@ public class OwncloudRestResourceServiceImpl implements OwncloudResourceService,
     }
     URI resourcePath = URI.create(
         UriComponentsBuilder.fromUri(conversionProperties.getRootPath())
-            .path(resource.getHref().getPath())
-            .toUriString())
-        .normalize();
+                            .path(resource.getHref().getPath())
+                            .toUriString())
+                          .normalize();
     if (conversionProperties.getSearchPath().equals(resourcePath)) {
       log.debug("Rename OwncloudResource {} based by {} to {}", resource.getName(), resource.getHref(), conversionProperties.getRenamedSearchPath());
       resource.setName(conversionProperties.getRenamedSearchPath());
@@ -308,21 +310,22 @@ public class OwncloudRestResourceServiceImpl implements OwncloudResourceService,
   private Stream<OwncloudResource> listParentOwncloudResourcesOf(URI searchPath) throws IOException {
     URI parentPath = URI.create(
         UriComponentsBuilder.fromUri(searchPath.normalize())
-            .path("/../")
-            .toUriString())
-        .normalize();
+                            .path("/../")
+                            .toUriString())
+                        .normalize();
     log.debug("Get the List of WebDAV Resources based by Parent URI {}", parentPath);
     URI userRoot = getUserRoot();
-    val parentDirectoryConversionProperties = OwncloudResourceConversionProperties.builder()
-        .rootPath(userRoot)
-        .searchPath(parentPath)
-        .renamedSearchPath("..")
-        .build();
+    val parentDirectoryConversionProperties =
+        OwncloudResourceConversionProperties.builder()
+                                            .rootPath(userRoot)
+                                            .searchPath(parentPath)
+                                            .renamedSearchPath("..")
+                                            .build();
     Sardine sardine = getSardine();
     List<DavResource> davResources = sardine.list(parentPath.toString(), 0);
     return davResources.stream()
-        .map(davResource -> createOwncloudResourceFrom(davResource, parentDirectoryConversionProperties))
-        .map(modifyingResource -> renameOwncloudResource(modifyingResource, parentDirectoryConversionProperties));
+                       .map(davResource -> createOwncloudResourceFrom(davResource, parentDirectoryConversionProperties))
+                       .map(modifyingResource -> renameOwncloudResource(modifyingResource, parentDirectoryConversionProperties));
   }
 
   private static class SardineExceptionHandlerEnvironment {
@@ -377,10 +380,11 @@ public class OwncloudRestResourceServiceImpl implements OwncloudResourceService,
     try {
       return findOwncloudResourceOn(searchPath);
     } catch (SardineException e) {
-      SardineExceptionHandlerEnvironment handlerEnvironment = SardineExceptionHandlerEnvironment.builder()
-          .uri(URI.create(searchPath.toString()))
-          .sardineException(e)
-          .build();
+      SardineExceptionHandlerEnvironment handlerEnvironment =
+          SardineExceptionHandlerEnvironment.builder()
+                                            .uri(URI.create(searchPath.toString()))
+                                            .sardineException(e)
+                                            .build();
       handlerEnvironment.registerHandler(HttpStatus.SC_NOT_FOUND, environment -> Optional.empty());
       return handleSardineException(handlerEnvironment);
     } catch (IOException e) {
@@ -390,15 +394,16 @@ public class OwncloudRestResourceServiceImpl implements OwncloudResourceService,
 
   private Optional<OwncloudResource> findOwncloudResourceOn(URI searchPath) throws IOException {
     List<DavResource> davResources = getSardine().list(searchPath.toString(), 0);
-    val conversionProperties = OwncloudResourceConversionProperties.builder()
-        .rootPath(getUserRoot())
-        .searchPath(searchPath)
-        .build();
+    val conversionProperties =
+        OwncloudResourceConversionProperties.builder()
+                                            .rootPath(getUserRoot())
+                                            .searchPath(searchPath)
+                                            .build();
     return Optional.ofNullable(
         davResources.stream()
-            .findFirst()
-            .map(davResource -> createOwncloudResourceFrom(davResource, conversionProperties))
-            .orElse(null));
+                    .findFirst()
+                    .map(davResource -> createOwncloudResourceFrom(davResource, conversionProperties))
+                    .orElse(null));
   }
 
   @Override
@@ -418,10 +423,11 @@ public class OwncloudRestResourceServiceImpl implements OwncloudResourceService,
       getSardine().createDirectory(directoryURI.toString());
       return find(directory).get();
     } catch (SardineException e) {
-      SardineExceptionHandlerEnvironment handlerEnvironment = SardineExceptionHandlerEnvironment.builder()
-          .uri(URI.create(directory.toString()))
-          .sardineException(e)
-          .build();
+      SardineExceptionHandlerEnvironment handlerEnvironment =
+          SardineExceptionHandlerEnvironment.builder()
+                                            .uri(URI.create(directory.toString()))
+                                            .sardineException(e)
+                                            .build();
       return handleSardineException(handlerEnvironment).get();
     } catch (IOException e) {
       throw new OwncloudRestResourceException(e);
@@ -439,11 +445,12 @@ public class OwncloudRestResourceServiceImpl implements OwncloudResourceService,
           clientHttpRequest -> createRestCallback(clientHttpRequest, authentication),
           null);
     } catch (RestClientException restClientException) {
-      RestClientExceptionHandlerEnvironment exceptionHandlerEnvironment = RestClientExceptionHandlerEnvironment.builder()
-          .restClientException(restClientException)
-          .requestURI(resource.getHref())
-          .username(authentication.getName())
-          .build();
+      RestClientExceptionHandlerEnvironment exceptionHandlerEnvironment =
+          RestClientExceptionHandlerEnvironment.builder()
+                                               .restClientException(restClientException)
+                                               .requestURI(resource.getHref())
+                                               .username(authentication.getName())
+                                               .build();
       OwncloudRestUtils.handleRestClientException(exceptionHandlerEnvironment);
     }
   }
@@ -455,9 +462,9 @@ public class OwncloudRestResourceServiceImpl implements OwncloudResourceService,
     }
     return URI.create(
         UriComponentsBuilder.fromUri(userRoot)
-            .path(relativeTo.getPath())
-            .toUriString())
-        .normalize();
+                            .path(relativeTo.getPath())
+                            .toUriString())
+              .normalize();
   }
 
   private void createRestCallback(ClientHttpRequest clientHttpRequest, Authentication authentication) throws IOException {
@@ -467,13 +474,14 @@ public class OwncloudRestResourceServiceImpl implements OwncloudResourceService,
   @Override
   public InputStream getInputStream(OwncloudFileResource resource) {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-    PipedInputStreamRestSynchronizer pipedInputStreamSynchronizer = PipedInputStreamRestSynchronizer.build()
-        .authentication(authentication)
-        .owncloudRestProperties(properties)
-        .restOperations(restTemplate)
-        .uri(resource.getHref())
-        .uriResolver(this::resolveAsFileURI)
-        .build();
+    PipedInputStreamRestSynchronizer pipedInputStreamSynchronizer =
+        PipedInputStreamRestSynchronizer.build()
+                                        .authentication(authentication)
+                                        .owncloudRestProperties(properties)
+                                        .restOperations(restTemplate)
+                                        .uri(resource.getHref())
+                                        .uriResolver(this::resolveAsFileURI)
+                                        .build();
     return pipedInputStreamSynchronizer.getInputStream();
   }
 
@@ -481,14 +489,15 @@ public class OwncloudRestResourceServiceImpl implements OwncloudResourceService,
   public OutputStream getOutputStream(OwncloudFileResource resource) {
     checkOwncloudFileResource(resource);
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-    PipedOutputStreamRestSynchronizer pipedOutputStreamSynchronizer = PipedOutputStreamRestSynchronizer.builder()
-        .authentication(authentication)
-        .mediaType(resource.getMediaType())
-        .owncloudRestProperties(properties)
-        .restOperations(restTemplate)
-        .uri(resource.getHref())
-        .uriResolver(this::resolveAsFileURI)
-        .build();
+    PipedOutputStreamRestSynchronizer pipedOutputStreamSynchronizer =
+        PipedOutputStreamRestSynchronizer.builder()
+                                         .authentication(authentication)
+                                         .mediaType(resource.getMediaType())
+                                         .owncloudRestProperties(properties)
+                                         .restOperations(restTemplate)
+                                         .uri(resource.getHref())
+                                         .uriResolver(this::resolveAsFileURI)
+                                         .build();
     return pipedOutputStreamSynchronizer.getOutputStream();
   }
 
@@ -511,13 +520,14 @@ public class OwncloudRestResourceServiceImpl implements OwncloudResourceService,
           .orElseThrow(() -> new OwncloudNoFileResourceException(path));
       return getOutputStream(existingFile);
     }
-    OwncloudFileResource resource = OwncloudRestFileResourceImpl.fileBuilder()
-        .owncloudResource(
-            OwncloudRestResourceImpl.builder()
-                .href(path)
-                .mediaType(mediaType)
-                .build())
-        .build();
+    OwncloudFileResource resource =
+        OwncloudRestFileResourceImpl.fileBuilder()
+                                    .owncloudResource(
+                                        OwncloudRestResourceImpl.builder()
+                                                                .href(path)
+                                                                .mediaType(mediaType)
+                                                                .build())
+                                    .build();
     return getOutputStream(resource);
   }
 

@@ -17,11 +17,11 @@
 */
 package software.coolstuff.springframework.owncloud.service.impl.local;
 
-import java.net.URI;
-import java.nio.file.Path;
-
 import lombok.Builder;
 import lombok.Data;
+
+import java.net.URI;
+import java.nio.file.Path;
 
 @Data
 @Builder
@@ -29,5 +29,6 @@ class PipedOutputStreamAfterCopyEnvironment {
   private final Path path;
   private final URI uri;
   private final String username;
+  @Builder.Default
   private long contentLength = 0;
 }

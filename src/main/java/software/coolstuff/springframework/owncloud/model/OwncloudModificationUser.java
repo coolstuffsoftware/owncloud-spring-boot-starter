@@ -17,15 +17,17 @@
 */
 package software.coolstuff.springframework.owncloud.model;
 
+import lombok.Builder;
+import lombok.Data;
+import lombok.RequiredArgsConstructor;
+import lombok.Singular;
+import org.apache.commons.lang3.Validate;
+import org.springframework.security.core.GrantedAuthority;
+
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-
-import org.apache.commons.lang3.Validate;
-import org.springframework.security.core.GrantedAuthority;
-
-import lombok.*;
 
 /**
  * This Class will be used for any User Modifications by
@@ -36,8 +38,6 @@ import lombok.*;
  */
 @Data
 @RequiredArgsConstructor
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
-@Builder
 public class OwncloudModificationUser {
 
   /**
@@ -104,12 +104,24 @@ public class OwncloudModificationUser {
    *            Group Memberships of the User to be modified
    * @return modified Group Memberships
    */
-  @Singular("group")
   private List<String> groups = new ArrayList<>();
 
-  public static class OwncloudModificationUserBuilder {
-
-    private boolean enabled = true;
+  @Builder
+  private OwncloudModificationUser(
+      String username,
+      String password,
+      boolean enabled,
+      String displayname,
+      String email,
+      Long quota,
+      @Singular("group") List<String> groups) {
+    this.username = username;
+    setPassword(password);
+    setEnabled(enabled);
+    setDisplayname(displayname);
+    setEmail(email);
+    setQuota(quota);
+    this.groups = new ArrayList<>(groups);
   }
 
   /**
@@ -146,7 +158,7 @@ public class OwncloudModificationUser {
       return;
     }
     authorities.stream()
-        .map(GrantedAuthority::getAuthority)
-        .forEach(groups::add);
+               .map(GrantedAuthority::getAuthority)
+               .forEach(groups::add);
   }
 }

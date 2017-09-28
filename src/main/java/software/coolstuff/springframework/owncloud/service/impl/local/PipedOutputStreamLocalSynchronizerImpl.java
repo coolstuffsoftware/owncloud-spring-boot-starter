@@ -17,6 +17,18 @@
 */
 package software.coolstuff.springframework.owncloud.service.impl.local;
 
+import lombok.Builder;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
+import lombok.val;
+import org.springframework.security.core.Authentication;
+import software.coolstuff.springframework.owncloud.exception.resource.OwncloudLocalResourceException;
+import software.coolstuff.springframework.owncloud.exception.resource.OwncloudNoFileResourceException;
+import software.coolstuff.springframework.owncloud.exception.resource.OwncloudResourceException;
+import software.coolstuff.springframework.owncloud.service.impl.AbstractPipedStreamSynchronizerImpl;
+import software.coolstuff.springframework.owncloud.service.impl.local.OwncloudLocalProperties.ResourceServiceProperties;
+
 import java.io.*;
 import java.net.URI;
 import java.nio.file.Files;
@@ -25,19 +37,6 @@ import java.nio.file.StandardCopyOption;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
-
-import org.springframework.security.core.Authentication;
-
-import lombok.Builder;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
-import software.coolstuff.springframework.owncloud.exception.resource.OwncloudLocalResourceException;
-import software.coolstuff.springframework.owncloud.exception.resource.OwncloudNoFileResourceException;
-import software.coolstuff.springframework.owncloud.exception.resource.OwncloudResourceException;
-import software.coolstuff.springframework.owncloud.service.impl.AbstractPipedStreamSynchronizerImpl;
-import software.coolstuff.springframework.owncloud.service.impl.local.OwncloudLocalProperties.ResourceServiceProperties;
 
 @Slf4j
 class PipedOutputStreamLocalSynchronizerImpl extends AbstractPipedStreamSynchronizerImpl implements PipedOutputStreamLocalSynchronizer {
@@ -62,10 +61,10 @@ class PipedOutputStreamLocalSynchronizerImpl extends AbstractPipedStreamSynchron
     this.owncloudLocalProperties = owncloudLocalProperties;
     this.afterCopyCallback = Optional.ofNullable(afterCopyCallback);
     afterCopyCallbackEnvironment = PipedOutputStreamAfterCopyEnvironment.builder()
-        .path(outputFile)
-        .uri(getUri())
-        .username(getUsername())
-        .build();
+                                                                        .path(outputFile)
+                                                                        .uri(getUri())
+                                                                        .username(getUsername())
+                                                                        .build();
   }
 
   private Path getOutputFile(URI uri, Function<URI, Path> uriResolver) {
@@ -83,7 +82,7 @@ class PipedOutputStreamLocalSynchronizerImpl extends AbstractPipedStreamSynchron
     }
   }
 
-  @Builder
+  @Builder(builderClassName = "PipedOutputStreamLocalSynchronizerBuilder")
   private static PipedOutputStreamLocalSynchronizer build(
       final Authentication authentication,
       final URI uri,

@@ -17,12 +17,11 @@
 */
 package software.coolstuff.springframework.owncloud.service.impl.rest;
 
-import java.util.ArrayList;
-import java.util.List;
+import lombok.*;
 
 import javax.xml.bind.annotation.XmlRootElement;
-
-import lombok.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @lombok.Data
 abstract class Ocs {
@@ -116,6 +115,7 @@ abstract class Ocs {
         private Float relative;
       }
 
+      @lombok.Builder.Default
       private boolean enabled = true;
       private Quota quota;
       private String email;

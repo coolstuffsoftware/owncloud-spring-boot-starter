@@ -17,15 +17,14 @@
 */
 package software.coolstuff.springframework.owncloud.service.impl.local;
 
-import java.io.IOException;
-import java.nio.file.Path;
-
-import org.apache.commons.io.FileSystemUtils;
-
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileSystemUtils;
 import software.coolstuff.springframework.owncloud.exception.resource.OwncloudLocalResourceException;
 import software.coolstuff.springframework.owncloud.model.OwncloudQuota;
+
+import java.io.IOException;
+import java.nio.file.Path;
 
 /**
  * @author mufasa1976
@@ -43,11 +42,8 @@ class OwncloudLocalQuotaImpl implements OwncloudQuota, Cloneable {
   private Long total;
   @Getter
   @Setter
+  @Builder.Default
   private long used = 0;
-
-  static class OwncloudLocalQuotaBuilder {
-    private long used = 0;
-  }
 
   @Override
   public long getTotal() {

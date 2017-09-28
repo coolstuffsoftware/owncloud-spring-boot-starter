@@ -17,16 +17,14 @@
 */
 package software.coolstuff.springframework.owncloud.service.impl.rest;
 
-import java.util.concurrent.TimeUnit;
-
-import javax.validation.constraints.Min;
-
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.validation.annotation.Validated;
-
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.validation.annotation.Validated;
 import software.coolstuff.springframework.owncloud.service.impl.OwncloudProperties;
+
+import javax.validation.constraints.Min;
+import java.util.concurrent.TimeUnit;
 
 /**
  * advanced Properties for REST Implementation of the Owncloud Services
@@ -88,7 +86,7 @@ public class OwncloudRestProperties extends OwncloudProperties {
     }
 
     /** Google-Cache Properties for the Sardine Library Cache */
-    private CacheProperties cache = new CacheProperties();
+    private CacheProperties sardineCache = new CacheProperties();
   }
 
   /** advanced Properties for the REST Resource Service Implementation */

@@ -17,24 +17,7 @@
 */
 package software.coolstuff.springframework.owncloud.service.impl;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.test.web.client.match.MockRestRequestMatchers.*;
-import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
-import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
-
-import java.io.IOException;
-import java.io.StringWriter;
-import java.io.Writer;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URL;
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
-import java.text.Format;
-import java.util.*;
-
-import javax.validation.constraints.NotNull;
-
+import lombok.*;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -66,8 +49,6 @@ import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.test.web.client.RequestMatcher;
 import org.springframework.test.web.client.ResponseActions;
 import org.springframework.util.MultiValueMap;
-
-import lombok.*;
 import software.coolstuff.springframework.owncloud.config.AuthorityAppenderConfiguration;
 import software.coolstuff.springframework.owncloud.config.AuthorityMapperConfiguration;
 import software.coolstuff.springframework.owncloud.config.IgnoreOnComponentScan;
@@ -76,6 +57,23 @@ import software.coolstuff.springframework.owncloud.service.api.OwncloudGrantedAu
 import software.coolstuff.springframework.owncloud.service.impl.local.OwncloudLocalFileTestExecutionListener;
 import software.coolstuff.springframework.owncloud.service.impl.rest.OwncloudRestService;
 import software.coolstuff.springframework.owncloud.service.impl.rest.OwncloudRestServiceTest;
+
+import javax.validation.constraints.NotNull;
+import java.io.IOException;
+import java.io.StringWriter;
+import java.io.Writer;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URL;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.text.Format;
+import java.util.*;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.*;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(
@@ -299,20 +297,17 @@ public abstract class AbstractOwncloudServiceTest {
 
     private final static Format FLOAT_FORMAT = new DecimalFormat("###########0.00", DecimalFormatSymbols.getInstance(Locale.ENGLISH));
 
-    private boolean enabled;
+    @Builder.Default
+    private boolean enabled = true;
     private String email;
     private String displayname;
     private Long quota;
-    private Long used;
-    private Long free;
-    private Float relative;
-
-    public static class UserResponseBuilder {
-      private boolean enabled = true;
-      private Long free = 817_928_385L;
-      private Long used = 255_813_439L;
-      private Float relative = 23.82F;
-    }
+    @Builder.Default
+    private Long used = 817_928_385L;
+    @Builder.Default
+    private Long free = 255_813_439L;
+    @Builder.Default
+    private Float relative = 23.82F;
 
     public void fillContext(Context context) {
       context.put(ENABLED, Boolean.toString(enabled));
@@ -358,10 +353,7 @@ public abstract class AbstractOwncloudServiceTest {
     @NotNull
     private final String url;
     private String basicAuthentication;
+    @Builder.Default
     private MediaType responseType = MediaType.TEXT_XML;
-
-    public static class RestRequestBuilder {
-      private MediaType responseType = MediaType.TEXT_XML;
-    }
   }
 }

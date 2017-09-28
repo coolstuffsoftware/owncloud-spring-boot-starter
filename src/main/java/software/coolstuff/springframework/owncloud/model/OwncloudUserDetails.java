@@ -17,20 +17,18 @@
 */
 package software.coolstuff.springframework.owncloud.model;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
-import javax.validation.constraints.NotNull;
-
+import lombok.*;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
 import org.springframework.security.core.userdetails.UserDetails;
-
-import lombok.*;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudGrantedAuthoritiesMapper;
+
+import javax.validation.constraints.NotNull;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * Implementation of the {@link UserDetails} Specification of Spring Security.
@@ -110,10 +108,6 @@ public class OwncloudUserDetails implements UserDetails {
    * @return Quota of the User (in Bytes)
    */
   private Long quota;
-
-  public static class OwncloudUserDetailsBuilder {
-    private boolean enabled = true;
-  }
 
   @Builder
   public OwncloudUserDetails(

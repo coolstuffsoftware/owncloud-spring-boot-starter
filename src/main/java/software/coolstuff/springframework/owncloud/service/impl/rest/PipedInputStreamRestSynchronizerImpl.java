@@ -17,18 +17,17 @@
 */
 package software.coolstuff.springframework.owncloud.service.impl.rest;
 
-import java.io.*;
-import java.net.URI;
-import java.util.Optional;
-import java.util.function.BiFunction;
-
+import lombok.Builder;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestOperations;
-
-import lombok.Builder;
 import software.coolstuff.springframework.owncloud.exception.resource.OwncloudRestResourceException;
+
+import java.io.*;
+import java.net.URI;
+import java.util.Optional;
+import java.util.function.BiFunction;
 
 class PipedInputStreamRestSynchronizerImpl extends AbstractPipedStreamRestSynchronizerImpl implements PipedInputStreamRestSynchronizer {
 
@@ -48,7 +47,7 @@ class PipedInputStreamRestSynchronizerImpl extends AbstractPipedStreamRestSynchr
         uriResolver);
   }
 
-  @Builder
+  @Builder(builderClassName = "PipedInputStreamRestSynchronizerBuilder")
   private static PipedInputStreamRestSynchronizer build(
       final Authentication authentication,
       final URI uri,
@@ -73,9 +72,9 @@ class PipedInputStreamRestSynchronizerImpl extends AbstractPipedStreamRestSynchr
     try (OutputStream output = new PipedOutputStream(pipedInputStream)) {
       setPipeReady();
       ExecutionEnvironment executionEnvironment = ExecutionEnvironment.builder()
-          .responseExtractor(response -> copy(response.getBody(), output))
-          .runtimeExceptionHandler(pipedInputStream::setRuntimeException)
-          .build();
+                                                                      .responseExtractor(response -> copy(response.getBody(), output))
+                                                                      .runtimeExceptionHandler(pipedInputStream::setRuntimeException)
+                                                                      .build();
       execute(executionEnvironment);
     } catch (IOException e) {
       throw new OwncloudRestResourceException(e);
@@ -111,10 +110,10 @@ class PipedInputStreamRestSynchronizerImpl extends AbstractPipedStreamRestSynchr
 
     private void handleRestClientException(RestClientException exception) {
       RestClientExceptionHandlerEnvironment exceptionHandlerEnvironment = RestClientExceptionHandlerEnvironment.builder()
-          .restClientException(exception)
-          .requestURI(getUri())
-          .username(getUsername())
-          .build();
+                                                                                                               .restClientException(exception)
+                                                                                                               .requestURI(getUri())
+                                                                                                               .username(getUsername())
+                                                                                                               .build();
       OwncloudRestUtils.handleRestClientException(exceptionHandlerEnvironment);
     }
   }

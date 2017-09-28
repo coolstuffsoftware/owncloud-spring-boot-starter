@@ -17,17 +17,13 @@
 */
 package software.coolstuff.springframework.owncloud.service.impl.local;
 
-import java.util.Collection;
-import java.util.Set;
+import lombok.*;
 
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.xml.bind.annotation.*;
-
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
-import lombok.Singular;
+import java.util.Collection;
+import java.util.Set;
 
 @lombok.Data
 @NoArgsConstructor
@@ -50,6 +46,7 @@ class OwncloudLocalUserData {
     @NotNull
     private String username;
     private String password;
+    @Builder.Default
     private boolean enabled = true;
     private String displayname;
     private String email;
