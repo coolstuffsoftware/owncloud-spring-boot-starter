@@ -17,19 +17,17 @@
 */
 package software.coolstuff.springframework.owncloud.service.impl.local;
 
-import java.nio.file.Path;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-
-import javax.validation.constraints.NotNull;
-
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.validation.annotation.Validated;
-
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.validation.annotation.Validated;
 import software.coolstuff.springframework.owncloud.service.impl.OwncloudProperties;
+
+import javax.validation.constraints.NotNull;
+import java.nio.file.Path;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 /**
  * advanced Properties for local Implementation of the Owncloud Services
@@ -61,7 +59,7 @@ public class OwncloudLocalProperties extends OwncloudProperties {
      * @since 1.2.0
      */
     @RequiredArgsConstructor
-    public static enum MessageDigestAlgorithm {
+    public enum MessageDigestAlgorithm {
       /**
        * MD5
        * @since 1.2.0

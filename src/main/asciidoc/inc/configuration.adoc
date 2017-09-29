@@ -1,17 +1,43 @@
 == Configuration
 All Services of this Spring-Boot Starter will be managed by the following http://docs.spring.io/spring-boot/docs/1.4.3.RELEASE/reference/htmlsingle/#boot-features-external-config[Configuration Parameters].
-[cols="3,1*^,2,1*^,5", options="header"]
+[cols="3,1*,1*^,2,1*^,5", options="header"]
 |===
-| Name | mandatory | Data Type |Default | Description
-| owncloud.location | true | String | - | The Location of the Owncloud Instance
-| owncloud.user-service.enable-modifications | false | boolean | `false`
+| Name | available for | mandatory | Data Type |Default | Description
+| owncloud.location | - | true | String | - | The Location of the Owncloud Instance
+| owncloud.user-service.enable-modifications | - | false | boolean | `false`
   | Modifications through `OwncloudUserService` and `OwncloudGroupService` are allowed/disallowed
-| owncloud.resource-service.add-relative-down-path | true | boolean | `true`
+| owncloud.resource-service.add-relative-down-path | - | true | boolean | `true`
   | add `..` to the List of available Owncloud-Resource within a Directory
-| owncloud.resource-service.piped-stream-buffer-size | true | Integer | 8192
+| owncloud.resource-service.piped-stream-buffer-size | - | true | Integer | 8192
   | Buffer Size (in Bytes) for Content-Streaming (InputStream/OutputStream)
-| owncloud.resource-service.piped-stream-uncaught-exception-log-level | true
+| owncloud.resource-service.piped-stream-uncaught-exception-log-level | - | true
   | LogLevel | `error` | Log Level for any uncaught Exceptions while Content-Streaming
+| owncloud.resource-service.sardine-cache.concurrency-level | REST | false | Integer | -
+  | Concurrency Level for the Sardine Cache (look at link:++https://google.github.io/guava/releases/23.0/api/docs/com/google/common/cache/CacheBuilder.html#concurrencyLevel-int-++[Guava CacheBuilder `concurrencyLevel`])
+| owncloud.resource-service.sardine-cache.expire-after-access | REST | false | Long | -
+  | Duration of Availability of the cached Sardine-Implementation after the last Access (see link:++https://google.github.io/guava/releases/23.0/api/docs/com/google/common/cache/CacheBuilder.html#expireAfterAccess-long-java.util.concurrent.TimeUnit-++[Guava CacheBuilder `expireAfterAccess`])
+| owncloud.resource-service.sardine-cache.expire-after-access-time-unit | REST | false | java.util.concurrent.TimeUnit | TimeUnit.SECONDS
+  | Timeunit for `owncloud.resource-service.sardine-cache.expire-after-access`
+| owncloud.resource-service.sardine-cache.expire-after-write | REST | false | Long | -
+  | Duration of Availability of the cached Sardine-Implementation after Write (see link:++https://google.github.io/guava/releases/23.0/api/docs/com/google/common/cache/CacheBuilder.html#expireAfterWrite-long-java.util.concurrent.TimeUnit-++[Guava CacheBuilder `expireAfterWrite`])
+| owncloud.resource-service.sardine-cache.expire-after-write-time-unit | REST | false | java.util.concurrent.TimeUnit | TimeUnit.SECONDS
+  | Timeunit for `owncloud.resource-service.sardine-cache.expire-after-write`
+| owncloud.resource-service.sardine-cache.initial-capacity | REST | false | Integer | -
+  | Initial Capacity of the Sardine Cache (see link:++https://google.github.io/guava/releases/23.0/api/docs/com/google/common/cache/CacheBuilder.html#initialCapacity-int-++[Guava CacheBuilder `initialCapacity`])
+| owncloud.resource-service.sardine-cache.maximum-size | REST | false | Long | -
+  | Maximum Size of the Sardine Cache (see link:++https://google.github.io/guava/releases/23.0/api/docs/com/google/common/cache/CacheBuilder.html#maximumSize-long-++[Guava CacheBuilder `maximumSize`])
+| owncloud.resource-service.sardine-cache.maximum-weight | REST | false | Long | -
+  | Maximum Weight of the Entries within the Sardine Cache (see link:++https://google.github.io/guava/releases/23.0/api/docs/com/google/common/cache/CacheBuilder.html#maximumWeight-long-++[Guava CacheBuilder `maximumWeight`])
+| owncloud.resource-service.sardine-cache.refresh-after-write | REST | false | Long | -
+  | Duration when the Entries of the Sardine-Cache should be refreshed after Write (see link:++https://google.github.io/guava/releases/23.0/api/docs/com/google/common/cache/CacheBuilder.html#refreshAfterWrite-long-java.util.concurrent.TimeUnit-++[Guava CacheBuilder `refreshAfterWrite`])
+| owncloud.resource-service.sardine-cache.refresh-after-write-time-unit | REST | false | java.util.concurrent.TimeUnit | TimeUnit.SECONDS
+  | Timeunit for `owncloud.resource-service.sardine-cache.refresh-after-write`
+| owncloud.resource-service.message-digest-algorithm | LOCAL | true
+  | software.coolstuff.springframework.owncloud.service.impl.local.OwncloudLocalProperties.ResourceServiceProperties.MessageDigestAlgorithm
+  | MessageDigestAlgorithm.MD5
+  | Message Digest Algorithm for the Checksum Service
+| owncloud.resource-service.location | LOCAL | true | java.nio.file.Path | -
+  | Path of the local Files to be served by the `OwncloudResourceService`
 |===
 
 === owncloud.location
