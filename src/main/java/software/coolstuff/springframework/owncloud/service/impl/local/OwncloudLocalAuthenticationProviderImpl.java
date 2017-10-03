@@ -1,7 +1,8 @@
 package software.coolstuff.springframework.owncloud.service.impl.local;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -11,10 +12,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.SpringSecurityMessageSource;
 import org.springframework.security.core.context.SecurityContextHolder;
-
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
+import software.coolstuff.springframework.owncloud.service.impl.OwncloudGrantedAuthoritiesMappingService;
 import software.coolstuff.springframework.owncloud.service.impl.OwncloudUtils;
 
 @RequiredArgsConstructor
@@ -24,9 +23,8 @@ public class OwncloudLocalAuthenticationProviderImpl implements AuthenticationPr
   private MessageSourceAccessor messages = SpringSecurityMessageSource.getAccessor();
 
   private final OwncloudLocalUserDataService localDataService;
-
-  @Autowired
-  private OwncloudLocalUserDetailsServiceImpl userDetailsService;
+  private final OwncloudLocalUserDetailsServiceImpl userDetailsService;
+  private final OwncloudGrantedAuthoritiesMappingService grantedAuthoritiesMappingService;
 
   @Override
   public Authentication authenticate(Authentication authentication) throws AuthenticationException {
@@ -66,7 +64,7 @@ public class OwncloudLocalAuthenticationProviderImpl implements AuthenticationPr
     log.trace("Set the Password of User {} to the Authentication Object", username);
     owncloudUserDetails.setPassword(password);
 
-    return new UsernamePasswordAuthenticationToken(owncloudUserDetails, password, owncloudUserDetails.getAuthorities());
+    return new UsernamePasswordAuthenticationToken(owncloudUserDetails, password, grantedAuthoritiesMappingService.mapGrantedAuthorities(owncloudUserDetails));
   }
 
   @Override

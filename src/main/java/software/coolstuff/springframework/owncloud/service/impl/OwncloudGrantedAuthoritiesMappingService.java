@@ -17,23 +17,26 @@
 */
 package software.coolstuff.springframework.owncloud.service.impl;
 
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
-
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudGrantedAuthoritiesMapper;
 
+import java.util.Collection;
+
 /**
- * Map the {@link GrantedAuthoritiesMapper} or the {@link OwncloudGrantedAuthoritiesMapper} to the given UserDetails
+ * Map the {@link GrantedAuthoritiesMapper} or the {@link OwncloudGrantedAuthoritiesMapper} to the given
+ * Collection of {@link GrantedAuthority}
  *
  * @author mufasa1976
  */
-public interface OwncloudUserDetailsMappingService {
+public interface OwncloudGrantedAuthoritiesMappingService {
 
   /**
    * Map the {@link GrantedAuthoritiesMapper} or the {@link OwncloudGrantedAuthoritiesMapper} to the given UserDetails
    *
-   * @param userDetails UserDetails to be modified
+   * @param userDetails {@link OwncloudUserDetails} whose granted Authorities should be mapped
    */
-  void mapGrantedAuthorities(OwncloudUserDetails userDetails);
+  Collection<? extends GrantedAuthority> mapGrantedAuthorities(OwncloudUserDetails userDetails);
 
 }

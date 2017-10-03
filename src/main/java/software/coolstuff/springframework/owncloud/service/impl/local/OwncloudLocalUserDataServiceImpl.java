@@ -17,53 +17,47 @@
 */
 package software.coolstuff.springframework.owncloud.service.impl.local;
 
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.OutputStream;
-import java.util.*;
-
+import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-
-import com.fasterxml.jackson.dataformat.xml.XmlMapper;
-import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
-
-import lombok.extern.slf4j.Slf4j;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
 import software.coolstuff.springframework.owncloud.service.impl.OwncloudProperties;
-import software.coolstuff.springframework.owncloud.service.impl.OwncloudUserDetailsMappingService;
+
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
+import java.util.*;
 
 @Slf4j
 public class OwncloudLocalUserDataServiceImpl implements OwncloudLocalUserDataService, InitializingBean, DisposableBean {
 
   private final XmlMapper xmlMapper;
 
-  @Autowired
-  private ResourceLoader resourceLoader;
-
-  @Autowired
-  private OwncloudProperties properties;
-
-  @Autowired
-  private OwncloudUserDetailsMappingService owncloudUserDetailsMappingService;
+  private final ResourceLoader resourceLoader;
+  private final OwncloudProperties properties;
 
   private Map<String, OwncloudLocalUserData.User> users = new HashMap<>();
   private Set<String> groups = new HashSet<>();
 
-  public OwncloudLocalUserDataServiceImpl(Jackson2ObjectMapperBuilder builder) {
+  public OwncloudLocalUserDataServiceImpl(
+      Jackson2ObjectMapperBuilder builder, ResourceLoader resourceLoader, OwncloudProperties properties) {
     Validate.notNull(builder);
     xmlMapper = builder.createXmlMapper(true).build();
     xmlMapper.setAnnotationIntrospector(new JaxbAnnotationIntrospector(xmlMapper.getTypeFactory()));
+    this.resourceLoader = resourceLoader;
+    this.properties = properties;
   }
 
   @Override
@@ -140,29 +134,34 @@ public class OwncloudLocalUserDataServiceImpl implements OwncloudLocalUserDataSe
   }
 
   @Override
-  public OwncloudUserDetails convert(OwncloudLocalUserData.User user) {
+  public OwncloudUserDetails convert(OwncloudLocalUserData.User user, boolean prefixAuthorities) {
     List<GrantedAuthority> authorities = new ArrayList<>();
-    List<String> userGroups = new ArrayList<>();
     if (CollectionUtils.isNotEmpty(user.getGroups())) {
-      log.trace("Put {} Owncloud-Group(s) into the Authorities- and Group-List");
+      log.trace("Put {} Owncloud-Group(s) into the Authorities-List");
+      user.getGroups().stream()
+          .map(this::mapToGrantedAuthority)
+          .forEach(authorities::add);
       for (String group : user.getGroups()) {
         authorities.add(new SimpleGrantedAuthority(group));
-        userGroups.add(group);
       }
     }
 
     log.debug("Convert User {} from {} to {}", user.getUsername(), user.getClass(), OwncloudUserDetails.class);
-    OwncloudUserDetails userDetails = OwncloudUserDetails.builder()
-        .username(user.getUsername())
-        .enabled(user.isEnabled())
-        .displayname(user.getDisplayname())
-        .email(user.getEmail())
-        .quota(user.getQuota())
-        .groups(userGroups)
-        .authorities(authorities)
-        .build();
-    owncloudUserDetailsMappingService.mapGrantedAuthorities(userDetails);
-    return userDetails;
+    return OwncloudUserDetails.builder()
+                              .username(user.getUsername())
+                              .enabled(user.isEnabled())
+                              .displayname(user.getDisplayname())
+                              .email(user.getEmail())
+                              .quota(user.getQuota())
+                              .authorities(authorities)
+                              .build();
+  }
+
+  private GrantedAuthority mapToGrantedAuthority(String group) {
+    if (StringUtils.startsWith(group, properties.getRolePrefix())) {
+      return new SimpleGrantedAuthority(group);
+    }
+    return new SimpleGrantedAuthority(properties.getRolePrefix() + group);
   }
 
   @Override

@@ -37,7 +37,9 @@ All Services of this Spring-Boot Starter will be managed by the following http:/
   | MessageDigestAlgorithm.MD5
   | Message Digest Algorithm for the Checksum Service
 | owncloud.resource-service.location | LOCAL | true | java.nio.file.Path | -
-  | Path of the local Files to be served by the `OwncloudResourceService`
+  | Root-Path of the local Files to be served by the `OwncloudResourceService`
+| owncloud.resource-service.piped-stream-temporary-file-prefix | LOCAL | true | String | owncloud
+  | File Prefix used for temporary Files by `PipedInputStream` and `PipedOutputStream`
 |===
 
 === owncloud.location
@@ -119,7 +121,7 @@ the Data of the provided XML-File will be read on Application Startup and resist
 InMemory Representation used by the Services of this Spring-Boot Starter
 (Authentication, UserQuery, UserModification, ...).
 
-When you use a `file:` Resource the changed Data will be written to this Resource on a normal Shutdown
+When you use a `file:` Resource the changed Data will be rewritten to this Resource on a normal Shutdown
 of the Application. This is useful for incremental Integration Tests.
 
 When you use a `classpath:` Resource the changed Data will not be written. Therefor this type should be used

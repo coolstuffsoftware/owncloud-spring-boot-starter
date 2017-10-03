@@ -15,12 +15,12 @@ Beside the normal Attributes of the Spring Security http://docs.spring.io/spring
 
 * `getDisplayName()` ... The full Name of the User
 * `getEmail()` ... The Email of the User
-* `getGroups()` ... A List of Groups the User is a Member
+* `getGroups()` ... A List of Groups the User is a Member of
 
 === Groups vs. Authorities
-In Spring Security you will get Authorities to handle with them the Privileges (i.E. with `@Secured`). To work with Authorities you have to convert them to Roles. The simplest Way is to prepend the Prefix `ROLE_` just before an Authority.
+In Spring Security you handle Privileges with Authorities (i.E. with `@Secured`). To work with Authorities you have to convert them to Roles. The simplest Way is to prepend the Prefix `ROLE_` just before an Authority.
 
-But what is an Authority. The `OwncloudUserDetailsService` get all the Groups of a User and put it as Authorities into the `UserDetails` Object. The same `OwncloudUserDetailsService` will get the same Groups and put it as a List of Groups into the same `UserDetails` Object. In the End you have 2 Collections with the same Content.
+But what is an Authority. The `OwncloudUserDetailsService` gets all the Groups of a User and put it as Authorities into the `UserDetails` Object. The same `OwncloudUserDetailsService` will get the same Groups and put it as a List of Groups into the same `UserDetails` Object. In the End you have 2 Collections with the same Content.
 
 Why? Because you can modify the Authorities during the Login-Process by instantiating a http://docs.spring.io/spring-security/site/docs/4.2.1.RELEASE/apidocs/org/springframework/security/core/authority/mapping/GrantedAuthoritiesMapper.html[`GrantedAuthoritiesMapper`] or `OwncloudGrantedAuthoritiesMapper`.
 

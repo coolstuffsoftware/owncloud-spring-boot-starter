@@ -17,19 +17,12 @@
 */
 package software.coolstuff.springframework.owncloud.service.impl.rest;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.List;
-import java.util.Map;
-
-import javax.annotation.PostConstruct;
-
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.http.*;
@@ -46,39 +39,38 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.ResponseErrorHandler;
 import org.springframework.web.client.RestTemplate;
-
-import lombok.AccessLevel;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import software.coolstuff.springframework.owncloud.exception.OwncloudStatusException;
 import software.coolstuff.springframework.owncloud.exception.auth.OwncloudInvalidAuthenticationObjectException;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
-import software.coolstuff.springframework.owncloud.service.impl.OwncloudUserDetailsMappingService;
 import software.coolstuff.springframework.owncloud.service.impl.OwncloudUtils;
 
-@RequiredArgsConstructor(access = AccessLevel.PROTECTED)
+import javax.annotation.PostConstruct;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.List;
+import java.util.Map;
+
+import static lombok.AccessLevel.PROTECTED;
+
+@RequiredArgsConstructor(access = PROTECTED)
 @Slf4j
 abstract class AbstractOwncloudRestServiceImpl implements OwncloudRestService {
 
   private static final String DEFAULT_PATH = "/ocs/v1.php";
-
   private static final String AUTHORIZATION_METHOD_PREFIX = "Basic ";
 
   private final RestTemplateBuilder restTemplateBuilder;
+  private final OwncloudRestProperties properties;
   private final ResponseErrorHandler responseErrorHandler;
 
-  protected MessageSourceAccessor messages = SpringSecurityMessageSource.getAccessor();
-
+  @Getter(PROTECTED)
+  MessageSourceAccessor messages = SpringSecurityMessageSource.getAccessor();
   private RestTemplate restTemplate;
 
-  @Autowired
-  private OwncloudRestProperties properties;
-
-  @Autowired
-  private OwncloudUserDetailsMappingService owncloudUserDetailsMappingService;
-
-  protected AbstractOwncloudRestServiceImpl(RestTemplateBuilder builder) {
-    this(builder, new DefaultOwncloudResponseErrorHandler(SpringSecurityMessageSource.getAccessor()));
+  protected AbstractOwncloudRestServiceImpl(RestTemplateBuilder builder, OwncloudRestProperties properties) {
+    this(builder, properties, new DefaultOwncloudResponseErrorHandler(SpringSecurityMessageSource.getAccessor()));
   }
 
   @PostConstruct
@@ -200,30 +192,33 @@ abstract class AbstractOwncloudRestServiceImpl implements OwncloudRestService {
 
   protected OwncloudUserDetails convert(String username, Ocs.User user, Ocs.Groups groupsFromBackend) {
     List<GrantedAuthority> authorities = new ArrayList<>();
-    List<String> groups = new ArrayList<>();
     if (isAnyOwncloudGroupAvailable(groupsFromBackend)) {
       log.trace("Put {} Owncloud-Group(s) into the Authorities- and Group-List");
-      for (Ocs.Groups.Data.Group owncloudGroup : groupsFromBackend.getData().getGroups()) {
-        authorities.add(new SimpleGrantedAuthority(owncloudGroup.getGroup()));
-        groups.add(owncloudGroup.getGroup());
-      }
+      groupsFromBackend.getData().getGroups().stream()
+                       .map(Ocs.Groups.Data.Group::getGroup)
+                       .map(this::mapToGrantedAuthority)
+                       .forEach(authorities::add);
     }
 
     log.debug("Convert User {} from {} to {}", username, user.getClass(), OwncloudUserDetails.class);
-    OwncloudUserDetails userDetails = OwncloudUserDetails.builder()
-        .username(username)
-        .enabled(user.getData().isEnabled())
-        .displayname(user.getData().getDisplayname())
-        .email(user.getData().getEmail())
-        .quota(user.getData().getQuota().getTotal())
-        .groups(groups)
-        .authorities(authorities)
-        .build();
-    owncloudUserDetailsMappingService.mapGrantedAuthorities(userDetails);
-    return userDetails;
+    return OwncloudUserDetails.builder()
+                              .username(username)
+                              .enabled(user.getData().isEnabled())
+                              .displayname(user.getData().getDisplayname())
+                              .email(user.getData().getEmail())
+                              .quota(user.getData().getQuota().getTotal())
+                              .authorities(authorities)
+                              .build();
   }
 
   private boolean isAnyOwncloudGroupAvailable(Ocs.Groups groups) {
     return groups != null && groups.getData() != null && groups.getData().getGroups() != null;
+  }
+
+  private GrantedAuthority mapToGrantedAuthority(String group) {
+    if (StringUtils.startsWith(group, properties.getRolePrefix())) {
+      return new SimpleGrantedAuthority(group);
+    }
+    return new SimpleGrantedAuthority(properties.getRolePrefix() + group);
   }
 }

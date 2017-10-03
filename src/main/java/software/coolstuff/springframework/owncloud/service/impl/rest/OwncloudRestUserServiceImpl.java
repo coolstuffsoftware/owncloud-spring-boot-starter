@@ -17,13 +17,8 @@
 */
 package software.coolstuff.springframework.owncloud.service.impl.rest;
 
-import java.text.DecimalFormat;
-import java.text.Format;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
+import com.google.common.collect.Lists;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -32,21 +27,24 @@ import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-
-import com.google.common.collect.Lists;
-
-import lombok.extern.slf4j.Slf4j;
 import software.coolstuff.springframework.owncloud.exception.auth.OwncloudGroupNotFoundException;
 import software.coolstuff.springframework.owncloud.exception.auth.OwncloudUsernameAlreadyExistsException;
 import software.coolstuff.springframework.owncloud.model.OwncloudModificationUser;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
-import software.coolstuff.springframework.owncloud.service.impl.WithOwncloudModificationCheck;
+import software.coolstuff.springframework.owncloud.service.impl.CheckOwncloudModification;
+
+import java.text.DecimalFormat;
+import java.text.Format;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Slf4j
 public class OwncloudRestUserServiceImpl extends AbstractOwncloudRestServiceImpl implements OwncloudRestUserServiceExtension {
 
-  OwncloudRestUserServiceImpl(RestTemplateBuilder builder) {
-    super(builder);
+  OwncloudRestUserServiceImpl(RestTemplateBuilder builder, OwncloudRestProperties properties) {
+    super(builder, properties);
   }
 
   @Override
@@ -98,16 +96,16 @@ public class OwncloudRestUserServiceImpl extends AbstractOwncloudRestServiceImpl
     Ocs.User user = exchange("/cloud/users/{user}", HttpMethod.GET, emptyEntity(), Ocs.User.class, username);
     Ocs.User.Data.Quota quota = user.getData().getQuota();
     return OwncloudRestQuotaImpl.builder()
-        .username(username)
-        .free(quota.getFree())
-        .used(quota.getUsed())
-        .total(quota.getTotal())
-        .relative(quota.getRelative())
-        .build();
+                                .username(username)
+                                .free(quota.getFree())
+                                .used(quota.getUsed())
+                                .total(quota.getTotal())
+                                .relative(quota.getRelative())
+                                .build();
   }
 
   @Override
-  @WithOwncloudModificationCheck
+  @CheckOwncloudModification
   public OwncloudUserDetails save(OwncloudModificationUser user) {
     Validate.notNull(user);
     Validate.notBlank(user.getUsername());
@@ -417,7 +415,7 @@ public class OwncloudRestUserServiceImpl extends AbstractOwncloudRestServiceImpl
   }
 
   @Override
-  @WithOwncloudModificationCheck
+  @CheckOwncloudModification
   public void delete(String username) {
     Validate.notBlank(username);
 

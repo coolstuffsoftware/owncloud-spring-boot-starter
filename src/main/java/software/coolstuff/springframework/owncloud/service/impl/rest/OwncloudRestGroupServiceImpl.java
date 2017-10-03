@@ -17,32 +17,30 @@
 */
 package software.coolstuff.springframework.owncloud.service.impl.rest;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
+import com.google.common.collect.Lists;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.access.AccessDeniedException;
-
-import com.google.common.collect.Lists;
-
-import lombok.extern.slf4j.Slf4j;
 import software.coolstuff.springframework.owncloud.exception.auth.OwncloudGroupAlreadyExistsException;
 import software.coolstuff.springframework.owncloud.exception.auth.OwncloudGroupNotFoundException;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudGroupService;
-import software.coolstuff.springframework.owncloud.service.impl.WithOwncloudModificationCheck;
+import software.coolstuff.springframework.owncloud.service.impl.CheckOwncloudModification;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Slf4j
 public class OwncloudRestGroupServiceImpl extends AbstractOwncloudRestServiceImpl implements OwncloudGroupService {
 
   private static final String GROUP_PATH = "/cloud/groups/{group}";
 
-  OwncloudRestGroupServiceImpl(RestTemplateBuilder builder) {
-    super(builder);
+  OwncloudRestGroupServiceImpl(RestTemplateBuilder builder, OwncloudRestProperties properties) {
+    super(builder, properties);
   }
 
   @Override
@@ -114,7 +112,7 @@ public class OwncloudRestGroupServiceImpl extends AbstractOwncloudRestServiceImp
   }
 
   @Override
-  @WithOwncloudModificationCheck
+  @CheckOwncloudModification
   public void create(String groupname) {
     Validate.notBlank(groupname);
 
@@ -162,7 +160,7 @@ public class OwncloudRestGroupServiceImpl extends AbstractOwncloudRestServiceImp
   }
 
   @Override
-  @WithOwncloudModificationCheck
+  @CheckOwncloudModification
   public void delete(String groupname) {
     Validate.notBlank(groupname);
 

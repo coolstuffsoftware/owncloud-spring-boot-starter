@@ -17,6 +17,7 @@
 */
 package software.coolstuff.springframework.owncloud.service.impl.local;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
@@ -25,11 +26,12 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
-
-import lombok.RequiredArgsConstructor;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudGroupService;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudResourceService;
+import software.coolstuff.springframework.owncloud.service.impl.OwncloudGrantedAuthoritiesMappingService;
+import software.coolstuff.springframework.owncloud.service.impl.OwncloudProperties;
 
 @Configuration
 @RequiredArgsConstructor
@@ -39,6 +41,9 @@ import software.coolstuff.springframework.owncloud.service.api.OwncloudResourceS
 public class OwncloudLocalAutoConfiguration {
 
   private final Jackson2ObjectMapperBuilder jackson2ObjectMapperBuilder;
+  private final ResourceLoader resourceLoader;
+  private final OwncloudProperties owncloudProperties;
+  private final OwncloudGrantedAuthoritiesMappingService owncloudGrantedAuthoritiesMappingService;
 
   @Bean
   public OwncloudLocalUserServiceExtension owncloudLocalUserService() {
@@ -54,7 +59,7 @@ public class OwncloudLocalAutoConfiguration {
   @Qualifier("owncloudAuthenticationProvider")
   @ConditionalOnMissingBean(OwncloudLocalAuthenticationProviderImpl.class)
   public OwncloudLocalAuthenticationProviderImpl owncloudAuthenticationProvider() {
-    return new OwncloudLocalAuthenticationProviderImpl(owncloudLocalUserDataService());
+    return new OwncloudLocalAuthenticationProviderImpl(owncloudLocalUserDataService(), owncloudUserDetailsService(), owncloudGrantedAuthoritiesMappingService);
   }
 
   @Bean
@@ -67,7 +72,7 @@ public class OwncloudLocalAutoConfiguration {
   @Bean
   @ConditionalOnMissingBean(OwncloudLocalUserDataService.class)
   public OwncloudLocalUserDataService owncloudLocalUserDataService() {
-    return new OwncloudLocalUserDataServiceImpl(jackson2ObjectMapperBuilder);
+    return new OwncloudLocalUserDataServiceImpl(jackson2ObjectMapperBuilder, resourceLoader, owncloudProperties);
   }
 
   @Bean

@@ -31,7 +31,6 @@ import lombok.val;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.apache.http.HttpStatus;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
@@ -73,20 +72,21 @@ public class OwncloudRestResourceServiceImpl implements OwncloudResourceService,
 
   private final RestTemplate restTemplate;
   private final OwncloudRestProperties properties;
+  private final SardineCacheLoader sardineCacheLoader;
+  private final OwncloudRestUserServiceExtension userService;
   private final String rootUri;
 
   private LoadingCache<String, Sardine> sardineCache;
 
-  @Autowired
-  private SardineCacheLoader sardineCacheLoader;
-
-  @Autowired
-  private OwncloudRestUserServiceExtension userQueryService;
-
   public OwncloudRestResourceServiceImpl(
       final RestTemplateBuilder builder,
-      final OwncloudRestProperties properties) throws MalformedURLException {
+      final OwncloudRestProperties properties,
+      final SardineCacheLoader sardineCacheLoader,
+      final OwncloudRestUserServiceExtension userService) throws MalformedURLException {
     this.properties = properties;
+    this.sardineCacheLoader = sardineCacheLoader;
+    this.userService = userService;
+
     URL locationURL = OwncloudRestUtils.checkAndConvertLocation(properties.getLocation());
     this.rootUri = appendOptionalSuffix(locationURL, URI_SUFFIX);
     HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory();
@@ -534,6 +534,6 @@ public class OwncloudRestResourceServiceImpl implements OwncloudResourceService,
   @Override
   public OwncloudQuota getQuota() {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-    return userQueryService.getQuota(authentication.getName());
+    return userService.getQuota(authentication.getName());
   }
 }

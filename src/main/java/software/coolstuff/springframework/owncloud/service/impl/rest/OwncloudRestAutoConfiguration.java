@@ -17,8 +17,7 @@
 */
 package software.coolstuff.springframework.owncloud.service.impl.rest;
 
-import java.net.MalformedURLException;
-
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
@@ -28,11 +27,14 @@ import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.converter.xml.MappingJackson2XmlHttpMessageConverter;
-
 import software.coolstuff.springframework.owncloud.service.api.OwncloudGroupService;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudResourceService;
+import software.coolstuff.springframework.owncloud.service.impl.OwncloudGrantedAuthoritiesMappingService;
+
+import java.net.MalformedURLException;
 
 @Configuration
+@RequiredArgsConstructor
 @ConditionalOnClass({
     RestTemplateBuilder.class,
     MappingJackson2XmlHttpMessageConverter.class
@@ -41,33 +43,37 @@ import software.coolstuff.springframework.owncloud.service.api.OwncloudResourceS
 @EnableConfigurationProperties(OwncloudRestProperties.class)
 public class OwncloudRestAutoConfiguration {
 
+  private final RestTemplateBuilder restTemplateBuilder;
+  private final OwncloudRestProperties owncloudRestProperties;
+  private final OwncloudGrantedAuthoritiesMappingService owncloudGrantedAuthoritiesMappingService;
+
   @Bean
-  public OwncloudRestUserServiceExtension owncloudUserRestService(RestTemplateBuilder builder) {
-    return new OwncloudRestUserServiceImpl(builder);
+  public OwncloudRestUserServiceExtension owncloudUserRestService() {
+    return new OwncloudRestUserServiceImpl(restTemplateBuilder, owncloudRestProperties);
   }
 
   @Bean
-  public OwncloudGroupService owncloudGroupRestService(RestTemplateBuilder builder) {
-    return new OwncloudRestGroupServiceImpl(builder);
+  public OwncloudGroupService owncloudGroupRestService() {
+    return new OwncloudRestGroupServiceImpl(restTemplateBuilder, owncloudRestProperties);
   }
 
   @Bean
   @Qualifier("owncloudAuthenticationProvider")
   @ConditionalOnMissingBean(OwncloudRestAuthenticationProviderImpl.class)
-  public OwncloudRestAuthenticationProviderImpl owncloudRestAuthenticationProvider(RestTemplateBuilder builder) {
-    return new OwncloudRestAuthenticationProviderImpl(builder);
+  public OwncloudRestAuthenticationProviderImpl owncloudRestAuthenticationProvider() {
+    return new OwncloudRestAuthenticationProviderImpl(restTemplateBuilder, owncloudRestProperties, owncloudRestUserDetailsService(), owncloudGrantedAuthoritiesMappingService);
   }
 
   @Bean
   @Qualifier("owncloudUserDetailsService")
   @ConditionalOnMissingBean(OwncloudRestUserDetailsServiceImpl.class)
-  public OwncloudRestUserDetailsServiceImpl owncloudRestUserDetailsService(RestTemplateBuilder builder) {
-    return new OwncloudRestUserDetailsServiceImpl(builder);
+  public OwncloudRestUserDetailsServiceImpl owncloudRestUserDetailsService() {
+    return new OwncloudRestUserDetailsServiceImpl(restTemplateBuilder, owncloudRestProperties);
   }
 
   @Bean
-  public OwncloudResourceService owncloudResourceService(RestTemplateBuilder builder, OwncloudRestProperties properties) throws MalformedURLException {
-    return new OwncloudRestResourceServiceImpl(builder, properties);
+  public OwncloudResourceService owncloudResourceService() throws MalformedURLException {
+    return new OwncloudRestResourceServiceImpl(restTemplateBuilder, owncloudRestProperties, sardineCacheLoader(), owncloudUserRestService());
   }
 
   @Bean

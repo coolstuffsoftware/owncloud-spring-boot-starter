@@ -17,30 +17,32 @@
 */
 package software.coolstuff.springframework.owncloud.service.impl;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
-
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudGrantedAuthoritiesMapper;
 
+import java.util.Collection;
+
+@RequiredArgsConstructor
 @Slf4j
-public class OwncloudUserDetailsMappingServiceImpl implements OwncloudUserDetailsMappingService {
+public class OwncloudGrantedAuthoritiesMappingServiceImpl implements OwncloudGrantedAuthoritiesMappingService {
 
-  @Autowired(required = false)
-  private OwncloudGrantedAuthoritiesMapper owncloudGrantedAuthoritiesMapper;
-
-  @Autowired(required = false)
-  private GrantedAuthoritiesMapper grantedAuthoritiesMapper;
+  private final OwncloudGrantedAuthoritiesMapper owncloudGrantedAuthoritiesMapper;
+  private final GrantedAuthoritiesMapper grantedAuthoritiesMapper;
 
   @Override
-  public void mapGrantedAuthorities(OwncloudUserDetails userDetails) {
+  public Collection<? extends GrantedAuthority> mapGrantedAuthorities(OwncloudUserDetails userDetails) {
     if (owncloudGrantedAuthoritiesMapper != null) {
       log.debug("Map the Authorities of User {} by {} ({})", userDetails.getUsername(), OwncloudGrantedAuthoritiesMapper.class, owncloudGrantedAuthoritiesMapper.getClass());
-      userDetails.setAuthorities(owncloudGrantedAuthoritiesMapper.mapAuthorities(userDetails.getUsername(), userDetails.getAuthorities()));
+      return owncloudGrantedAuthoritiesMapper.mapAuthorities(userDetails.getUsername(), userDetails.getAuthorities());
     } else if (grantedAuthoritiesMapper != null) {
       log.debug("Map the Authorities of User {} by {} ({})", userDetails.getUsername(), GrantedAuthoritiesMapper.class, grantedAuthoritiesMapper.getClass());
-      userDetails.setAuthorities(grantedAuthoritiesMapper.mapAuthorities(userDetails.getAuthorities()));
+      return grantedAuthoritiesMapper.mapAuthorities(userDetails.getAuthorities());
     }
+    log.debug("Return unmodified granted Authorities of User {}", userDetails.getUsername());
+    return userDetails.getAuthorities();
   }
 }

@@ -21,14 +21,10 @@ import lombok.*;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
 import org.springframework.security.core.userdetails.UserDetails;
-import software.coolstuff.springframework.owncloud.service.api.OwncloudGrantedAuthoritiesMapper;
 
 import javax.validation.constraints.NotNull;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 /**
  * Implementation of the {@link UserDetails} Specification of Spring Security.
@@ -78,16 +74,6 @@ public class OwncloudUserDetails implements UserDetails {
   private Collection<? extends GrantedAuthority> authorities;
 
   /**
-   * Owncloud Groups of the authenticated User.
-   * <p/>
-   * If neither {@link OwncloudGrantedAuthoritiesMapper} nor {@link GrantedAuthoritiesMapper} will be used then
-   * this is the same as {@link #getAuthorities()}
-   * @param groups Owncloud Groups of the authenticated User
-   * @return Owncloud Groups of the authenticated User
-   */
-  private List<String> groups = new ArrayList<>();
-
-  /**
    * Display Name of the authenticated User.
    * @param displayname Display Name of the authenticated User
    * @return Display Name of the authenticated User
@@ -115,7 +101,6 @@ public class OwncloudUserDetails implements UserDetails {
       String password,
       boolean enabled,
       Collection<? extends GrantedAuthority> authorities,
-      List<String> groups,
       String displayname,
       String email,
       Long quota) {
@@ -123,7 +108,6 @@ public class OwncloudUserDetails implements UserDetails {
     setPassword(password);
     setEnabled(enabled);
     setAuthorities(authorities);
-    setGroups(groups);
     setDisplayname(displayname);
     setEmail(email);
     setQuota(quota);

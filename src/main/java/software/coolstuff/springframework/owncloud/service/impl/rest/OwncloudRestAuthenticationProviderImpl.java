@@ -17,8 +17,8 @@
 */
 package software.coolstuff.springframework.owncloud.service.impl.rest;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -28,20 +28,25 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
-
-import lombok.extern.slf4j.Slf4j;
 import software.coolstuff.springframework.owncloud.exception.OwncloudStatusException;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
+import software.coolstuff.springframework.owncloud.service.impl.OwncloudGrantedAuthoritiesMappingService;
 import software.coolstuff.springframework.owncloud.service.impl.OwncloudUtils;
 
 @Slf4j
 public class OwncloudRestAuthenticationProviderImpl extends AbstractOwncloudRestServiceImpl implements AuthenticationProvider {
 
-  @Autowired
-  private OwncloudRestUserDetailsServiceImpl userDetailsService;
+  private final OwncloudRestUserDetailsServiceImpl userDetailsService;
+  private final OwncloudGrantedAuthoritiesMappingService grantedAuthoritiesMappingService;
 
-  public OwncloudRestAuthenticationProviderImpl(RestTemplateBuilder builder) {
-    super(builder);
+  public OwncloudRestAuthenticationProviderImpl(
+      RestTemplateBuilder builder,
+      OwncloudRestProperties properties,
+      OwncloudRestUserDetailsServiceImpl userDetailsService,
+      OwncloudGrantedAuthoritiesMappingService grantedAuthoritiesMappingService) {
+    super(builder, properties);
+    this.userDetailsService = userDetailsService;
+    this.grantedAuthoritiesMappingService = grantedAuthoritiesMappingService;
   }
 
   @Override
@@ -73,7 +78,7 @@ public class OwncloudRestAuthenticationProviderImpl extends AbstractOwncloudRest
     log.trace("Set the Password of User {} to the Authentication Object", username);
     owncloudUserDetails.setPassword(password);
 
-    return new UsernamePasswordAuthenticationToken(owncloudUserDetails, password, owncloudUserDetails.getAuthorities());
+    return new UsernamePasswordAuthenticationToken(owncloudUserDetails, password, grantedAuthoritiesMappingService.mapGrantedAuthorities(owncloudUserDetails));
   }
 
   @Override

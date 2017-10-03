@@ -17,21 +17,20 @@
 */
 package software.coolstuff.springframework.owncloud.service.impl.rest;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.Validate;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-
-import lombok.extern.slf4j.Slf4j;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
 
 @Slf4j
 public class OwncloudRestUserDetailsServiceImpl extends AbstractOwncloudRestServiceImpl implements UserDetailsService {
 
-  OwncloudRestUserDetailsServiceImpl(RestTemplateBuilder builder) {
-    super(builder);
+  OwncloudRestUserDetailsServiceImpl(RestTemplateBuilder builder, OwncloudRestProperties properties) {
+    super(builder, properties);
   }
 
   @Override

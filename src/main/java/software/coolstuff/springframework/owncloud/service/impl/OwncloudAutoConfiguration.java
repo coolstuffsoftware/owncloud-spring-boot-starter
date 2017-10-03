@@ -17,25 +17,34 @@
 */
 package software.coolstuff.springframework.owncloud.service.impl;
 
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
+import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
+import software.coolstuff.springframework.owncloud.service.api.OwncloudGrantedAuthoritiesMapper;
 
 @Configuration
+@RequiredArgsConstructor
 @ConditionalOnProperty(prefix = "owncloud", name = "location")
 @EnableAspectJAutoProxy
 public class OwncloudAutoConfiguration {
 
+  private final OwncloudProperties owncloudProperties;
+
   @Bean
-  public OwncloudAuthenticationTypeChecker owncloudUserModificationChecker(OwncloudProperties owncloudProperties) {
+  public OwncloudAuthenticationTypeChecker owncloudUserModificationChecker() {
     return new OwncloudAuthenticationTypeChecker(owncloudProperties);
   }
 
   @Bean
-  @ConditionalOnMissingBean(OwncloudUserDetailsMappingService.class)
-  public OwncloudUserDetailsMappingService owncloudUserDetailsMappingService() {
-    return new OwncloudUserDetailsMappingServiceImpl();
+  @ConditionalOnMissingBean(OwncloudGrantedAuthoritiesMappingService.class)
+  public OwncloudGrantedAuthoritiesMappingService owncloudUserDetailsMappingService(
+      @Autowired(required = false) OwncloudGrantedAuthoritiesMapper owncloudGrantedAuthoritiesMapper,
+      @Autowired(required = false) GrantedAuthoritiesMapper grantedAuthoritiesMapper) {
+    return new OwncloudGrantedAuthoritiesMappingServiceImpl(owncloudGrantedAuthoritiesMapper, grantedAuthoritiesMapper);
   }
 }

@@ -17,13 +17,13 @@
 */
 package software.coolstuff.springframework.owncloud.service.impl.local;
 
-import java.util.Collection;
-
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
+
+import java.util.Collection;
 
 interface OwncloudLocalUserDataService {
 
-  OwncloudUserDetails convert(OwncloudLocalUserData.User user);
+  OwncloudUserDetails convert(OwncloudLocalUserData.User user, boolean prefixAuthorities);
 
   boolean userNotExists(String username);
 

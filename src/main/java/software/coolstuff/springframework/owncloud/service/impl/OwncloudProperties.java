@@ -17,15 +17,14 @@
 */
 package software.coolstuff.springframework.owncloud.service.impl;
 
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
-
-import org.springframework.boot.logging.LogLevel;
-import org.springframework.validation.annotation.Validated;
-
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.boot.logging.LogLevel;
+import org.springframework.validation.annotation.Validated;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudUserService;
+
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
 
 /**
  * Owncloud Configuration Properties.
@@ -138,6 +137,13 @@ public abstract class OwncloudProperties {
    * @since 1.2.0
    */
   private UserService userService = new UserService();
+
+  /**
+   * Role Prefix for the granted Authorities of the UserDetailsService
+   * @since 1.2.0
+   */
+  @NotNull
+  private String rolePrefix = "";
 
   /**
    * WebDAV common Properties

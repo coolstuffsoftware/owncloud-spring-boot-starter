@@ -1,17 +1,16 @@
 package software.coolstuff.springframework.owncloud.service.impl.local;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
-
-import lombok.extern.slf4j.Slf4j;
 import software.coolstuff.springframework.owncloud.exception.auth.OwncloudGroupAlreadyExistsException;
 import software.coolstuff.springframework.owncloud.exception.auth.OwncloudGroupNotFoundException;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudGroupService;
-import software.coolstuff.springframework.owncloud.service.impl.WithOwncloudModificationCheck;
+import software.coolstuff.springframework.owncloud.service.impl.CheckOwncloudModification;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Slf4j
 public class OwncloudLocalGroupServiceImpl extends AbstractOwncloudLocalUserAndGroupServiceImpl implements OwncloudGroupService {
@@ -81,7 +80,7 @@ public class OwncloudLocalGroupServiceImpl extends AbstractOwncloudLocalUserAndG
   }
 
   @Override
-  @WithOwncloudModificationCheck
+  @CheckOwncloudModification
   public void create(String groupname) {
     Validate.notBlank(groupname);
     if (getLocalUserDataService().groupExists(groupname)) {
@@ -94,7 +93,7 @@ public class OwncloudLocalGroupServiceImpl extends AbstractOwncloudLocalUserAndG
   }
 
   @Override
-  @WithOwncloudModificationCheck
+  @CheckOwncloudModification
   public void delete(String groupname) {
     Validate.notBlank(groupname);
 

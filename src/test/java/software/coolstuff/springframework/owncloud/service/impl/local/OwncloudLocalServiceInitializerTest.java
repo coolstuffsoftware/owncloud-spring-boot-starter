@@ -19,26 +19,35 @@ package software.coolstuff.springframework.owncloud.service.impl.local;
 
 import org.junit.Test;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
+import software.coolstuff.springframework.owncloud.service.impl.OwncloudProperties;
 
 public class OwncloudLocalServiceInitializerTest {
+
+  @Autowired
+  private ResourceLoader resourceLoader;
+
+  @Autowired
+  private OwncloudProperties owncloudProperties;
 
   @Test(expected = IllegalStateException.class)
   public void testCheckGroupReferences_NOK() throws Exception {
     Jackson2ObjectMapperBuilder builder = Jackson2ObjectMapperBuilder.xml();
-    InitializingBean localDataService = new OwncloudLocalUserDataServiceImpl(builder) {
+    InitializingBean localDataService = new OwncloudLocalUserDataServiceImpl(builder, resourceLoader, owncloudProperties) {
 
       @Override
       public void afterPropertiesSet() throws Exception {
         checkGroupReferences(
             OwncloudLocalUserData.builder()
-                .user(
-                    OwncloudLocalUserData.User.builder()
-                        .group("group1")
-                        .group("group2")
-                        .build())
-                .group("group1")
-                .build());
+                                 .user(
+                                     OwncloudLocalUserData.User.builder()
+                                                               .group("group1")
+                                                               .group("group2")
+                                                               .build())
+                                 .group("group1")
+                                 .build());
       }
 
     };

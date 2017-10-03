@@ -1,5 +1,7 @@
 package software.coolstuff.springframework.owncloud.service.impl;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
@@ -7,9 +9,6 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import software.coolstuff.springframework.owncloud.exception.auth.OwncloudInvalidAuthenticationObjectException;
 
 @RequiredArgsConstructor
@@ -20,7 +19,7 @@ public class OwncloudAuthenticationTypeChecker {
   private final OwncloudProperties owncloudProperties;
 
   @Before("execution(* software.coolstuff.springframework.owncloud.service.api..*.*(..)) && "
-      + "@annotation(software.coolstuff.springframework.owncloud.service.impl.WithOwncloudModificationCheck)")
+      + "@annotation(software.coolstuff.springframework.owncloud.service.impl.CheckOwncloudModification)")
   void checkModificationsAllowed(JoinPoint joinPoint) {
     if (modificationsNotAllowed()) {
       log.warn("Access denied for Method {}.{}() because Modifications are not allowed",

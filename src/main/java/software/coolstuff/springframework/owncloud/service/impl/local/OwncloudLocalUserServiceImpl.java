@@ -1,21 +1,20 @@
 package software.coolstuff.springframework.owncloud.service.impl.local;
 
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Validate;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import software.coolstuff.springframework.owncloud.exception.auth.OwncloudGroupNotFoundException;
+import software.coolstuff.springframework.owncloud.model.OwncloudModificationUser;
+import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
+import software.coolstuff.springframework.owncloud.service.impl.CheckOwncloudModification;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
-
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.Validate;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-
-import lombok.extern.slf4j.Slf4j;
-import software.coolstuff.springframework.owncloud.exception.auth.OwncloudGroupNotFoundException;
-import software.coolstuff.springframework.owncloud.model.OwncloudModificationUser;
-import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
-import software.coolstuff.springframework.owncloud.service.impl.WithOwncloudModificationCheck;
 
 @Slf4j
 public class OwncloudLocalUserServiceImpl extends AbstractOwncloudLocalUserAndGroupServiceImpl implements OwncloudLocalUserServiceExtension {
@@ -48,11 +47,11 @@ public class OwncloudLocalUserServiceImpl extends AbstractOwncloudLocalUserAndGr
   @Override
   public OwncloudUserDetails findOne(String username) {
     OwncloudLocalUserData.User user = getCheckedUser(username);
-    return getLocalUserDataService().convert(user);
+    return getLocalUserDataService().convert(user, false);
   }
 
   @Override
-  @WithOwncloudModificationCheck
+  @CheckOwncloudModification
   public OwncloudUserDetails save(OwncloudModificationUser modificationUser) {
     Validate.notNull(modificationUser);
     Validate.notBlank(modificationUser.getUsername());
@@ -79,10 +78,9 @@ public class OwncloudLocalUserServiceImpl extends AbstractOwncloudLocalUserAndGr
 
     manageGroups(existingUser, modificationUser);
 
-    OwncloudUserDetails changedUserDetails = getLocalUserDataService().convert(existingUser);
+    OwncloudUserDetails changedUserDetails = getLocalUserDataService().convert(existingUser, false);
     log.debug("Notify registered Listeners about changed UserDetails {}", changedUserDetails);
-    saveUserListeners.stream()
-        .forEach(listener -> listener.accept(changedUserDetails));
+    saveUserListeners.forEach(listener -> listener.accept(changedUserDetails));
     log.info("User {} successfully modified", changedUserDetails.getUsername());
     return changedUserDetails;
   }
@@ -104,7 +102,7 @@ public class OwncloudLocalUserServiceImpl extends AbstractOwncloudLocalUserAndGr
   }
 
   @Override
-  @WithOwncloudModificationCheck
+  @CheckOwncloudModification
   public void delete(String username) {
     Validate.notBlank(username);
     if (getLocalUserDataService().userNotExists(username)) {
@@ -115,7 +113,7 @@ public class OwncloudLocalUserServiceImpl extends AbstractOwncloudLocalUserAndGr
     getLocalUserDataService().removeUser(username);
     log.debug("Notify registered Listeners about removed User {}", username);
     deleteUserListeners.stream()
-        .forEach(listener -> listener.accept(username));
+                       .forEach(listener -> listener.accept(username));
     log.info("User {} successfully removed", username);
   }
 
