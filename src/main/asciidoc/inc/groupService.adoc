@@ -1,0 +1,30 @@
+== OwncloudGroupService
+When you are authenticated by the Owncloud `AuthenticationProvider` you can use this Service simply by `@Autowire` it to your Bean.
+
+For more Details about the Owncloud REST-Calls please look at the https://doc.owncloud.org/server/latest/admin_manual/configuration_user/user_provisioning_api.html[Owncloud User provisioning API]. +
+
+The following Methods will be available:
+[cols="2a, 5a, 5a", options="header"]
+|===
+| Method | Owncloud REST-Call | Description
+| `List<String> findAll()`
+| `GET /ocs/v1.php/cloud/groups`
+| All Groups
+| `List<String> findAll(String filter)`
+| `GET /ocs/v1.php/cloud/groups?search={filter}`
+| All Groups whose Name matches the Search criteria
+| `List<String> findAllUsers(String groupname)`
+| `GET /ocs/v1.php/cloud/groups/{groupname}`
+| All Users associated to the Group
+| `List<String> findAllGroups(String username)`
+| `GET /ocs/v1.php/cloud/users/{username}/groups`
+| All Groups associated to the User
+| `void create(String groupname)`
+| `POST /ocs/v1.php/groups -d groupid="{groupname}"`
+| Create a new Group
+| `void delete(String groupname)``
+| `DELETE /ocs/v1.php/groups/{groupname}``
+| Removes a Group from Owncloud
+
+NOTE: all Memberships of this Group will also be removed. Also all Shares (Files, Calendars, Addressbooks, ...)
+|===

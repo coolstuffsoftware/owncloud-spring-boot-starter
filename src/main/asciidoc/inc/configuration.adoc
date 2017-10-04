@@ -43,7 +43,7 @@ All Services of this Spring-Boot Starter will be managed by the following http:/
 |===
 
 === owncloud.location
-The Configuration Parameter `owncloud.location` defines, what Backend will be used.
+The Configuration Parameter `owncloud.location` defines, which Backend will be used.
 
 It can have one of the following Values:
 [cols="1,1*^,10", options="header"]

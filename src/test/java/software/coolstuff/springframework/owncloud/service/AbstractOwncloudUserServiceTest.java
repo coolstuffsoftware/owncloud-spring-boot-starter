@@ -40,17 +40,17 @@ public abstract class AbstractOwncloudUserServiceTest extends AbstractOwncloudSe
   @Test
   public void testOwncloudModificationUserBuilderWithGroups() throws Exception {
     OwncloudUserDetails userDetails = OwncloudUserDetails.builder()
-        .username("user1")
-        .password("password")
-        .enabled(true)
-        .displayname("Mr. User 1")
-        .email("user1@example.com")
-        .authorities(Lists.newArrayList(
-            new SimpleGrantedAuthority("group1"),
-            new SimpleGrantedAuthority("group2")))
-        .build();
+                                                         .username("user1")
+                                                         .password("password")
+                                                         .enabled(true)
+                                                         .displayname("Mr. User 1")
+                                                         .email("user1@example.com")
+                                                         .authorities(Lists.newArrayList(
+                                                             new SimpleGrantedAuthority("group1"),
+                                                             new SimpleGrantedAuthority("group2")))
+                                                         .build();
 
-    OwncloudModificationUser modificationUser = new OwncloudModificationUser(userDetails);
+    OwncloudModificationUser modificationUser = OwncloudModificationUser.of(userDetails);
     verifyServer();
 
     assertThat(modificationUser).isNotNull();
@@ -65,14 +65,14 @@ public abstract class AbstractOwncloudUserServiceTest extends AbstractOwncloudSe
   @Test
   public void testOwncloudModificationUserBuilderWithoutGroups() throws Exception {
     OwncloudUserDetails userDetails = OwncloudUserDetails.builder()
-        .username("user1")
-        .password("password")
-        .enabled(true)
-        .displayname("Mr. User 1")
-        .email("user1@example.com")
-        .build();
+                                                         .username("user1")
+                                                         .password("password")
+                                                         .enabled(true)
+                                                         .displayname("Mr. User 1")
+                                                         .email("user1@example.com")
+                                                         .build();
 
-    OwncloudModificationUser modificationUser = new OwncloudModificationUser(userDetails);
+    OwncloudModificationUser modificationUser = OwncloudModificationUser.of(userDetails);
     verifyServer();
 
     assertThat(modificationUser).isNotNull();
@@ -88,13 +88,13 @@ public abstract class AbstractOwncloudUserServiceTest extends AbstractOwncloudSe
   @WithMockUser(username = "user1", password = "password")
   public void testSaveUser_CreateUser_OK_WithoutGroups() throws Exception {
     OwncloudModificationUser newUser = OwncloudModificationUser.builder()
-        .username("user3")
-        .password("password")
-        .enabled(true)
-        .displayname("Mr. User 3")
-        .email("user3@example.com")
-        .quota(1024L)
-        .build();
+                                                               .username("user3")
+                                                               .password("password")
+                                                               .enabled(true)
+                                                               .displayname("Mr. User 3")
+                                                               .email("user3@example.com")
+                                                               .quota(1024L)
+                                                               .build();
 
     prepareTestSaveUser_CreateUser_OK_WithoutGroups(newUser);
 
@@ -111,21 +111,22 @@ public abstract class AbstractOwncloudUserServiceTest extends AbstractOwncloudSe
     checkAuthorities(createdUser.getUsername(), createdUser.getAuthorities());
   }
 
-  protected void prepareTestSaveUser_CreateUser_OK_WithoutGroups(OwncloudModificationUser newUser) throws Exception {}
+  protected void prepareTestSaveUser_CreateUser_OK_WithoutGroups(OwncloudModificationUser newUser) throws Exception {
+  }
 
   @Test
   @WithMockUser(username = "user1", password = "password")
   public void testSaveUser_CreateUser_OK_WithGroups() throws Exception {
     OwncloudModificationUser newUser = OwncloudModificationUser.builder()
-        .username("user4")
-        .password("password")
-        .enabled(true)
-        .displayname("Mrs. User 4")
-        .email("user4@example.com")
-        .quota(1024L)
-        .group("group1")
-        .group("group2")
-        .build();
+                                                               .username("user4")
+                                                               .password("password")
+                                                               .enabled(true)
+                                                               .displayname("Mrs. User 4")
+                                                               .email("user4@example.com")
+                                                               .quota(1024L)
+                                                               .group("group1")
+                                                               .group("group2")
+                                                               .build();
 
     prepareTestSaveUser_CreateUser_OK_WithGroups(newUser);
 
@@ -142,28 +143,29 @@ public abstract class AbstractOwncloudUserServiceTest extends AbstractOwncloudSe
     checkAuthorities(createdUser.getUsername(), createdUser.getAuthorities(), "group1", "group2");
   }
 
-  protected void prepareTestSaveUser_CreateUser_OK_WithGroups(OwncloudModificationUser newUser) throws Exception {}
+  protected void prepareTestSaveUser_CreateUser_OK_WithGroups(OwncloudModificationUser newUser) throws Exception {
+  }
 
   @Test
   @WithMockUser(username = "user1", password = "password")
   public void testSaveUser_UpdateUser_OK_WithoutGroups() throws Exception {
     OwncloudModificationUser existingUser = OwncloudModificationUser.builder()
-        .username("user2")
-        .password("password")
-        .enabled(true)
-        .displayname("Mrs. User 1")
-        .email("user2@example.com")
-        .quota(1024L)
-        .build();
+                                                                    .username("user2")
+                                                                    .password("password")
+                                                                    .enabled(true)
+                                                                    .displayname("Mrs. User 1")
+                                                                    .email("user2@example.com")
+                                                                    .quota(1024L)
+                                                                    .build();
 
     OwncloudModificationUser updateUser = OwncloudModificationUser.builder()
-        .username("user2")
-        .password("password")
-        .enabled(true)
-        .displayname("Mrs. User 2 in Subdomain")
-        .email("user2@subdomain.example.com")
-        .quota(2048L)
-        .build();
+                                                                  .username("user2")
+                                                                  .password("password")
+                                                                  .enabled(true)
+                                                                  .displayname("Mrs. User 2 in Subdomain")
+                                                                  .email("user2@subdomain.example.com")
+                                                                  .quota(2048L)
+                                                                  .build();
 
     prepareTestSaveUser_UpdateUser_OK_WithoutGroups(existingUser, updateUser);
 
@@ -180,30 +182,31 @@ public abstract class AbstractOwncloudUserServiceTest extends AbstractOwncloudSe
     assertThat(updatedUser.getAuthorities()).isEmpty();
   }
 
-  protected void prepareTestSaveUser_UpdateUser_OK_WithoutGroups(OwncloudModificationUser existingUser, OwncloudModificationUser updateUser) throws Exception {}
+  protected void prepareTestSaveUser_UpdateUser_OK_WithoutGroups(OwncloudModificationUser existingUser, OwncloudModificationUser updateUser) throws Exception {
+  }
 
   @Test
   @WithMockUser(username = "user1", password = "password")
   public void testSaveUser_UpdateUser_OK_WithGroups() throws Exception {
     OwncloudModificationUser existingUser = OwncloudModificationUser.builder()
-        .username("user1")
-        .password("s3cr3t")
-        .enabled(true)
-        .displayname("Mr. User 1")
-        .email("user1@example.com")
-        .group("group1")
-        .group("group2")
-        .build();
+                                                                    .username("user1")
+                                                                    .password("s3cr3t")
+                                                                    .enabled(true)
+                                                                    .displayname("Mr. User 1")
+                                                                    .email("user1@example.com")
+                                                                    .group("group1")
+                                                                    .group("group2")
+                                                                    .build();
 
     OwncloudModificationUser updateUser = OwncloudModificationUser.builder()
-        .username("user1")
-        .password("s3cr3t")
-        .enabled(false) // disabled instead of enabled
-        .displayname("Mr. User 1")
-        .email("user1@example.com")
-        .group("group1")
-        .group("group3") // group3 instead of group2
-        .build();
+                                                                  .username("user1")
+                                                                  .password("s3cr3t")
+                                                                  .enabled(false) // disabled instead of enabled
+                                                                  .displayname("Mr. User 1")
+                                                                  .email("user1@example.com")
+                                                                  .group("group1")
+                                                                  .group("group3") // group3 instead of group2
+                                                                  .build();
 
     prepareTestSaveUser_UpdateUser_OK_WithGroups(existingUser, updateUser);
 
@@ -221,7 +224,8 @@ public abstract class AbstractOwncloudUserServiceTest extends AbstractOwncloudSe
     checkAuthorities(updatedUser.getUsername(), updatedUser.getAuthorities(), updateUser.getGroups().toArray(new String[] {}));
   }
 
-  protected void prepareTestSaveUser_UpdateUser_OK_WithGroups(OwncloudModificationUser existingUser, OwncloudModificationUser updateUser) throws Exception {}
+  protected void prepareTestSaveUser_UpdateUser_OK_WithGroups(OwncloudModificationUser existingUser, OwncloudModificationUser updateUser) throws Exception {
+  }
 
   @Test
   @WithMockUser(username = "user1", password = "password")
@@ -230,7 +234,8 @@ public abstract class AbstractOwncloudUserServiceTest extends AbstractOwncloudSe
     userService.delete("user1");
   }
 
-  protected void prepareTestDeleteUser_OK(String username) throws Exception {}
+  protected void prepareTestDeleteUser_OK(String username) throws Exception {
+  }
 
   @Test(expected = UsernameNotFoundException.class)
   @WithMockUser(username = "user1", password = "password")
@@ -239,6 +244,7 @@ public abstract class AbstractOwncloudUserServiceTest extends AbstractOwncloudSe
     userService.delete("user99");
   }
 
-  protected void prepareTestDeleteUser_NOK_UsernameNotFoundException(String username) throws Exception {}
+  protected void prepareTestDeleteUser_NOK_UsernameNotFoundException(String username) throws Exception {
+  }
 
 }

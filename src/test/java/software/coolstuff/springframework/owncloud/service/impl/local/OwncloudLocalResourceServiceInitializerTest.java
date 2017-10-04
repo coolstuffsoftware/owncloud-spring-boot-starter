@@ -81,7 +81,7 @@ public class OwncloudLocalResourceServiceInitializerTest {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     String username = authentication.getName();
     OwncloudUserDetails user = userService.findOne(username);
-    OwncloudModificationUser modificationUser = new OwncloudModificationUser(user);
+    OwncloudModificationUser modificationUser = OwncloudModificationUser.of(user);
     modificationUser.setQuota(1024L);
     userService.save(modificationUser);
   }
@@ -96,12 +96,12 @@ public class OwncloudLocalResourceServiceInitializerTest {
   public void test_getQuota() {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     OwncloudQuota expected = TestOwncloudQuota.builder()
-        .username(authentication.getName())
-        .total(1024l)
-        .used(97l)
-        .free(1024l - 97)
-        .relative(97f / 1024f * 100f)
-        .build();
+                                              .username(authentication.getName())
+                                              .total(1024l)
+                                              .used(97l)
+                                              .free(1024l - 97)
+                                              .relative(97f / 1024f * 100f)
+                                              .build();
     OwncloudQuota quota = resourceService.getQuota();
     assertThat(quota)
         .isNotNull()
@@ -124,12 +124,12 @@ public class OwncloudLocalResourceServiceInitializerTest {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     String username = authentication.getName();
     OwncloudQuota expectedBeforeChange = TestOwncloudQuota.builder()
-        .username(username)
-        .total(1024l)
-        .used(97l)
-        .free(1024l - 97)
-        .relative(97f / 1024f * 100f)
-        .build();
+                                                          .username(username)
+                                                          .total(1024l)
+                                                          .used(97l)
+                                                          .free(1024l - 97)
+                                                          .relative(97f / 1024f * 100f)
+                                                          .build();
 
     OwncloudQuota quota = resourceService.getQuota();
     assertThat(quota)
@@ -140,19 +140,19 @@ public class OwncloudLocalResourceServiceInitializerTest {
     assertThat(user).isNotNull();
     assertThat(user.getQuota()).isEqualTo(1024);
 
-    OwncloudModificationUser modificationUser = new OwncloudModificationUser(user);
+    OwncloudModificationUser modificationUser = OwncloudModificationUser.of(user);
     modificationUser.setQuota(2048L);
     user = userService.save(modificationUser);
     assertThat(user).isNotNull();
     assertThat(user.getQuota()).isEqualTo(2048);
 
     OwncloudQuota expectedAfterChange = TestOwncloudQuota.builder()
-        .username(username)
-        .total(2048l)
-        .used(97l)
-        .free(2048l - 97)
-        .relative(97f / 2048f * 100f)
-        .build();
+                                                         .username(username)
+                                                         .total(2048l)
+                                                         .used(97l)
+                                                         .free(2048l - 97)
+                                                         .relative(97f / 2048f * 100f)
+                                                         .build();
     quota = resourceService.getQuota();
     assertThat(quota)
         .isNotNull()

@@ -1,4 +1,2 @@
 owncloud:
   location: classpath:/owncloud.xml
-  user-service:
-    enable-modifications: true

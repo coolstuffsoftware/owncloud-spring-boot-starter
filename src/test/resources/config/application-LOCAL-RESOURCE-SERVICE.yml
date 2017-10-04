@@ -1,6 +1,4 @@
 owncloud:
   location: classpath:/owncloud.xml
-  user-service:
-    enable-modifications: true
   resource-service:
     location: target/localWebdavTest

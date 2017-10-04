@@ -70,7 +70,7 @@ public abstract class OwncloudProperties {
      * Should Modifications through {@link OwncloudUserService} be allowed
      * @since 1.2.0
      */
-    private boolean enableModifications = false;
+    private boolean enableModifications = true;
 
   }
 

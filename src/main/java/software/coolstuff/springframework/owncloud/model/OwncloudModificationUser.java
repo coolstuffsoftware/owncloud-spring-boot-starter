@@ -17,17 +17,16 @@
 */
 package software.coolstuff.springframework.owncloud.model;
 
-import lombok.Builder;
-import lombok.Data;
-import lombok.RequiredArgsConstructor;
-import lombok.Singular;
+import lombok.*;
 import org.apache.commons.lang3.Validate;
 import org.springframework.security.core.GrantedAuthority;
 
 import java.security.Principal;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
+
+import static lombok.AccessLevel.NONE;
 
 /**
  * This Class will be used for any User Modifications by
@@ -97,13 +96,7 @@ public class OwncloudModificationUser {
    */
   private Long quota;
 
-  /**
-   * Group Memberships of the User to be modified.
-   *
-   * @param groups
-   *            Group Memberships of the User to be modified
-   * @return modified Group Memberships
-   */
+  @Setter(NONE)
   private List<String> groups = new ArrayList<>();
 
   @Builder
@@ -121,11 +114,11 @@ public class OwncloudModificationUser {
     setDisplayname(displayname);
     setEmail(email);
     setQuota(quota);
-    this.groups = new ArrayList<>(groups);
+    this.groups.addAll(groups);
   }
 
   /**
-   * Constructor by any existing {@link OwncloudUserDetails} Object.
+   * Creates a new Instance by copying the Values of an existing {@link OwncloudUserDetails} Object.
    * <p/>
    * A {@link OwncloudUserDetails} Object will be returned by the
    * <code>OwncloudUserDetailsService.loadUserByUsername(String)</code> during
@@ -137,28 +130,44 @@ public class OwncloudModificationUser {
    *
    * @param userDetails
    *            existing {@link OwncloudUserDetails} Object
+   * @return new modifiable OwncloudUser Object
    */
-  public OwncloudModificationUser(OwncloudUserDetails userDetails) {
+  public static OwncloudModificationUser of(OwncloudUserDetails userDetails) {
     Validate.notNull(userDetails);
 
-    username = userDetails.getUsername();
-    setPassword(userDetails.getPassword());
-
-    setEnabled(userDetails.isEnabled());
-
-    setDisplayname(userDetails.getDisplayname());
-    setEmail(userDetails.getEmail());
-    setQuota(userDetails.getQuota());
-    setAuthorities(userDetails);
+    OwncloudModificationUser modificationUser =
+        OwncloudModificationUser.builder()
+                                .username(userDetails.getUsername())
+                                .password(userDetails.getPassword())
+                                .enabled(userDetails.isEnabled())
+                                .displayname(userDetails.getDisplayname())
+                                .email(userDetails.getEmail())
+                                .quota(userDetails.getQuota())
+                                .build();
+    Optional.of(userDetails)
+            .map(OwncloudUserDetails::getAuthorities)
+            .orElseGet(ArrayList::new)
+            .stream()
+            .map(GrantedAuthority::getAuthority)
+            .forEach(modificationUser.groups::add);
+    return modificationUser;
   }
 
-  private void setAuthorities(OwncloudUserDetails userDetails) {
-    Collection<? extends GrantedAuthority> authorities = userDetails.getAuthorities();
-    if (authorities == null) {
-      return;
-    }
-    authorities.stream()
-               .map(GrantedAuthority::getAuthority)
-               .forEach(groups::add);
+  /**
+   * Add a Group to the User
+   * @param group Group to be added
+   */
+  public void addGroup(String group) {
+    Optional.ofNullable(group)
+            .ifPresent(groups::add);
+  }
+
+  /**
+   * Remove a Group from the User
+   * @param group Group to be removed
+   */
+  public void removeGroup(String group) {
+    Optional.of(group)
+            .map(groups::remove);
   }
 }
