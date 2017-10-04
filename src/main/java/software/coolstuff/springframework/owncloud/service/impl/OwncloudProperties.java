@@ -139,13 +139,6 @@ public abstract class OwncloudProperties {
   private UserService userService = new UserService();
 
   /**
-   * Role Prefix for the granted Authorities of the UserDetailsService
-   * @since 1.2.0
-   */
-  @NotNull
-  private String rolePrefix = "";
-
-  /**
    * WebDAV common Properties
    * @since 1.2.0
    */

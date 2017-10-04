@@ -21,7 +21,6 @@ import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
@@ -139,7 +138,7 @@ public class OwncloudLocalUserDataServiceImpl implements OwncloudLocalUserDataSe
     if (CollectionUtils.isNotEmpty(user.getGroups())) {
       log.trace("Put {} Owncloud-Group(s) into the Authorities-List");
       user.getGroups().stream()
-          .map(this::mapToGrantedAuthority)
+          .map(SimpleGrantedAuthority::new)
           .forEach(authorities::add);
     }
 
@@ -152,13 +151,6 @@ public class OwncloudLocalUserDataServiceImpl implements OwncloudLocalUserDataSe
                               .quota(user.getQuota())
                               .authorities(authorities)
                               .build();
-  }
-
-  private GrantedAuthority mapToGrantedAuthority(String group) {
-    if (StringUtils.startsWith(group, properties.getRolePrefix())) {
-      return new SimpleGrantedAuthority(group);
-    }
-    return new SimpleGrantedAuthority(properties.getRolePrefix() + group);
   }
 
   @Override

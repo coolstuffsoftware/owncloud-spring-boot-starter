@@ -196,7 +196,7 @@ abstract class AbstractOwncloudRestServiceImpl implements OwncloudRestService {
       log.trace("Put {} Owncloud-Group(s) into the Authorities- and Group-List");
       groupsFromBackend.getData().getGroups().stream()
                        .map(Ocs.Groups.Data.Group::getGroup)
-                       .map(this::mapToGrantedAuthority)
+                       .map(SimpleGrantedAuthority::new)
                        .forEach(authorities::add);
     }
 
@@ -213,12 +213,5 @@ abstract class AbstractOwncloudRestServiceImpl implements OwncloudRestService {
 
   private boolean isAnyOwncloudGroupAvailable(Ocs.Groups groups) {
     return groups != null && groups.getData() != null && groups.getData().getGroups() != null;
-  }
-
-  private GrantedAuthority mapToGrantedAuthority(String group) {
-    if (StringUtils.startsWith(group, properties.getRolePrefix())) {
-      return new SimpleGrantedAuthority(group);
-    }
-    return new SimpleGrantedAuthority(properties.getRolePrefix() + group);
   }
 }
