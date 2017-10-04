@@ -22,12 +22,11 @@ import org.apache.commons.lang3.Validate;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
 
 @Slf4j
-public class OwncloudRestUserDetailsServiceImpl extends AbstractOwncloudRestServiceImpl implements UserDetailsService {
+public class OwncloudRestUserDetailsServiceImpl extends AbstractOwncloudRestServiceImpl implements OwncloudRestUserDetailsService {
 
   OwncloudRestUserDetailsServiceImpl(RestTemplateBuilder builder, OwncloudRestProperties properties) {
     super(builder, properties);
@@ -42,7 +41,8 @@ public class OwncloudRestUserDetailsServiceImpl extends AbstractOwncloudRestServ
     return loadPreloadedUserByUsername(username, user);
   }
 
-  OwncloudUserDetails loadPreloadedUserByUsername(String username, Ocs.User preloadedUser) throws UsernameNotFoundException {
+  @Override
+  public OwncloudUserDetails loadPreloadedUserByUsername(String username, Ocs.User preloadedUser) throws UsernameNotFoundException {
     log.debug("Get Information about the Group Memberships of User {} from the Location {}", username, getLocation());
     Ocs.Groups groups = exchange("/cloud/users/{user}/groups", HttpMethod.GET, emptyEntity(), Ocs.Groups.class, username);
     return convert(username, preloadedUser, groups);

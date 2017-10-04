@@ -36,13 +36,13 @@ import software.coolstuff.springframework.owncloud.service.impl.OwncloudUtils;
 @Slf4j
 public class OwncloudRestAuthenticationProviderImpl extends AbstractOwncloudRestServiceImpl implements AuthenticationProvider {
 
-  private final OwncloudRestUserDetailsServiceImpl userDetailsService;
+  private final OwncloudRestUserDetailsService userDetailsService;
   private final OwncloudGrantedAuthoritiesMappingService grantedAuthoritiesMappingService;
 
   public OwncloudRestAuthenticationProviderImpl(
       RestTemplateBuilder builder,
       OwncloudRestProperties properties,
-      OwncloudRestUserDetailsServiceImpl userDetailsService,
+      OwncloudRestUserDetailsService userDetailsService,
       OwncloudGrantedAuthoritiesMappingService grantedAuthoritiesMappingService) {
     super(builder, properties);
     this.userDetailsService = userDetailsService;

@@ -32,6 +32,7 @@ import software.coolstuff.springframework.owncloud.service.api.OwncloudGroupServ
 import software.coolstuff.springframework.owncloud.service.api.OwncloudResourceService;
 import software.coolstuff.springframework.owncloud.service.impl.OwncloudGrantedAuthoritiesMappingService;
 import software.coolstuff.springframework.owncloud.service.impl.OwncloudProperties;
+import software.coolstuff.springframework.owncloud.service.impl.OwncloudUserDetailsService;
 
 @Configuration
 @RequiredArgsConstructor
@@ -65,7 +66,7 @@ public class OwncloudLocalAutoConfiguration {
   @Bean
   @Qualifier("owncloudUserDetailsService")
   @ConditionalOnMissingBean(OwncloudLocalUserDetailsServiceImpl.class)
-  public OwncloudLocalUserDetailsServiceImpl owncloudUserDetailsService() {
+  public OwncloudUserDetailsService owncloudUserDetailsService() {
     return new OwncloudLocalUserDetailsServiceImpl(owncloudLocalUserDataService());
   }
 

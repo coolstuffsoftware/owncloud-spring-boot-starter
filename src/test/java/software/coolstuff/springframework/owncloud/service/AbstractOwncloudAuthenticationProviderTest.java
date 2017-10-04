@@ -17,21 +17,20 @@
 */
 package software.coolstuff.springframework.owncloud.service;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.util.Base64;
-
+import lombok.Builder;
+import lombok.Data;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.client.RestClientTest;
 import org.springframework.security.authentication.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.test.context.support.WithMockUser;
-
-import lombok.Builder;
-import lombok.Data;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
 import software.coolstuff.springframework.owncloud.service.impl.AbstractOwncloudServiceTest;
+
+import java.util.Base64;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 @RestClientTest(AuthenticationProvider.class)
 public abstract class AbstractOwncloudAuthenticationProviderTest extends AbstractOwncloudServiceTest {
@@ -53,18 +52,18 @@ public abstract class AbstractOwncloudAuthenticationProviderTest extends Abstrac
   }
 
   @Test
-  @WithMockUser(username = "user1", password = "s3cr3t")
+  @WithMockUser(username = "user1", password = "s3cr3t") // only used for prepareTestAuthenticate_OK
   public void testAuthenticate_OK() throws Exception {
     Credentials credentials = Credentials.builder().username("user1").password("s3cr3t").build();
 
     prepareTestAuthenticate_OK(
         credentials,
         UserResponse.builder()
-            .enabled(true)
-            .email("user1@example.com")
-            .displayname("Mr. User 1")
-            .quota(1024L)
-            .build(),
+                    .enabled(true)
+                    .email("user1@example.com")
+                    .displayname("Mr. User 1")
+                    .quota(1024L)
+                    .build(),
         "group1",
         "group2");
 
@@ -88,7 +87,8 @@ public abstract class AbstractOwncloudAuthenticationProviderTest extends Abstrac
     assertThat(principal.getAuthorities()).hasSize(2);
   }
 
-  protected void prepareTestAuthenticate_OK(Credentials credentials, UserResponse userResponse, String... groups) throws Exception {}
+  protected void prepareTestAuthenticate_OK(Credentials credentials, UserResponse userResponse, String... groups) throws Exception {
+  }
 
   @Test(expected = BadCredentialsException.class)
   public void testAuthenticate_NOK() throws Exception {
@@ -99,14 +99,15 @@ public abstract class AbstractOwncloudAuthenticationProviderTest extends Abstrac
     authenticationProvider.authenticate(credentials.getUsernamePasswordAuthenticationToken());
   }
 
-  protected void prepareTestAuthenticate_NOK(Credentials credentials) throws Exception {}
+  protected void prepareTestAuthenticate_NOK(Credentials credentials) throws Exception {
+  }
 
   @Test(expected = BadCredentialsException.class)
   public void testAuthentication_NOK_NoUser() throws Exception {
     Credentials credentials = Credentials.builder()
-        .username(null)
-        .password(null)
-        .build();
+                                         .username(null)
+                                         .password(null)
+                                         .build();
 
     authenticationProvider.authenticate(credentials.getUsernamePasswordAuthenticationToken());
   }
@@ -114,9 +115,9 @@ public abstract class AbstractOwncloudAuthenticationProviderTest extends Abstrac
   @Test(expected = BadCredentialsException.class)
   public void testAuthentication_NOK_NoPassword() throws Exception {
     Credentials credentials = Credentials.builder()
-        .username("user1")
-        .password(null)
-        .build();
+                                         .username("user1")
+                                         .password(null)
+                                         .build();
 
     authenticationProvider.authenticate(credentials.getUsernamePasswordAuthenticationToken());
   }
@@ -124,23 +125,24 @@ public abstract class AbstractOwncloudAuthenticationProviderTest extends Abstrac
   @Test(expected = BadCredentialsException.class)
   public void testAuthentication_NOK_UsernameNotFoundException() throws Exception {
     Credentials credentials = Credentials.builder()
-        .username("unknown")
-        .password("s3cr3t")
-        .build();
+                                         .username("unknown")
+                                         .password("s3cr3t")
+                                         .build();
 
     prepareTestAuthentication_NOK_UsernameNotFoundException(credentials);
 
     authenticationProvider.authenticate(credentials.getUsernamePasswordAuthenticationToken());
   }
 
-  protected void prepareTestAuthentication_NOK_UsernameNotFoundException(Credentials credentials) throws Exception {}
+  protected void prepareTestAuthentication_NOK_UsernameNotFoundException(Credentials credentials) throws Exception {
+  }
 
   @Test(expected = DisabledException.class)
   public void testAuthentication_NOK_DisabledUser() throws Exception {
     Credentials credentials = Credentials.builder()
-        .username("user2")
-        .password("s3cr3t")
-        .build();
+                                         .username("user2")
+                                         .password("s3cr3t")
+                                         .build();
 
     prepareTestAuthentication_NOK_DisabledUser(credentials);
 
@@ -148,7 +150,8 @@ public abstract class AbstractOwncloudAuthenticationProviderTest extends Abstrac
     verifyServer();
   }
 
-  protected void prepareTestAuthentication_NOK_DisabledUser(Credentials credentials) throws Exception {}
+  protected void prepareTestAuthentication_NOK_DisabledUser(Credentials credentials) throws Exception {
+  }
 
   @Data
   @Builder

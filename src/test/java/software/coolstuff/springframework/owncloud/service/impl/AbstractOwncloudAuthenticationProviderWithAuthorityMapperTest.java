@@ -17,22 +17,25 @@
 */
 package software.coolstuff.springframework.owncloud.service.impl;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.client.RestClientTest;
 import org.springframework.context.ApplicationContext;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.test.context.support.WithMockUser;
+import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 @RestClientTest(UserDetailsService.class)
-public abstract class AbstractOwncloudUserDetailsServiceWithAuthorityMapperTest extends AbstractOwncloudServiceTest {
+public abstract class AbstractOwncloudAuthenticationProviderWithAuthorityMapperTest extends AbstractOwncloudServiceTest {
 
   @Autowired
-  private UserDetailsService userDetailsService;
+  private AuthenticationProvider authenticationProvider;
 
   @Autowired
   private ApplicationContext applicationContext;
@@ -43,28 +46,31 @@ public abstract class AbstractOwncloudUserDetailsServiceWithAuthorityMapperTest 
   }
 
   @Test
-  @WithMockUser(username = "test1", password = "password")
+  @WithMockUser(username = "user1", password = "s3cr3t") // only used for prepareTestMappedGroups
   public void testMappedGroups() throws Exception {
+    Authentication authentication = new UsernamePasswordAuthenticationToken("user1", "s3cr3t");
     prepareTestMappedGroups(
         "user1",
         UserResponse.builder()
-            .enabled(true)
-            .email("user1@example.com")
-            .displayname("Mr. User 1")
-            .quota(1024L)
-            .build(),
+                    .enabled(true)
+                    .email("user1@example.com")
+                    .displayname("Mr. User 1")
+                    .quota(1024L)
+                    .build(),
         "group1",
         "group2");
 
-    UserDetails userDetails = userDetailsService.loadUserByUsername("user1");
+    authentication = authenticationProvider.authenticate(authentication);
     verifyServer();
 
-    assertThat(userDetails).isNotNull();
-    assertThat(userDetails.getUsername()).isEqualTo("user1");
+    assertThat(authentication).isNotNull();
+    assertThat(authentication.getPrincipal()).isInstanceOf(OwncloudUserDetails.class);
+    assertThat(authentication.getName()).isEqualTo("user1");
 
-    checkAuthorities(userDetails.getUsername(), userDetails.getAuthorities(), "group1", "group2");
+    checkAuthorities(authentication.getName(), authentication.getAuthorities(), "group1", "group2");
   }
 
-  protected void prepareTestMappedGroups(String username, UserResponse userResponse, String... groups) throws Exception {}
+  protected void prepareTestMappedGroups(String username, UserResponse userResponse, String... groups) throws Exception {
+  }
 
 }

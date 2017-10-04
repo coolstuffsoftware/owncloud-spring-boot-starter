@@ -14,6 +14,7 @@ import org.springframework.security.core.SpringSecurityMessageSource;
 import org.springframework.security.core.context.SecurityContextHolder;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
 import software.coolstuff.springframework.owncloud.service.impl.OwncloudGrantedAuthoritiesMappingService;
+import software.coolstuff.springframework.owncloud.service.impl.OwncloudUserDetailsService;
 import software.coolstuff.springframework.owncloud.service.impl.OwncloudUtils;
 
 @RequiredArgsConstructor
@@ -23,7 +24,7 @@ public class OwncloudLocalAuthenticationProviderImpl implements AuthenticationPr
   private MessageSourceAccessor messages = SpringSecurityMessageSource.getAccessor();
 
   private final OwncloudLocalUserDataService localDataService;
-  private final OwncloudLocalUserDetailsServiceImpl userDetailsService;
+  private final OwncloudUserDetailsService userDetailsService;
   private final OwncloudGrantedAuthoritiesMappingService grantedAuthoritiesMappingService;
 
   @Override

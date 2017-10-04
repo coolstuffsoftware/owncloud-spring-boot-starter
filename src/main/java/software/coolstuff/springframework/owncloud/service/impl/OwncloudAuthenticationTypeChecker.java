@@ -32,9 +32,10 @@ public class OwncloudAuthenticationTypeChecker {
     return owncloudProperties.getUserService() == null || !owncloudProperties.getUserService().isEnableModifications();
   }
 
-  @Before("execution(* software.coolstuff.springframework.owncloud.service.api.OwncloudUserService.*(..)) ||"
-      + " execution(* software.coolstuff.springframework.owncloud.service.api.OwncloudGroupService.*(..)) ||"
-      + " execution(* software.coolstuff.springframework.owncloud.service.api.OwncloudResourceService.*(..))")
+  @Before("execution(* software.coolstuff.springframework.owncloud.service.api.OwncloudUserService.*(..)) || "
+      + "execution(* software.coolstuff.springframework.owncloud.service.api.OwncloudGroupService.*(..)) || "
+      + "execution(* software.coolstuff.springframework.owncloud.service.api.OwncloudResourceService.*(..)) || "
+      + "execution(* software.coolstuff.springframework.owncloud.service.impl.OwncloudUserDetailsService.*(..))")
   void checkAuthenticationObject(JoinPoint joinPoint) {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     if (OwncloudUtils.isInvalidAuthentication(authentication)) {

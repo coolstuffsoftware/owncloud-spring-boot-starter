@@ -18,10 +18,9 @@
 package software.coolstuff.springframework.owncloud.service.impl.local;
 
 import org.springframework.test.context.ActiveProfiles;
-
-import software.coolstuff.springframework.owncloud.service.impl.AbstractOwncloudUserDetailsServiceWithAuthorityAppenderTest;
+import software.coolstuff.springframework.owncloud.service.impl.AbstractOwncloudAuthenticationProviderWithAuthorityAppenderTest;
 
 @ActiveProfiles("LOCAL-AUTHORITY-APPENDER-USER-SERVICE")
-public class OwncloudLocalUserDetailsServiceImplWithAuthorityAppenderTest extends AbstractOwncloudUserDetailsServiceWithAuthorityAppenderTest {
+public class OwncloudLocalAuthenticationProviderImplWithAuthorityAppenderTest extends AbstractOwncloudAuthenticationProviderWithAuthorityAppenderTest {
 
 }

@@ -141,9 +141,6 @@ public class OwncloudLocalUserDataServiceImpl implements OwncloudLocalUserDataSe
       user.getGroups().stream()
           .map(this::mapToGrantedAuthority)
           .forEach(authorities::add);
-      for (String group : user.getGroups()) {
-        authorities.add(new SimpleGrantedAuthority(group));
-      }
     }
 
     log.debug("Convert User {} from {} to {}", user.getUsername(), user.getClass(), OwncloudUserDetails.class);

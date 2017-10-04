@@ -15,13 +15,15 @@
    along with this program; if not, write to the Free Software Foundation,
    Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 */
-package software.coolstuff.springframework.owncloud.service.impl.local;
+package software.coolstuff.springframework.owncloud.service.impl;
 
-import org.springframework.test.context.ActiveProfiles;
+import org.springframework.security.core.userdetails.UserDetailsService;
 
-import software.coolstuff.springframework.owncloud.service.impl.AbstractOwncloudUserDetailsServiceWithAuthorityMapperTest;
+/**
+ * Extension of {@link UserDetailsService} to check, if the authenticated User
+ * is authenticated by {@link software.coolstuff.springframework.owncloud.service.impl.rest.OwncloudRestAuthenticationProviderImpl}
+ * or by {@link software.coolstuff.springframework.owncloud.service.impl.local.OwncloudLocalAuthenticationProviderImpl}
+ */
 
-@ActiveProfiles("LOCAL-AUTHORITY-MAPPER-USER-SERVICE")
-public class OwncloudLocalUserDetailsServiceImplWithAuthorityMapperTest extends AbstractOwncloudUserDetailsServiceWithAuthorityMapperTest {
-
+public interface OwncloudUserDetailsService extends UserDetailsService {
 }

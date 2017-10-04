@@ -17,18 +17,18 @@
 */
 package software.coolstuff.springframework.owncloud.service;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import org.junit.Test;
+import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.client.RestClientTest;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.test.context.support.WithMockUser;
-
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
 import software.coolstuff.springframework.owncloud.service.impl.AbstractOwncloudServiceTest;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 @RestClientTest(UserDetailsService.class)
 public abstract class AbstractOwncloudUserDetailsServiceTest extends AbstractOwncloudServiceTest {
@@ -38,7 +38,7 @@ public abstract class AbstractOwncloudUserDetailsServiceTest extends AbstractOwn
 
   @Test
   public void testCorrectClass() {
-    assertThat(userDetailsService.getClass()).isEqualTo(getUserDetailsServiceClass());
+    assertThat(AopUtils.getTargetClass(userDetailsService)).isEqualTo(getUserDetailsServiceClass());
   }
 
   protected abstract Class<? extends UserDetailsService> getUserDetailsServiceClass();
@@ -49,11 +49,11 @@ public abstract class AbstractOwncloudUserDetailsServiceTest extends AbstractOwn
     prepareTestUserDetails_OK(
         "user1",
         UserResponse.builder()
-            .enabled(true)
-            .email("user1@example.com")
-            .displayname("Mr. User 1")
-            .quota(1024L)
-            .build(),
+                    .enabled(true)
+                    .email("user1@example.com")
+                    .displayname("Mr. User 1")
+                    .quota(1024L)
+                    .build(),
         "group1",
         "group2");
 
@@ -73,7 +73,8 @@ public abstract class AbstractOwncloudUserDetailsServiceTest extends AbstractOwn
     assertThat(owncloudUserDetails.getQuota()).isEqualTo(1024);
   }
 
-  protected void prepareTestUserDetails_OK(String user, UserResponse userResponse, String... groups) throws Exception {}
+  protected void prepareTestUserDetails_OK(String user, UserResponse userResponse, String... groups) throws Exception {
+  }
 
   @Test(expected = UsernameNotFoundException.class)
   @WithMockUser(username = "user1", password = "password")
@@ -83,6 +84,7 @@ public abstract class AbstractOwncloudUserDetailsServiceTest extends AbstractOwn
     userDetailsService.loadUserByUsername("unknown");
   }
 
-  protected void prepareTestUserDetails_NotFound() throws Exception {}
+  protected void prepareTestUserDetails_NotFound() throws Exception {
+  }
 
 }

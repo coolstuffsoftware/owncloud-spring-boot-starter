@@ -15,17 +15,12 @@
    along with this program; if not, write to the Free Software Foundation,
    Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 */
-package software.coolstuff.springframework.owncloud.service.impl;
+package software.coolstuff.springframework.owncloud.service.impl.local;
 
-import java.lang.annotation.Inherited;
-import java.lang.annotation.Retention;
-import java.lang.annotation.Target;
+import org.springframework.test.context.ActiveProfiles;
+import software.coolstuff.springframework.owncloud.service.impl.AbstractOwncloudAuthenticationProviderWithAuthorityMapperTest;
 
-import static java.lang.annotation.ElementType.METHOD;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
+@ActiveProfiles("LOCAL-AUTHORITY-MAPPER-USER-SERVICE")
+public class OwncloudLocalAuthenticationProviderImplWithAuthorityMapperTest extends AbstractOwncloudAuthenticationProviderWithAuthorityMapperTest {
 
-@Retention(RUNTIME)
-@Target(METHOD)
-@Inherited
-public @interface CheckOwncloudModification {
 }

@@ -3,14 +3,14 @@ package software.coolstuff.springframework.owncloud.service.impl.local;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import software.coolstuff.springframework.owncloud.service.impl.OwncloudUserDetailsService;
 
 import java.util.Optional;
 
 @RequiredArgsConstructor
 @Slf4j
-public class OwncloudLocalUserDetailsServiceImpl implements UserDetailsService {
+public class OwncloudLocalUserDetailsServiceImpl implements OwncloudUserDetailsService {
 
   private final OwncloudLocalUserDataService localDataService;
 

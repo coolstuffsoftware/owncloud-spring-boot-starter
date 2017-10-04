@@ -17,38 +17,42 @@
 */
 package software.coolstuff.springframework.owncloud.service.impl.rest;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.test.context.ActiveProfiles;
+import software.coolstuff.springframework.owncloud.service.impl.AbstractOwncloudAuthenticationProviderWithAuthorityAppenderTest;
+import software.coolstuff.springframework.owncloud.service.impl.OwncloudUserDetailsService;
+
 import static org.springframework.http.HttpMethod.GET;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.test.context.ActiveProfiles;
-
-import software.coolstuff.springframework.owncloud.service.impl.AbstractOwncloudUserDetailsServiceWithAuthorityAppenderTest;
-
 @ActiveProfiles("REST-AUTHORITY-APPENDER-USER-SERVICE")
-public class OwncloudRestUserDetailsServiceImplWithAuthorityAppenderTest extends AbstractOwncloudUserDetailsServiceWithAuthorityAppenderTest implements OwncloudRestServiceTest {
+public class OwncloudRestAuthenticationProviderImplWithAuthorityAppenderTest extends AbstractOwncloudAuthenticationProviderWithAuthorityAppenderTest implements OwncloudRestServiceTest {
 
   @Autowired
-  private UserDetailsService userDetailsService;
+  private AuthenticationProvider authenticationProvider;
+
+  @Autowired
+  private OwncloudUserDetailsService userDetailsService;
 
   @Override
   public OwncloudRestService owncloudService() {
-    return (OwncloudRestService) userDetailsService;
+    return (OwncloudRestService) authenticationProvider;
   }
 
   @Override
   protected void prepareTestAppendedGroups(String username, UserResponse userResponse, String... groups) throws Exception {
     respondUser(
         RestRequest.builder()
-            .method(GET)
-            .url("/cloud/users/" + username)
-            .build(),
+                   .method(GET)
+                   .url("/cloud/users/" + username)
+                   .build(),
         userResponse);
     respondGroups(
         RestRequest.builder()
-            .method(GET)
-            .url("/cloud/users/" + username + "/groups")
-            .build(),
+                   .server(createServer((OwncloudRestService) userDetailsService))
+                   .method(GET)
+                   .url("/cloud/users/" + username + "/groups")
+                   .build(),
         groups);
   }
 }

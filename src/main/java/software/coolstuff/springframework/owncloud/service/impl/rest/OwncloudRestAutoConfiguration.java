@@ -67,7 +67,7 @@ public class OwncloudRestAutoConfiguration {
   @Bean
   @Qualifier("owncloudUserDetailsService")
   @ConditionalOnMissingBean(OwncloudRestUserDetailsServiceImpl.class)
-  public OwncloudRestUserDetailsServiceImpl owncloudRestUserDetailsService() {
+  public OwncloudRestUserDetailsService owncloudRestUserDetailsService() {
     return new OwncloudRestUserDetailsServiceImpl(restTemplateBuilder, owncloudRestProperties);
   }
 
