@@ -17,19 +17,18 @@
 */
 package software.coolstuff.springframework.owncloud.service;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.util.List;
-
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.client.RestClientTest;
 import org.springframework.security.test.context.support.WithMockUser;
-
 import software.coolstuff.springframework.owncloud.exception.auth.OwncloudGroupAlreadyExistsException;
 import software.coolstuff.springframework.owncloud.exception.auth.OwncloudGroupNotFoundException;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudGroupService;
 import software.coolstuff.springframework.owncloud.service.impl.AbstractOwncloudServiceTest;
+
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 @RestClientTest(OwncloudGroupService.class)
 public abstract class AbstractOwncloudGroupServiceTest extends AbstractOwncloudServiceTest {

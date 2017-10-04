@@ -17,19 +17,10 @@
 */
 package software.coolstuff.springframework.owncloud.service.impl.rest;
 
-import static org.junit.Assert.fail;
-import static org.springframework.test.web.client.match.MockRestRequestMatchers.*;
-import static org.springframework.test.web.client.response.MockRestResponseCreators.*;
-
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.time.ZoneId;
-import java.util.*;
-import java.util.Base64.Encoder;
-import java.util.stream.Collectors;
-
+import com.github.sardine.DavResource;
+import com.github.sardine.Sardine;
+import com.github.sardine.impl.SardineException;
+import com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.After;
 import org.junit.Before;
@@ -50,12 +41,6 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.test.web.client.RequestMatcher;
 import org.springframework.web.util.UriComponentsBuilder;
-
-import com.github.sardine.DavResource;
-import com.github.sardine.Sardine;
-import com.github.sardine.impl.SardineException;
-import com.google.common.collect.Lists;
-
 import software.coolstuff.springframework.owncloud.exception.resource.OwncloudRestResourceException;
 import software.coolstuff.springframework.owncloud.model.OwncloudFileResource;
 import software.coolstuff.springframework.owncloud.model.OwncloudQuota;
@@ -63,6 +48,19 @@ import software.coolstuff.springframework.owncloud.model.OwncloudResource;
 import software.coolstuff.springframework.owncloud.service.AbstractOwncloudResourceServiceTest;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudResourceService;
 import software.coolstuff.springframework.owncloud.service.impl.OwncloudUtils;
+
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.time.ZoneId;
+import java.util.*;
+import java.util.Base64.Encoder;
+import java.util.stream.Collectors;
+
+import static org.junit.Assert.fail;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.*;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.*;
 
 @ActiveProfiles("REST-RESOURCE-SERVICE")
 public class OwncloudRestResourceServiceTest extends AbstractOwncloudResourceServiceTest implements OwncloudRestServiceTest {

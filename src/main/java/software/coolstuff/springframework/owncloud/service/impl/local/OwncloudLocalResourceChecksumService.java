@@ -17,10 +17,10 @@
 */
 package software.coolstuff.springframework.owncloud.service.impl.local;
 
+import software.coolstuff.springframework.owncloud.exception.resource.OwncloudResourceException;
+
 import java.nio.file.Path;
 import java.util.Optional;
-
-import software.coolstuff.springframework.owncloud.exception.resource.OwncloudResourceException;
 
 interface OwncloudLocalResourceChecksumService {
 

@@ -17,11 +17,6 @@
 */
 package software.coolstuff.springframework.owncloud.service.impl.rest;
 
-import static org.springframework.http.HttpMethod.GET;
-
-import java.io.IOException;
-import java.net.MalformedURLException;
-
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
@@ -29,9 +24,13 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
-
 import software.coolstuff.springframework.owncloud.exception.auth.OwncloudInvalidAuthenticationObjectException;
 import software.coolstuff.springframework.owncloud.service.AbstractOwncloudUserDetailsServiceTest;
+
+import java.io.IOException;
+import java.net.MalformedURLException;
+
+import static org.springframework.http.HttpMethod.GET;
 
 @ActiveProfiles("REST-USER-SERVICE")
 public class OwncloudRestUserDetailsServiceImplTest extends AbstractOwncloudUserDetailsServiceTest implements OwncloudRestServiceTest {

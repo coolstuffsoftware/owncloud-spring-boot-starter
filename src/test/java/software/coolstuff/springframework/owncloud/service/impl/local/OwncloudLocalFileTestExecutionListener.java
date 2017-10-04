@@ -17,14 +17,8 @@
 */
 package software.coolstuff.springframework.owncloud.service.impl.local;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.io.*;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.Map;
-import java.util.Map.Entry;
-
+import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
@@ -47,12 +41,17 @@ import org.xmlunit.diff.DefaultNodeMatcher;
 import org.xmlunit.diff.Diff;
 import org.xmlunit.diff.ElementSelectors;
 import org.yaml.snakeyaml.Yaml;
-
-import lombok.Data;
-import lombok.extern.slf4j.Slf4j;
 import software.coolstuff.springframework.owncloud.config.CompareResourceAfter;
 import software.coolstuff.springframework.owncloud.service.impl.OwncloudProperties;
 import software.coolstuff.springframework.owncloud.service.impl.local.file.OwncloudLocalFileTest;
+
+import java.io.*;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.Map;
+import java.util.Map.Entry;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * This Test-Execution Listener prepares the Tests for Resources prefixed with <code>file:</code> because these Resources will also be written on Disk just before the Bean

@@ -1,8 +1,8 @@
 package software.coolstuff.springframework.owncloud.service.impl.rest;
 
-import java.net.MalformedURLException;
-
 import org.junit.Test;
+
+import java.net.MalformedURLException;
 
 public class OwncloudRestServiceIinitializerTest {
 

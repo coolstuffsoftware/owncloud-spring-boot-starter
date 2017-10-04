@@ -17,10 +17,10 @@
 */
 package software.coolstuff.springframework.owncloud.service.impl.local;
 
-import java.util.function.Consumer;
-
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudUserService;
+
+import java.util.function.Consumer;
 
 /**
  * Extensions of {@link OwncloudUserService} for local UserQueries

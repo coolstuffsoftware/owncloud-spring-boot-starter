@@ -17,9 +17,6 @@
 */
 package software.coolstuff.springframework.owncloud.config;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -27,6 +24,9 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Configuration
 @Profile({ "LOCAL-AUTHORITY-MAPPER-USER-SERVICE", "REST-AUTHORITY-MAPPER-USER-SERVICE" })

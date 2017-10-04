@@ -17,18 +17,8 @@
 */
 package software.coolstuff.springframework.owncloud.service.impl.local;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.io.*;
-import java.nio.file.*;
-import java.nio.file.attribute.BasicFileAttributes;
-import java.security.MessageDigest;
-import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.BiFunction;
-import java.util.function.Function;
-
+import lombok.Builder;
+import lombok.Getter;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.IOUtils;
 import org.junit.Before;
@@ -47,11 +37,20 @@ import org.springframework.security.test.context.support.WithSecurityContextTest
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestExecutionListeners;
 import org.springframework.test.context.junit4.SpringRunner;
-
-import lombok.Builder;
-import lombok.Getter;
 import software.coolstuff.springframework.owncloud.config.IgnoreOnComponentScan;
 import software.coolstuff.springframework.owncloud.service.impl.local.OwncloudLocalProperties.ResourceServiceProperties;
+
+import java.io.*;
+import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.security.MessageDigest;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.BiFunction;
+import java.util.function.Function;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author mufasa1976

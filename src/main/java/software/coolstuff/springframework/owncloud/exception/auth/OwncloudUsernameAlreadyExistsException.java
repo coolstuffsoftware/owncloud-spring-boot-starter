@@ -19,7 +19,6 @@ package software.coolstuff.springframework.owncloud.exception.auth;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
-
 import software.coolstuff.springframework.owncloud.exception.OwncloudStatusException;
 
 /**

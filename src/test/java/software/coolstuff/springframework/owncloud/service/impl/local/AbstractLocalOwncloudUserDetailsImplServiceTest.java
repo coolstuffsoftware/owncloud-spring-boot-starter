@@ -1,7 +1,6 @@
 package software.coolstuff.springframework.owncloud.service.impl.local;
 
 import org.springframework.security.core.userdetails.UserDetailsService;
-
 import software.coolstuff.springframework.owncloud.service.AbstractOwncloudUserDetailsServiceTest;
 
 public abstract class AbstractLocalOwncloudUserDetailsImplServiceTest extends AbstractOwncloudUserDetailsServiceTest {

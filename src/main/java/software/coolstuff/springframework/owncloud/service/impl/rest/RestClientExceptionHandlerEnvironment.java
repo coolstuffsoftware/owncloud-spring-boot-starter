@@ -17,14 +17,13 @@
 */
 package software.coolstuff.springframework.owncloud.service.impl.rest;
 
-import java.net.URI;
-
-import org.springframework.web.client.RestClientException;
-
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import org.springframework.web.client.RestClientException;
+
+import java.net.URI;
 
 /**
  * @author mufasa1976

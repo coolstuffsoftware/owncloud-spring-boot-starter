@@ -17,16 +17,15 @@
 */
 package software.coolstuff.springframework.owncloud.service.impl.local;
 
-import java.net.URI;
-import java.time.LocalDateTime;
-
+import lombok.*;
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.springframework.http.MediaType;
-
-import lombok.*;
 import software.coolstuff.springframework.owncloud.model.OwncloudResource;
+
+import java.net.URI;
+import java.time.LocalDateTime;
 
 @Getter
 @AllArgsConstructor(access = AccessLevel.PROTECTED)

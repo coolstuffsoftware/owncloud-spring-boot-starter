@@ -17,9 +17,9 @@
 */
 package software.coolstuff.springframework.owncloud.config;
 
-import java.lang.annotation.*;
-
 import software.coolstuff.springframework.owncloud.service.impl.local.file.OwncloudLocalFileTest;
+
+import java.lang.annotation.*;
 
 /**
  * By setting this Annotation on a Method it will be invoked by <code>AbstractOwncloudResourceTest.tearDown()</code> right after the TestMethod configured by {@link #value()} and after the changed

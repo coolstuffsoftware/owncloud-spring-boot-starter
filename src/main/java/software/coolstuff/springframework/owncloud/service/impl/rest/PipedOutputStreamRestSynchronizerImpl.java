@@ -17,11 +17,8 @@
 */
 package software.coolstuff.springframework.owncloud.service.impl.rest;
 
-import java.io.*;
-import java.net.URI;
-import java.util.Optional;
-import java.util.function.BiFunction;
-
+import lombok.Builder;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
@@ -29,10 +26,12 @@ import org.springframework.http.client.ClientHttpRequest;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestOperations;
-
-import lombok.Builder;
-import lombok.extern.slf4j.Slf4j;
 import software.coolstuff.springframework.owncloud.exception.resource.OwncloudRestResourceException;
+
+import java.io.*;
+import java.net.URI;
+import java.util.Optional;
+import java.util.function.BiFunction;
 
 @Slf4j
 class PipedOutputStreamRestSynchronizerImpl extends AbstractPipedStreamRestSynchronizerImpl implements PipedOutputStreamRestSynchronizer {

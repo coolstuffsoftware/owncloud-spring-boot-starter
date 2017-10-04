@@ -17,12 +17,11 @@
 */
 package software.coolstuff.springframework.owncloud.service.impl.rest;
 
-import java.io.IOException;
-import java.net.URI;
-import java.util.Optional;
-import java.util.function.BiFunction;
-import java.util.function.Consumer;
-
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.Validate;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -31,14 +30,14 @@ import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.client.RequestCallback;
 import org.springframework.web.client.RestOperations;
-
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.extern.slf4j.Slf4j;
 import software.coolstuff.springframework.owncloud.service.impl.AbstractPipedStreamSynchronizerImpl;
 import software.coolstuff.springframework.owncloud.service.impl.OwncloudProperties;
+
+import java.io.IOException;
+import java.net.URI;
+import java.util.Optional;
+import java.util.function.BiFunction;
+import java.util.function.Consumer;
 
 @Slf4j
 abstract class AbstractPipedStreamRestSynchronizerImpl extends AbstractPipedStreamSynchronizerImpl {

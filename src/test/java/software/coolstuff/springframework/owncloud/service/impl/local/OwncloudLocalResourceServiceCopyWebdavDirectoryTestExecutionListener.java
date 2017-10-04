@@ -17,17 +17,16 @@
 */
 package software.coolstuff.springframework.owncloud.service.impl.local;
 
-import java.io.IOException;
-import java.nio.file.*;
-import java.nio.file.attribute.BasicFileAttributes;
-
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.Validate;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestContext;
 
-import lombok.extern.slf4j.Slf4j;
+import java.io.IOException;
+import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
 
 @Slf4j
 public class OwncloudLocalResourceServiceCopyWebdavDirectoryTestExecutionListener extends AbstractOwncloudLocalResourceServiceTestExecutionListener {

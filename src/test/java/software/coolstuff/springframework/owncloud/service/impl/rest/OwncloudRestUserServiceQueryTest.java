@@ -1,8 +1,7 @@
 package software.coolstuff.springframework.owncloud.service.impl.rest;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.http.HttpMethod.GET;
-
+import lombok.Builder;
+import lombok.Data;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
@@ -10,12 +9,12 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.web.util.UriUtils;
-
-import lombok.Builder;
-import lombok.Data;
 import software.coolstuff.springframework.owncloud.model.OwncloudQuota;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
 import software.coolstuff.springframework.owncloud.service.AbstractOwncloudUserServiceQueryTest;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.http.HttpMethod.GET;
 
 @ActiveProfiles("REST-USER-SERVICE")
 public class OwncloudRestUserServiceQueryTest extends AbstractOwncloudUserServiceQueryTest implements OwncloudRestServiceTest {

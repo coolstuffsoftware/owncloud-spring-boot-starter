@@ -17,13 +17,12 @@
 */
 package software.coolstuff.springframework.owncloud.exception.resource;
 
-import java.net.URI;
-
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
-
-import lombok.RequiredArgsConstructor;
 import software.coolstuff.springframework.owncloud.model.OwncloudQuota;
+
+import java.net.URI;
 
 /**
  * Thrown when the {@link OwncloudQuota} of the User as been exceeded

@@ -17,17 +17,15 @@
 */
 package software.coolstuff.springframework.owncloud.service.impl.rest;
 
+import com.github.sardine.Sardine;
+import com.github.sardine.impl.SardineImpl;
+import com.google.common.cache.CacheLoader;
+import lombok.extern.slf4j.Slf4j;
+import lombok.val;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-
-import com.github.sardine.Sardine;
-import com.github.sardine.impl.SardineImpl;
-import com.google.common.cache.CacheLoader;
-
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class SardineCacheLoader extends CacheLoader<String, Sardine> {

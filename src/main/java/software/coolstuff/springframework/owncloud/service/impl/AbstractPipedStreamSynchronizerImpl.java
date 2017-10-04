@@ -17,20 +17,19 @@
 */
 package software.coolstuff.springframework.owncloud.service.impl;
 
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.logging.LogLevel;
+import org.springframework.security.core.Authentication;
+import software.coolstuff.springframework.owncloud.exception.resource.OwncloudResourcePipeSynchronizationException;
+import software.coolstuff.springframework.owncloud.service.api.OwncloudResourceService;
+import software.coolstuff.springframework.owncloud.service.impl.OwncloudProperties.ResourceServiceProperties;
+
 import java.io.*;
 import java.net.URI;
 import java.util.Optional;
 import java.util.concurrent.CyclicBarrier;
-
-import org.springframework.boot.logging.LogLevel;
-import org.springframework.security.core.Authentication;
-
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.extern.slf4j.Slf4j;
-import software.coolstuff.springframework.owncloud.exception.resource.OwncloudResourcePipeSynchronizationException;
-import software.coolstuff.springframework.owncloud.service.api.OwncloudResourceService;
-import software.coolstuff.springframework.owncloud.service.impl.OwncloudProperties.ResourceServiceProperties;
 
 /**
  * Abstract Class of the PipedStream Synchronizer Implementations.

@@ -17,8 +17,6 @@
 */
 package software.coolstuff.springframework.owncloud.service.impl.rest;
 
-import static org.springframework.http.HttpMethod.*;
-
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -28,9 +26,10 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.util.UriUtils;
-
 import software.coolstuff.springframework.owncloud.service.AbstractOwncloudGroupServiceTest;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudGroupService;
+
+import static org.springframework.http.HttpMethod.*;
 
 @ActiveProfiles("REST-USER-SERVICE")
 public class OwncloudRestGroupServiceTest extends AbstractOwncloudGroupServiceTest implements OwncloudRestServiceTest {

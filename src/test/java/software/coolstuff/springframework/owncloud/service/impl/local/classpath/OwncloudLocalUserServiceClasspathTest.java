@@ -18,7 +18,6 @@
 package software.coolstuff.springframework.owncloud.service.impl.local.classpath;
 
 import org.springframework.test.context.ActiveProfiles;
-
 import software.coolstuff.springframework.owncloud.service.impl.local.AbstractLocalOwncloudUserServiceTest;
 
 @ActiveProfiles("LOCAL-CLASSPATH-USER-SERVICE")

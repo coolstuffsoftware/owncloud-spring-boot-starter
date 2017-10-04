@@ -17,15 +17,14 @@
 */
 package software.coolstuff.springframework.owncloud.service.impl.local;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-
-import org.apache.commons.lang3.Validate;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.Validate;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 @Slf4j

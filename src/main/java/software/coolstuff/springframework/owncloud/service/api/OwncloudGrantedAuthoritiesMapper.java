@@ -17,13 +17,12 @@
 */
 package software.coolstuff.springframework.owncloud.service.api;
 
-import java.util.Collection;
-
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
-
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
 import software.coolstuff.springframework.owncloud.service.impl.rest.OwncloudRestUserDetailsServiceImpl;
+
+import java.util.Collection;
 
 /**
  * An Implementation of this Interface can be seen as an Alternative to {@link GrantedAuthoritiesMapper}.

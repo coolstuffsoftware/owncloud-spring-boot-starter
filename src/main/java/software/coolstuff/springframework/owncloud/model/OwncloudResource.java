@@ -17,10 +17,10 @@
 */
 package software.coolstuff.springframework.owncloud.model;
 
+import org.springframework.http.MediaType;
+
 import java.net.URI;
 import java.time.LocalDateTime;
-
-import org.springframework.http.MediaType;
 
 /**
  * Abstract Representation of a Owncloud Resource.

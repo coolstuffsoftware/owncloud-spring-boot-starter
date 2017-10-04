@@ -17,18 +17,17 @@
 */
 package software.coolstuff.springframework.owncloud.service.api;
 
+import org.springframework.http.MediaType;
+import software.coolstuff.springframework.owncloud.model.OwncloudFileResource;
+import software.coolstuff.springframework.owncloud.model.OwncloudQuota;
+import software.coolstuff.springframework.owncloud.model.OwncloudResource;
+import software.coolstuff.springframework.owncloud.service.impl.OwncloudUtils;
+
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
 import java.util.List;
 import java.util.Optional;
-
-import org.springframework.http.MediaType;
-
-import software.coolstuff.springframework.owncloud.model.OwncloudFileResource;
-import software.coolstuff.springframework.owncloud.model.OwncloudQuota;
-import software.coolstuff.springframework.owncloud.model.OwncloudResource;
-import software.coolstuff.springframework.owncloud.service.impl.OwncloudUtils;
 
 /**
  * Access Files and Directories on the Owncloud.

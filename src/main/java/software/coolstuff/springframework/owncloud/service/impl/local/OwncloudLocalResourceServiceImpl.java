@@ -17,6 +17,28 @@
 */
 package software.coolstuff.springframework.owncloud.service.impl.local;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import lombok.val;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Validate;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.util.UriComponentsBuilder;
+import software.coolstuff.springframework.owncloud.exception.resource.OwncloudLocalResourceException;
+import software.coolstuff.springframework.owncloud.exception.resource.OwncloudNoDirectoryResourceException;
+import software.coolstuff.springframework.owncloud.exception.resource.OwncloudQuotaExceededException;
+import software.coolstuff.springframework.owncloud.exception.resource.OwncloudResourceNotFoundException;
+import software.coolstuff.springframework.owncloud.model.OwncloudFileResource;
+import software.coolstuff.springframework.owncloud.model.OwncloudQuota;
+import software.coolstuff.springframework.owncloud.model.OwncloudResource;
+import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
+import software.coolstuff.springframework.owncloud.service.impl.OwncloudUtils;
+import software.coolstuff.springframework.owncloud.service.impl.local.OwncloudLocalProperties.ResourceServiceProperties;
+
+import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -31,30 +53,6 @@ import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import javax.annotation.PostConstruct;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.Validate;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.util.UriComponentsBuilder;
-
-import lombok.RequiredArgsConstructor;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
-import software.coolstuff.springframework.owncloud.exception.resource.OwncloudLocalResourceException;
-import software.coolstuff.springframework.owncloud.exception.resource.OwncloudNoDirectoryResourceException;
-import software.coolstuff.springframework.owncloud.exception.resource.OwncloudQuotaExceededException;
-import software.coolstuff.springframework.owncloud.exception.resource.OwncloudResourceNotFoundException;
-import software.coolstuff.springframework.owncloud.model.OwncloudFileResource;
-import software.coolstuff.springframework.owncloud.model.OwncloudQuota;
-import software.coolstuff.springframework.owncloud.model.OwncloudResource;
-import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
-import software.coolstuff.springframework.owncloud.service.impl.OwncloudUtils;
-import software.coolstuff.springframework.owncloud.service.impl.local.OwncloudLocalProperties.ResourceServiceProperties;
 
 @Slf4j
 class OwncloudLocalResourceServiceImpl implements OwncloudLocalResourceService {

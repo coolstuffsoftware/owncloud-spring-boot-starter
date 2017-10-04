@@ -17,21 +17,19 @@
 */
 package software.coolstuff.springframework.owncloud.service;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
+import com.google.common.collect.Lists;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.client.RestClientTest;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.test.context.support.WithMockUser;
-
-import com.google.common.collect.Lists;
-
 import software.coolstuff.springframework.owncloud.model.OwncloudModificationUser;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudUserService;
 import software.coolstuff.springframework.owncloud.service.impl.AbstractOwncloudServiceTest;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 @RestClientTest(OwncloudUserService.class)
 public abstract class AbstractOwncloudUserServiceTest extends AbstractOwncloudServiceTest {

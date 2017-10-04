@@ -1,10 +1,9 @@
 package software.coolstuff.springframework.owncloud.service.impl.local;
 
-import org.apache.commons.lang3.Validate;
-
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.Validate;
 
 @Slf4j
 @RequiredArgsConstructor

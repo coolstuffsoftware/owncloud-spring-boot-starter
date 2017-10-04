@@ -18,7 +18,6 @@
 package software.coolstuff.springframework.owncloud.service.impl.local.file;
 
 import org.springframework.core.io.Resource;
-
 import software.coolstuff.springframework.owncloud.service.impl.local.OwncloudLocalFileTestExecutionListener;
 
 public interface OwncloudLocalModifyingFileTest extends OwncloudLocalFileTest {

@@ -17,21 +17,20 @@
 */
 package software.coolstuff.springframework.owncloud.service.impl;
 
-import java.util.Optional;
-
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
-
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
 import software.coolstuff.springframework.owncloud.exception.resource.OwncloudNoFileResourceException;
 import software.coolstuff.springframework.owncloud.model.OwncloudFileResource;
 import software.coolstuff.springframework.owncloud.model.OwncloudResource;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
+
+import java.util.Optional;
 
 /**
  * General Utilities for the Owncloud Services.

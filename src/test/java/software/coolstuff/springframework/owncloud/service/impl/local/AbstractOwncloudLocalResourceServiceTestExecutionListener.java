@@ -17,6 +17,11 @@
 */
 package software.coolstuff.springframework.owncloud.service.impl.local;
 
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.test.context.support.AbstractTestExecutionListener;
+import org.springframework.util.ResourceUtils;
+import org.yaml.snakeyaml.Yaml;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -26,12 +31,6 @@ import java.nio.file.Paths;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
-
-import org.springframework.test.context.support.AbstractTestExecutionListener;
-import org.springframework.util.ResourceUtils;
-import org.yaml.snakeyaml.Yaml;
-
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * @author mufasa1976

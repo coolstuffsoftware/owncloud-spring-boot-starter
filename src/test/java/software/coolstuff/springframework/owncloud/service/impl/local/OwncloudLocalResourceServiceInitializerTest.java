@@ -17,8 +17,8 @@
 */
 package software.coolstuff.springframework.owncloud.service.impl.local;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
+import lombok.Builder;
+import lombok.Data;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -39,9 +39,6 @@ import org.springframework.security.test.context.support.WithSecurityContextTest
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestExecutionListeners;
 import org.springframework.test.context.junit4.SpringRunner;
-
-import lombok.Builder;
-import lombok.Data;
 import software.coolstuff.springframework.owncloud.config.IgnoreOnComponentScan;
 import software.coolstuff.springframework.owncloud.config.VelocityConfiguration;
 import software.coolstuff.springframework.owncloud.model.OwncloudModificationUser;
@@ -49,6 +46,8 @@ import software.coolstuff.springframework.owncloud.model.OwncloudQuota;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudResourceService;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudUserService;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(

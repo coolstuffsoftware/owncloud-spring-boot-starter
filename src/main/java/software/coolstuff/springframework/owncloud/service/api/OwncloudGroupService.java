@@ -17,13 +17,12 @@
 */
 package software.coolstuff.springframework.owncloud.service.api;
 
-import java.util.List;
-
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-
 import software.coolstuff.springframework.owncloud.exception.auth.OwncloudGroupAlreadyExistsException;
 import software.coolstuff.springframework.owncloud.exception.auth.OwncloudGroupNotFoundException;
+
+import java.util.List;
 
 /**
  * Get and modify Information of Groups on the Owncloud Server.
