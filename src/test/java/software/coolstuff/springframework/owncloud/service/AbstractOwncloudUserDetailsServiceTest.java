@@ -24,7 +24,9 @@ import org.springframework.boot.test.autoconfigure.web.client.RestClientTest;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
+import software.coolstuff.springframework.owncloud.exception.auth.OwncloudInvalidAuthenticationObjectException;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
 import software.coolstuff.springframework.owncloud.service.impl.AbstractOwncloudServiceTest;
 
@@ -87,4 +89,9 @@ public abstract class AbstractOwncloudUserDetailsServiceTest extends AbstractOwn
   protected void prepareTestUserDetails_NotFound() throws Exception {
   }
 
+  @Test(expected = OwncloudInvalidAuthenticationObjectException.class)
+  @WithAnonymousUser
+  public void testWrongAuthenticationObject() throws Exception {
+    userDetailsService.loadUserByUsername("unknown");
+  }
 }
