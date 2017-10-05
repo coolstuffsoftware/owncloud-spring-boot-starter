@@ -26,6 +26,8 @@ include::{includedir}/groupService.adoc[]
 
 include::{includedir}/modificationChecker.adoc[]
 
+include::{includedir}/resourceService.adoc[]
+
 include::{includedir}/logging.adoc[]
 
 include::{includedir}/legal.adoc[]

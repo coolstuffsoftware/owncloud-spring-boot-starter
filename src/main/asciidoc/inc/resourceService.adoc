@@ -1,0 +1,127 @@
+== Resource Service
+One of the main Aspects of Owncloud is the Usage of a centralized WebDAV File Store.
+By using the `ResourceService` you can interact with this WebDAV-based File Store.
+
+Simply by `@Autowire` the `ResourceService` you can use the following Methods:
+[cols="4a, 8a", options="header"]
+|===
+| Method | Description
+| `List<OwncloudResource> listRoot()`
+  | Get all Information about Files and/or Directories of the currently authenticated Users Root Directory.
+| `List<OwncloudResource> list(URI relativeTo)`
+  | Get all Information about Files and/or Directories of the given URI. +
+This URI is relative to the Root Directory of the currently authenticated User
+| `Optional<OwncloudResource> find(URI path)`
+  | Find a File or Directory by its URI relative to the Root Directory of the currently authenticated User.
+| `OwncloudResource createDirectory(URI directory)`
+  | Create a Directory relative to the Root Directory of the currently authenticated User
+| `void delete(OwncloudResource resource)`
+  | Delete a File or Directory referenced by the `OwncloudResource` (either returned by `listRoot()`, `list(URI relativeTo)`
+ or `find(URI resource)`).
+
+NOTE: Deleting a Directory causes that also all Files and Subdirectories will be removed recursively.
+| `InputStream getInputStream(OwncloudFileResource resource)`
+  | get an `InputStream` to read the Content of a File
+| `OutputStream getOutputStream(OwncloudFileResource resource)`
+  | get an `OutputStream` to overwrite/append the Content of an existing File.
+| `OutputStream getOutputStream(URI path, MediaType mediaType)`
+  | create a new File and get an `OutputStream` to write its Content.
+| `OwncloudQuota getQuota()`
+  | get the Quota of the actual authenticated User
+|===
+
+=== OwncloudResource
+A `OwncloudResource` is an abstract Representation of a Resource on the Owncloud.
+This Resource can either be a File or a Directory.
+
+The following Information is available about this Resource:
+
+[cols="4a, 8a", options="header"]
+|===
+| Information    | Datatype
+| href           | `java.net.URI`
+| name           | `java.lang.String`
+| lastModifiedAt | `java.time.LocalDateTime`
+| mediaType      | `org.springframework.http.MediaType`
+| eTag           | `java.lang.String`
+|===
+
+In the case of a File Representation a `OwncloudFileResource` as a Subclass of
+`OwncloudResource` will be instantiated. This `OwncloudFileResource` has the
+following additional Information:
+
+[cols="4a, 8a", options="header"]
+|===
+| Information | Datatype
+| contentLength | `java.lang.Long`
+|===
+
+=== from OwncloudResource to OwncloudFileResource
+The Methods `listRoot()` and `list(URI relativeTo)` both return a List of `OwncloudResource`
+because the Content of a Directory can either be Files or another Directories (Subdirectories).
+
+In the case of a Directory the `MediaType` of the `OwncloudResource` is set to `httpd/unix-directory`.
+If you have a File (when `MediaType` of `OwncloudResource` is not `httpd/unix-directory`) you can
+convert the `OwncloudResource` to a `OwncloudFileResource`. Only with the `OwncloudFileResource`
+you can read or write the Content of this File.
+
+[source,java]
+----
+Optional<OwncloudFileResource> fileResource =
+  resourceService.find(uri)
+                 .filter(OwncloudUtils::isDirectory)
+                 .map(OwncloudUtils:toOwncloudFileResource);
+----
+
+=== Local Resource Service
+As with the `OwncloudUserService` and the `OwncloudGroupService`
+you can route the `OwncloudResource` to use a local Storage instead of
+a remote Owncloud Instance. You can use the local Storage for Unit-
+and/or Integration-Tests.
+
+WARNING: Don't use the local Storage of the `OwncloudResource`
+to build your own WebDAV Storage. This is not the intent of this Project
+and the Developers will not take any responsibility for lost Data.
+
+You use the local Storage by setting the local Implementation and a Path
+to the Root Directory for all Users defined by `owncloud.xml`.
+
+[source,yaml]
+.application.yml
+----
+owncloud:
+  location: classpath:/owncloud.xml
+  resource-service:
+    location: /path/to/files
+----
+
+A Subdirectory will be created for every User of the `owncloud.xml` at the
+first Time he/she uses any Method of `OwncloudResourceService`.
+
+For Instance: if User `jane` uses any Method of `OwncloudResourceService`
+a Directory `/path/to/files/jane` will be created.
+
+=== eTag
+The Owncloud calculates an eTag for every Resource. This eTag will be used
+by the Owncloud Client to sync changed Files/Directories.
+
+The Local Storage of `OwncloudResourceService` has a similar eTag Calculation
+based on a MessageDigest Algorithm. At the Moment only MD5 will be used.
+
+The Checksum of a File will be calculated by its Content. The Checksum will be
+calculated by recursevly concatinating the Checksum of all Files within this
+Directory and its Subdirectories.
+
+Everytime the Content of a File changes (either by
+`OwncloudResourceService.getOutputStream` or when any other Process outside
+of the Spring-Boot Application changes the Content of the File) the Checksum
+will be recalculated.
+
+For better Performance the Checksums will be cached. On Application Startup
+the Checksum of all Files and Directories under the Path referenced by the Property
+`owncloud.resource-service.location` will be calculated and written to a Java Map.
+
+This will take some time and the Application Startup has been locked until
+the Calculation has been finished. To keep Unit-Tests fast keep the Number
+and Size of Files small.
+
