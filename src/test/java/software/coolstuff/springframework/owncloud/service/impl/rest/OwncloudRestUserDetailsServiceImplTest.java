@@ -1,20 +1,24 @@
-/*
-   Copyright (C) 2016 by the original Authors.
-
-   This program is free software; you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 3 of the License, or
-   (at your option) any later version.
-
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
-
-   You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation,
-   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
-*/
+/*-
+ * #%L
+ * owncloud-spring-boot-starter
+ * %%
+ * Copyright (C) 2016 - 2017 by the original Authors
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/gpl-3.0.html>.
+ * #L%
+ */
 package software.coolstuff.springframework.owncloud.service.impl.rest;
 
 import org.junit.Test;
@@ -52,15 +56,15 @@ public class OwncloudRestUserDetailsServiceImplTest extends AbstractOwncloudUser
   protected void prepareTestUserDetails_OK(String user, UserResponse userResponse, String... groups) throws Exception {
     respondUser(
         RestRequest.builder()
-            .method(GET)
-            .url("/cloud/users/" + user)
-            .build(),
+                   .method(GET)
+                   .url("/cloud/users/" + user)
+                   .build(),
         userResponse);
     respondGroups(
         RestRequest.builder()
-            .method(GET)
-            .url("/cloud/users/" + user + "/groups")
-            .build(),
+                   .method(GET)
+                   .url("/cloud/users/" + user + "/groups")
+                   .build(),
         groups);
   }
 
@@ -68,9 +72,9 @@ public class OwncloudRestUserDetailsServiceImplTest extends AbstractOwncloudUser
   protected void prepareTestUserDetails_NotFound() throws Exception {
     respondFailure(
         RestRequest.builder()
-            .method(GET)
-            .url("/cloud/users/unknown")
-            .build(),
+                   .method(GET)
+                   .url("/cloud/users/unknown")
+                   .build(),
         998,
         "The requested user could not be found");
   }
@@ -80,9 +84,9 @@ public class OwncloudRestUserDetailsServiceImplTest extends AbstractOwncloudUser
   public void testUserDetails_AccessDenied() throws Exception {
     respondFailure(
         RestRequest.builder()
-            .method(GET)
-            .url("/cloud/users/user1")
-            .build(),
+                   .method(GET)
+                   .url("/cloud/users/user1")
+                   .build(),
         997);
 
     userDetailsService.loadUserByUsername("user1");
@@ -93,9 +97,9 @@ public class OwncloudRestUserDetailsServiceImplTest extends AbstractOwncloudUser
   public void testUserDetails_UnknownError() throws Exception {
     respondFailure(
         RestRequest.builder()
-            .method(GET)
-            .url("/cloud/users/user1")
-            .build(),
+                   .method(GET)
+                   .url("/cloud/users/user1")
+                   .build(),
         999);
 
     userDetailsService.loadUserByUsername("user1");
@@ -106,15 +110,15 @@ public class OwncloudRestUserDetailsServiceImplTest extends AbstractOwncloudUser
   public void testUserDetails_WrongAuthenticationObject() throws MalformedURLException, IOException {
     respondUser(
         RestRequest.builder()
-            .method(GET)
-            .url("/cloud/user/user1")
-            .build(),
+                   .method(GET)
+                   .url("/cloud/user/user1")
+                   .build(),
         UserResponse.builder()
-            .enabled(true)
-            .email("user1@example.com")
-            .displayname("Mr. User 1")
-            .quota(1024L)
-            .build());
+                    .enabled(true)
+                    .email("user1@example.com")
+                    .displayname("Mr. User 1")
+                    .quota(1024L)
+                    .build());
 
     userDetailsService.loadUserByUsername("user1");
   }

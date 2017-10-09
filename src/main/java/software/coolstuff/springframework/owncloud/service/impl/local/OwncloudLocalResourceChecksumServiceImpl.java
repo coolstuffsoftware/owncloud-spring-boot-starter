@@ -1,20 +1,24 @@
-/*
-   Copyright (C) 2017 by the original Authors.
-
-   This program is free software; you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 3 of the License, or
-   (at your option) any later version.
-
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
-
-   You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation,
-   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
-*/
+/*-
+ * #%L
+ * owncloud-spring-boot-starter
+ * %%
+ * Copyright (C) 2016 - 2017 by the original Authors
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/gpl-3.0.html>.
+ * #L%
+ */
 package software.coolstuff.springframework.owncloud.service.impl.local;
 
 import lombok.Builder;
@@ -54,10 +58,10 @@ public class OwncloudLocalResourceChecksumServiceImpl implements OwncloudLocalRe
 
   public OwncloudLocalResourceChecksumServiceImpl() {
     fileVisitor = InitializingFileVisitor.builder()
-        .checksums(checksums)
-        .directoryDigest(this::createDirectoryChecksum)
-        .fileDigest(this::createFileChecksum)
-        .build();
+                                         .checksums(checksums)
+                                         .directoryDigest(this::createDirectoryChecksum)
+                                         .fileDigest(this::createFileChecksum)
+                                         .build();
   }
 
   private static class InitializingFileVisitor extends SimpleFileVisitor<Path> {
@@ -80,8 +84,8 @@ public class OwncloudLocalResourceChecksumServiceImpl implements OwncloudLocalRe
     @Override
     public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
       checksums.keySet().stream()
-          .filter(path -> isSamePath(path.getParent(), dir))
-          .forEach(path -> checksums.remove(path.toAbsolutePath().normalize()));
+               .filter(path -> isSamePath(path.getParent(), dir))
+               .forEach(path -> checksums.remove(path.toAbsolutePath().normalize()));
       return FileVisitResult.CONTINUE;
     }
 
@@ -123,8 +127,8 @@ public class OwncloudLocalResourceChecksumServiceImpl implements OwncloudLocalRe
     log.debug("Calculate the Checksum of Directory {}", path);
     try (ByteArrayOutputStream stream = new ByteArrayOutputStream()) {
       fileChecksums.entrySet().stream()
-          .filter(entry -> isSamePath(path, entry.getKey().getParent()))
-          .forEach(entry -> writeChecksumEntry(entry.getValue(), stream));
+                   .filter(entry -> isSamePath(path, entry.getKey().getParent()))
+                   .forEach(entry -> writeChecksumEntry(entry.getValue(), stream));
       synchronized (messageDigest) {
         messageDigest.reset();
         messageDigest.update(stream.toByteArray());
@@ -176,7 +180,7 @@ public class OwncloudLocalResourceChecksumServiceImpl implements OwncloudLocalRe
   @Override
   public Optional<String> getChecksum(Path path) throws OwncloudResourceException {
     return Optional.ofNullable(path)
-        .map(p -> checksums.get(p.toAbsolutePath().normalize()));
+                   .map(p -> checksums.get(p.toAbsolutePath().normalize()));
   }
 
   @Override
@@ -207,9 +211,9 @@ public class OwncloudLocalResourceChecksumServiceImpl implements OwncloudLocalRe
     }
     log.debug("Clean the Checksum of all non-existing Files within Directory {}", normalizedPath);
     checksums.keySet().stream()
-        .filter(checksumPath -> isSamePath(checksumPath.getParent(), path))
-        .filter(Files::notExists)
-        .forEach(checksums::remove);
+             .filter(checksumPath -> isSamePath(checksumPath.getParent(), path))
+             .filter(Files::notExists)
+             .forEach(checksums::remove);
     String checksum = createDirectoryChecksum(normalizedPath, checksums);
     checksums.put(normalizedPath, checksum);
     createDirectoryChecksumRecursively(normalizedPath.getParent());

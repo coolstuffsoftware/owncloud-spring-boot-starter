@@ -1,20 +1,24 @@
-/*
-   Copyright (C) 2017 by the original Authors.
-
-   This program is free software; you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 3 of the License, or
-   (at your option) any later version.
-
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
-
-   You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation,
-   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
-*/
+/*-
+ * #%L
+ * owncloud-spring-boot-starter
+ * %%
+ * Copyright (C) 2016 - 2017 by the original Authors
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/gpl-3.0.html>.
+ * #L%
+ */
 package software.coolstuff.springframework.owncloud.service.impl.local;
 
 import lombok.RequiredArgsConstructor;
@@ -90,12 +94,12 @@ class OwncloudLocalResourceServiceImpl implements OwncloudLocalResourceService {
   private void calculateQuotas(Path baseLocation) throws IOException {
     quotas.clear();
     userDataService.getUsers()
-        .forEach(user -> {
-          String username = user.getUsername();
-          OwncloudLocalQuotaImpl quota = calculateUsedSpace(username, baseLocation);
-          quota.setTotal(user.getQuota());
-          quotas.put(username, quota);
-        });
+                   .forEach(user -> {
+                     String username = user.getUsername();
+                     OwncloudLocalQuotaImpl quota = calculateUsedSpace(username, baseLocation);
+                     quota.setTotal(user.getQuota());
+                     quotas.put(username, quota);
+                   });
   }
 
   private OwncloudLocalQuotaImpl calculateUsedSpace(String username, Path baseLocation) {
@@ -103,16 +107,16 @@ class OwncloudLocalResourceServiceImpl implements OwncloudLocalResourceService {
 
     if (Files.notExists(userBaseLocation)) {
       return OwncloudLocalQuotaImpl.builder()
-          .username(username)
-          .location(baseLocation)
-          .build();
+                                   .username(username)
+                                   .location(baseLocation)
+                                   .build();
     }
 
     try {
       OwncloudLocalQuotaImpl quota = OwncloudLocalQuotaImpl.builder()
-          .username(username)
-          .location(userBaseLocation)
-          .build();
+                                                           .username(username)
+                                                           .location(userBaseLocation)
+                                                           .build();
       log.debug("Calculate the Space used by User {}", username);
       Files.walkFileTree(userBaseLocation, new UsedSpaceFileVisitor(quota::increaseUsed));
       return quota;
@@ -214,8 +218,8 @@ class OwncloudLocalResourceServiceImpl implements OwncloudLocalResourceService {
       return getDirectoryResources(location);
     }
     return Stream.of(createOwncloudResourceOf(location))
-        .peek(resource -> log.debug("Add Resource {} to the Result", resource.getHref()))
-        .collect(Collectors.toList());
+                 .peek(resource -> log.debug("Add Resource {} to the Result", resource.getHref()))
+                 .collect(Collectors.toList());
   }
 
   private List<OwncloudResource> getDirectoryResources(Path location) {
@@ -223,9 +227,9 @@ class OwncloudLocalResourceServiceImpl implements OwncloudLocalResourceService {
       List<OwncloudResource> owncloudResources = new ArrayList<>();
       owncloudResources.add(getActualDirectoryOf(location));
       Files.list(location)
-          .map(path -> createOwncloudResourceOf(path))
-          .peek(resource -> log.debug("Add Resource {} to the Result", resource.getHref()))
-          .forEach(owncloudResources::add);
+           .map(path -> createOwncloudResourceOf(path))
+           .peek(resource -> log.debug("Add Resource {} to the Result", resource.getHref()))
+           .forEach(owncloudResources::add);
       getParentDirectoryOf(location)
           .ifPresent(owncloudResources::add);
       return owncloudResources;
@@ -254,8 +258,8 @@ class OwncloudLocalResourceServiceImpl implements OwncloudLocalResourceService {
     if (Files.isDirectory(path)) {
       href = URI.create(
           UriComponentsBuilder.fromUri(href)
-              .path("/")
-              .toUriString());
+                              .path("/")
+                              .toUriString());
       mediaType = OwncloudUtils.getDirectoryMediaType();
     } else {
       FileNameMap fileNameMap = URLConnection.getFileNameMap();
@@ -272,20 +276,20 @@ class OwncloudLocalResourceServiceImpl implements OwncloudLocalResourceService {
         checksum = Optional.empty();
       }
       OwncloudLocalResourceExtension resource = OwncloudLocalResourceImpl.builder()
-          .href(href)
-          .name(name)
-          .eTag(checksum.orElse(null))
-          .mediaType(mediaType)
-          .lastModifiedAt(lastModifiedAt)
-          .build();
+                                                                         .href(href)
+                                                                         .name(name)
+                                                                         .eTag(checksum.orElse(null))
+                                                                         .mediaType(mediaType)
+                                                                         .lastModifiedAt(lastModifiedAt)
+                                                                         .build();
       if (Files.isDirectory(path)) {
         return resource;
       }
 
       return OwncloudLocalFileResourceImpl.fileBuilder()
-          .owncloudResource(resource)
-          .contentLength(Files.size(path))
-          .build();
+                                          .owncloudResource(resource)
+                                          .contentLength(Files.size(path))
+                                          .build();
     } catch (NoSuchFileException e) {
       throw new OwncloudResourceNotFoundException(href, getUsername());
     } catch (IOException e) {
@@ -438,12 +442,12 @@ class OwncloudLocalResourceServiceImpl implements OwncloudLocalResourceService {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     log.debug("Create a piped OutputStream to control the written Data (because of the Quota of User {}", authentication.getName());
     PipedOutputStreamLocalSynchronizer pipedStreamSynchronizer = PipedOutputStreamLocalSynchronizer.builder()
-        .authentication(authentication)
-        .afterCopyCallback(this::afterCopy)
-        .owncloudLocalProperties(properties)
-        .uri(path)
-        .uriResolver(this::resolveLocation)
-        .build();
+                                                                                                   .authentication(authentication)
+                                                                                                   .afterCopyCallback(this::afterCopy)
+                                                                                                   .owncloudLocalProperties(properties)
+                                                                                                   .uri(path)
+                                                                                                   .uriResolver(this::resolveLocation)
+                                                                                                   .build();
     return pipedStreamSynchronizer.getOutputStream();
   }
 

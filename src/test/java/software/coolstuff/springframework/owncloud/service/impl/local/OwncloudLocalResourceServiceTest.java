@@ -1,20 +1,24 @@
-/*
-   Copyright (C) 2017 by the original Authors.
-
-   This program is free software; you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 3 of the License, or
-   (at your option) any later version.
-
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
-
-   You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation,
-   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
-*/
+/*-
+ * #%L
+ * owncloud-spring-boot-starter
+ * %%
+ * Copyright (C) 2016 - 2017 by the original Authors
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/gpl-3.0.html>.
+ * #L%
+ */
 package software.coolstuff.springframework.owncloud.service.impl.local;
 
 import org.apache.commons.io.IOUtils;
@@ -78,12 +82,12 @@ public class OwncloudLocalResourceServiceTest extends AbstractOwncloudResourceSe
   @Override
   protected OwncloudResource prepare_OwncloudTestResourceImpl_equalsTo_OwncloudResourceImpl(OwncloudResource expected) throws Exception {
     return OwncloudLocalResourceImpl.builder()
-        .eTag(expected.getETag())
-        .href(expected.getHref())
-        .lastModifiedAt(expected.getLastModifiedAt())
-        .mediaType(expected.getMediaType())
-        .name(expected.getName())
-        .build();
+                                    .eTag(expected.getETag())
+                                    .href(expected.getHref())
+                                    .lastModifiedAt(expected.getLastModifiedAt())
+                                    .mediaType(expected.getMediaType())
+                                    .name(expected.getName())
+                                    .build();
   }
 
   @Override
@@ -118,7 +122,7 @@ public class OwncloudLocalResourceServiceTest extends AbstractOwncloudResourceSe
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     ResourceServiceProperties resourceProperties = properties.getResourceService();
     Path basePath = resourceProperties.getLocation()
-        .resolve(authentication.getName());
+                                      .resolve(authentication.getName());
     if (relativePath.isAbsolute()) {
       String relativizedPath = StringUtils.substring(relativePath.toString(), File.pathSeparator.length());
       return basePath.resolve(relativizedPath);
@@ -187,12 +191,12 @@ public class OwncloudLocalResourceServiceTest extends AbstractOwncloudResourceSe
   @Override
   protected void prepare_getOutputStream_OK_CreateNewFile(URI href, MediaType mediaType, String testFileContent) throws Exception {
     OwncloudTestFileResourceImpl resource = OwncloudTestFileResourceImpl.fileBuilder()
-        .owncloudResource(OwncloudTestResourceImpl.builder()
-            .href(href)
-            .mediaType(mediaType)
-            .build())
-        .testFileContent(testFileContent)
-        .build();
+                                                                        .owncloudResource(OwncloudTestResourceImpl.builder()
+                                                                                                                  .href(href)
+                                                                                                                  .mediaType(mediaType)
+                                                                                                                  .build())
+                                                                        .testFileContent(testFileContent)
+                                                                        .build();
     createResource(resource);
   }
 
@@ -206,9 +210,9 @@ public class OwncloudLocalResourceServiceTest extends AbstractOwncloudResourceSe
   @Override
   protected void prepare_getOutputStream_NOK_ResourceIsDirectory(URI href) throws Exception {
     OwncloudTestResourceImpl resource = OwncloudTestResourceImpl.builder()
-        .href(href)
-        .mediaType(OwncloudUtils.getDirectoryMediaType())
-        .build();
+                                                                .href(href)
+                                                                .mediaType(OwncloudUtils.getDirectoryMediaType())
+                                                                .build();
     createResource(resource);
   }
 
@@ -222,13 +226,13 @@ public class OwncloudLocalResourceServiceTest extends AbstractOwncloudResourceSe
   @Override
   protected void prepare_getOutputStream_OK_OverwriteFile(URI href, MediaType mediaType, String testFileContent) throws Exception {
     OwncloudTestFileResourceImpl resource = OwncloudTestFileResourceImpl.fileBuilder()
-        .owncloudResource(
-            OwncloudTestResourceImpl.builder()
-                .href(href)
-                .mediaType(mediaType)
-                .build())
-        .testFileContent("Here we have a very different Content that should be overwritten by the Test-Content")
-        .build();
+                                                                        .owncloudResource(
+                                                                            OwncloudTestResourceImpl.builder()
+                                                                                                    .href(href)
+                                                                                                    .mediaType(mediaType)
+                                                                                                    .build())
+                                                                        .testFileContent("Here we have a very different Content that should be overwritten by the Test-Content")
+                                                                        .build();
     createResource(resource);
   }
 

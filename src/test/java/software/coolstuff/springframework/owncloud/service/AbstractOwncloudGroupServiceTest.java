@@ -1,20 +1,24 @@
-/*
-   Copyright (C) 2016 by the original Authors.
-
-   This program is free software; you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 3 of the License, or
-   (at your option) any later version.
-
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
-
-   You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation,
-   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
-*/
+/*-
+ * #%L
+ * owncloud-spring-boot-starter
+ * %%
+ * Copyright (C) 2016 - 2017 by the original Authors
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/gpl-3.0.html>.
+ * #L%
+ */
 package software.coolstuff.springframework.owncloud.service;
 
 import org.junit.Test;
@@ -49,7 +53,8 @@ public abstract class AbstractOwncloudGroupServiceTest extends AbstractOwncloudS
         .containsOnly("group1", "group2", "group3");
   }
 
-  protected void prepareTestFindAllGroups(String... groups) throws Exception {}
+  protected void prepareTestFindAllGroups(String... groups) throws Exception {
+  }
 
   @Test
   @WithMockUser(username = "user1", password = "password")
@@ -64,7 +69,8 @@ public abstract class AbstractOwncloudGroupServiceTest extends AbstractOwncloudS
         .containsOnly("group2");
   }
 
-  protected void prepareTestFindAllGroupsWithFilter(String filter, String... groups) throws Exception {}
+  protected void prepareTestFindAllGroupsWithFilter(String filter, String... groups) throws Exception {
+  }
 
   @Test
   @WithMockUser(username = "user1", password = "password")
@@ -79,7 +85,8 @@ public abstract class AbstractOwncloudGroupServiceTest extends AbstractOwncloudS
         .containsOnly("user1");
   }
 
-  protected void prepareTestFindAllMembersOfGroup_OK(String group, String... users) throws Exception {}
+  protected void prepareTestFindAllMembersOfGroup_OK(String group, String... users) throws Exception {
+  }
 
   @Test(expected = OwncloudGroupNotFoundException.class)
   @WithMockUser(username = "user1", password = "password")
@@ -88,7 +95,8 @@ public abstract class AbstractOwncloudGroupServiceTest extends AbstractOwncloudS
     groupService.findAllUsers("group4");
   }
 
-  protected void prepareTestFindAllMembersOfGroup_UnknownGroup(String group) throws Exception {}
+  protected void prepareTestFindAllMembersOfGroup_UnknownGroup(String group) throws Exception {
+  }
 
   @Test
   @WithMockUser(username = "user1", password = "password")
@@ -100,7 +108,8 @@ public abstract class AbstractOwncloudGroupServiceTest extends AbstractOwncloudS
         .isEmpty();
   }
 
-  protected void prepareTestFindAllMembersOfGroup_GroupWithoutMembers(String groupname) throws Exception {}
+  protected void prepareTestFindAllMembersOfGroup_GroupWithoutMembers(String groupname) throws Exception {
+  }
 
   @Test(expected = NullPointerException.class)
   @WithMockUser(username = "user1", password = "password")
@@ -127,7 +136,8 @@ public abstract class AbstractOwncloudGroupServiceTest extends AbstractOwncloudS
         .containsOnly("group1", "group2");
   }
 
-  protected void prepareTestFindAllGroupsOfUser_OK(String user, String... groups) throws Exception {}
+  protected void prepareTestFindAllGroupsOfUser_OK(String user, String... groups) throws Exception {
+  }
 
   @Test
   @WithMockUser(username = "user2", password = "password")
@@ -142,7 +152,8 @@ public abstract class AbstractOwncloudGroupServiceTest extends AbstractOwncloudS
         .isEmpty();
   }
 
-  protected void prepareTestFindAllGroupsOfUser_OK_NoGroups(String user) throws Exception {}
+  protected void prepareTestFindAllGroupsOfUser_OK_NoGroups(String user) throws Exception {
+  }
 
   @Test
   @WithMockUser(username = "user1", password = "password")
@@ -151,7 +162,8 @@ public abstract class AbstractOwncloudGroupServiceTest extends AbstractOwncloudS
     groupService.create("group4");
   }
 
-  protected void prepareTestCreateGroup_OK(String groupname) throws Exception {}
+  protected void prepareTestCreateGroup_OK(String groupname) throws Exception {
+  }
 
   @Test(expected = OwncloudGroupAlreadyExistsException.class)
   @WithMockUser(username = "user1", password = "password")
@@ -160,7 +172,8 @@ public abstract class AbstractOwncloudGroupServiceTest extends AbstractOwncloudS
     groupService.create("group1");
   }
 
-  protected void prepareTestCreateGroup_NOK_OwncloudGroupAlreadyExists(String groupname) throws Exception {}
+  protected void prepareTestCreateGroup_NOK_OwncloudGroupAlreadyExists(String groupname) throws Exception {
+  }
 
   @Test
   @WithMockUser(username = "user1", password = "password")
@@ -169,7 +182,8 @@ public abstract class AbstractOwncloudGroupServiceTest extends AbstractOwncloudS
     groupService.delete("group1");
   }
 
-  protected void prepareTestDeleteGroup_OK(String groupname) throws Exception {}
+  protected void prepareTestDeleteGroup_OK(String groupname) throws Exception {
+  }
 
   @Test(expected = OwncloudGroupNotFoundException.class)
   @WithMockUser(username = "user1", password = "password")
@@ -178,5 +192,6 @@ public abstract class AbstractOwncloudGroupServiceTest extends AbstractOwncloudS
     groupService.delete("group4");
   }
 
-  protected void prepareTestDeleteGroup_NOK_GroupNotFound(String groupname) throws Exception {}
+  protected void prepareTestDeleteGroup_NOK_GroupNotFound(String groupname) throws Exception {
+  }
 }
