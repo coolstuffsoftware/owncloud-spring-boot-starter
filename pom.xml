@@ -10,6 +10,8 @@
     <description>Spring Boot Owncloud Service and Authentication Provider</description>
     <url>https://github.com/coolstuffsoftware/springOwncloud</url>
 
+    <inceptionYear>2016</inceptionYear>
+
     <organization>
         <name>coolstuff.software</name>
         <url>http://github.coolstuff.software</url>
@@ -327,6 +329,12 @@
                     </configuration>
                 </plugin>
 
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>license-maven-plugin</artifactId>
+                    <version>1.14</version>
+                </plugin>
+
                 <!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself. -->
                 <plugin>
                     <groupId>org.eclipse.m2e</groupId>
@@ -458,6 +466,29 @@
                     <pushFeatures>true</pushFeatures>
                     <pushHotfixes>true</pushHotfixes>
                 </configuration>
+            </plugin>
+
+            <!-- License Maven Plugin -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>license-maven-plugin</artifactId>
+                <configuration>
+                    <licenseName>gpl_v3</licenseName>
+                    <addJavaLicenseAfterPackage>false</addJavaLicenseAfterPackage>
+                    <organizationName>by the original Authors</organizationName>
+                    <roots>src/main/java, src/test/java, target/generated-sources, target/processed-sources</roots>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>check-file-header</goal>
+                        </goals>
+                        <configuration>
+                            <failOnMissingHeader>true</failOnMissingHeader>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
