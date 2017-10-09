@@ -73,6 +73,21 @@ Optional<OwncloudFileResource> fileResource =
                  .map(OwncloudUtils:toOwncloudFileResource);
 ----
 
+=== relative Super Directory
+When you call `list(URI relativeTo)` you will get a List of Files/Directories
+of the given URI relative to the User Root. Operating Systems will normally
+give you 2 additional Entries: . (actual Directory) and .. (Parent Directory)
+
+Maybe you don't want a Reference to the Parent Directory you can set
+the Configuration Property `owncloud.resource-service.add-relative-down-path` to
+`false`. (Default is: `true`).
+After setting this Configuration to `false` no relative Path will be added to the
+List of Files/Directories.
+
+By letting this Configuration Property to its Default Value of `true` the relative
+Link will be added. The only Exception is the Root-Directory of the User because
+you can't navigate under the Root-Directory.
+
 === Local Resource Service
 As with the `OwncloudUserService` and the `OwncloudGroupService`
 you can route the `OwncloudResource` to use a local Storage instead of
@@ -125,3 +140,88 @@ This will take some time and the Application Startup has been locked until
 the Calculation has been finished. To keep Unit-Tests fast keep the Number
 and Size of Files small.
 
+=== piped Streams
+The API of `OwncloudResourceService` is simple. Because of its simplicity in the
+Background there are some challenges because of deferred Read/Write Operations
+(when using the REST Backend).
+
+==== piped OutputStream
+So the Write-Process (`OwncloudResourceService.getOutputStream()`) *never* will be
+called directly on the Files. Instead you (Developer who uses the `OwncloudResourceService`)
+will get one end of a Pipe, the `PipedOutputStream`. With this OutputStream you can
+handle all your Streaming.
+
+In the Background there has been started a new Thread who keeps the other end of
+the Pipe, the `PipedInputStream`. All Data written to the `PipedOutputStream` will
+be read by the `PipedInputStream`. This Background Process handles the Communication
+with the deferred Owncloud System. If there are some Errors during the I/O Process
+(i.E. the Owncloud will be shutdown or network problems) the Background Process cancels
+the Transfer and throws an `OwncloudException` (either when writing or on close of
+the `PipedOutputStream`).
+
+Also the local Implementation of `OwncloudResourceService.getOutputStream()` uses this
+Background Process to first write to a temporary File. Only on `close()` the temporary
+File will be moved to the real Position. The temporary File will be created on the
+temporary Path-Location (via `Files.createTempFile()`). The Prefix of this temporary
+File can be customized via the Configuration Property
+`owncloud.resource-service.piped-stream-temporary-file-prefix`.
+The Default is: `owncloud`
+
+[source,yaml]
+.application.yml
+----
+owncloud:
+  location: classpath:/owncloud.xml
+  resource-service:
+    location: /path/to/files
+    piped-stream-temporary-file-prefix: owncloud
+----
+
+==== piped InputStream
+Also the REST-Backend of `OwncloudResourceService.getInputStream()`
+uses the piped Streams to handle the deferred Communication to the
+Owncloud.
+
+So if you call `OwncloudResourceService.getInputStream()` then you will
+get a `PipedInputStream`. This Pipe is connected to a Background Thread
+which keeps the `PipedOutputStream`. If there are any Errors during the
+deferred Read then an `OwncloudException` will be thrown.
+
+The local Implementation of `OwncloudResourceService.getInputStream()`
+on the other Hand *doesn't* use this Synchronization Mechanism. Instead
+you will get a `FileInputStream` with which you can read the Data directly.
+Please keep this in mind:
+
+NOTE: the REST-Implementation of `OwncloudResourceService.getInputStream()`
+uses the piped Stream Synchronization Mechanism to handle deferred Exceptions.
+The local Implementation returns a `FileInputStream` to the File *without* the
+synchronization Mechanism.
+
+==== Synchronization Buffer
+By the Configuration Parameter `owncloud.resource-service.piped-stream-buffer-size`
+you can manage the Bytes which will be read/write by the piped Stream. The Value is
+in Bytes. The Default is 8K (8.192) Bytes.
+
+[source,yaml]
+.application.yml
+----
+owncloud:
+  location: classpath:/owncloud.xml
+  resource-service:
+    location: /path/to/files
+    piped-stream-buffer-size: 8192
+----
+
+==== Exceptions during Background Synchronization
+The Background-Thread will be automatically created (and also destroyed) by
+the owncloud-spring-boot-starter. It will be created if you call
+`OwncloudResourceService.getInputStream()` (only REST-Backend) or
+`OwncloudResourceService.getOutputStream()` (REST- and local Backend).
+It will be closed if you call `close()` on either the `InputStream` or the
+`OutputStream` Object.
+
+On any Error during the Background Communication the Background-Thread throws
+an Instance of `OwncloudException` and logs the Exception to SLF4J.
+The Log-Level of this uncaught Exception can be handled by the Configuration
+Parameter `owncloud.resource-service.piped-stream-uncaught-exception-log-level`
+Any valid SLF4J LogLevel can be served. The Default is `LogLevel.ERROR`.
