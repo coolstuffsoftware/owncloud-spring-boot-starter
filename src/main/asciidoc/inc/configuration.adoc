@@ -33,7 +33,7 @@ All Services of this Spring-Boot Starter will be managed by the following http:/
 | owncloud.resource-service.sardine-cache.refresh-after-write-time-unit | REST | false | java.util.concurrent.TimeUnit | TimeUnit.SECONDS
   | Timeunit for `owncloud.resource-service.sardine-cache.refresh-after-write`
 | owncloud.resource-service.message-digest-algorithm | LOCAL | true
-  | software.coolstuff.springframework.owncloud.service.impl.local.OwncloudLocalProperties.ResourceServiceProperties.MessageDigestAlgorithm
+  | OwncloudLocalProperties.ResourceServiceProperties.MessageDigestAlgorithm
   | MessageDigestAlgorithm.MD5
   | Message Digest Algorithm for the Checksum Service
 | owncloud.resource-service.location | LOCAL | true | java.nio.file.Path | -

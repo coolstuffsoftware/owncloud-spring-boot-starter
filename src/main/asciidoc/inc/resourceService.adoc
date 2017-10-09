@@ -1,8 +1,8 @@
 == Resource Service
 One of the main Aspects of Owncloud is the Usage of a centralized WebDAV File Store.
-By using the `ResourceService` you can interact with this WebDAV-based File Store.
+By using the `OwncloudResourceService` you can interact with this WebDAV-based File Store.
 
-Simply by `@Autowire` the `ResourceService` you can use the following Methods:
+Simply by `@Autowire` the `OwncloudResourceService` you can use the following Methods:
 [cols="4a, 8a", options="header"]
 |===
 | Method | Description
@@ -75,18 +75,19 @@ Optional<OwncloudFileResource> fileResource =
 
 === relative Super Directory
 When you call `list(URI relativeTo)` you will get a List of Files/Directories
-of the given URI relative to the User Root. Operating Systems will normally
+of the given URI relative to the User Root. `OwncloudResourceService` will
 give you 2 additional Entries: . (actual Directory) and .. (Parent Directory)
 
-Maybe you don't want a Reference to the Parent Directory you can set
+If you don't want a Reference to the Parent Directory you can set
 the Configuration Property `owncloud.resource-service.add-relative-down-path` to
-`false`. (Default is: `true`).
-After setting this Configuration to `false` no relative Path will be added to the
-List of Files/Directories.
+`false`. (Default is: `true`). +
+After setting this Configuration to `false` no additional Entriy `..` with
+a Reference to the Parent Directory will be added to the Result of
+`list(URI relativeTo)`.
 
 By letting this Configuration Property to its Default Value of `true` the relative
-Link will be added. The only Exception is the Root-Directory of the User because
-you can't navigate under the Root-Directory.
+Link to the Super Directory will be added. The only Exception is the Root-Directory
+of the User because you can't navigate below to the Root-Directory.
 
 === Local Resource Service
 As with the `OwncloudUserService` and the `OwncloudGroupService`
@@ -123,9 +124,9 @@ by the Owncloud Client to sync changed Files/Directories.
 The Local Storage of `OwncloudResourceService` has a similar eTag Calculation
 based on a MessageDigest Algorithm. At the Moment only MD5 will be used.
 
-The Checksum of a File will be calculated by its Content. The Checksum will be
-calculated by recursevly concatinating the Checksum of all Files within this
-Directory and its Subdirectories.
+The Checksum of a File will be calculated by its Content. The Checksum of a
+Directory will be calculated by recursevly concatinating the Checksum of
+all Files within this Directory and its Subdirectories.
 
 Everytime the Content of a File changes (either by
 `OwncloudResourceService.getOutputStream` or when any other Process outside
