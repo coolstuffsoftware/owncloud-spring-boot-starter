@@ -1,42 +1,34 @@
-/*
-   Copyright (C) 2016 by the original Authors.
-
-   This program is free software; you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 3 of the License, or
-   (at your option) any later version.
-
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
-
-   You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation,
-   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
-*/
+/*-
+ * #%L
+ * owncloud-spring-boot-starter
+ * %%
+ * Copyright (C) 2016 - 2017 by the original Authors
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/gpl-3.0.html>.
+ * #L%
+ */
 package software.coolstuff.springframework.owncloud.model;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
-import javax.validation.constraints.NotNull;
-
+import lombok.*;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
-import software.coolstuff.springframework.owncloud.service.api.OwncloudGrantedAuthoritiesMapper;
+import javax.validation.constraints.NotNull;
+import java.util.Collection;
 
 /**
  * Implementation of the {@link UserDetails} Specification of Spring Security.
@@ -45,6 +37,7 @@ import software.coolstuff.springframework.owncloud.service.api.OwncloudGrantedAu
  *
  * @author mufasa1976
  * @see UserDetails
+ * @since 1.0.0
  */
 @Data
 @NoArgsConstructor
@@ -66,8 +59,6 @@ public class OwncloudUserDetails implements UserDetails {
    * Password of the authenticated User.
    * <p/>
    * <u>Note:</u> The Password will be hidden when calling {@link #toString()}
-   * @param password Password of the authenticated User
-   * @return Password of the authenticated User
    */
   @Getter(AccessLevel.NONE)
   private char[] password;
@@ -87,18 +78,8 @@ public class OwncloudUserDetails implements UserDetails {
   private Collection<? extends GrantedAuthority> authorities;
 
   /**
-   * Owncloud Groups of the authenticated User.
-   * <p/>
-   * If neither {@link OwncloudGrantedAuthoritiesMapper} nor {@link GrantedAuthoritiesMapper} will be used then
-   * this is the same as {@link #getAuthorities()}
-   * @param groups Owncloud Groups of the authenticated User
-   * @return Owncloud Groups of the authenticated User
-   */
-  private List<String> groups = new ArrayList<>();
-
-  /**
    * Display Name of the authenticated User.
-   * @param displayName Display Name of the authenticated User
+   * @param displayname Display Name of the authenticated User
    * @return Display Name of the authenticated User
    */
   private String displayname;
@@ -110,9 +91,13 @@ public class OwncloudUserDetails implements UserDetails {
    */
   private String email;
 
-  public static class OwncloudUserDetailsBuilder {
-    private boolean enabled = true;
-  }
+  /**
+   * Quota of the User (in Bytes).
+   * @since 1.2.0
+   * @param quota Quota of the User (in Bytes)
+   * @return Quota of the User (in Bytes)
+   */
+  private Long quota;
 
   @Builder
   public OwncloudUserDetails(
@@ -120,16 +105,16 @@ public class OwncloudUserDetails implements UserDetails {
       String password,
       boolean enabled,
       Collection<? extends GrantedAuthority> authorities,
-      List<String> groups,
       String displayname,
-      String email) {
+      String email,
+      Long quota) {
     setUsername(username);
     setPassword(password);
     setEnabled(enabled);
     setAuthorities(authorities);
-    setGroups(groups);
     setDisplayname(displayname);
     setEmail(email);
+    setQuota(quota);
   }
 
   @Override

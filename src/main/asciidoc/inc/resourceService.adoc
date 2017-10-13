@@ -1,0 +1,254 @@
+== Resource Service
+One of the main Aspects of Owncloud is the Usage of a centralized WebDAV File Store.
+By using the `OwncloudResourceService` you can interact with this WebDAV-based File Store.
+
+Simply by `@Autowire` the `OwncloudResourceService` you can use the following Methods:
+[cols="4a, 4a, 8a", options="header"]
+|===
+| Method | REST-Call | Description
+| `List<OwncloudResource> listRoot()` | `PROPFIND /remote.php/dav/files/{username}/`
+  | Get all Information about Files and/or Directories of the currently authenticated Users Root Directory.
+| `List<OwncloudResource> list(URI relativeTo)` | `PROPFIND /remote.php/dav/files/{username}/{relativeTo}`
+  | Get all Information about Files and/or Directories of the given URI. +
+    This URI is relative to the Root Directory of the currently authenticated User
+| `Optional<OwncloudResource> find(URI path)` | `PROPFIND /remote.php/dav/files/{username}/{path}`
+  | Find a File or Directory by its URI relative to the Root Directory of the currently authenticated User.
+| `OwncloudResource createDirectory(URI directory)` | `MKCOL /remote.php/dav/files/{username}/{directory}`
+  | Create a Directory relative to the Root Directory of the currently authenticated User
+| `void delete(OwncloudResource resource)` | `DELETE /remote.php/dav/files/{username}/{resource.href}`
+  | Delete a File or Directory referenced by the `OwncloudResource` (either returned by `listRoot()`, `list(URI relativeTo)`
+ or `find(URI resource)`).
+
+NOTE: Deleting a Directory causes that also all Files and Subdirectories will be removed recursively.
+| `InputStream getInputStream(OwncloudFileResource resource)` | `GET /remote.php/dav/files/{username}/{resource.href}`
+  | get an `InputStream` to read the Content of a File
+| `OutputStream getOutputStream(OwncloudFileResource resource)` | `PUT /remote.php/dav/files/{username}/{resource.href}`
+  | get an `OutputStream` to overwrite/append the Content of an existing File.
+| `OutputStream getOutputStream(URI path, MediaType mediaType)` | `PUT /remote.php/dav/files/{username}/{path}`
+  | create a new File and get an `OutputStream` to write its Content.
+| `OwncloudQuota getQuota()` | `GET /ocs/v1.php/cloud/users/{username}`
+  | get the Quota of the actual authenticated User
+|===
+
+=== OwncloudResource
+A `OwncloudResource` is an abstract Representation of a Resource on the Owncloud.
+This Resource can either be a File or a Directory.
+
+The following Information is available about this Resource:
+
+[cols="4a, 8a", options="header"]
+|===
+| Information    | Datatype
+| href           | `java.net.URI`
+| name           | `java.lang.String`
+| lastModifiedAt | `java.time.LocalDateTime`
+| mediaType      | `org.springframework.http.MediaType`
+| eTag           | `java.lang.String`
+|===
+
+In the case of a File Representation a `OwncloudFileResource` as a Subclass of
+`OwncloudResource` will be instantiated. This `OwncloudFileResource` has the
+following additional Information:
+
+[cols="4a, 8a", options="header"]
+|===
+| Information | Datatype
+| contentLength | `java.lang.Long`
+|===
+
+=== from OwncloudResource to OwncloudFileResource
+The Methods `listRoot()` and `list(URI relativeTo)` both return a List of `OwncloudResource`
+because the Content of a Directory can either be Files or another Directories (Subdirectories).
+
+In the case of a Directory the `MediaType` of the `OwncloudResource` is set to `httpd/unix-directory`.
+If you have a File (when `MediaType` of `OwncloudResource` is not `httpd/unix-directory`) you can
+convert the `OwncloudResource` to a `OwncloudFileResource`. Only with the `OwncloudFileResource`
+you can read or write the Content of this File.
+
+[source,java]
+----
+Optional<OwncloudFileResource> fileResource =
+  resourceService.find(uri)
+                 .filter(OwncloudUtils::isDirectory)
+                 .map(OwncloudUtils:toOwncloudFileResource);
+----
+
+=== relative Super Directory
+When you call `list(URI relativeTo)` you will get a List of Files/Directories
+of the given URI relative to the User Root. `OwncloudResourceService` will
+give you 2 additional Entries: . (actual Directory) and .. (Parent Directory)
+
+If you don't want a Reference to the Parent Directory you can set
+the Configuration Property `owncloud.resource-service.add-relative-down-path` to
+`false`. (Default is: `true`). +
+After setting this Configuration to `false` no additional Entriy `..` with
+a Reference to the Parent Directory will be added to the Result of
+`list(URI relativeTo)`.
+
+By letting this Configuration Property to its Default Value of `true` the relative
+Link to the Super Directory will be added. The only Exception is the Root-Directory
+of the User because you can't navigate below to the Root-Directory.
+
+=== Local Resource Service
+As with the `OwncloudUserService` and the `OwncloudGroupService`
+you can route the `OwncloudResource` to use a local Storage instead of
+a remote Owncloud Instance. You can use the local Storage for Unit-
+and/or Integration-Tests.
+
+WARNING: Don't use the local Storage of the `OwncloudResource`
+to build your own WebDAV Storage. This is not the intent of this Project
+and the Developers will not take any responsibility for lost Data.
+
+You use the local Storage by setting the local Implementation and a Path
+to the Root Directory for all Users defined by `owncloud.xml`.
+
+[source,yaml]
+.application.yml
+----
+owncloud:
+  location: classpath:/owncloud.xml
+  resource-service:
+    location: /path/to/files
+----
+
+A Subdirectory will be created for every User of the `owncloud.xml` at the
+first Time he/she uses any Method of `OwncloudResourceService`.
+
+For Instance: if User `jane` uses any Method of `OwncloudResourceService`
+a Directory `/path/to/files/jane` will be created.
+
+=== eTag
+The Owncloud calculates an eTag for every Resource. This eTag will be used
+by the Owncloud Client to sync changed Files/Directories.
+
+The Local Storage of `OwncloudResourceService` has a similar eTag Calculation
+based on a MessageDigest Algorithm. At the Moment only MD5 will be used.
+
+The Checksum of a File will be calculated by its Content. The Checksum of a
+Directory will be calculated by recursevly concatinating the Checksum of
+all Files within this Directory and its Subdirectories.
+
+Everytime the Content of a File changes (either by
+`OwncloudResourceService.getOutputStream` or when any other Process outside
+of the Spring-Boot Application changes the Content of the File) the Checksum
+will be recalculated.
+
+For better Performance the Checksums will be cached. On Application Startup
+the Checksum of all Files and Directories under the Path referenced by the Property
+`owncloud.resource-service.location` will be calculated and written to a Java Map.
+
+This will take some time and the Application Startup has been locked until
+the Calculation has been finished. To keep Unit-Tests fast keep the Number
+and Size of Files small.
+
+=== piped Streams
+The API of `OwncloudResourceService` is simple. Because of its simplicity in the
+Background there are some challenges because of deferred Read/Write Operations
+(when using the REST Backend).
+
+==== piped OutputStream
+So the Write-Process (`OwncloudResourceService.getOutputStream()`) *never* will be
+called directly on the Files. Instead you (Developer who uses the `OwncloudResourceService`)
+will get one end of a Pipe, the `PipedOutputStream`. With this OutputStream you can
+handle all your Streaming.
+
+In the Background there has been started a new Thread who keeps the other end of
+the Pipe, the `PipedInputStream`. All Data written to the `PipedOutputStream` will
+be read by the `PipedInputStream`. This Background Process handles the Communication
+with the deferred Owncloud System. If there are some Errors during the I/O Process
+(i.E. the Owncloud will be shutdown or network problems) the Background Process cancels
+the Transfer and throws an `OwncloudException` (either when writing or on close of
+the `PipedOutputStream`).
+
+Also the local Implementation of `OwncloudResourceService.getOutputStream()` uses this
+Background Process to first write to a temporary File. Only on `close()` the temporary
+File will be moved to the real Position. The temporary File will be created on the
+temporary Path-Location (via `Files.createTempFile()`). The Prefix of this temporary
+File can be customized via the Configuration Property
+`owncloud.resource-service.piped-stream-temporary-file-prefix`.
+The Default is: `owncloud`
+
+[source,yaml]
+.application.yml
+----
+owncloud:
+  location: classpath:/owncloud.xml
+  resource-service:
+    location: /path/to/files
+    piped-stream-temporary-file-prefix: owncloud
+----
+
+==== piped InputStream
+Also the REST-Backend of `OwncloudResourceService.getInputStream()`
+uses the piped Streams to handle the deferred Communication to the
+Owncloud.
+
+So if you call `OwncloudResourceService.getInputStream()` then you will
+get a `PipedInputStream`. This Pipe is connected to a Background Thread
+which keeps the `PipedOutputStream`. If there are any Errors during the
+deferred Read then an `OwncloudException` will be thrown.
+
+The local Implementation of `OwncloudResourceService.getInputStream()`
+on the other Hand *doesn't* use this Synchronization Mechanism. Instead
+you will get a `FileInputStream` with which you can read the Data directly.
+Please keep this in mind:
+
+NOTE: the REST-Implementation of `OwncloudResourceService.getInputStream()`
+uses the piped Stream Synchronization Mechanism to handle deferred Exceptions.
+The local Implementation returns a `FileInputStream` to the File *without* the
+synchronization Mechanism.
+
+==== Synchronization Buffer
+By the Configuration Parameter `owncloud.resource-service.piped-stream-buffer-size`
+you can manage the Bytes which will be read/write by the piped Stream. The Value is
+in Bytes. The Default is 8K (8.192) Bytes.
+
+[source,yaml]
+.application.yml
+----
+owncloud:
+  location: classpath:/owncloud.xml
+  resource-service:
+    location: /path/to/files
+    piped-stream-buffer-size: 8192
+----
+
+==== Exceptions during Background Synchronization
+The Background-Thread will be automatically created (and also destroyed) by
+the owncloud-spring-boot-starter. It will be created if you call
+`OwncloudResourceService.getInputStream()` (only REST-Backend) or
+`OwncloudResourceService.getOutputStream()` (REST- and local Backend).
+It will be closed if you call `close()` on either the `InputStream` or the
+`OutputStream` Object.
+
+On any Error during the Background Communication the Background-Thread throws
+an Instance of `OwncloudException` and logs the Exception to SLF4J.
+The Log-Level of this uncaught Exception can be handled by the Configuration
+Parameter `owncloud.resource-service.piped-stream-uncaught-exception-log-level`
+Any valid SLF4J LogLevel can be served. The Default is `LogLevel.ERROR`.
+
+==== Sardine Cache (only REST Backend)
+Because the WebDAV Protocol enhances the HTTP Protocol by some Methods (`PROPFIND`, `MKCOL`, ...)
+these Methods are not implemented by the https://docs.spring.io/spring/docs/4.3.12.RELEASE/spring-framework-reference/htmlsingle/#rest-client-access[Spring RestTemplate].
+But https://github.com/lookfirst/sardine[Sardine] is an excellent WebDAV Implementation for Java.
+Therefor we use Sardine for these HTTP Enhancements.
+
+To keep the Time as short as possible for consecutive WebDAV Operations the Sardine Session
+of the authenticated User will be cached and reused as long as the User keep the WebDAV Requests active.
+
+This happens by using a https://github.com/google/guava[Google Guava Cache]. The Properties for this Cache
+can be maintained by Configuration Properties:
+
+[source,yaml]
+.application.yml
+----
+owncloud:
+  location: classpath:/owncloud.xml
+  resource-service:
+    sardine-cache:
+      concurrency-level: 6
+      expire-after-access: 5
+      expire-after-access-time-unit: MINUTES
+----
+
+For a full List of the Configuration Properties look at <<Configuration>> (available for: REST)

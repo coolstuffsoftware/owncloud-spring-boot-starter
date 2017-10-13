@@ -20,9 +20,13 @@ include::{includedir}/authentication.adoc[]
 
 include::{includedir}/userDetails.adoc[]
 
-include::{includedir}/userQueryService.adoc[]
+include::{includedir}/userService.adoc[]
 
-include::{includedir}/userModificationService.adoc[]
+include::{includedir}/groupService.adoc[]
+
+include::{includedir}/modificationChecker.adoc[]
+
+include::{includedir}/resourceService.adoc[]
 
 include::{includedir}/logging.adoc[]
 

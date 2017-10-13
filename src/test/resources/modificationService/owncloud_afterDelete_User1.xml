@@ -1,16 +1,29 @@
 <owncloud>
-  <users>
-    <user>
-      <username>user2</username>
-      <password>s3cr3t</password>
-      <enabled>false</enabled>
-      <displayname>Mrs. User 2</displayname>
-      <email>user2@example.com</email>
-    </user>
-  </users>
-  <groups>
-    <group>group1</group>
-    <group>group2</group>
-    <group>group3</group>
-  </groups>
+    <users>
+        <user>
+            <username>user2</username>
+            <password>s3cr3t</password>
+            <enabled>false</enabled>
+            <displayname>Mrs. User 2</displayname>
+            <email>user2@example.com</email>
+            <quota/>
+        </user>
+        <user>
+            <username>user5</username>
+            <password>s3cr3t</password>
+            <enabled>true</enabled>
+            <displayname>Mr. User 5</displayname>
+            <email>user5@example.com</email>
+            <quota>1024</quota>
+            <groups>
+                <group>group1</group>
+                <group>group2</group>
+            </groups>
+        </user>
+    </users>
+    <groups>
+        <group>group1</group>
+        <group>group2</group>
+        <group>group3</group>
+    </groups>
 </owncloud>

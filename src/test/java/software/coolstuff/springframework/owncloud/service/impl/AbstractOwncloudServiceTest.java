@@ -1,51 +1,34 @@
-/*
-   Copyright (C) 2016 by the original Authors.
-
-   This program is free software; you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 3 of the License, or
-   (at your option) any later version.
-
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
-
-   You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation,
-   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
-*/
+/*-
+ * #%L
+ * owncloud-spring-boot-starter
+ * %%
+ * Copyright (C) 2016 - 2017 by the original Authors
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/gpl-3.0.html>.
+ * #L%
+ */
 package software.coolstuff.springframework.owncloud.service.impl;
 
-import static org.springframework.test.web.client.match.MockRestRequestMatchers.content;
-import static org.springframework.test.web.client.match.MockRestRequestMatchers.header;
-import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
-import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
-import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
-import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
-
-import java.io.IOException;
-import java.io.StringWriter;
-import java.io.Writer;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.Collection;
-import java.util.List;
-
-import javax.validation.constraints.NotNull;
-
-import org.apache.commons.collections4.CollectionUtils;
+import lombok.*;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
 import org.apache.velocity.context.Context;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,6 +36,7 @@ import org.springframework.boot.test.autoconfigure.SpringBootDependencyInjection
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.ComponentScan.Filter;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -65,27 +49,40 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.test.context.support.WithSecurityContextTestExecutionListener;
 import org.springframework.test.context.TestExecutionListeners;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.test.context.support.DependencyInjectionTestExecutionListener;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.test.web.client.RequestMatcher;
 import org.springframework.test.web.client.ResponseActions;
 import org.springframework.util.MultiValueMap;
-
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
 import software.coolstuff.springframework.owncloud.config.AuthorityAppenderConfiguration;
 import software.coolstuff.springframework.owncloud.config.AuthorityMapperConfiguration;
+import software.coolstuff.springframework.owncloud.config.IgnoreOnComponentScan;
 import software.coolstuff.springframework.owncloud.config.VelocityConfiguration;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudGrantedAuthoritiesMapper;
-import software.coolstuff.springframework.owncloud.service.impl.resource.OwncloudFileResourceTestExecutionListener;
+import software.coolstuff.springframework.owncloud.service.impl.local.OwncloudLocalFileTestExecutionListener;
 import software.coolstuff.springframework.owncloud.service.impl.rest.OwncloudRestService;
 import software.coolstuff.springframework.owncloud.service.impl.rest.OwncloudRestServiceTest;
+
+import javax.validation.constraints.NotNull;
+import java.io.IOException;
+import java.io.StringWriter;
+import java.io.Writer;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URL;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.text.Format;
+import java.util.*;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.*;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(
     webEnvironment = WebEnvironment.NONE,
+    properties = "debug=true",
     classes = {
         VelocityConfiguration.class,
         AuthorityAppenderConfiguration.class,
@@ -93,15 +90,18 @@ import software.coolstuff.springframework.owncloud.service.impl.rest.OwncloudRes
     })
 @TestExecutionListeners({
     SpringBootDependencyInjectionTestExecutionListener.class,
-    DependencyInjectionTestExecutionListener.class,
     WithSecurityContextTestExecutionListener.class,
-    OwncloudFileResourceTestExecutionListener.class
+    OwncloudLocalFileTestExecutionListener.class
 })
-@ComponentScan
+@ComponentScan(excludeFilters = {
+    @Filter(IgnoreOnComponentScan.class)
+})
 public abstract class AbstractOwncloudServiceTest {
 
   private final static String DEFAULT_PATH = "/ocs/v1.php";
   private final static String VELOCITY_PATH_PREFIX = "/velocity/";
+
+  private final static Format LONG_FORMAT = new DecimalFormat("###########0", DecimalFormatSymbols.getInstance(Locale.ENGLISH));
 
   @Autowired(required = false)
   private OwncloudGrantedAuthoritiesMapper owncloudGrantedAuthoritiesMapper;
@@ -122,6 +122,10 @@ public abstract class AbstractOwncloudServiceTest {
     if (this instanceof OwncloudRestServiceTest) {
       server = createServer(((OwncloudRestServiceTest) this).owncloudService());
     }
+  }
+
+  protected Format getQuotaFormat() {
+    return LONG_FORMAT;
   }
 
   protected final MockRestServiceServer createServer(OwncloudRestService owncloudService) {
@@ -156,7 +160,6 @@ public abstract class AbstractOwncloudServiceTest {
   }
 
   private ResponseActions prepareRestRequest(RestRequest request) throws MalformedURLException {
-    OwncloudRestServiceTest restTest = (OwncloudRestServiceTest) this;
     MockRestServiceServer server = this.server;
     if (request.getServer() != null) {
       server = request.getServer();
@@ -167,7 +170,8 @@ public abstract class AbstractOwncloudServiceTest {
     if (StringUtils.isNotBlank(request.getBasicAuthentication())) {
       responseActions.andExpect(header(HttpHeaders.AUTHORIZATION, request.getBasicAuthentication()));
     } else {
-      responseActions.andExpect(header(HttpHeaders.AUTHORIZATION, restTest.getBasicAuthorizationHeader()));
+      Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+      responseActions.andExpect(header(HttpHeaders.AUTHORIZATION, "Basic " + Base64.getEncoder().encodeToString((authentication.getName() + ":" + authentication.getCredentials()).getBytes())));
     }
     return responseActions;
   }
@@ -270,7 +274,7 @@ public abstract class AbstractOwncloudServiceTest {
     context.put("message", message != null ? message : "");
   }
 
-  protected void respondUser(RestRequest request, boolean enabled, String email, String displayName)
+  protected void respondUser(RestRequest request, UserResponse userResponse)
       throws IOException {
     if (isNoRestTestClass()) {
       return;
@@ -279,27 +283,61 @@ public abstract class AbstractOwncloudServiceTest {
 
     Context context = new VelocityContext();
     setSuccessMetaInformation(context);
-    context.put("enabled", Boolean.toString(enabled));
-    context.put("email", email);
-    context.put("displayName", displayName);
+    userResponse.fillContext(context);
 
     preparedRequest.andRespond(withSuccess(merge("user.vm", context), MediaType.TEXT_XML));
   }
 
+  @Setter
+  @Builder
+  public static class UserResponse {
+    private final static String ENABLED = "enabled";
+    private final static String EMAIL = "email";
+    private final static String DISPLAY_NAME = "displayname";
+    private final static String QUOTA = "quota";
+    private final static String USED = "used";
+    private final static String FREE = "free";
+    private final static String RELATIVE = "relative";
+
+    private final static Format FLOAT_FORMAT = new DecimalFormat("###########0.00", DecimalFormatSymbols.getInstance(Locale.ENGLISH));
+
+    @Builder.Default
+    private boolean enabled = true;
+    private String email;
+    private String displayname;
+    private Long quota;
+    @Builder.Default
+    private Long used = 817_928_385L;
+    @Builder.Default
+    private Long free = 255_813_439L;
+    @Builder.Default
+    private Float relative = 23.82F;
+
+    public void fillContext(Context context) {
+      context.put(ENABLED, Boolean.toString(enabled));
+      context.put(EMAIL, email);
+      context.put(DISPLAY_NAME, displayname);
+      context.put(QUOTA, quota != null ? LONG_FORMAT.format(quota) : null);
+      context.put(USED, used != null ? LONG_FORMAT.format(used) : null);
+      context.put(FREE, free != null ? LONG_FORMAT.format(free) : null);
+      context.put(RELATIVE, relative != null ? FLOAT_FORMAT.format(relative) : null);
+    }
+  }
+
   protected void checkAuthorities(String username, Collection<? extends GrantedAuthority> actual, String... expected) {
-    Assert.assertEquals(expected.length, actual == null ? 0 : actual.size());
-    List<SimpleGrantedAuthority> authorities = new ArrayList<>();
+    assertThat(actual == null ? 0 : actual.size()).isEqualTo(expected.length);
+    List<GrantedAuthority> authorities = new ArrayList<>();
     if (ArrayUtils.isNotEmpty(expected)) {
       for (String authority : expected) {
         authorities.add(new SimpleGrantedAuthority(authority));
       }
     }
     if (owncloudGrantedAuthoritiesMapper != null) {
-      Assert.assertTrue(CollectionUtils.isEqualCollection(actual, owncloudGrantedAuthoritiesMapper.mapAuthorities(username, authorities)));
+      assertThat(CollectionUtils.isEqualCollection(actual, owncloudGrantedAuthoritiesMapper.mapAuthorities(username, authorities))).isTrue();
     } else if (grantedAuthoritiesMapper != null) {
-      Assert.assertTrue(CollectionUtils.isEqualCollection(actual, grantedAuthoritiesMapper.mapAuthorities(authorities)));
+      assertThat(CollectionUtils.isEqualCollection(actual, grantedAuthoritiesMapper.mapAuthorities(authorities))).isTrue();
     } else {
-      Assert.assertTrue(CollectionUtils.isEqualCollection(actual, authorities));
+      assertThat(CollectionUtils.isEqualCollection(actual, authorities)).isTrue();
     }
   }
 
@@ -319,10 +357,7 @@ public abstract class AbstractOwncloudServiceTest {
     @NotNull
     private final String url;
     private String basicAuthentication;
+    @Builder.Default
     private MediaType responseType = MediaType.TEXT_XML;
-
-    public static class RestRequestBuilder {
-      private MediaType responseType = MediaType.TEXT_XML;
-    }
   }
 }

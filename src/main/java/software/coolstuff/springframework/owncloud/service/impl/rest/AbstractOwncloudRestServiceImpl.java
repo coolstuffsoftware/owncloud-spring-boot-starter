@@ -1,46 +1,38 @@
-/*
-   Copyright (C) 2016 by the original Authors.
-
-   This program is free software; you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 3 of the License, or
-   (at your option) any later version.
-
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
-
-   You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation,
-   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
-*/
+/*-
+ * #%L
+ * owncloud-spring-boot-starter
+ * %%
+ * Copyright (C) 2016 - 2017 by the original Authors
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/gpl-3.0.html>.
+ * #L%
+ */
 package software.coolstuff.springframework.owncloud.service.impl.rest;
 
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.List;
-import java.util.Map;
-
-import javax.annotation.PostConstruct;
-
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.support.MessageSourceAccessor;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.http.converter.FormHttpMessageConverter;
-import org.springframework.http.converter.xml.MappingJackson2XmlHttpMessageConverter;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.SpringSecurityMessageSource;
@@ -51,142 +43,68 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.ResponseErrorHandler;
 import org.springframework.web.client.RestTemplate;
-
-import lombok.AccessLevel;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import software.coolstuff.springframework.owncloud.exception.OwncloudInvalidAuthenticationObjectException;
 import software.coolstuff.springframework.owncloud.exception.OwncloudStatusException;
+import software.coolstuff.springframework.owncloud.exception.auth.OwncloudInvalidAuthenticationObjectException;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
-import software.coolstuff.springframework.owncloud.service.impl.OwncloudUserDetailsMappingService;
 import software.coolstuff.springframework.owncloud.service.impl.OwncloudUtils;
 
-@RequiredArgsConstructor(access = AccessLevel.PROTECTED)
+import javax.annotation.PostConstruct;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.List;
+import java.util.Map;
+
+import static lombok.AccessLevel.PROTECTED;
+
+@RequiredArgsConstructor(access = PROTECTED)
 @Slf4j
 abstract class AbstractOwncloudRestServiceImpl implements OwncloudRestService {
 
-  private final static String DEFAULT_PATH = "/ocs/v1.php";
-
-  private final static String AUTHORIZATION_METHOD_PREFIX = "Basic ";
+  private static final String DEFAULT_PATH = "/ocs/v1.php";
+  private static final String AUTHORIZATION_METHOD_PREFIX = "Basic ";
 
   private final RestTemplateBuilder restTemplateBuilder;
-  private final boolean addBasicAuthentication;
+  private final OwncloudRestProperties properties;
   private final ResponseErrorHandler responseErrorHandler;
 
-  protected MessageSourceAccessor messages = SpringSecurityMessageSource.getAccessor();
-
+  @Getter(PROTECTED)
+  MessageSourceAccessor messages = SpringSecurityMessageSource.getAccessor();
   private RestTemplate restTemplate;
 
-  @Autowired
-  private OwncloudRestProperties properties;
-
-  @Autowired
-  private MappingJackson2XmlHttpMessageConverter mappingJackson2XmlHttpMessageConverter;
-
-  @Autowired
-  private OwncloudUserDetailsMappingService owncloudUserDetailsMappingService;
-
-  protected AbstractOwncloudRestServiceImpl(RestTemplateBuilder builder) {
-    this(builder, true);
-  }
-
-  protected AbstractOwncloudRestServiceImpl(RestTemplateBuilder builder, boolean addBasicAuthentication) {
-    this(builder, addBasicAuthentication, new DefaultOwncloudResponseErrorHandler(SpringSecurityMessageSource.getAccessor()));
+  protected AbstractOwncloudRestServiceImpl(RestTemplateBuilder builder, OwncloudRestProperties properties) {
+    this(builder, properties, new DefaultOwncloudResponseErrorHandler(SpringSecurityMessageSource.getAccessor()));
   }
 
   @PostConstruct
   public void afterPropertiesSet() throws Exception {
-    URL locationURL = checkAndConvertLocation(properties.getLocation());
+    URL locationURL = OwncloudRestUtils.checkAndConvertLocation(properties.getLocation());
     configureRestTemplate(locationURL);
   }
 
-  protected URL checkAndConvertLocation(String location) throws MalformedURLException {
-    Validate.notBlank(location);
-    log.debug("Check if the Location {} is a valid URL", location);
-    URL url = new URL(location);
-    log.debug("Check if the Location {} either start with http or https", location);
-    if (isNotValidProtocol(url)) {
-      final String exceptionMessage = "Invalid Protocol " + url.getProtocol() + ". Only http or https are allowed";
-      log.error(exceptionMessage);
-      throw new IllegalArgumentException(exceptionMessage);
-    }
-    return url;
-  }
-
-  private boolean isNotValidProtocol(URL url) {
-    return !StringUtils.equals(url.getProtocol(), "http") && !StringUtils.equals(url.getProtocol(), "https");
-  }
-
   private void configureRestTemplate(URL locationURL) throws MalformedURLException {
-    log.debug("Extract the Root-URI from URL {}", locationURL);
-    String rootURI = locationURL.toString();
-    if (StringUtils.isBlank(locationURL.getPath()) || "/".equals(locationURL.getPath())) {
-      rootURI = URI.create(locationURL.toString() + DEFAULT_PATH).toString();
-    }
-
-    if (addBasicAuthentication && StringUtils.isNotBlank(properties.getUsername())) {
-      log.info("Create the REST-Template to URI {} with the administrative User {}", rootURI, properties.getUsername());
-      restTemplate = restTemplateBuilder
-          .basicAuthorization(properties.getUsername(), properties.getPassword())
-          .messageConverters(mappingJackson2XmlHttpMessageConverter)
-          .additionalMessageConverters(new FormHttpMessageConverter())
-          .errorHandler(responseErrorHandler)
-          .rootUri(rootURI)
-          .build();
-    } else {
-      log.info("Create the REST-Template to URI {} to be used with the authenticated User", rootURI);
-      restTemplate = restTemplateBuilder
-          .messageConverters(mappingJackson2XmlHttpMessageConverter)
-          .additionalMessageConverters(new FormHttpMessageConverter())
-          .errorHandler(responseErrorHandler)
-          .rootUri(rootURI)
-          .build();
-    }
-
+    String rootUri = OwncloudRestUtils.appendDefaultPath(locationURL, DEFAULT_PATH);
+    log.info("Create the REST-Template to URI {} to be used with the authenticated User", rootUri);
+    restTemplate = restTemplateBuilder
+        .additionalMessageConverters(new FormHttpMessageConverter())
+        .errorHandler(responseErrorHandler)
+        .rootUri(rootUri)
+        .build();
     Validate.notNull(restTemplate);
   }
 
   @Override
-  final public RestTemplate getRestTemplate() {
+  public final RestTemplate getRestTemplate() {
     return restTemplate;
   }
 
-  protected HttpHeaders prepareHeaderWithBasicAuthorization(String username, String password) {
-    Validate.notBlank(username);
-
-    final byte[] rawEncodedCredentials = Base64.getEncoder().encode((username + ":" + password).getBytes());
-    final String encodedCredentials = new String(rawEncodedCredentials);
-
-    HttpHeaders headers = new HttpHeaders();
-    log.trace("Use Basic Authorization with User {}", username);
-    headers.add(HttpHeaders.AUTHORIZATION, AUTHORIZATION_METHOD_PREFIX + encodedCredentials);
-    return headers;
-  }
-
   protected HttpHeaders prepareHeadersWithBasicAuthorization() {
-    if (isUseAdministratorCredentials()) {
-      if (addBasicAuthentication) {
-        // Authentication Header will be added by RestTemplate.basicAuthorization()
-        // so we don't need to add any Authentication Headers
-        return new HttpHeaders();
-      }
-      return prepareHeaderWithBasicAuthorization(properties.getUsername(), properties.getPassword());
-    }
-
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-    if (!OwncloudUtils.isAuthenticationClassSupported(authentication.getClass())) {
-      throw new OwncloudInvalidAuthenticationObjectException(authentication);
+    if (OwncloudUtils.isAuthenticationClassNotSupported(authentication.getClass())) {
+      throw new OwncloudInvalidAuthenticationObjectException(authentication, UsernamePasswordAuthenticationToken.class);
     }
-
-    //    if (authentication instanceof RememberMeAuthenticationToken) {
-    //      return prepareHeaderWithBasicAuthorization(properties.getUsername(), properties.getPassword());
-    //    }
-
-    return prepareHeaderWithBasicAuthorization(authentication.getName(), (String) authentication.getCredentials());
-  }
-
-  protected boolean isUseAdministratorCredentials() {
-    return StringUtils.isNotBlank(properties.getUsername());
+    return OwncloudRestUtils.addAuthorizationHeader(authentication);
   }
 
   protected String getLocation() {
@@ -194,7 +112,9 @@ abstract class AbstractOwncloudRestServiceImpl implements OwncloudRestService {
   }
 
   protected HttpEntity<String> emptyEntity(String username, String password) {
-    return new HttpEntity<>(prepareHeaderWithBasicAuthorization(username, password));
+    UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(username, password);
+    HttpHeaders headers = OwncloudRestUtils.addAuthorizationHeader(authenticationToken);
+    return new HttpEntity<>(headers);
   }
 
   protected HttpEntity<String> emptyEntity() {
@@ -207,23 +127,22 @@ abstract class AbstractOwncloudRestServiceImpl implements OwncloudRestService {
     return new HttpEntity<>(new LinkedMultiValueMap<>(data), headers);
   }
 
-  protected <T extends Ocs, ENTITY> T exchange(
+  protected <T extends Ocs, E> T exchange(
       String url,
       HttpMethod method,
-      HttpEntity<ENTITY> httpEntity,
+      HttpEntity<E> httpEntity,
       Class<T> clazz,
-      Object... urlVariables) throws OwncloudStatusException {
+      Object... urlVariables) {
     return exchange(url, method, httpEntity, clazz, this::checkFailure, urlVariables);
   }
 
-  protected <T extends Ocs, ENTITY> T exchange(
+  protected <T extends Ocs, E> T exchange(
       String url,
       HttpMethod method,
-      HttpEntity<ENTITY> httpEntity,
+      HttpEntity<E> httpEntity,
       Class<T> clazz,
       OwncloudResponseStatusChecker statusChecker,
-      Object... urlVariables)
-      throws OwncloudStatusException {
+      Object... urlVariables) {
     log.trace("Exchange Data by a {} Request with URL {}. Requested Class of returned Data is {}", method, url, clazz);
     ResponseEntity<T> response = restTemplate.exchange(url, method, httpEntity, clazz, urlVariables);
     T result = response.getBody();
@@ -277,26 +196,23 @@ abstract class AbstractOwncloudRestServiceImpl implements OwncloudRestService {
 
   protected OwncloudUserDetails convert(String username, Ocs.User user, Ocs.Groups groupsFromBackend) {
     List<GrantedAuthority> authorities = new ArrayList<>();
-    List<String> groups = new ArrayList<>();
     if (isAnyOwncloudGroupAvailable(groupsFromBackend)) {
       log.trace("Put {} Owncloud-Group(s) into the Authorities- and Group-List");
-      for (Ocs.Groups.Data.Group owncloudGroup : groupsFromBackend.getData().getGroups()) {
-        authorities.add(new SimpleGrantedAuthority(owncloudGroup.getGroup()));
-        groups.add(owncloudGroup.getGroup());
-      }
+      groupsFromBackend.getData().getGroups().stream()
+                       .map(Ocs.Groups.Data.Group::getGroup)
+                       .map(SimpleGrantedAuthority::new)
+                       .forEach(authorities::add);
     }
 
     log.debug("Convert User {} from {} to {}", username, user.getClass(), OwncloudUserDetails.class);
-    OwncloudUserDetails userDetails = OwncloudUserDetails.builder()
-        .username(username)
-        .enabled(user.getData().isEnabled())
-        .displayname(user.getData().getDisplayname())
-        .email(user.getData().getEmail())
-        .groups(groups)
-        .authorities(authorities)
-        .build();
-    owncloudUserDetailsMappingService.mapGrantedAuthorities(userDetails);
-    return userDetails;
+    return OwncloudUserDetails.builder()
+                              .username(username)
+                              .enabled(user.getData().isEnabled())
+                              .displayname(user.getData().getDisplayname())
+                              .email(user.getData().getEmail())
+                              .quota(user.getData().getQuota().getTotal())
+                              .authorities(authorities)
+                              .build();
   }
 
   private boolean isAnyOwncloudGroupAvailable(Ocs.Groups groups) {

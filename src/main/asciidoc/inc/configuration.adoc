@@ -1,17 +1,49 @@
 == Configuration
 All Services of this Spring-Boot Starter will be managed by the following http://docs.spring.io/spring-boot/docs/1.4.3.RELEASE/reference/htmlsingle/#boot-features-external-config[Configuration Parameters].
-[cols="3,1*^,2,1*^,5", options="header"]
+[cols="3,1*,1*^,2,1*^,5", options="header"]
 |===
-| Name | mandatory | Data Type |Default | Description
-| owncloud.location | true | String | - | The Location of the Owncloud Instance
-| owncloud.username | false | String | `null` | Username of the Owncloud Administrator
-| owncloud.password | false | String | `null`| Password of the Owncloud Administrator
-| owncloud.enable-modifications | false | boolean | `false`
-  | Modifications through `OwncloudUserModificationService` are allowed/disallowed
+| Name | available for | mandatory | Data Type |Default | Description
+| owncloud.location | - | true | String | - | The Location of the Owncloud Instance
+| owncloud.user-service.enable-modifications | - | false | boolean | `false`
+  | Modifications through `OwncloudUserService` and `OwncloudGroupService` are allowed/disallowed
+| owncloud.resource-service.add-relative-down-path | - | true | boolean | `true`
+  | add `..` to the List of available Owncloud-Resource within a Directory
+| owncloud.resource-service.piped-stream-buffer-size | - | true | Integer | 8192
+  | Buffer Size (in Bytes) for Content-Streaming (InputStream/OutputStream)
+| owncloud.resource-service.piped-stream-uncaught-exception-log-level | - | true
+  | LogLevel | `error` | Log Level for any uncaught Exceptions while Content-Streaming
+| owncloud.resource-service.sardine-cache.concurrency-level | REST | false | Integer | -
+  | Concurrency Level for the Sardine Cache (look at link:++https://google.github.io/guava/releases/23.0/api/docs/com/google/common/cache/CacheBuilder.html#concurrencyLevel-int-++[Guava CacheBuilder `concurrencyLevel`])
+| owncloud.resource-service.sardine-cache.expire-after-access | REST | false | Long | -
+  | Duration of Availability of the cached Sardine-Implementation after the last Access (see link:++https://google.github.io/guava/releases/23.0/api/docs/com/google/common/cache/CacheBuilder.html#expireAfterAccess-long-java.util.concurrent.TimeUnit-++[Guava CacheBuilder `expireAfterAccess`])
+| owncloud.resource-service.sardine-cache.expire-after-access-time-unit | REST | false | java.util.concurrent.TimeUnit | TimeUnit.SECONDS
+  | Timeunit for `owncloud.resource-service.sardine-cache.expire-after-access`
+| owncloud.resource-service.sardine-cache.expire-after-write | REST | false | Long | -
+  | Duration of Availability of the cached Sardine-Implementation after Write (see link:++https://google.github.io/guava/releases/23.0/api/docs/com/google/common/cache/CacheBuilder.html#expireAfterWrite-long-java.util.concurrent.TimeUnit-++[Guava CacheBuilder `expireAfterWrite`])
+| owncloud.resource-service.sardine-cache.expire-after-write-time-unit | REST | false | java.util.concurrent.TimeUnit | TimeUnit.SECONDS
+  | Timeunit for `owncloud.resource-service.sardine-cache.expire-after-write`
+| owncloud.resource-service.sardine-cache.initial-capacity | REST | false | Integer | -
+  | Initial Capacity of the Sardine Cache (see link:++https://google.github.io/guava/releases/23.0/api/docs/com/google/common/cache/CacheBuilder.html#initialCapacity-int-++[Guava CacheBuilder `initialCapacity`])
+| owncloud.resource-service.sardine-cache.maximum-size | REST | false | Long | -
+  | Maximum Size of the Sardine Cache (see link:++https://google.github.io/guava/releases/23.0/api/docs/com/google/common/cache/CacheBuilder.html#maximumSize-long-++[Guava CacheBuilder `maximumSize`])
+| owncloud.resource-service.sardine-cache.maximum-weight | REST | false | Long | -
+  | Maximum Weight of the Entries within the Sardine Cache (see link:++https://google.github.io/guava/releases/23.0/api/docs/com/google/common/cache/CacheBuilder.html#maximumWeight-long-++[Guava CacheBuilder `maximumWeight`])
+| owncloud.resource-service.sardine-cache.refresh-after-write | REST | false | Long | -
+  | Duration when the Entries of the Sardine-Cache should be refreshed after Write (see link:++https://google.github.io/guava/releases/23.0/api/docs/com/google/common/cache/CacheBuilder.html#refreshAfterWrite-long-java.util.concurrent.TimeUnit-++[Guava CacheBuilder `refreshAfterWrite`])
+| owncloud.resource-service.sardine-cache.refresh-after-write-time-unit | REST | false | java.util.concurrent.TimeUnit | TimeUnit.SECONDS
+  | Timeunit for `owncloud.resource-service.sardine-cache.refresh-after-write`
+| owncloud.resource-service.message-digest-algorithm | LOCAL | true
+  | OwncloudLocalProperties.ResourceServiceProperties.MessageDigestAlgorithm
+  | MessageDigestAlgorithm.MD5
+  | Message Digest Algorithm for the Checksum Service
+| owncloud.resource-service.location | LOCAL | true | java.nio.file.Path | -
+  | Root-Path of the local Files to be served by the `OwncloudResourceService`
+| owncloud.resource-service.piped-stream-temporary-file-prefix | LOCAL | true | String | owncloud
+  | File Prefix used for temporary Files by `PipedInputStream` and `PipedOutputStream`
 |===
 
 === owncloud.location
-The Configuration Parameter `owncloud.location` defines, what Backend will be used.
+The Configuration Parameter `owncloud.location` defines, which Backend will be used.
 
 It can have one of the following Values:
 [cols="1,1*^,10", options="header"]
@@ -25,7 +57,6 @@ It can have one of the following Values:
 |===
 
 Normally you would provide the Web-Address of the Owncloud-Instance.
-
 But for local Development or Tests it could be useful, to have an Owncloud Instance which
 always behaves the same (returns the same Users, the same Groups, ...).
 
@@ -48,6 +79,8 @@ This XML-Resource should have the following Format:
         <group>group1</group>
         <group>group2</group>
       </groups>
+
+      <quota>10240</quota> <7>
     </user>
     <user>
       <username>user2</username>
@@ -58,7 +91,7 @@ This XML-Resource should have the following Format:
     </user>
   </users>
   
-  <groups> <7>
+  <groups> <8>
     <group>group1</group>
     <group>group2</group>
     <group>group3</group>
@@ -71,7 +104,8 @@ This XML-Resource should have the following Format:
 <4> unencrypted Password (because you're in local Development or Test Environment)
 <5> optional Parameters
 <6> Group Memberships of the User.
-<7> All available Groups of the InMemory Owncloud Instance
+<7> File Quota of the User (in Bytes). If omitted the User has unlimited Quota on the File-System.
+<8> All available Groups of the InMemory Owncloud Instance
 
 NOTE: All Groups, which are referenced as a User-Membership will be checked
       when the Service starts. +
@@ -87,47 +121,9 @@ the Data of the provided XML-File will be read on Application Startup and resist
 InMemory Representation used by the Services of this Spring-Boot Starter
 (Authentication, UserQuery, UserModification, ...).
 
-When you use a `file:` Resource the changed Data will be written to this Resource on a normal Shutdown
+When you use a `file:` Resource the changed Data will be rewritten to this Resource on a normal Shutdown
 of the Application. This is useful for incremental Integration Tests.
 
 When you use a `classpath:` Resource the changed Data will not be written. Therefor this type should be used
 for local Development and/or Unit Tests.
 
-=== owncloud.username, owncloud.password
-Working with this Spring-Boot Starter can be established by 2 different Approaches:
-
-* either by the User which has been successfully authenticated using
-  `OwncloudAuthenticationProvider` and `OwncloudUserDetailsService` or
-* by specifying an Owncloud Administrator
-
-Here are some Pros and Contras for every of the 2 Approaches:
-[cols="2, 5a, 5a", options="header"]
-|===
-| Authentication Type | Pros | Contras
-
-| authenticated User
-| * Principle of the least Privilege
-  * Privileges will be managed by Owncloud
-  * no Password needed in Configuration Files
-| * Functionality depends on the Privileges of
-    the authenticated User +
-    -> Behaviour of the following
-    Services are not predictable
-  ** `OwncloudUserModificationService`
-  *** `saveUser()` cannot change the
-      Group Memberships
-  *** `deleteUser()` may not work
-  *** `createGroup` & `deleteGroup` may not work
-  ** `OwncloudUserQueryService`
-  *** all `findAll*` Methods may not work
-
-| Administrator
-| * No restriction to any Services
-  * Privileges will be managed by the Application
-  * Predictable Usage of the Services
-| * unencrypted Password in the Configuration File
-    (could be encrypted by using
-    http://cloud.spring.io/spring-cloud-static/Camden.SR3/#_security[Spring Cloud Configuration Service])
-  * Principle of the least Privilege will be broken +
-    -> Owncloud possibly could be broken by the Application
-|===

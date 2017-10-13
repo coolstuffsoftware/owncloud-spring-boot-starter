@@ -1,0 +1,75 @@
+== OwncloudUserService
+When you are authenticated by the Owncloud `AuthenticationProvider` you can use this Service simply by `@Autowire` it to your Bean.
+
+For more Details about the Owncloud REST-Calls please look at the https://doc.owncloud.org/server/latest/admin_manual/configuration_user/user_provisioning_api.html[Owncloud User provisioning API]. +
+
+The following Methods will be available:
+[cols="4a, 4a, 4a", options="header"]
+|===
+| Method | Owncloud REST Call| Description
+| `List<String> findAll()`
+| `GET /ocs/v1.php/cloud/users`
+| All Users
+| `List<String> findAll(String filter)`
+| `GET /ocs/v1.php/cloud/users?search={filter}`
+| All Users whose Display Name matches the Search criteria
+| `OwncloudUserDetails findOne(String username)`
+| `GET /ocs/v1.php/cloud/users/{username}` +
+  `GET /ocs/v1.php/cloud/users/{username}/groups`
+| Information about one User
+
+* Full Name
+* Email
+* enabled / disabled
+* all Groups associated to the User
+| `OwncloudUserDetails save(OwncloudModificationUser user)`
+| additional (when creating a new User): +
+`POST /ocs/v1.php/users -d userid="{username}" -d password="{password}"` +
+
+modifying User: +
+`PUT /ocs/v1.php/users -d key="display" -d value="{displayName}"`
+
+`PUT /ocs/v1.php/users -d key="email" -d value="{email}"`
+
+when Groups will be modified: +
+`POST /ocs/v1.php/users/{username}/groups -d groupid="{groupname}"`
+
+`DELETE /ocs/v1.php/users/{username}/groups -d groupid="{groupname}"`
+| * creates a new User
+* modifies the Information of an existing User
+
+NOTE: due to Security Reasons the Password of a User will not be modified nor will it be returned.
+| `void delete(String username)`
+| `DELETE /ocs/v1.php/users/{username}`
+| Removes a User from Owncloud
+
+NOTE: all Objects of this User (Files, Calendars, Addressbooks, ...) will also be removed.
+|===
+
+=== creating a new User
+If you want to create a new User you create a new Instance of `OwncloudModificationUser`
+[source,java]
+----
+OwncloudModificationUser newUser = OwncloudModificationUser.builder()
+  .username("username")
+  .password("s3cr3t")
+  .displayName("Display Name of the new User")
+  .email("user@example.com")
+  .group("group1")
+  .group("group2")
+  .build();
+OwncloudUserDetails createdUser =
+  owncloudUserModificationService.saveUser(newUser);
+----
+
+=== modifying a User
+If you want to modify the Information about a User this User has to be read just before by
+`OwncloudUserService.findOne(String username)`. With the `OwncloudUserDetails` Object
+in Hands you can create a new `OwncloudModificationUser`.
+[source,java]
+----
+OwncloudUserDetails existingUser = owncloudUserService.findOne("user1");
+OwncloudModificationUser modificationUser = OwncloudModificationUser.of(existingUser);
+modificationUser.setDisplayName("new Display Name of the User");
+existingUser = owncloudUserService.save(modificationUser);
+----

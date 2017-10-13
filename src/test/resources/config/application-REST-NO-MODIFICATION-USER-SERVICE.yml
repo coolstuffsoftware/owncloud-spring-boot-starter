@@ -1,0 +1,4 @@
+owncloud:
+  location: https://owncloud.example.com
+  user-service:
+    enable-modifications: false

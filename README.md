@@ -16,7 +16,7 @@ Add the following Dependency to your ``pom.xml``:
 <dependency>
   <groupId>software.coolstuff</groupId>
   <artifactId>owncloud-spring-boot-starter</artifactId>
-  <version>1.0.0</version>
+  <version>1.2.0</version>
 </dependency>
 ```
 ### application.properties

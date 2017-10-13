@@ -1,0 +1,9 @@
+== enable/disable User Modifications
+Because Modifications by `OwncloudUserService` (`save`, `delete`) or by `OwncloudGroupService` (`create`, `delete`)
+need administrative Privileges of the User there is the Danger, that the Application will remove Users and/or Groups unintentionally.
+
+To protect the Usage of `OwncloudUserService` and `OwncloudGroupService` can be restricted. +
+This Restriction is disabled by default. +
+To deny Modifications by `OwncloudUserService` and `OwncloudGroupService` you can set the following Property
+
+ owncloud.enable-modifications=false

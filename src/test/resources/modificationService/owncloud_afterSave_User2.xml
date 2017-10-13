@@ -1,28 +1,42 @@
 <owncloud>
-  <users>
-    <user>
-      <username>user1</username>
-      <password>s3cr3t</password>
-      <enabled>true</enabled>
-      <displayname>Mr. User 1</displayname>
-      <email>user1@example.com</email>
-      <groups>
+    <users>
+        <user>
+            <username>user1</username>
+            <password>s3cr3t</password>
+            <enabled>true</enabled>
+            <displayname>Mr. User 1</displayname>
+            <email>user1@example.com</email>
+            <quota>1024</quota>
+            <groups>
+                <group>group1</group>
+                <group>group2</group>
+            </groups>
+        </user>
+        <user>
+            <username>user2</username>
+            <password>s3cr3t</password>
+            <enabled>true</enabled>
+            <displayname>Mrs. User 2 in Subdomain</displayname>
+            <email>user2@subdomain.example.com</email>
+            <quota>2048</quota>
+            <groups/>
+        </user>
+        <user>
+            <username>user5</username>
+            <password>s3cr3t</password>
+            <enabled>true</enabled>
+            <displayname>Mr. User 5</displayname>
+            <email>user5@example.com</email>
+            <quota>1024</quota>
+            <groups>
+                <group>group1</group>
+                <group>group2</group>
+            </groups>
+        </user>
+    </users>
+    <groups>
         <group>group1</group>
         <group>group2</group>
-      </groups>
-    </user>
-    <user>
-      <username>user2</username>
-      <password>s3cr3t</password>
-      <enabled>true</enabled>
-      <displayname>Mrs. User 2 in Subdomain</displayname>
-      <email>user2@subdomain.example.com</email>
-      <groups/>
-    </user>
-  </users>
-  <groups>
-    <group>group1</group>
-    <group>group2</group>
-    <group>group3</group>
-  </groups>
+        <group>group3</group>
+    </groups>
 </owncloud>

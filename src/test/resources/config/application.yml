@@ -5,6 +5,7 @@ spring:
 logging:
   level:
     root: info
+    software.coolstuff.springframework.owncloud: debug
 owncloud:
   test:
     velocity:

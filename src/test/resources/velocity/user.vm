@@ -8,15 +8,15 @@
   <data>
     <enabled>${enabled}</enabled>
     <quota>
-      <free>817928385</free>
-      <used>255813439</used>
-      <total>1073741824</total>
-      <relative>23.82</relative>
+      <free>$!{free}</free>
+      <used>$!{used}</used>
+      <total>$!{quota}</total>
+      <relative>$!{relative}</relative>
     </quota>
 #if ( ${email} )
     <email>${email}</email>
 #end
-    <displayname>${displayName}</displayname>
+    <displayname>${displayname}</displayname>
     <two_factor_auth_enabled>false</two_factor_auth_enabled>
   </data>
 </ocs>

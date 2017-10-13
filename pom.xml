@@ -3,23 +3,35 @@
 
   <groupId>software.coolstuff</groupId>
   <artifactId>owncloud-spring-boot-starter</artifactId>
-  <version>1.1.0</version>
+  <version>1.2.0</version>
 
   <name>owncloud-spring-boot-starter</name>
   <description>Spring Boot Owncloud Service and Authentication Provider</description>
   <url>https://github.com/coolstuffsoftware/springOwncloud</url>
 
+  <inceptionYear>2016</inceptionYear>
+
   <organization>
     <name>coolstuff.software</name>
-    <url>https://coolstuff.software</url>
+    <url>http://github.coolstuff.software</url>
   </organization>
 
   <developers>
     <developer>
       <id>mufasa1976</id>
       <name>Mufasa1976</name>
-      <url>https://mufasa1976.github.io</url>
+      <url>http://mufasa1976.github.io</url>
       <organization>coolstuff.software</organization>
+      <roles>
+        <role>Developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>guillermoherrero</id>
+      <name>Guillermo Herrero</name>
+      <url>http://guillermoherrero.github.io</url>
+      <organization>beyond coding</organization>
+      <organizationUrl>http://www.beyond-coding.com</organizationUrl>
       <roles>
         <role>Developer</role>
       </roles>
@@ -34,9 +46,9 @@
   </licenses>
 
   <scm>
-    <url>https://github.com/coolstuffsoftware/springOwncloud</url>
-    <connection>scm:git:git://github.com/coolstuffsoftware/springOwncloud.git</connection>
-    <developerConnection>scm:git:git@github.com:coolstuffsoftware/springOwncloud.git</developerConnection>
+    <url>https://github.com/coolstuffsoftware/owncloud-spring-boot-starter</url>
+    <connection>scm:git:git://github.com/coolstuffsoftware/owncloud-spring-boot-starter.git</connection>
+    <developerConnection>scm:git:git@github.com:coolstuffsoftware/owncloud-spring-boot-starter.git</developerConnection>
   </scm>
 
   <properties>
@@ -47,16 +59,17 @@
     <maven.compiler.target>${java.version}</maven.compiler.target>
 
     <!-- Dependency Versions -->
-    <spring-boot.version>1.4.3.RELEASE</spring-boot.version>
+    <spring-boot.version>1.5.7.RELEASE</spring-boot.version>
     <commons-lang3.version>3.5</commons-lang3.version>
-    <guava.version>20.0</guava.version>
+    <guava.version>23.1-jre</guava.version>
     <commons-io.version>2.5</commons-io.version>
     <commons-collections4.version>4.1</commons-collections4.version>
-    <commons-vfs.version>2.1</commons-vfs.version>
-    <httpclient.version>4.5.2</httpclient.version>
-    <jackrabbit.version>2.13.7</jackrabbit.version>
-    <xmlunit.version>2.3.0</xmlunit.version>
-    <lombok-plugin.version>1.16.12.0</lombok-plugin.version>
+    <sardine.version>5.8</sardine.version>
+    <xmlunit.version>2.5.0</xmlunit.version>
+    <lombok-plugin.version>1.16.18.1</lombok-plugin.version>
+    <velocity.version>1.7</velocity.version>
+    <velocity-tools.version>2.0</velocity-tools.version>
+    <assertj.version>3.5.2</assertj.version>
 
     <!-- Javadoc Properties -->
     <author>false</author>
@@ -66,6 +79,7 @@
     <asciidoctor.backend>html</asciidoctor.backend>
     <asciidoctor.sourceHighlighter>coderay</asciidoctor.sourceHighlighter>
     <asciidoctor.preserveDirectories>true</asciidoctor.preserveDirectories>
+    <asciidoctor.graphvizdot>/usr/local/bin/dot</asciidoctor.graphvizdot>
   </properties>
 
   <dependencyManagement>
@@ -96,11 +110,23 @@
         <version>${commons-collections4.version}</version>
       </dependency>
 
-      <!-- Apache Jackrabbit -->
+      <!-- Apache Velocity -->
       <dependency>
-        <groupId>org.apache.jackrabbit</groupId>
-        <artifactId>jackrabbit-webdav</artifactId>
-        <version>${jackrabbit.version}</version>
+        <groupId>org.apache.velocity</groupId>
+        <artifactId>velocity</artifactId>
+        <version>${velocity.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.velocity</groupId>
+        <artifactId>velocity-tools</artifactId>
+        <version>${velocity-tools.version}</version>
+      </dependency>
+
+      <!-- Sardine WebDAV Library -->
+      <dependency>
+        <groupId>com.github.lookfirst</groupId>
+        <artifactId>sardine</artifactId>
+        <version>${sardine.version}</version>
       </dependency>
 
       <!-- Google Guava -->
@@ -116,6 +142,16 @@
         <artifactId>xmlunit-core</artifactId>
         <version>${xmlunit.version}</version>
       </dependency>
+
+      <!-- AssertJ -->
+      <!-- NOTE: This is just a Workaround because Version 2.6.0 -->
+      <!-- (which is bundled with spring-boot) doesn't compare -->
+      <!-- Collections correctly (Tests will fail) -->
+      <dependency>
+        <groupId>org.assertj</groupId>
+        <artifactId>assertj-core</artifactId>
+        <version>${assertj.version}</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 
@@ -123,6 +159,10 @@
     <!-- Compile Dependencies -->
 
     <!-- Spring Boot -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-web</artifactId>
+    </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-security</artifactId>
@@ -147,14 +187,18 @@
       <artifactId>commons-lang3</artifactId>
     </dependency>
     <dependency>
+      <groupId>commons-io</groupId>
+      <artifactId>commons-io</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-collections4</artifactId>
     </dependency>
 
-    <!-- Apache Jackrabbit -->
+    <!-- Sardine WebDAV Library -->
     <dependency>
-      <groupId>org.apache.jackrabbit</groupId>
-      <artifactId>jackrabbit-webdav</artifactId>
+      <groupId>com.github.lookfirst</groupId>
+      <artifactId>sardine</artifactId>
     </dependency>
 
     <!-- Google Guava -->
@@ -191,13 +235,6 @@
     <dependency>
       <groupId>org.springframework.security</groupId>
       <artifactId>spring-security-test</artifactId>
-      <scope>test</scope>
-    </dependency>
-
-    <!-- Apache Commons -->
-    <dependency>
-      <groupId>commons-io</groupId>
-      <artifactId>commons-io</artifactId>
       <scope>test</scope>
     </dependency>
 
@@ -268,17 +305,22 @@
         <plugin>
           <groupId>org.asciidoctor</groupId>
           <artifactId>asciidoctor-maven-plugin</artifactId>
-          <version>1.5.3</version>
+          <version>1.5.6</version>
           <dependencies>
+            <dependency>
+              <groupId>org.jruby</groupId>
+              <artifactId>jruby-complete</artifactId>
+              <version>1.7.27</version>
+            </dependency>
             <dependency>
               <groupId>org.asciidoctor</groupId>
               <artifactId>asciidoctorj</artifactId>
-              <version>1.5.4.1</version>
+              <version>1.5.6</version>
             </dependency>
             <dependency>
               <groupId>org.asciidoctor</groupId>
               <artifactId>asciidoctorj-diagram</artifactId>
-              <version>1.5.0</version>
+              <version>1.5.4.1</version>
             </dependency>
           </dependencies>
           <configuration>
@@ -286,10 +328,17 @@
               <require>asciidoctor-diagram</require>
             </requires>
             <attributes>
+              <graphvizdot>${asciidoctor.graphvizdot}</graphvizdot>
               <revnumber>${project.version}</revnumber>
               <organization>${project.organization.name}</organization>
             </attributes>
           </configuration>
+        </plugin>
+
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>license-maven-plugin</artifactId>
+          <version>1.14</version>
         </plugin>
 
         <!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself. -->
@@ -304,7 +353,7 @@
                   <pluginExecutionFilter>
                     <groupId>org.asciidoctor</groupId>
                     <artifactId>asciidoctor-maven-plugin</artifactId>
-                    <versionRange>[1.5.3,)</versionRange>
+                    <versionRange>[1.5.6,)</versionRange>
                     <goals>
                       <goal>process-asciidoc</goal>
                     </goals>
@@ -349,13 +398,24 @@
         <artifactId>maven-javadoc-plugin</artifactId>
         <version>2.10.4</version>
         <configuration>
-          <sourcepath>${project.build.directory}/generated-sources/delombok</sourcepath>
+          <defaultVersion>${project.version}</defaultVersion>
+          <sourcepath>${project.build.directory}/delombok</sourcepath>
+          <sourceFileExcludes>
+            <sourceFileExclude>**/impl/**/*Impl.java</sourceFileExclude>
+            <sourceFileExclude>**/*Configuration.java</sourceFileExclude>
+            <sourceFileExclude>**/OwncloudAuthenticationTypeChecker.java</sourceFileExclude>
+          </sourceFileExcludes>
         </configuration>
       </plugin>
 
       <plugin>
         <artifactId>maven-deploy-plugin</artifactId>
         <version>2.8.2</version>
+      </plugin>
+
+      <plugin>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>2.19.1</version>
       </plugin>
 
       <plugin>
@@ -375,10 +435,19 @@
         <executions>
           <execution>
             <id>delombok</id>
-            <phase>generate-sources</phase>
             <goals>
               <goal>delombok</goal>
             </goals>
+            <configuration>
+              <outputDirectory>${project.build.directory}/delombok</outputDirectory>
+              <formatPreferences>
+                <indent>2</indent>
+                <constructorProperties>skip</constructorProperties>
+                <generated>skip</generated>
+                <generateDelombokComment>skip</generateDelombokComment>
+                <suppressWarnings>skip</suppressWarnings>
+              </formatPreferences>
+            </configuration>
           </execution>
         </executions>
       </plugin>
@@ -403,6 +472,29 @@
           <pushFeatures>true</pushFeatures>
           <pushHotfixes>true</pushHotfixes>
         </configuration>
+      </plugin>
+
+      <!-- License Maven Plugin -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>license-maven-plugin</artifactId>
+        <configuration>
+          <licenseName>gpl_v3</licenseName>
+          <addJavaLicenseAfterPackage>false</addJavaLicenseAfterPackage>
+          <organizationName>by the original Authors</organizationName>
+          <roots>src/main/java, src/test/java, target/generated-sources, target/processed-sources</roots>
+        </configuration>
+        <executions>
+          <execution>
+            <phase>validate</phase>
+            <goals>
+              <goal>check-file-header</goal>
+            </goals>
+            <configuration>
+              <failOnMissingHeader>true</failOnMissingHeader>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>
@@ -455,6 +547,15 @@
 
       <build>
         <plugins>
+          <plugin>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <configuration>
+              <environmentVariables>
+                <testChecksumService>true</testChecksumService>
+              </environmentVariables>
+            </configuration>
+          </plugin>
+
           <plugin>
             <artifactId>maven-clean-plugin</artifactId>
             <version>2.6.1</version>
@@ -551,6 +652,20 @@
           </plugin>
         </plugins>
       </build>
+    </profile>
+
+    <profile>
+      <id>asciidoctor-mac</id>
+
+      <activation>
+        <os>
+          <family>mac</family>
+        </os>
+      </activation>
+
+      <properties>
+        <asciidoctor.graphvizdot>/usr/local/bin/dot</asciidoctor.graphvizdot>
+      </properties>
     </profile>
   </profiles>
 </project>
