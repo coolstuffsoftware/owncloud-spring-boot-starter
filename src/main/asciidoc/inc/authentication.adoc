@@ -73,6 +73,7 @@ Up now all Groups of the User will be added with the Prefix `ROLE_` and added as
 In Spring Security there exists a good http://docs.spring.io/spring-security/site/docs/current/reference/html/appendix-schema.html[Database Schema] for the Relationship between Users, Groups and Authorities:
 [plantuml, diagram-classes, png]
 ....
+!pragma graphviz_dot jdot
 class User
 class Group
 class UserGroup
