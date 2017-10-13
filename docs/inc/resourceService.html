@@ -4,8 +4,8 @@
 <meta charset="UTF-8">
 <!--[if IE]><meta http-equiv="X-UA-Compatible" content="IE=edge"><![endif]-->
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="generator" content="Asciidoctor 1.5.4">
-<title>OwncloudUserModificationService</title>
+<meta name="generator" content="Asciidoctor 1.5.6.1">
+<title>Resource Service</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700">
 <style>
 /* Asciidoctor default stylesheet | MIT License | http://asciidoctor.org */
@@ -17,7 +17,6 @@ audio:not([controls]){display:none;height:0}
 [hidden],template{display:none}
 script{display:none!important}
 html{font-family:sans-serif;-ms-text-size-adjust:100%;-webkit-text-size-adjust:100%}
-body{margin:0}
 a{background:transparent}
 a:focus{outline:thin dotted}
 a:active,a:hover{outline:0}
@@ -52,7 +51,7 @@ textarea{overflow:auto;vertical-align:top}
 table{border-collapse:collapse;border-spacing:0}
 *,*:before,*:after{-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box}
 html,body{font-size:100%}
-body{background:#fff;color:rgba(0,0,0,.8);padding:0;margin:0;font-family:"Noto Serif","DejaVu Serif",serif;font-weight:400;font-style:normal;line-height:1;position:relative;cursor:auto}
+body{background:#fff;color:rgba(0,0,0,.8);padding:0;margin:0;font-family:"Noto Serif","DejaVu Serif",serif;font-weight:400;font-style:normal;line-height:1;position:relative;cursor:auto;tab-size:4;-moz-osx-font-smoothing:grayscale;-webkit-font-smoothing:antialiased}
 a:hover{cursor:pointer}
 img,object,embed{max-width:100%;height:auto}
 object,embed{height:100%}
@@ -64,7 +63,6 @@ img{-ms-interpolation-mode:bicubic}
 .text-center{text-align:center!important}
 .text-justify{text-align:justify!important}
 .hide{display:none}
-body{-webkit-font-smoothing:antialiased}
 img,object,svg{display:inline-block;vertical-align:middle}
 textarea{height:auto;min-height:50px}
 select{width:100%}
@@ -91,13 +89,12 @@ strong,b{font-weight:bold;line-height:inherit}
 small{font-size:60%;line-height:inherit}
 code{font-family:"Droid Sans Mono","DejaVu Sans Mono",monospace;font-weight:400;color:rgba(0,0,0,.9)}
 ul,ol,dl{font-size:1em;line-height:1.6;margin-bottom:1.25em;list-style-position:outside;font-family:inherit}
-ul,ol,ul.no-bullet,ol.no-bullet{margin-left:1.5em}
+ul,ol{margin-left:1.5em}
 ul li ul,ul li ol{margin-left:1.25em;margin-bottom:0;font-size:1em}
 ul.square li ul,ul.circle li ul,ul.disc li ul{list-style:inherit}
 ul.square{list-style-type:square}
 ul.circle{list-style-type:circle}
 ul.disc{list-style-type:disc}
-ul.no-bullet{list-style:none}
 ol li ul,ol li ol{margin-left:1.25em;margin-bottom:0}
 dl dt{margin-bottom:.3125em;font-weight:bold}
 dl dd{margin-bottom:1.25em}
@@ -119,18 +116,25 @@ table thead tr th,table thead tr td,table tfoot tr th,table tfoot tr td{padding:
 table tr th,table tr td{padding:.5625em .625em;font-size:inherit;color:rgba(0,0,0,.8)}
 table tr.even,table tr.alt,table tr:nth-of-type(even){background:#f8f8f7}
 table thead tr th,table tfoot tr th,table tbody tr td,table tr td,table tfoot tr td{display:table-cell;line-height:1.6}
-body{tab-size:4}
 h1,h2,h3,#toctitle,.sidebarblock>.content>.title,h4,h5,h6{line-height:1.2;word-spacing:-.05em}
 h1 strong,h2 strong,h3 strong,#toctitle strong,.sidebarblock>.content>.title strong,h4 strong,h5 strong,h6 strong{font-weight:400}
 .clearfix:before,.clearfix:after,.float-group:before,.float-group:after{content:" ";display:table}
 .clearfix:after,.float-group:after{clear:both}
-*:not(pre)>code{font-size:.9375em;font-style:normal!important;letter-spacing:0;padding:.1em .5ex;word-spacing:-.15em;background-color:#f7f7f8;-webkit-border-radius:4px;border-radius:4px;line-height:1.45;text-rendering:optimizeSpeed}
+*:not(pre)>code{font-size:.9375em;font-style:normal!important;letter-spacing:0;padding:.1em .5ex;word-spacing:-.15em;background-color:#f7f7f8;-webkit-border-radius:4px;border-radius:4px;line-height:1.45;text-rendering:optimizeSpeed;word-wrap:break-word}
+*:not(pre)>code.nobreak{word-wrap:normal}
+*:not(pre)>code.nowrap{white-space:nowrap}
 pre,pre>code{line-height:1.45;color:rgba(0,0,0,.9);font-family:"Droid Sans Mono","DejaVu Sans Mono",monospace;font-weight:400;text-rendering:optimizeSpeed}
+em em{font-style:normal}
+strong strong{font-weight:400}
 .keyseq{color:rgba(51,51,51,.8)}
 kbd{font-family:"Droid Sans Mono","DejaVu Sans Mono",monospace;display:inline-block;color:rgba(0,0,0,.8);font-size:.65em;line-height:1.45;background-color:#f7f7f7;border:1px solid #ccc;-webkit-border-radius:3px;border-radius:3px;-webkit-box-shadow:0 1px 0 rgba(0,0,0,.2),0 0 0 .1em white inset;box-shadow:0 1px 0 rgba(0,0,0,.2),0 0 0 .1em #fff inset;margin:0 .15em;padding:.2em .5em;vertical-align:middle;position:relative;top:-.1em;white-space:nowrap}
 .keyseq kbd:first-child{margin-left:0}
 .keyseq kbd:last-child{margin-right:0}
-.menuseq,.menu{color:rgba(0,0,0,.8)}
+.menuseq,.menuref{color:#000}
+.menuseq b:not(.caret),.menuref{font-weight:inherit}
+.menuseq{word-spacing:-.02em}
+.menuseq b.caret{font-size:1.25em;line-height:.8}
+.menuseq i.caret{font-weight:bold;text-align:center;width:.45em}
 b.button:before,b.button:after{position:relative;top:-1px;font-weight:400}
 b.button:before{content:"[";padding:0 3px 0 2px}
 b.button:after{content:"]";padding:0 2px 0 3px}
@@ -197,7 +201,7 @@ table.tableblock>caption.title{white-space:nowrap;overflow:visible;max-width:0}
 table.tableblock #preamble>.sectionbody>.paragraph:first-of-type p{font-size:inherit}
 .admonitionblock>table{border-collapse:separate;border:0;background:none;width:100%}
 .admonitionblock>table td.icon{text-align:center;width:80px}
-.admonitionblock>table td.icon img{max-width:none}
+.admonitionblock>table td.icon img{max-width:initial}
 .admonitionblock>table td.icon .title{font-weight:bold;font-family:"Open Sans","DejaVu Sans",sans-serif;text-transform:uppercase}
 .admonitionblock>table td.content{padding-left:1.125em;padding-right:1.25em;border-left:1px solid #ddddd8;color:rgba(0,0,0,.6)}
 .admonitionblock>table td.content>:last-child>:last-child{margin-bottom:0}
@@ -253,13 +257,13 @@ table.pyhltable .linenodiv{background:none!important;padding-right:0!important}
 table.tableblock{max-width:100%;border-collapse:separate}
 table.tableblock td>.paragraph:last-child p>p:last-child,table.tableblock th>p:last-child,table.tableblock td>p:last-child{margin-bottom:0}
 table.tableblock,th.tableblock,td.tableblock{border:0 solid #dedede}
-table.grid-all th.tableblock,table.grid-all td.tableblock{border-width:0 1px 1px 0}
-table.grid-all tfoot>tr>th.tableblock,table.grid-all tfoot>tr>td.tableblock{border-width:1px 1px 0 0}
-table.grid-cols th.tableblock,table.grid-cols td.tableblock{border-width:0 1px 0 0}
-table.grid-all *>tr>.tableblock:last-child,table.grid-cols *>tr>.tableblock:last-child{border-right-width:0}
-table.grid-rows th.tableblock,table.grid-rows td.tableblock{border-width:0 0 1px 0}
-table.grid-all tbody>tr:last-child>th.tableblock,table.grid-all tbody>tr:last-child>td.tableblock,table.grid-all thead:last-child>tr>th.tableblock,table.grid-rows tbody>tr:last-child>th.tableblock,table.grid-rows tbody>tr:last-child>td.tableblock,table.grid-rows thead:last-child>tr>th.tableblock{border-bottom-width:0}
-table.grid-rows tfoot>tr>th.tableblock,table.grid-rows tfoot>tr>td.tableblock{border-width:1px 0 0 0}
+table.grid-all>thead>tr>.tableblock,table.grid-all>tbody>tr>.tableblock{border-width:0 1px 1px 0}
+table.grid-all>tfoot>tr>.tableblock{border-width:1px 1px 0 0}
+table.grid-cols>*>tr>.tableblock{border-width:0 1px 0 0}
+table.grid-rows>thead>tr>.tableblock,table.grid-rows>tbody>tr>.tableblock{border-width:0 0 1px 0}
+table.grid-rows>tfoot>tr>.tableblock{border-width:1px 0 0 0}
+table.grid-all>*>tr>.tableblock:last-child,table.grid-cols>*>tr>.tableblock:last-child{border-right-width:0}
+table.grid-all>tbody>tr:last-child>.tableblock,table.grid-all>thead:last-child>tr>.tableblock,table.grid-rows>tbody>tr:last-child>.tableblock,table.grid-rows>thead:last-child>tr>.tableblock{border-bottom-width:0}
 table.frame-all{border-width:1px}
 table.frame-sides{border-width:0 1px}
 table.frame-topbot{border-width:1px 0}
@@ -280,10 +284,12 @@ ul li ol{margin-left:1.5em}
 dl dd{margin-left:1.125em}
 dl dd:last-child,dl dd:last-child>:last-child{margin-bottom:0}
 ol>li p,ul>li p,ul dd,ol dd,.olist .olist,.ulist .ulist,.ulist .olist,.olist .ulist{margin-bottom:.625em}
-ul.unstyled,ol.unnumbered,ul.checklist,ul.none{list-style-type:none}
-ul.unstyled,ol.unnumbered,ul.checklist{margin-left:.625em}
-ul.checklist li>p:first-child>.fa-square-o:first-child,ul.checklist li>p:first-child>.fa-check-square-o:first-child{width:1em;font-size:.85em}
-ul.checklist li>p:first-child>input[type="checkbox"]:first-child{width:1em;position:relative;top:1px}
+ul.checklist,ul.none,ol.none,ul.no-bullet,ol.no-bullet,ol.unnumbered,ul.unstyled,ol.unstyled{list-style-type:none}
+ul.no-bullet,ol.no-bullet,ol.unnumbered{margin-left:.625em}
+ul.unstyled,ol.unstyled{margin-left:0}
+ul.checklist{margin-left:.625em}
+ul.checklist li>p:first-child>.fa-square-o:first-child,ul.checklist li>p:first-child>.fa-check-square-o:first-child{width:1.25em;font-size:.8em;position:relative;bottom:.125em}
+ul.checklist li>p:first-child>input[type="checkbox"]:first-child{margin-right:.25em}
 ul.inline{margin:0 auto .625em auto;margin-left:-1.375em;margin-right:0;padding:0;list-style:none;overflow:hidden}
 ul.inline>li{list-style:none;float:left;margin-left:1.375em;display:block}
 ul.inline>li>*{display:block}
@@ -300,7 +306,8 @@ ol.lowergreek{list-style-type:lower-greek}
 td.hdlist1,td.hdlist2{vertical-align:top;padding:0 .625em}
 td.hdlist1{font-weight:bold;padding-bottom:1.25em}
 .literalblock+.colist,.listingblock+.colist{margin-top:-.5em}
-.colist>table tr>td:first-of-type{padding:0 .75em;line-height:1}
+.colist>table tr>td:first-of-type{padding:.4em .75em 0 .75em;line-height:1;vertical-align:top}
+.colist>table tr>td:first-of-type img{max-width:initial}
 .colist>table tr>td:last-of-type{padding:.25em 0}
 .thumb,.th{line-height:0;display:inline-block;border:solid 4px #fff;-webkit-box-shadow:0 0 0 1px #ddd;box-shadow:0 0 0 1px #ddd}
 .imageblock.left,.imageblock[style*="float: left"]{margin:.25em .625em 1.25em 0}
@@ -363,6 +370,7 @@ div.unbreakable{page-break-inside:avoid}
 .yellow{color:#bfbf00}
 .yellow-background{background-color:#fafa00}
 span.icon>.fa{cursor:default}
+a span.icon>.fa{cursor:inherit}
 .admonitionblock td.icon [class^="fa icon-"]{font-size:2.5em;text-shadow:1px 1px 2px rgba(0,0,0,.5);cursor:default}
 .admonitionblock td.icon .icon-note:before{content:"\f05a";color:#19407c}
 .admonitionblock td.icon .icon-tip:before{content:"\f0eb";text-shadow:1px 1px 2px rgba(155,155,0,.8);color:#111}
@@ -513,117 +521,84 @@ table.CodeRay td.code>pre{padding:0}
 </div>
 <div id="content">
 <div class="sect1">
-<h2 id="_owncloudusermodificationservice">OwncloudUserModificationService</h2>
+<h2 id="_resource_service">Resource Service</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>This Service provides Modifications of Users and/or Groups of the Owncloud Instance.</p>
-</div>
-<div class="sect2">
-<h3 id="_enable_disable_user_modifications">enable/disable User Modifications</h3>
-<div class="paragraph">
-<p>Because User Modifications by <code>OwncloudUserModificationService</code> need administrative Privileges of the
-the User (either by the authenticated User or by a configured Administrator Account) there is the Danger,
-that the Application will remove Users and/or Groups accidentilly.</p>
+<p>One of the main Aspects of Owncloud is the Usage of a centralized WebDAV File Store.
+By using the <code>OwncloudResourceService</code> you can interact with this WebDAV-based File Store.</p>
 </div>
 <div class="paragraph">
-<p>To protect the Usage of <code>OwncloudUserModificationService</code> can be restricted.
-This Restriction is enabled by default.<br>
-To allow Modifications by <code>OwncloudUserModificationService</code> this Flag must be explictly turned on by</p>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>owncloud.enable-modifications=true</pre>
-</div>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_creating_a_new_user">creating a new User</h3>
-<div class="paragraph">
-<p>If you want to create a new User you create a new <code>OwncloudModificationUser</code> Object</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="java">OwncloudModificationUser newUser = OwncloudModificationUser.builder()
-  .username(<span class="string"><span class="delimiter">&quot;</span><span class="content">username</span><span class="delimiter">&quot;</span></span>)
-  .password(<span class="string"><span class="delimiter">&quot;</span><span class="content">s3cr3t</span><span class="delimiter">&quot;</span></span>)
-  .displayName(<span class="string"><span class="delimiter">&quot;</span><span class="content">Display Name of the new User</span><span class="delimiter">&quot;</span></span>)
-  .email(<span class="string"><span class="delimiter">&quot;</span><span class="content">user@example.com</span><span class="delimiter">&quot;</span></span>)
-  .group(<span class="string"><span class="delimiter">&quot;</span><span class="content">group1</span><span class="delimiter">&quot;</span></span>)
-  .group(<span class="string"><span class="delimiter">&quot;</span><span class="content">group2</span><span class="delimiter">&quot;</span></span>)
-  .build();
-OwncloudUserDetails createdUser =
-  owncloudUserModificationService.saveUser(newUser);</code></pre>
-</div>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_modifying_a_user">modifying a User</h3>
-<div class="paragraph">
-<p>If you want to modify the Information about a User this User has to be read just before by
-<code>OwncloudUserQueryService.findOneUser(String username)</code>. With the <code>OwncloudUserDetails</code> Object
-in Hands you can create a new <code>OwncloudModificationUser</code>.</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="java">OwncloudUserDetails existingUser =
-  owncloudUserQueryService.findOneUser(<span class="string"><span class="delimiter">&quot;</span><span class="content">user1</span><span class="delimiter">&quot;</span></span>);
-OwncloudModificationUser modificationUser =
-  <span class="keyword">new</span> OwncloudModificationUser(existingUser);
-modificationUser.setDisplayName(<span class="string"><span class="delimiter">&quot;</span><span class="content">new Display Name of the User</span><span class="delimiter">&quot;</span></span>);
-existingUser = owncloudUserModificationService.saveUser(modificationUser);</code></pre>
-</div>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_methods">Methods</h3>
-<div class="paragraph">
-<p>All Owncloud REST-Calls of the List below will be prefixed by <code>/ocs/v1.php</code>.</p>
+<p>Simply by <code>@Autowire</code> the <code>OwncloudResourceService</code> you can use the following Methods:</p>
 </div>
 <table class="tableblock frame-all grid-all spread">
 <colgroup>
-<col style="width: 16.6666%;">
-<col style="width: 41.6666%;">
-<col style="width: 41.6668%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 50%;">
 </colgroup>
 <thead>
 <tr>
 <th class="tableblock halign-left valign-top">Method</th>
-<th class="tableblock halign-left valign-top">Owncloud REST-Call</th>
+<th class="tableblock halign-left valign-top">REST-Call</th>
 <th class="tableblock halign-left valign-top">Description</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td class="tableblock halign-left valign-top"><div><div class="paragraph">
-<p><code>OwncloudUserDetails saveUser(OwncloudModificationUser userDetails)</code></p>
+<p><code>List&lt;OwncloudResource&gt; listRoot()</code></p>
 </div></div></td>
 <td class="tableblock halign-left valign-top"><div><div class="paragraph">
-<p>additional (when creating a new User):<br>
-<code>POST users -d userid="{username}" -d password="{password}"</code><br></p>
-</div>
-<div class="paragraph">
-<p>modifying User:<br>
-<code>PUT users -d key="display" -d value="{displayName}"</code></p>
-</div>
-<div class="paragraph">
-<p><code>PUT users -d key="email" -d value="{email}"</code></p>
-</div>
-<div class="paragraph">
-<p>when Groups will be modified:<br>
-<code>POST users/{username}/groups -d groupid="{groupname}"</code></p>
-</div>
-<div class="paragraph">
-<p><code>DELETE users/{username}/groups -d groupid="{groupname}"</code></p>
+<p><code>PROPFIND /remote.php/dav/files/{username}/</code></p>
 </div></div></td>
-<td class="tableblock halign-left valign-top"><div><div class="ulist">
-<ul>
-<li>
-<p>creates a new User</p>
-</li>
-<li>
-<p>modifies the Information of an existing User</p>
-</li>
-</ul>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p>Get all Information about Files and/or Directories of the currently authenticated Users Root Directory.</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p><code>List&lt;OwncloudResource&gt; list(URI relativeTo)</code></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p><code>PROPFIND /remote.php/dav/files/{username}/{relativeTo}</code></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p>Get all Information about Files and/or Directories of the given URI.<br>
+    This URI is relative to the Root Directory of the currently authenticated User</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p><code>Optional&lt;OwncloudResource&gt; find(URI path)</code></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p><code>PROPFIND /remote.php/dav/files/{username}/{path}</code></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p>Find a File or Directory by its URI relative to the Root Directory of the currently authenticated User.</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p><code>OwncloudResource createDirectory(URI directory)</code></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p><code>MKCOL /remote.php/dav/files/{username}/{directory}</code></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p>Create a Directory relative to the Root Directory of the currently authenticated User</p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p><code>void delete(OwncloudResource resource)</code></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p><code>DELETE /remote.php/dav/files/{username}/{resource.href}</code></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p>Delete a File or Directory referenced by the <code>OwncloudResource</code> (either returned by <code>listRoot()</code>, <code>list(URI relativeTo)</code>
+ or <code>find(URI resource)</code>).</p>
 </div>
 <div class="admonitionblock note">
 <table>
@@ -632,7 +607,7 @@ existingUser = owncloudUserModificationService.saveUser(modificationUser);</code
 <div class="title">Note</div>
 </td>
 <td class="content">
-due to Security Reasons the Password of a User will not be modified nor will it be returned.
+Deleting a Directory causes that also all Files and Subdirectories will be removed recursively.
 </td>
 </tr>
 </table>
@@ -640,71 +615,414 @@ due to Security Reasons the Password of a User will not be modified nor will it 
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><div><div class="paragraph">
-<p><code>void deleteUser(String username)</code></p>
+<p><code>InputStream getInputStream(OwncloudFileResource resource)</code></p>
 </div></div></td>
 <td class="tableblock halign-left valign-top"><div><div class="paragraph">
-<p><code>DELETE users/{username}</code></p>
+<p><code>GET /remote.php/dav/files/{username}/{resource.href}</code></p>
 </div></div></td>
 <td class="tableblock halign-left valign-top"><div><div class="paragraph">
-<p>Removes a User from Owncloud</p>
-</div>
-<div class="admonitionblock note">
-<table>
-<tr>
-<td class="icon">
-<div class="title">Note</div>
-</td>
-<td class="content">
-all Objects of this User (Files, Calendars, Addressbooks, &#8230;&#8203;) will also be removed.
-</td>
-</tr>
-</table>
+<p>get an <code>InputStream</code> to read the Content of a File</p>
 </div></div></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><div><div class="paragraph">
-<p><code>void createGroup(String groupname)</code></p>
+<p><code>OutputStream getOutputStream(OwncloudFileResource resource)</code></p>
 </div></div></td>
 <td class="tableblock halign-left valign-top"><div><div class="paragraph">
-<p><code>POST groups -d groupid="{groupname}"</code></p>
+<p><code>PUT /remote.php/dav/files/{username}/{resource.href}</code></p>
 </div></div></td>
 <td class="tableblock halign-left valign-top"><div><div class="paragraph">
-<p>Create a new Group</p>
+<p>get an <code>OutputStream</code> to overwrite/append the Content of an existing File.</p>
 </div></div></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><div><div class="paragraph">
-<p><code>void deleteGroup(String groupname)`</code></p>
+<p><code>OutputStream getOutputStream(URI path, MediaType mediaType)</code></p>
 </div></div></td>
 <td class="tableblock halign-left valign-top"><div><div class="paragraph">
-<p><code>DELETE groups/{groupname}`</code></p>
+<p><code>PUT /remote.php/dav/files/{username}/{path}</code></p>
 </div></div></td>
 <td class="tableblock halign-left valign-top"><div><div class="paragraph">
-<p>Removes a Group from Owncloud</p>
-</div>
-<div class="admonitionblock note">
-<table>
-<tr>
-<td class="icon">
-<div class="title">Note</div>
-</td>
-<td class="content">
-all Memberships to this Group will also be removed. Also all Shares (Files, Calendars, Addressbooks, &#8230;&#8203;)
-</td>
+<p>create a new File and get an <code>OutputStream</code> to write its Content.</p>
+</div></div></td>
 </tr>
-</table>
+<tr>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p><code>OwncloudQuota getQuota()</code></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p><code>GET /ocs/v1.php/cloud/users/{username}</code></p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p>get the Quota of the actual authenticated User</p>
 </div></div></td>
 </tr>
 </tbody>
 </table>
+<div class="sect2">
+<h3 id="_owncloudresource">OwncloudResource</h3>
+<div class="paragraph">
+<p>A <code>OwncloudResource</code> is an abstract Representation of a Resource on the Owncloud.
+This Resource can either be a File or a Directory.</p>
+</div>
+<div class="paragraph">
+<p>The following Information is available about this Resource:</p>
+</div>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 66.6667%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Information</th>
+<th class="tableblock halign-left valign-top">Datatype</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p>href</p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p><code>java.net.URI</code></p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p>name</p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p><code>java.lang.String</code></p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p>lastModifiedAt</p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p><code>java.time.LocalDateTime</code></p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p>mediaType</p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p><code>org.springframework.http.MediaType</code></p>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p>eTag</p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p><code>java.lang.String</code></p>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p>In the case of a File Representation a <code>OwncloudFileResource</code> as a Subclass of
+<code>OwncloudResource</code> will be instantiated. This <code>OwncloudFileResource</code> has the
+following additional Information:</p>
+</div>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 66.6667%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Information</th>
+<th class="tableblock halign-left valign-top">Datatype</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p>contentLength</p>
+</div></div></td>
+<td class="tableblock halign-left valign-top"><div><div class="paragraph">
+<p><code>java.lang.Long</code></p>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect2">
+<h3 id="_from_owncloudresource_to_owncloudfileresource">from OwncloudResource to OwncloudFileResource</h3>
+<div class="paragraph">
+<p>The Methods <code>listRoot()</code> and <code>list(URI relativeTo)</code> both return a List of <code>OwncloudResource</code>
+because the Content of a Directory can either be Files or another Directories (Subdirectories).</p>
+</div>
+<div class="paragraph">
+<p>In the case of a Directory the <code>MediaType</code> of the <code>OwncloudResource</code> is set to <code>httpd/unix-directory</code>.
+If you have a File (when <code>MediaType</code> of <code>OwncloudResource</code> is not <code>httpd/unix-directory</code>) you can
+convert the <code>OwncloudResource</code> to a <code>OwncloudFileResource</code>. Only with the <code>OwncloudFileResource</code>
+you can read or write the Content of this File.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java">Optional&lt;OwncloudFileResource&gt; fileResource =
+  resourceService.find(uri)
+                 .filter(OwncloudUtils::isDirectory)
+                 .map(OwncloudUtils:toOwncloudFileResource);</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_relative_super_directory">relative Super Directory</h3>
+<div class="paragraph">
+<p>When you call <code>list(URI relativeTo)</code> you will get a List of Files/Directories
+of the given URI relative to the User Root. <code>OwncloudResourceService</code> will
+give you 2 additional Entries: . (actual Directory) and .. (Parent Directory)</p>
+</div>
+<div class="paragraph">
+<p>If you don&#8217;t want a Reference to the Parent Directory you can set
+the Configuration Property <code>owncloud.resource-service.add-relative-down-path</code> to
+<code>false</code>. (Default is: <code>true</code>).<br>
+After setting this Configuration to <code>false</code> no additional Entriy <code>..</code> with
+a Reference to the Parent Directory will be added to the Result of
+<code>list(URI relativeTo)</code>.</p>
+</div>
+<div class="paragraph">
+<p>By letting this Configuration Property to its Default Value of <code>true</code> the relative
+Link to the Super Directory will be added. The only Exception is the Root-Directory
+of the User because you can&#8217;t navigate below to the Root-Directory.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_local_resource_service">Local Resource Service</h3>
+<div class="paragraph">
+<p>As with the <code>OwncloudUserService</code> and the <code>OwncloudGroupService</code>
+you can route the <code>OwncloudResource</code> to use a local Storage instead of
+a remote Owncloud Instance. You can use the local Storage for Unit-
+and/or Integration-Tests.</p>
+</div>
+<div class="admonitionblock warning">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Warning</div>
+</td>
+<td class="content">
+Don&#8217;t use the local Storage of the <code>OwncloudResource</code>
+to build your own WebDAV Storage. This is not the intent of this Project
+and the Developers will not take any responsibility for lost Data.
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>You use the local Storage by setting the local Implementation and a Path
+to the Root Directory for all Users defined by <code>owncloud.xml</code>.</p>
+</div>
+<div class="listingblock">
+<div class="title">application.yml</div>
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="yaml"><span class="key">owncloud</span>:
+  <span class="key">location</span>: <span class="string"><span class="content">classpath:/owncloud.xml</span></span>
+  <span class="key">resource-service</span>:
+    <span class="key">location</span>: <span class="string"><span class="content">/path/to/files</span></span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>A Subdirectory will be created for every User of the <code>owncloud.xml</code> at the
+first Time he/she uses any Method of <code>OwncloudResourceService</code>.</p>
+</div>
+<div class="paragraph">
+<p>For Instance: if User <code>jane</code> uses any Method of <code>OwncloudResourceService</code>
+a Directory <code>/path/to/files/jane</code> will be created.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_etag">eTag</h3>
+<div class="paragraph">
+<p>The Owncloud calculates an eTag for every Resource. This eTag will be used
+by the Owncloud Client to sync changed Files/Directories.</p>
+</div>
+<div class="paragraph">
+<p>The Local Storage of <code>OwncloudResourceService</code> has a similar eTag Calculation
+based on a MessageDigest Algorithm. At the Moment only MD5 will be used.</p>
+</div>
+<div class="paragraph">
+<p>The Checksum of a File will be calculated by its Content. The Checksum of a
+Directory will be calculated by recursevly concatinating the Checksum of
+all Files within this Directory and its Subdirectories.</p>
+</div>
+<div class="paragraph">
+<p>Everytime the Content of a File changes (either by
+<code>OwncloudResourceService.getOutputStream</code> or when any other Process outside
+of the Spring-Boot Application changes the Content of the File) the Checksum
+will be recalculated.</p>
+</div>
+<div class="paragraph">
+<p>For better Performance the Checksums will be cached. On Application Startup
+the Checksum of all Files and Directories under the Path referenced by the Property
+<code>owncloud.resource-service.location</code> will be calculated and written to a Java Map.</p>
+</div>
+<div class="paragraph">
+<p>This will take some time and the Application Startup has been locked until
+the Calculation has been finished. To keep Unit-Tests fast keep the Number
+and Size of Files small.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_piped_streams">piped Streams</h3>
+<div class="paragraph">
+<p>The API of <code>OwncloudResourceService</code> is simple. Because of its simplicity in the
+Background there are some challenges because of deferred Read/Write Operations
+(when using the REST Backend).</p>
+</div>
+<div class="sect3">
+<h4 id="_piped_outputstream">piped OutputStream</h4>
+<div class="paragraph">
+<p>So the Write-Process (<code>OwncloudResourceService.getOutputStream()</code>) <strong>never</strong> will be
+called directly on the Files. Instead you (Developer who uses the <code>OwncloudResourceService</code>)
+will get one end of a Pipe, the <code>PipedOutputStream</code>. With this OutputStream you can
+handle all your Streaming.</p>
+</div>
+<div class="paragraph">
+<p>In the Background there has been started a new Thread who keeps the other end of
+the Pipe, the <code>PipedInputStream</code>. All Data written to the <code>PipedOutputStream</code> will
+be read by the <code>PipedInputStream</code>. This Background Process handles the Communication
+with the deferred Owncloud System. If there are some Errors during the I/O Process
+(i.E. the Owncloud will be shutdown or network problems) the Background Process cancels
+the Transfer and throws an <code>OwncloudException</code> (either when writing or on close of
+the <code>PipedOutputStream</code>).</p>
+</div>
+<div class="paragraph">
+<p>Also the local Implementation of <code>OwncloudResourceService.getOutputStream()</code> uses this
+Background Process to first write to a temporary File. Only on <code>close()</code> the temporary
+File will be moved to the real Position. The temporary File will be created on the
+temporary Path-Location (via <code>Files.createTempFile()</code>). The Prefix of this temporary
+File can be customized via the Configuration Property
+<code>owncloud.resource-service.piped-stream-temporary-file-prefix</code>.
+The Default is: <code>owncloud</code></p>
+</div>
+<div class="listingblock">
+<div class="title">application.yml</div>
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="yaml"><span class="key">owncloud</span>:
+  <span class="key">location</span>: <span class="string"><span class="content">classpath:/owncloud.xml</span></span>
+  <span class="key">resource-service</span>:
+    <span class="key">location</span>: <span class="string"><span class="content">/path/to/files</span></span>
+    <span class="key">piped-stream-temporary-file-prefix</span>: <span class="string"><span class="content">owncloud</span></span></code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_piped_inputstream">piped InputStream</h4>
+<div class="paragraph">
+<p>Also the REST-Backend of <code>OwncloudResourceService.getInputStream()</code>
+uses the piped Streams to handle the deferred Communication to the
+Owncloud.</p>
+</div>
+<div class="paragraph">
+<p>So if you call <code>OwncloudResourceService.getInputStream()</code> then you will
+get a <code>PipedInputStream</code>. This Pipe is connected to a Background Thread
+which keeps the <code>PipedOutputStream</code>. If there are any Errors during the
+deferred Read then an <code>OwncloudException</code> will be thrown.</p>
+</div>
+<div class="paragraph">
+<p>The local Implementation of <code>OwncloudResourceService.getInputStream()</code>
+on the other Hand <strong>doesn&#8217;t</strong> use this Synchronization Mechanism. Instead
+you will get a <code>FileInputStream</code> with which you can read the Data directly.
+Please keep this in mind:</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Note</div>
+</td>
+<td class="content">
+the REST-Implementation of <code>OwncloudResourceService.getInputStream()</code>
+uses the piped Stream Synchronization Mechanism to handle deferred Exceptions.
+The local Implementation returns a <code>FileInputStream</code> to the File <strong>without</strong> the
+synchronization Mechanism.
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_synchronization_buffer">Synchronization Buffer</h4>
+<div class="paragraph">
+<p>By the Configuration Parameter <code>owncloud.resource-service.piped-stream-buffer-size</code>
+you can manage the Bytes which will be read/write by the piped Stream. The Value is
+in Bytes. The Default is 8K (8.192) Bytes.</p>
+</div>
+<div class="listingblock">
+<div class="title">application.yml</div>
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="yaml"><span class="key">owncloud</span>:
+  <span class="key">location</span>: <span class="string"><span class="content">classpath:/owncloud.xml</span></span>
+  <span class="key">resource-service</span>:
+    <span class="key">location</span>: <span class="string"><span class="content">/path/to/files</span></span>
+    <span class="key">piped-stream-buffer-size</span>: <span class="string"><span class="content">8192</span></span></code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_exceptions_during_background_synchronization">Exceptions during Background Synchronization</h4>
+<div class="paragraph">
+<p>The Background-Thread will be automatically created (and also destroyed) by
+the owncloud-spring-boot-starter. It will be created if you call
+<code>OwncloudResourceService.getInputStream()</code> (only REST-Backend) or
+<code>OwncloudResourceService.getOutputStream()</code> (REST- and local Backend).
+It will be closed if you call <code>close()</code> on either the <code>InputStream</code> or the
+<code>OutputStream</code> Object.</p>
+</div>
+<div class="paragraph">
+<p>On any Error during the Background Communication the Background-Thread throws
+an Instance of <code>OwncloudException</code> and logs the Exception to SLF4J.
+The Log-Level of this uncaught Exception can be handled by the Configuration
+Parameter <code>owncloud.resource-service.piped-stream-uncaught-exception-log-level</code>
+Any valid SLF4J LogLevel can be served. The Default is <code>LogLevel.ERROR</code>.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_sardine_cache_only_rest_backend">Sardine Cache (only REST Backend)</h4>
+<div class="paragraph">
+<p>Because the WebDAV Protocol enhances the HTTP Protocol by some Methods (<code>PROPFIND</code>, <code>MKCOL</code>, &#8230;&#8203;)
+these Methods are not implemented by the <a href="https://docs.spring.io/spring/docs/4.3.12.RELEASE/spring-framework-reference/htmlsingle/#rest-client-access">Spring RestTemplate</a>.
+But <a href="https://github.com/lookfirst/sardine">Sardine</a> is an excellent WebDAV Implementation for Java.
+Therefor we use Sardine for these HTTP Enhancements.</p>
+</div>
+<div class="paragraph">
+<p>To keep the Time as short as possible for consecutive WebDAV Operations the Sardine Session
+of the authenticated User will be cached and reused as long as the User keep the WebDAV Requests active.</p>
+</div>
+<div class="paragraph">
+<p>This happens by using a <a href="https://github.com/google/guava">Google Guava Cache</a>. The Properties for this Cache
+can be maintained by Configuration Properties:</p>
+</div>
+<div class="listingblock">
+<div class="title">application.yml</div>
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="yaml"><span class="key">owncloud</span>:
+  <span class="key">location</span>: <span class="string"><span class="content">classpath:/owncloud.xml</span></span>
+  <span class="key">resource-service</span>:
+    <span class="key">sardine-cache</span>:
+      <span class="key">concurrency-level</span>: <span class="string"><span class="content">6</span></span>
+      <span class="key">expire-after-access</span>: <span class="string"><span class="content">5</span></span>
+      <span class="key">expire-after-access-time-unit</span>: <span class="string"><span class="content">MINUTES</span></span></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>For a full List of the Configuration Properties look at <a href="#Configuration">[Configuration]</a> (available for: REST)</p>
+</div>
+</div>
 </div>
 </div>
 </div>
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 1.1.0<br>
-Last updated 2017-01-21 21:36:01 MEZ
+Version 1.2.0<br>
+Last updated 2017-10-13 22:31:25 MESZ
 </div>
 </div>
 </body>
