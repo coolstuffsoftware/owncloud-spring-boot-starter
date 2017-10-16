@@ -69,7 +69,7 @@ you can read or write the Content of this File.
 ----
 Optional<OwncloudFileResource> fileResource =
   resourceService.find(uri)
-                 .filter(OwncloudUtils::isDirectory)
+                 .filter(OwncloudUtils::isNotDirectory)
                  .map(OwncloudUtils:toOwncloudFileResource);
 ----
 
@@ -227,7 +227,7 @@ The Log-Level of this uncaught Exception can be handled by the Configuration
 Parameter `owncloud.resource-service.piped-stream-uncaught-exception-log-level`
 Any valid SLF4J LogLevel can be served. The Default is `LogLevel.ERROR`.
 
-==== Sardine Cache (only REST Backend)
+=== Sardine Cache (only REST Backend)
 Because the WebDAV Protocol enhances the HTTP Protocol by some Methods (`PROPFIND`, `MKCOL`, ...)
 these Methods are not implemented by the https://docs.spring.io/spring/docs/4.3.12.RELEASE/spring-framework-reference/htmlsingle/#rest-client-access[Spring RestTemplate].
 But https://github.com/lookfirst/sardine[Sardine] is an excellent WebDAV Implementation for Java.
