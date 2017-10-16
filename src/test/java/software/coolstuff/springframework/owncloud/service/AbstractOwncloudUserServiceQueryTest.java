@@ -21,18 +21,19 @@
  */
 package software.coolstuff.springframework.owncloud.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.List;
+import java.util.Optional;
+
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.client.RestClientTest;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.test.context.support.WithMockUser;
+
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudUserService;
 import software.coolstuff.springframework.owncloud.service.impl.AbstractOwncloudServiceTest;
-
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 @RestClientTest(OwncloudUserService.class)
 public abstract class AbstractOwncloudUserServiceQueryTest extends AbstractOwncloudServiceTest {
@@ -82,26 +83,29 @@ public abstract class AbstractOwncloudUserServiceQueryTest extends AbstractOwncl
         .build();
     prepareTestFindOneUser_OK(expectedUser, "group1", "group2");
 
-    OwncloudUserDetails actualUser = userService.findOne("user5");
+    Optional<OwncloudUserDetails> actualUser = userService.findOne("user5");
     verifyServer();
 
-    assertThat(actualUser).isNotNull();
-    assertThat(actualUser.getUsername()).isEqualTo(expectedUser.getUsername());
-    assertThat(actualUser.getPassword()).isNull();
-    assertThat(actualUser.getDisplayname()).isEqualTo(expectedUser.getDisplayname());
-    assertThat(actualUser.getEmail()).isEqualTo(expectedUser.getEmail());
-    assertThat(actualUser.getQuota()).isEqualByComparingTo(expectedUser.getQuota());
+    assertThat(actualUser)
+        .isNotNull()
+        .isPresent();
+    assertThat(actualUser.get().getUsername()).isEqualTo(expectedUser.getUsername());
+    assertThat(actualUser.get().getPassword()).isNull();
+    assertThat(actualUser.get().getDisplayname()).isEqualTo(expectedUser.getDisplayname());
+    assertThat(actualUser.get().getEmail()).isEqualTo(expectedUser.getEmail());
+    assertThat(actualUser.get().getQuota()).isEqualByComparingTo(expectedUser.getQuota());
 
-    checkAuthorities(actualUser.getUsername(), actualUser.getAuthorities(), "group1", "group2");
+    checkAuthorities(actualUser.get().getUsername(), actualUser.get().getAuthorities(), "group1", "group2");
   }
 
   protected void prepareTestFindOneUser_OK(OwncloudUserDetails expectedUser, String... groups) throws Exception {}
 
-  @Test(expected = UsernameNotFoundException.class)
+  @Test
   @WithMockUser(username = "user3", password = "password")
   public void testFindOneUser_UnknownUser() throws Exception {
     prepareTestFindOneUser_UnknownUser("user3");
-    userService.findOne("user3");
+    Optional<OwncloudUserDetails> emptyUser = userService.findOne("user3");
+    assertThat(emptyUser).isNotPresent();
   }
 
   protected void prepareTestFindOneUser_UnknownUser(String user) throws Exception {}

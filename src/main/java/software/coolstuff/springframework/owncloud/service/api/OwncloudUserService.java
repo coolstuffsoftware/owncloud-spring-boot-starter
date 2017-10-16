@@ -21,14 +21,16 @@
  */
 package software.coolstuff.springframework.owncloud.service.api;
 
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+
 import software.coolstuff.springframework.owncloud.exception.auth.OwncloudGroupNotFoundException;
 import software.coolstuff.springframework.owncloud.exception.auth.OwncloudUsernameAlreadyExistsException;
 import software.coolstuff.springframework.owncloud.model.OwncloudModificationUser;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
-
-import java.util.List;
 
 /**
  * Get and modify Information of Users on the Owncloud Server.
@@ -42,13 +44,13 @@ import java.util.List;
 public interface OwncloudUserService {
 
   /**
-   * Get the Details of a User
+   * Get the Details of a User or <code>Optional.empty()</code> if
+   * the User doesn&apos;t exist
    * @param username Name of the User
    * @return Details of the User
    * @throws AccessDeniedException Neither an Administrator nor the Owner
-   * @throws UsernameNotFoundException User doesn&apos;t exist
    */
-  OwncloudUserDetails findOne(String username);
+  Optional<OwncloudUserDetails> findOne(String username);
 
   /**
    * Find all Users.
