@@ -2,9 +2,9 @@
 All Services of this Spring-Boot Starter will be managed by the following http://docs.spring.io/spring-boot/docs/1.4.3.RELEASE/reference/htmlsingle/#boot-features-external-config[Configuration Parameters].
 [cols="3,1*,1*^,2,1*^,5", options="header"]
 |===
-| Name | available for | mandatory | Data Type |Default | Description
+| Name | available for | mandatory | Data Type | Default | Description
 | owncloud.location | - | true | String | - | The Location of the Owncloud Instance
-| owncloud.user-service.enable-modifications | - | false | boolean | `false`
+| owncloud.user-service.enable-modifications | - | false | boolean | `true`
   | Modifications through `OwncloudUserService` and `OwncloudGroupService` are allowed/disallowed
 | owncloud.resource-service.add-relative-down-path | - | true | boolean | `true`
   | add `..` to the List of available Owncloud-Resource within a Directory
