@@ -570,7 +570,7 @@ table.CodeRay td.code>pre{padding:0}
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><div><div class="paragraph">
-<p><code>OwncloudUserDetails findOne(String username)</code></p>
+<p><code>Optional&lt;OwncloudUserDetails&gt; findOne(String username)</code></p>
 </div></div></td>
 <td class="tableblock halign-left valign-top"><div><div class="paragraph">
 <p><code>GET /ocs/v1.php/cloud/users/{username}</code><br>
@@ -695,10 +695,13 @@ in Hands you can create a new <code>OwncloudModificationUser</code>.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="java">OwncloudUserDetails existingUser = owncloudUserService.findOne(<span class="string"><span class="delimiter">&quot;</span><span class="content">user1</span><span class="delimiter">&quot;</span></span>);
-OwncloudModificationUser modificationUser = OwncloudModificationUser.of(existingUser);
-modificationUser.setDisplayName(<span class="string"><span class="delimiter">&quot;</span><span class="content">new Display Name of the User</span><span class="delimiter">&quot;</span></span>);
-existingUser = owncloudUserService.save(modificationUser);</code></pre>
+<pre class="CodeRay highlight"><code data-lang="java">owncloudUserService.findOne(<span class="string"><span class="delimiter">&quot;</span><span class="content">user1</span><span class="delimiter">&quot;</span></span>)
+  .map(OwncloudModificationUser::of)
+  .map(modificationUser -&gt; {
+     modificationUser.setDisplayName(<span class="string"><span class="delimiter">&quot;</span><span class="content">new Display Name of the User</span><span class="delimiter">&quot;</span></span>);
+     <span class="keyword">return</span> modificationUser;
+   })
+  .ifPresent(owncloudUserService::save);</code></pre>
 </div>
 </div>
 </div>
@@ -707,8 +710,8 @@ existingUser = owncloudUserService.save(modificationUser);</code></pre>
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 1.2.0<br>
-Last updated 2017-10-08 19:08:43 MESZ
+Version 1.2.1<br>
+Last updated 2017-10-17 00:19:50 MESZ
 </div>
 </div>
 </body>
