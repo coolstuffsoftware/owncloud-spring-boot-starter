@@ -69,7 +69,7 @@ you can read or write the Content of this File.
 ----
 Optional<OwncloudFileResource> fileResource =
   resourceService.find(uri)
-                 .filter(OwncloudUtils::isDirectory)
+                 .filter(OwncloudUtils::isNotDirectory)
                  .map(OwncloudUtils:toOwncloudFileResource);
 ----
 
