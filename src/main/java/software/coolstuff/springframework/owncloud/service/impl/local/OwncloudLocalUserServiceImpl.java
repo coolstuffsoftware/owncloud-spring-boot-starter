@@ -21,21 +21,19 @@
  */
 package software.coolstuff.springframework.owncloud.service.impl.local;
 
-import lombok.extern.slf4j.Slf4j;
+import java.util.*;
+import java.util.function.Consumer;
+
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+
+import lombok.extern.slf4j.Slf4j;
 import software.coolstuff.springframework.owncloud.exception.auth.OwncloudGroupNotFoundException;
 import software.coolstuff.springframework.owncloud.model.OwncloudModificationUser;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
 import software.coolstuff.springframework.owncloud.service.impl.CheckOwncloudModification;
-
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.function.Consumer;
 
 @Slf4j
 public class OwncloudLocalUserServiceImpl extends AbstractOwncloudLocalUserAndGroupServiceImpl implements OwncloudLocalUserServiceExtension {
@@ -66,9 +64,13 @@ public class OwncloudLocalUserServiceImpl extends AbstractOwncloudLocalUserAndGr
   }
 
   @Override
-  public OwncloudUserDetails findOne(String username) {
-    OwncloudLocalUserData.User user = getCheckedUser(username);
-    return getLocalUserDataService().convert(user, false);
+  public Optional<OwncloudUserDetails> findOne(String username) {
+    try {
+      OwncloudLocalUserData.User user = getCheckedUser(username);
+      return Optional.of(getLocalUserDataService().convert(user, false));
+    } catch (UsernameNotFoundException ignored) {
+      return Optional.empty();
+    }
   }
 
   @Override
@@ -133,8 +135,7 @@ public class OwncloudLocalUserServiceImpl extends AbstractOwncloudLocalUserAndGr
     log.debug("Remove User {}", username);
     getLocalUserDataService().removeUser(username);
     log.debug("Notify registered Listeners about removed User {}", username);
-    deleteUserListeners.stream()
-                       .forEach(listener -> listener.accept(username));
+    deleteUserListeners.forEach(listener -> listener.accept(username));
     log.info("User {} successfully removed", username);
   }
 

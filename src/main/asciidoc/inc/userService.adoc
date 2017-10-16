@@ -13,7 +13,7 @@ The following Methods will be available:
 | `List<String> findAll(String filter)`
 | `GET /ocs/v1.php/cloud/users?search={filter}`
 | All Users whose Display Name matches the Search criteria
-| `OwncloudUserDetails findOne(String username)`
+| `Optional<OwncloudUserDetails> findOne(String username)`
 | `GET /ocs/v1.php/cloud/users/{username}` +
   `GET /ocs/v1.php/cloud/users/{username}/groups`
 | Information about one User
@@ -68,8 +68,11 @@ If you want to modify the Information about a User this User has to be read just
 in Hands you can create a new `OwncloudModificationUser`.
 [source,java]
 ----
-OwncloudUserDetails existingUser = owncloudUserService.findOne("user1");
-OwncloudModificationUser modificationUser = OwncloudModificationUser.of(existingUser);
-modificationUser.setDisplayName("new Display Name of the User");
-existingUser = owncloudUserService.save(modificationUser);
+owncloudUserService.findOne("user1")
+  .map(OwncloudModificationUser::of)
+  .map(modificationUser -> {
+     modificationUser.setDisplayName("new Display Name of the User");
+     return modificationUser;
+   })
+  .ifPresent(owncloudUserService::save);
 ----

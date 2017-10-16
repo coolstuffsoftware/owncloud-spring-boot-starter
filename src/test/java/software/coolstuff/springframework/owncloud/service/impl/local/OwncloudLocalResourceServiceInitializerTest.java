@@ -21,8 +21,10 @@
  */
 package software.coolstuff.springframework.owncloud.service.impl.local;
 
-import lombok.Builder;
-import lombok.Data;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.Optional;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -43,6 +45,9 @@ import org.springframework.security.test.context.support.WithSecurityContextTest
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestExecutionListeners;
 import org.springframework.test.context.junit4.SpringRunner;
+
+import lombok.Builder;
+import lombok.Data;
 import software.coolstuff.springframework.owncloud.config.IgnoreOnComponentScan;
 import software.coolstuff.springframework.owncloud.config.VelocityConfiguration;
 import software.coolstuff.springframework.owncloud.model.OwncloudModificationUser;
@@ -50,8 +55,6 @@ import software.coolstuff.springframework.owncloud.model.OwncloudQuota;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudResourceService;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudUserService;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(
@@ -84,10 +87,13 @@ public class OwncloudLocalResourceServiceInitializerTest {
   public void setUp() throws Exception {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     String username = authentication.getName();
-    OwncloudUserDetails user = userService.findOne(username);
-    OwncloudModificationUser modificationUser = OwncloudModificationUser.of(user);
-    modificationUser.setQuota(1024L);
-    userService.save(modificationUser);
+    userService.findOne(username)
+        .map(OwncloudModificationUser::of)
+        .map(modificationUser -> {
+          modificationUser.setQuota(1024L);
+          return modificationUser;
+        })
+        .ifPresent(userService::save);
   }
 
   @After
@@ -100,12 +106,12 @@ public class OwncloudLocalResourceServiceInitializerTest {
   public void test_getQuota() {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     OwncloudQuota expected = TestOwncloudQuota.builder()
-                                              .username(authentication.getName())
-                                              .total(1024l)
-                                              .used(97l)
-                                              .free(1024l - 97)
-                                              .relative(97f / 1024f * 100f)
-                                              .build();
+        .username(authentication.getName())
+        .total(1024l)
+        .used(97l)
+        .free(1024l - 97)
+        .relative(97f / 1024f * 100f)
+        .build();
     OwncloudQuota quota = resourceService.getQuota();
     assertThat(quota)
         .isNotNull()
@@ -128,35 +134,43 @@ public class OwncloudLocalResourceServiceInitializerTest {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     String username = authentication.getName();
     OwncloudQuota expectedBeforeChange = TestOwncloudQuota.builder()
-                                                          .username(username)
-                                                          .total(1024l)
-                                                          .used(97l)
-                                                          .free(1024l - 97)
-                                                          .relative(97f / 1024f * 100f)
-                                                          .build();
+        .username(username)
+        .total(1024l)
+        .used(97l)
+        .free(1024l - 97)
+        .relative(97f / 1024f * 100f)
+        .build();
 
     OwncloudQuota quota = resourceService.getQuota();
     assertThat(quota)
         .isNotNull()
         .isEqualToComparingOnlyGivenFields(expectedBeforeChange, "username", "total", "used", "free", "relative");
 
-    OwncloudUserDetails user = userService.findOne(username);
-    assertThat(user).isNotNull();
-    assertThat(user.getQuota()).isEqualTo(1024);
+    Optional<OwncloudUserDetails> user = userService.findOne(username);
+    assertThat(user)
+        .isNotNull()
+        .isPresent();
+    assertThat(user.get().getQuota()).isEqualTo(1024);
 
-    OwncloudModificationUser modificationUser = OwncloudModificationUser.of(user);
-    modificationUser.setQuota(2048L);
-    user = userService.save(modificationUser);
-    assertThat(user).isNotNull();
-    assertThat(user.getQuota()).isEqualTo(2048);
+    user = user
+        .map(OwncloudModificationUser::of)
+        .map(modificationUser -> {
+          modificationUser.setQuota(2048L);
+          return modificationUser;
+        })
+        .map(userService::save);
+    assertThat(user)
+        .isNotNull()
+        .isPresent();
+    assertThat(user.get().getQuota()).isEqualTo(2048);
 
     OwncloudQuota expectedAfterChange = TestOwncloudQuota.builder()
-                                                         .username(username)
-                                                         .total(2048l)
-                                                         .used(97l)
-                                                         .free(2048l - 97)
-                                                         .relative(97f / 2048f * 100f)
-                                                         .build();
+        .username(username)
+        .total(2048L)
+        .used(97L)
+        .free(2048L - 97)
+        .relative(97f / 2048f * 100f)
+        .build();
     quota = resourceService.getQuota();
     assertThat(quota)
         .isNotNull()

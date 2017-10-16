@@ -766,7 +766,7 @@ you can read or write the Content of this File.</p>
 <div class="content">
 <pre class="CodeRay highlight"><code data-lang="java">Optional&lt;OwncloudFileResource&gt; fileResource =
   resourceService.find(uri)
-                 .filter(OwncloudUtils::isDirectory)
+                 .filter(OwncloudUtils::isNotDirectory)
                  .map(OwncloudUtils:toOwncloudFileResource);</code></pre>
 </div>
 </div>
@@ -983,8 +983,9 @@ Parameter <code>owncloud.resource-service.piped-stream-uncaught-exception-log-le
 Any valid SLF4J LogLevel can be served. The Default is <code>LogLevel.ERROR</code>.</p>
 </div>
 </div>
-<div class="sect3">
-<h4 id="_sardine_cache_only_rest_backend">Sardine Cache (only REST Backend)</h4>
+</div>
+<div class="sect2">
+<h3 id="_sardine_cache_only_rest_backend">Sardine Cache (only REST Backend)</h3>
 <div class="paragraph">
 <p>Because the WebDAV Protocol enhances the HTTP Protocol by some Methods (<code>PROPFIND</code>, <code>MKCOL</code>, &#8230;&#8203;)
 these Methods are not implemented by the <a href="https://docs.spring.io/spring/docs/4.3.12.RELEASE/spring-framework-reference/htmlsingle/#rest-client-access">Spring RestTemplate</a>.
@@ -1018,11 +1019,10 @@ can be maintained by Configuration Properties:</p>
 </div>
 </div>
 </div>
-</div>
 <div id="footer">
 <div id="footer-text">
-Version 1.2.0<br>
-Last updated 2017-10-13 22:31:25 MESZ
+Version 1.2.1<br>
+Last updated 2017-10-16 23:35:16 MESZ
 </div>
 </div>
 </body>
