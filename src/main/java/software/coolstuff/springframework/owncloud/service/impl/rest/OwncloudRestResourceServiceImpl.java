@@ -425,7 +425,7 @@ public class OwncloudRestResourceServiceImpl implements OwncloudResourceService,
     URI directoryURI = resolveAsDirectoryURI(directory);
     try {
       getSardine().createDirectory(directoryURI.toString());
-      return find(directory).get();
+      return find(directory).orElse(null);
     } catch (SardineException e) {
       SardineExceptionHandlerEnvironment handlerEnvironment =
           SardineExceptionHandlerEnvironment.builder()
