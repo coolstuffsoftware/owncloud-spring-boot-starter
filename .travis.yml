@@ -5,3 +5,10 @@ addons:
   apt:
     packages:
     - graphviz
+  sonarcloud:
+    organization: "coolstuffsoftware-github"
+    branches:
+    - master
+    - develop
+script:
+  - sonar-scanner
