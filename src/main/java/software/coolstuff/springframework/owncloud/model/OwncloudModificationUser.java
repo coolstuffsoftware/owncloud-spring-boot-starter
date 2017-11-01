@@ -172,6 +172,6 @@ public class OwncloudModificationUser {
    */
   public void removeGroup(String group) {
     Optional.of(group)
-            .map(groups::remove);
+            .ifPresent(groups::remove);
   }
 }
