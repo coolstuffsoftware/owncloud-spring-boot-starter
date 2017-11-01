@@ -86,7 +86,7 @@ class OwncloudLocalQuotaImpl implements OwncloudQuota, Cloneable {
 
   @Override
   public float getRelative() {
-    return Long.valueOf(used).floatValue() * 100f / Long.valueOf(getTotal()).floatValue();
+    return (float) used * 100f / (float) getTotal();
   }
 
 }
