@@ -209,8 +209,10 @@ public abstract class AbstractOwncloudUserServiceTest extends AbstractOwncloudSe
                                                                   .displayname("Mr. User 1")
                                                                   .email("user1@example.com")
                                                                   .group("group1")
-                                                                  .group("group3") // group3 instead of group2
+                                                                  .group("group2")
                                                                   .build();
+    updateUser.removeGroup("group2");
+    updateUser.addGroup("group3"); // group3 instead of group2
 
     prepareTestSaveUser_UpdateUser_OK_WithGroups(existingUser, updateUser);
 
