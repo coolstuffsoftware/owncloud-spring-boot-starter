@@ -108,13 +108,13 @@ public class OwncloudUserDetails implements UserDetails {
       String displayname,
       String email,
       Long quota) {
-    setUsername(username);
+    this.username = username;
     setPassword(password);
-    setEnabled(enabled);
-    setAuthorities(authorities);
-    setDisplayname(displayname);
-    setEmail(email);
-    setQuota(quota);
+    this.enabled = enabled;
+    this.authorities = authorities;
+    this.displayname = displayname;
+    this.email = email;
+    this.quota = quota;
   }
 
   @Override

@@ -226,10 +226,11 @@ class OwncloudLocalResourceServiceImpl implements OwncloudLocalResourceService {
     try {
       List<OwncloudResource> owncloudResources = new ArrayList<>();
       owncloudResources.add(getActualDirectoryOf(location));
-      Files.list(location)
-           .map(path -> createOwncloudResourceOf(path))
-           .peek(resource -> log.debug("Add Resource {} to the Result", resource.getHref()))
-           .forEach(owncloudResources::add);
+      try (Stream<Path> stream = Files.list(location)) {
+        stream.map(this::createOwncloudResourceOf)
+              .peek(resource -> log.debug("Add Resource {} to the Result", resource.getHref()))
+              .forEach(owncloudResources::add);
+      }
       getParentDirectoryOf(location)
           .ifPresent(owncloudResources::add);
       return owncloudResources;
