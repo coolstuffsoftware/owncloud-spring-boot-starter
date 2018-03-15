@@ -93,10 +93,9 @@ public class OwncloudRestResourceServiceImpl implements OwncloudResourceService,
 
     URL locationURL = OwncloudRestUtils.checkAndConvertLocation(properties.getLocation());
     this.rootUri = appendOptionalSuffix(locationURL, URI_SUFFIX);
-    HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory();
     log.debug("Build the RestTemplate based on Root URI {}", rootUri);
     restTemplate = builder
-        .requestFactory(requestFactory)
+        .requestFactory(HttpComponentsClientHttpRequestFactory.class)
         .messageConverters(new ByteArrayHttpMessageConverter())
         .rootUri(rootUri)
         .build();
