@@ -391,6 +391,8 @@
           <sourcepath>${project.build.directory}/delombok</sourcepath>
           <sourceFileExcludes>
             <sourceFileExclude>**/impl/**/*Impl.java</sourceFileExclude>
+            <sourceFileExclude>**/impl/rest/Ocs.java</sourceFileExclude>
+            <sourceFileExclude>**/impl/rest/OwncloudRestUserDetailsService.java</sourceFileExclude>
             <sourceFileExclude>**/*Configuration.java</sourceFileExclude>
             <sourceFileExclude>**/OwncloudAuthenticationTypeChecker.java</sourceFileExclude>
           </sourceFileExcludes>
