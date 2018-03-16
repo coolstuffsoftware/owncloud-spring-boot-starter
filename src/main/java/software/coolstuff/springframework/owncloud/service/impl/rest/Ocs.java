@@ -27,14 +27,17 @@ import javax.xml.bind.annotation.XmlRootElement;
 import java.util.ArrayList;
 import java.util.List;
 
+/*
+ignored by JavaDoc - must be public because of JDK-Proxy and CGLIB-Proxy behaviour
+ */
 @lombok.Data
-abstract class Ocs {
+public abstract class Ocs {
 
   @lombok.Data
   @NoArgsConstructor
   @AllArgsConstructor(access = AccessLevel.PRIVATE)
   @Builder
-  static class Meta {
+  public static class Meta {
     private String status;
     private int statuscode;
     private String message;
@@ -47,7 +50,7 @@ abstract class Ocs {
   @ToString(callSuper = true)
   @NoArgsConstructor
   @XmlRootElement(name = "ocs")
-  static class Void extends Ocs {
+  public static class Void extends Ocs {
     private String data;
 
     @Builder
@@ -61,11 +64,11 @@ abstract class Ocs {
   @ToString(callSuper = true)
   @NoArgsConstructor
   @XmlRootElement(name = "ocs")
-  static class Users extends Ocs {
+  public static class Users extends Ocs {
 
     @lombok.Data
     @NoArgsConstructor
-    static class Data {
+    public static class Data {
 
       @lombok.Data
       @NoArgsConstructor
@@ -100,19 +103,19 @@ abstract class Ocs {
   @ToString(callSuper = true)
   @NoArgsConstructor
   @XmlRootElement(name = "ocs")
-  static class User extends Ocs {
+  public static class User extends Ocs {
 
     @lombok.Data
     @NoArgsConstructor
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
     @Builder
-    static class Data {
+    public static class Data {
 
       @lombok.Data
       @NoArgsConstructor
       @AllArgsConstructor(access = AccessLevel.PRIVATE)
       @Builder
-      static class Quota {
+      public static class Quota {
         private Long free;
         private Long used;
         private Long total;
@@ -140,17 +143,17 @@ abstract class Ocs {
   @ToString(callSuper = true)
   @NoArgsConstructor
   @XmlRootElement(name = "ocs")
-  static class Groups extends Ocs {
+  public static class Groups extends Ocs {
 
     @lombok.Data
     @NoArgsConstructor
-    static class Data {
+    public static class Data {
 
       @lombok.Data
       @NoArgsConstructor
       @AllArgsConstructor(access = AccessLevel.PACKAGE)
       @Builder
-      static class Group {
+      public static class Group {
         private String group;
       }
 
