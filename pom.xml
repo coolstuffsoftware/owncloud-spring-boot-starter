@@ -3,7 +3,7 @@
 
   <groupId>software.coolstuff</groupId>
   <artifactId>owncloud-spring-boot-starter</artifactId>
-  <version>1.3.0</version>
+  <version>1.3.1</version>
 
   <name>owncloud-spring-boot-starter</name>
   <description>Spring Boot Owncloud Service and Authentication Provider</description>
@@ -391,6 +391,8 @@
           <sourcepath>${project.build.directory}/delombok</sourcepath>
           <sourceFileExcludes>
             <sourceFileExclude>**/impl/**/*Impl.java</sourceFileExclude>
+            <sourceFileExclude>**/impl/rest/Ocs.java</sourceFileExclude>
+            <sourceFileExclude>**/impl/rest/OwncloudRestUserDetailsService.java</sourceFileExclude>
             <sourceFileExclude>**/*Configuration.java</sourceFileExclude>
             <sourceFileExclude>**/OwncloudAuthenticationTypeChecker.java</sourceFileExclude>
           </sourceFileExcludes>
