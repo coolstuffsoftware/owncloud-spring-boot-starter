@@ -106,7 +106,7 @@ class PipedInputStreamRestSynchronizerImpl extends AbstractPipedStreamRestSynchr
     @Override
     public synchronized void close() throws IOException {
       if (alreadyClosed) {
-        log.warn("Piped Input Stream has already been marked as closed");
+        log.warn("InputStream has already been marked as closed");
         return;
       }
 

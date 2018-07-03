@@ -213,7 +213,7 @@ class PipedOutputStreamLocalSynchronizerImpl extends AbstractPipedStreamSynchron
     @Override
     public synchronized void close() throws IOException {
       if (alreadyClosed) {
-        log.warn("Piped Output Stream has already been marked as closed");
+        log.warn("OutputStream has already been marked as closed");
         return;
       }
 
