@@ -33,9 +33,9 @@ ignored by JavaDoc - must be public because of JDK-Proxy and CGLIB-Proxy behavio
 @lombok.Data
 public abstract class Ocs {
 
-  @lombok.Data
   @NoArgsConstructor
   @AllArgsConstructor(access = AccessLevel.PRIVATE)
+  @lombok.Data
   @Builder
   public static class Meta {
     private String status;
@@ -45,10 +45,10 @@ public abstract class Ocs {
 
   private Meta meta;
 
+  @NoArgsConstructor
   @lombok.Data
   @EqualsAndHashCode(callSuper = true)
   @ToString(callSuper = true)
-  @NoArgsConstructor
   @XmlRootElement(name = "ocs")
   public static class Void extends Ocs {
     private String data;
@@ -59,20 +59,20 @@ public abstract class Ocs {
     }
   }
 
+  @NoArgsConstructor
   @lombok.Data
   @EqualsAndHashCode(callSuper = true)
   @ToString(callSuper = true)
-  @NoArgsConstructor
   @XmlRootElement(name = "ocs")
   public static class Users extends Ocs {
 
-    @lombok.Data
     @NoArgsConstructor
+    @lombok.Data
     public static class Data {
 
-      @lombok.Data
       @NoArgsConstructor
       @AllArgsConstructor(access = AccessLevel.PACKAGE)
+      @lombok.Data
       public static class Element {
         private String element;
       }
@@ -98,22 +98,22 @@ public abstract class Ocs {
     }
   }
 
+  @NoArgsConstructor
   @lombok.Data
   @EqualsAndHashCode(callSuper = true)
   @ToString(callSuper = true)
-  @NoArgsConstructor
   @XmlRootElement(name = "ocs")
   public static class User extends Ocs {
 
-    @lombok.Data
     @NoArgsConstructor
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    @lombok.Data
     @Builder
     public static class Data {
 
-      @lombok.Data
       @NoArgsConstructor
       @AllArgsConstructor(access = AccessLevel.PRIVATE)
+      @lombok.Data
       @Builder
       public static class Quota {
         private Long free;
@@ -138,20 +138,20 @@ public abstract class Ocs {
     }
   }
 
+  @NoArgsConstructor
   @lombok.Data
   @EqualsAndHashCode(callSuper = true)
   @ToString(callSuper = true)
-  @NoArgsConstructor
   @XmlRootElement(name = "ocs")
   public static class Groups extends Ocs {
 
-    @lombok.Data
     @NoArgsConstructor
+    @lombok.Data
     public static class Data {
 
-      @lombok.Data
       @NoArgsConstructor
       @AllArgsConstructor(access = AccessLevel.PACKAGE)
+      @lombok.Data
       @Builder
       public static class Group {
         private String group;
