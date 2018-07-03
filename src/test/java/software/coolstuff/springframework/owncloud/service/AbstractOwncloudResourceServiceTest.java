@@ -333,6 +333,7 @@ public abstract class AbstractOwncloudResourceServiceTest {
       byte[] actual = IOUtils.toByteArray(input);
       byte[] expected = owncloudFileResource.getTestFileContent().getBytes();
       assertThat(actual).isEqualTo(expected);
+      input.close(); // Call Close twice to check, if we don't get any Thread-Deadlocks
     }
     check_getInputStream_OK();
   }
@@ -384,6 +385,7 @@ public abstract class AbstractOwncloudResourceServiceTest {
     prepare_getOutputStream_OK(owncloudFileResource);
     try (OutputStream output = resourceService.getOutputStream(owncloudFileResource)) {
       IOUtils.write(owncloudFileResource.getTestFileContent(), output, Charset.forName("utf8"));
+      output.close(); // Call Close twice to check, if we don't get any Thread-Deadlocks
     } finally {
       check_getOutputStream_OK(owncloudFileResource);
     }
