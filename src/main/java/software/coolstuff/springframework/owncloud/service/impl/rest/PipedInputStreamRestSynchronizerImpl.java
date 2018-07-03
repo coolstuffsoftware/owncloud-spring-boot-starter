@@ -8,12 +8,12 @@
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -22,6 +22,7 @@
 package software.coolstuff.springframework.owncloud.service.impl.rest;
 
 import lombok.Builder;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.client.RestClientException;
@@ -33,6 +34,7 @@ import java.net.URI;
 import java.util.Optional;
 import java.util.function.BiFunction;
 
+@Slf4j
 class PipedInputStreamRestSynchronizerImpl extends AbstractPipedStreamRestSynchronizerImpl implements PipedInputStreamRestSynchronizer {
 
   private final SynchronizedPipedInputStream pipedInputStream = new SynchronizedPipedInputStream();
@@ -95,13 +97,24 @@ class PipedInputStreamRestSynchronizerImpl extends AbstractPipedStreamRestSynchr
 
     private Optional<RuntimeException> runtimeException = Optional.empty();
 
+    private boolean alreadyClosed = false;
+
     public void setRuntimeException(RuntimeException runtimeException) {
       this.runtimeException = Optional.ofNullable(runtimeException);
     }
 
     @Override
-    public void close() throws IOException {
-      super.close();
+    public synchronized void close() throws IOException {
+      if (alreadyClosed) {
+        log.warn("Piped Input Stream has already been marked as closed");
+        return;
+      }
+
+      try {
+        super.close();
+      } finally {
+        alreadyClosed = true;
+      }
       runtimeException.ifPresent(this::handleRuntimeException);
     }
 
