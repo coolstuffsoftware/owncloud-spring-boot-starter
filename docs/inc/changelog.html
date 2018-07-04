@@ -5,7 +5,7 @@
 <!--[if IE]><meta http-equiv="X-UA-Compatible" content="IE=edge"><![endif]-->
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="generator" content="Asciidoctor 1.5.6.1">
-<title>Authentication</title>
+<title>Changelog</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700">
 <style>
 /* Asciidoctor default stylesheet | MIT License | http://asciidoctor.org */
@@ -521,215 +521,19 @@ table.CodeRay td.code>pre{padding:0}
 </div>
 <div id="content">
 <div class="sect1">
-<h2 id="_authentication">Authentication</h2>
+<h2 id="_changelog">Changelog</h2>
 <div class="sectionbody">
-<div class="paragraph">
-<p>The Authentication has been implemented as a Spring Security <a href="http://docs.spring.io/spring-security/site/docs/4.2.1.RELEASE/apidocs/org/springframework/security/authentication/AuthenticationProvider.html"><code>AutheticationProvider</code></a>.<br>
-Due to the <a href="http://docs.spring.io/spring-boot/docs/1.4.3.RELEASE/reference/htmlsingle/#using-boot-auto-configuration"><code>AutoConfiguration</code></a> Feature this AuthenticationProvider will be automatically loaded and configured when the Configuration Parameter <code>owncloud.location</code> has been set.</p>
-</div>
 <div class="sect2">
-<h3 id="_configuration">Configuration</h3>
-<div class="paragraph">
-<p>By including <code>owncloud-spring-boot-starter</code> into the Classpath this Authentication-Provider is autoconfigured unless you decide to Overwrite it (by instantiating your own Implementation as a Subclass of <code>OwncloudAuthenticationProvider</code>).</p>
-</div>
-<div class="paragraph">
-<p>If this is the only Authentication-Provider existing then Spring-Boot will use this Authentication-Provider.</p>
-</div>
-<div class="paragraph">
-<p>When you have several Authentication-Provider instantiated then you have to configure its Usage by a <a href="http://docs.spring.io/spring-security/site/docs/4.2.1.RELEASE/apidocs/org/springframework/security/config/annotation/web/configuration/WebSecurityConfigurerAdapter.html"><code>WebSecurityConfigurerAdapter</code></a></p>
-</div>
-<div class="listingblock">
-<div class="title">WebSecurityConfigurerAdapter</div>
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="java"><span class="keyword">import</span> <span class="include">org.springframework.beans.factory.annotation.Autowired</span>;
-<span class="keyword">import</span> <span class="include">org.springframework.beans.factory.annotation.Qualifier</span>;
-<span class="keyword">import</span> <span class="include">org.springframework.security.authentication.AuthenticationProvider</span>;
-<span class="keyword">import</span> <span class="include">org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder</span>;
-<span class="keyword">import</span> <span class="include">org.springframework.security.config.annotation.web.configuration.EnableWebSecurity</span>;
-<span class="keyword">import</span> <span class="include">org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter</span>;
-
-<span class="annotation">@EnableWebSecurity</span>
-<span class="directive">public</span> <span class="type">class</span> <span class="class">MyWebSecurityConfigurerAdapter</span> <span class="directive">extends</span> WebSecurityConfigurerAdapter {
-
-  <span class="annotation">@Autowired</span>
-  <span class="annotation">@Qualifier</span>(<span class="string"><span class="delimiter">&quot;</span><span class="content">owncloudAuthenticationProvider</span><span class="delimiter">&quot;</span></span>)
-  <span class="directive">private</span> AuthenticationProvider authenticationProvider;
-
-  <span class="annotation">@Override</span>
-  <span class="directive">protected</span> <span class="type">void</span> configure(AuthenticationManagerBuilder auth) <span class="directive">throws</span> <span class="exception">Exception</span> {
-    auth.authenticationProvider(authenticationProvider);
-  }
-
-}</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>By the Qualifier <code>owncloudAuthenticationProvider</code> you can inject the Owncloud Authentication Provider directly into the <code>WebSecurityConfigurerAdapter</code> and use this AuthenticationProvider for Authentication.</p>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_rememberme_services">RememberMe Services</h3>
-<div class="paragraph">
-<p>Unfortunatly RememberMe Service is not available for Owncloud Authentication. Like Microsoft ActiveDirectory the Owncloud Instance doesn&#8217;t provide the Password of a User which is necessary for InMemory RememberMe Services.<br>
-Also the RememberMe-Services based on Persistent Tokens will not work because you need the Password of the Owncloud User for all Requests to the Owncloud. This could only be provided, if the original Session is available
-(and not reauthenticated by the RememberMe Service).</p>
-</div>
-<div class="paragraph">
-<p>Maybe one time Owncloud will provide an Application Token or work as a OAuth Provider. But this will be future work.</p>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_groups_vs_authorities">Groups vs. Authorities</h3>
-<div class="paragraph">
-<p>A Group in Owncloud is mostly a Summary of Privileges the User has been granted to (Shares, Calendars, Addressbooks, &#8230;&#8203;)</p>
-</div>
-<div class="paragraph">
-<p>An Authority is, simple said, a Set of Privileges, which you can test upon the Call of a Method.</p>
-</div>
-<div class="paragraph">
-<p>A Owncloud Group wont represent a simple Authority instead a Group of Authorities.</p>
-</div>
-<div class="paragraph">
-<p>Therefor you can map the Groups of the Owncloud User to Authorities needed by your Application in 2 Ways.</p>
-</div>
-<div class="sect3">
-<h4 id="_grantedauthoritiesmapper">GrantedAuthoritiesMapper</h4>
-<div class="paragraph">
-<p>With the help of a <code>GrantedAuthoritiesMapper</code> you can map the Owncloud Groups of the User to Authorities you can use within your Application. The simplest of them is the <a href="http://docs.spring.io/spring-security/site/docs/4.2.1.RELEASE/apidocs/org/springframework/security/core/authority/mapping/SimpleAuthorityMapper.html"><code>SimpleAuthorityMapper</code></a> which prepends a Prefix <code>ROLE_</code> to the Owncloud Group Name.</p>
-</div>
-<div class="paragraph">
-<p>You simply add the <code>GrantedAuthoritiesMapper</code> as a Spring Bean:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@Configuration</span>
-<span class="directive">public</span> <span class="type">class</span> <span class="class">MyConfiguration</span> {
-
-  <span class="annotation">@Bean</span>
-  <span class="directive">public</span> GrantedAuthoritiesMapper grantedAuthoritiesMapper() {
-    <span class="keyword">return</span> <span class="keyword">new</span> SimpleGrantedAuthoritiesMapper();
-  }
-
-}</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>Up now all Groups of the User will be added with the Prefix <code>ROLE_</code> and added as an Authority to the List of Authorities of the Authentication Object.</p>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_owncloudgrantedauthoritiesmapper">OwncloudGrantedAuthoritiesMapper</h4>
-<div class="paragraph">
-<p>In Spring Security there exists a good <a href="http://docs.spring.io/spring-security/site/docs/current/reference/html/appendix-schema.html">Database Schema</a> for the Relationship between Users, Groups and Authorities:</p>
-</div>
-<div class="imageblock">
-<div class="content">
-<img src="images/diagram-classes.png" alt="diagram classes" width="368" height="152">
-</div>
-</div>
-<div class="paragraph">
-<p>Following this Schema there are 2 Kinds of Classes involved</p>
-</div>
-<div class="olist arabic">
-<ol class="arabic">
-<li>
-<p><code>User</code>, <code>Group</code> &amp; <code>UserGroup</code> are managed by Owncloud</p>
-</li>
-<li>
-<p><code>Authority</code>, <code>UserAuthority</code> &amp; <code>GroupAuthority</code> are managed by your Application</p>
-</li>
-</ol>
-</div>
-<div class="paragraph">
-<p>A Spring Bean of <code>OwncloudGrantedAuthoritiesMapper</code> matches your Authorities to the authenticated User during the Authentication Process.</p>
-</div>
-<div class="listingblock">
-<div class="title">MyOwncloudGrantedAuthoritiesMapper.java</div>
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="java"><span class="keyword">import</span> <span class="include">java.util.Collection</span>;
-<span class="keyword">import</span> <span class="include">java.util.HashSet</span>;
-<span class="keyword">import</span> <span class="include">java.util.List</span>;
-<span class="keyword">import</span> <span class="include">java.util.Set</span>;
-
-<span class="keyword">import</span> <span class="include">org.apache.commons.collections4.CollectionUtils</span>;
-<span class="keyword">import</span> <span class="include">org.apache.commons.lang3.StringUtils</span>;
-<span class="keyword">import</span> <span class="include">org.springframework.beans.factory.annotation.Autowired</span>;
-<span class="keyword">import</span> <span class="include">org.springframework.security.core.GrantedAuthority</span>;
-<span class="keyword">import</span> <span class="include">org.springframework.security.core.authority.SimpleGrantedAuthority</span>;
-<span class="keyword">import</span> <span class="include">org.springframework.stereotype.Service</span>;
-
-<span class="keyword">import</span> <span class="include">software.coolstuff.springframework.owncloud.service.api.OwncloudGrantedAuthoritiesMapper</span>;
-
-<span class="annotation">@Service</span>
-<span class="directive">public</span> <span class="type">class</span> <span class="class">MyOwncloudGrantedAuthoritiesMapper</span> <span class="directive">implements</span> OwncloudGrantedAuthoritiesMapper {
-
-  <span class="directive">private</span> <span class="directive">final</span> <span class="directive">static</span> <span class="predefined-type">String</span> ROLE_PREFIX = <span class="string"><span class="delimiter">&quot;</span><span class="content">ROLE_</span><span class="delimiter">&quot;</span></span>;
-
-  <span class="annotation">@Autowired</span>
-  <span class="directive">private</span> UserAuthorityRepository userAuthorityRepository;
-
-  <span class="annotation">@Autowired</span>
-  <span class="directive">private</span> GroupAuthorityRepository groupAuthorityRepository;
-
-  <span class="annotation">@Override</span>
-  <span class="directive">public</span> <span class="predefined-type">Collection</span>&lt;? <span class="directive">extends</span> GrantedAuthority&gt; mapAuthorities(
-      <span class="predefined-type">String</span> username,
-      <span class="predefined-type">Collection</span>&lt;? <span class="directive">extends</span> GrantedAuthority&gt; grantedAuthorities) {
-    <span class="predefined-type">Set</span>&lt;GrantedAuthority&gt; authorities = <span class="keyword">new</span> <span class="predefined-type">HashSet</span>&lt;&gt;();
-
-    addAllAuthorities(userAuthorityRepository.getAuthorities(username), authorities);
-
-    <span class="keyword">if</span> (CollectionUtils.isNotEmpty(grantedAuthorities)) {
-      <span class="keyword">for</span> (GrantedAuthority grantedAuthority : grantedAuthorities) {
-        <span class="predefined-type">List</span>&lt;ApplicationAuthority&gt; groupAuthorities =
-          groupAuthorityRepository.getAuthorities(grantedAuthority.getAuthority());
-        addAllAuthorities(groupAuthorities, authorities);
-      }
-    }
-
-    <span class="keyword">return</span> authorities;
-  }
-
-  <span class="directive">private</span> <span class="type">void</span> addAllAuthorities(
-      <span class="predefined-type">Collection</span>&lt;ApplicationAuthority&gt; applicationAuthorities,
-      <span class="predefined-type">Set</span>&lt;GrantedAuthority&gt; springSecurityAuthorities) {
-    <span class="keyword">if</span> (CollectionUtils.isEmpty(applicationAuthorities)) {
-      <span class="keyword">return</span>;
-    }
-
-    <span class="keyword">for</span> (ApplicationAuthority applicationAuthority : applicationAuthorities) {
-      GrantedAuthority springSecurityAuthority =
-        <span class="keyword">new</span> SimpleGrantedAuthority(applicationAuthority.getName());
-      <span class="keyword">if</span> (!StringUtils.startsWith(applicationAuthority.getName(), ROLE_PREFIX)) {
-        springSecurityAuthority =
-          <span class="keyword">new</span> SimpleGrantedAuthority(ROLE_PREFIX + applicationAuthority.getName());
-      }
-      springSecurityAuthorities.add(springSecurityAuthority);
-    }
-  }
-
-}</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>By the assumption that</p>
-</div>
+<h3 id="_1_4_0">1.4.0</h3>
 <div class="ulist">
 <ul>
 <li>
-<p>Class <code>ApplicationAuthority</code> simply returns the Authority by Method <code>getName()</code></p>
+<p>BUGFIX: Thread-Deadlock on calling <code>close()</code> twice on <code>PipedInputStream</code> or <code>PipedOutputStream</code></p>
 </li>
 <li>
-<p>Class <code>UserAuthorityRepository</code> returns a List of <code>ApplicationAuthority</code> by Method <code>getAuthorities(String username)</code></p>
-</li>
-<li>
-<p>Class <code>GroupAuthorityRepository</code> returns a List of <code>ApplicationAuthority</code> by Method <code>getAuthorities(String groupname)</code></p>
+<p>UPDATE: updated to Version <code>2.0.3.RELEASE</code> of Spring Boot and other Dependency updates</p>
 </li>
 </ul>
-</div>
-<div class="paragraph">
-<p>this Class returns all Authorities for the Owncloud User <code>username</code> and its associated Groups (<code>authorities</code>).</p>
-</div>
 </div>
 </div>
 </div>
@@ -738,7 +542,7 @@ Also the RememberMe-Services based on Persistent Tokens will not work because yo
 <div id="footer">
 <div id="footer-text">
 Version 1.4.0<br>
-Last updated 2018-07-04 09:10:54 CEST
+Last updated 2018-07-04 20:48:10 CEST
 </div>
 </div>
 </body>

@@ -5,5 +5,4 @@ It's planned to implement the following additional API's of Owncloud:
 
 * Subadmins (via https://doc.owncloud.org/server/latest/admin_manual/configuration_user/user_provisioning_api.html[User Provisioning API])
 * App Management (via https://doc.owncloud.org/server/latest/admin_manual/configuration_user/user_provisioning_api.html[User Provisioning API])
-* WebDAV (via http://github.org/lookfirst/sardine[Sardine WebDAV Library])
 * https://doc.owncloud.org/server/latest/developer_manual/core/ocs-share-api.html[OCS Share API]
