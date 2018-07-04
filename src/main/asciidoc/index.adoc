@@ -8,6 +8,8 @@ Copyright (c) 2016 by the original Authors
 
 include::{includedir}/audience.adoc[]
 
+include::{includedir}/changelog.adoc[]
+
 include::{includedir}/quickstart.adoc[]
 
 include::{includedir}/whatsIncluded.adoc[]

@@ -1,0 +1,4 @@
+== Changelog
+=== 1.4.0
+* BUGFIX: Thread-Deadlock on calling `close()` twice on `PipedInputStream` or `PipedOutputStream`
+* UPDATE: updated to Version `2.0.3.RELEASE` of Spring Boot and other Dependency updates
