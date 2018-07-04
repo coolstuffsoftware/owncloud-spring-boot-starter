@@ -95,7 +95,7 @@ abstract class AbstractOwncloudRestServiceImpl implements OwncloudRestService {
   }
 
   @Override
-  public final RestTemplate getRestTemplate() {
+  public RestTemplate getRestTemplate() {
     return restTemplate;
   }
 

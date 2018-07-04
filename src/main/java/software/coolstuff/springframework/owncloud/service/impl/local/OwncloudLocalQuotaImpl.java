@@ -8,12 +8,12 @@
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -23,16 +23,15 @@ package software.coolstuff.springframework.owncloud.service.impl.local;
 
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.FileSystemUtils;
 import software.coolstuff.springframework.owncloud.exception.resource.OwncloudLocalResourceException;
 import software.coolstuff.springframework.owncloud.model.OwncloudQuota;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 
 /**
  * @author mufasa1976
- *
  */
 @Data
 @Getter(AccessLevel.NONE)
@@ -62,7 +61,7 @@ class OwncloudLocalQuotaImpl implements OwncloudQuota, Cloneable {
 
   private long getFreeSpaceOfLocation() {
     try {
-      return FileSystemUtils.freeSpaceKb(location.toAbsolutePath().normalize().toString()) * 1024;
+      return Files.getFileStore(location).getUsableSpace();
     } catch (IOException e) {
       String logMessage = "Error while getting the free Space of the Path " + location.toAbsolutePath().normalize().toString();
       log.error(logMessage);

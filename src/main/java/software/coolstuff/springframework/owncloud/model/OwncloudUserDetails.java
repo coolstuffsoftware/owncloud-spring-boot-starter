@@ -39,8 +39,8 @@ import java.util.Collection;
  * @see UserDetails
  * @since 1.0.0
  */
-@Data
 @NoArgsConstructor
+@Data
 @EqualsAndHashCode(of = "username")
 @ToString(exclude = "password")
 public class OwncloudUserDetails implements UserDetails {

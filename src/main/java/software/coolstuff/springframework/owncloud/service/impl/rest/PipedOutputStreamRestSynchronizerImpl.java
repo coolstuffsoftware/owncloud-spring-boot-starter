@@ -115,15 +115,23 @@ class PipedOutputStreamRestSynchronizerImpl extends AbstractPipedStreamRestSynch
 
     private Optional<RuntimeException> runtimeException = Optional.empty();
 
+    private boolean alreadyClosed = false;
+
     public void setRuntimeException(RuntimeException runtimeException) {
       this.runtimeException = Optional.ofNullable(runtimeException);
     }
 
     @Override
-    public void close() throws IOException {
+    public synchronized void close() throws IOException {
+      if (alreadyClosed) {
+        log.warn("OutputStream has already been marked as closed");
+        return;
+      }
+
       try {
         super.close();
       } finally {
+        alreadyClosed = true;
         setPipeReady();
         runtimeException.ifPresent(this::handleRuntimeException);
       }

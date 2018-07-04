@@ -204,16 +204,24 @@ class PipedOutputStreamLocalSynchronizerImpl extends AbstractPipedStreamSynchron
     private IOException iOException;
     private OwncloudResourceException owncloudResourceException;
 
+    private boolean alreadyClosed = false;
+
     boolean isExceptionAvailable() {
       return iOException != null || owncloudResourceException != null;
     }
 
     @Override
-    public void close() throws IOException {
+    public synchronized void close() throws IOException {
+      if (alreadyClosed) {
+        log.warn("OutputStream has already been marked as closed");
+        return;
+      }
+
       try {
         log.debug("Close the PipedOutputStream of Path {}", outputPath.toAbsolutePath().normalize());
         super.close();
       } finally {
+        alreadyClosed = true;
         waitForPipeReady();
       }
       throwExistingIOException();
