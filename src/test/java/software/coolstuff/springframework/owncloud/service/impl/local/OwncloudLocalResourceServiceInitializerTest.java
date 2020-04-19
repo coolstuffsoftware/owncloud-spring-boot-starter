@@ -8,12 +8,12 @@
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -21,17 +21,15 @@
  */
 package software.coolstuff.springframework.owncloud.service.impl.local;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.util.Optional;
-
+import lombok.Builder;
+import lombok.Data;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.SpringBootDependencyInjectionTestExecutionListener;
-import org.springframework.boot.test.autoconfigure.web.client.RestClientTest;
+import org.springframework.boot.test.autoconfigure.web.client.AutoConfigureWebClient;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.boot.test.mock.mockito.MockitoTestExecutionListener;
@@ -45,16 +43,16 @@ import org.springframework.security.test.context.support.WithSecurityContextTest
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestExecutionListeners;
 import org.springframework.test.context.junit4.SpringRunner;
-
-import lombok.Builder;
-import lombok.Data;
 import software.coolstuff.springframework.owncloud.config.IgnoreOnComponentScan;
 import software.coolstuff.springframework.owncloud.config.VelocityConfiguration;
 import software.coolstuff.springframework.owncloud.model.OwncloudModificationUser;
 import software.coolstuff.springframework.owncloud.model.OwncloudQuota;
 import software.coolstuff.springframework.owncloud.model.OwncloudUserDetails;
-import software.coolstuff.springframework.owncloud.service.api.OwncloudResourceService;
 import software.coolstuff.springframework.owncloud.service.api.OwncloudUserService;
+
+import java.util.Optional;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(
@@ -73,7 +71,7 @@ import software.coolstuff.springframework.owncloud.service.api.OwncloudUserServi
 @ComponentScan(
     basePackages = "software.coolstuff.springframework.owncloud",
     excludeFilters = @Filter(IgnoreOnComponentScan.class))
-@RestClientTest(OwncloudResourceService.class)
+@AutoConfigureWebClient
 @ActiveProfiles("LOCAL-RESOURCE-SERVICE")
 public class OwncloudLocalResourceServiceInitializerTest {
 
@@ -88,12 +86,12 @@ public class OwncloudLocalResourceServiceInitializerTest {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     String username = authentication.getName();
     userService.findOne(username)
-        .map(OwncloudModificationUser::of)
-        .map(modificationUser -> {
-          modificationUser.setQuota(1024L);
-          return modificationUser;
-        })
-        .ifPresent(userService::save);
+               .map(OwncloudModificationUser::of)
+               .map(modificationUser -> {
+                 modificationUser.setQuota(1024L);
+                 return modificationUser;
+               })
+               .ifPresent(userService::save);
   }
 
   @After
@@ -106,12 +104,12 @@ public class OwncloudLocalResourceServiceInitializerTest {
   public void test_getQuota() {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     OwncloudQuota expected = TestOwncloudQuota.builder()
-        .username(authentication.getName())
-        .total(1024l)
-        .used(97l)
-        .free(1024l - 97)
-        .relative(97f / 1024f * 100f)
-        .build();
+                                              .username(authentication.getName())
+                                              .total(1024l)
+                                              .used(97l)
+                                              .free(1024l - 97)
+                                              .relative(97f / 1024f * 100f)
+                                              .build();
     OwncloudQuota quota = resourceService.getQuota();
     assertThat(quota)
         .isNotNull()
@@ -134,12 +132,12 @@ public class OwncloudLocalResourceServiceInitializerTest {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     String username = authentication.getName();
     OwncloudQuota expectedBeforeChange = TestOwncloudQuota.builder()
-        .username(username)
-        .total(1024l)
-        .used(97l)
-        .free(1024l - 97)
-        .relative(97f / 1024f * 100f)
-        .build();
+                                                          .username(username)
+                                                          .total(1024l)
+                                                          .used(97l)
+                                                          .free(1024l - 97)
+                                                          .relative(97f / 1024f * 100f)
+                                                          .build();
 
     OwncloudQuota quota = resourceService.getQuota();
     assertThat(quota)
@@ -165,12 +163,12 @@ public class OwncloudLocalResourceServiceInitializerTest {
     assertThat(user.get().getQuota()).isEqualTo(2048);
 
     OwncloudQuota expectedAfterChange = TestOwncloudQuota.builder()
-        .username(username)
-        .total(2048L)
-        .used(97L)
-        .free(2048L - 97)
-        .relative(97f / 2048f * 100f)
-        .build();
+                                                         .username(username)
+                                                         .total(2048L)
+                                                         .used(97L)
+                                                         .free(2048L - 97)
+                                                         .relative(97f / 2048f * 100f)
+                                                         .build();
     quota = resourceService.getQuota();
     assertThat(quota)
         .isNotNull()
