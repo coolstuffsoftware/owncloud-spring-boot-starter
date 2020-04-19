@@ -59,14 +59,14 @@
     <maven.compiler.target>${java.version}</maven.compiler.target>
 
     <!-- Dependency Versions -->
-    <spring-boot.version>2.0.3.RELEASE</spring-boot.version>
+    <spring-boot.version>2.2.6.RELEASE</spring-boot.version>
     <commons-lang3.version>3.7</commons-lang3.version>
-    <guava.version>25.1-jre</guava.version>
+    <guava.version>28.2-jre</guava.version>
     <commons-io.version>2.6</commons-io.version>
     <commons-collections4.version>4.1</commons-collections4.version>
-    <sardine.version>5.8</sardine.version>
+    <sardine.version>5.9</sardine.version>
     <xmlunit.version>2.6.0</xmlunit.version>
-    <lombok-plugin.version>1.16.20.0</lombok-plugin.version>
+    <lombok-plugin.version>1.18.12.0</lombok-plugin.version>
     <velocity.version>1.7</velocity.version>
     <velocity-tools.version>2.0</velocity-tools.version>
 
